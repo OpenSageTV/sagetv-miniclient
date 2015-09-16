@@ -11,7 +11,8 @@ import sagex.miniclient.ImageHolder;
 import sagex.miniclient.UIManager;
 
 public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
-	private UIManager<Image, Font> delegate;
+    private static final boolean LOGGING = false;
+    private UIManager<Image, Font> delegate;
 
 	public LoggingUIManager(UIManager<Image, Font> delegate) {
 		this.delegate=delegate;
@@ -20,10 +21,8 @@ public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
 	Map<String,Boolean> logged = new HashMap<String, Boolean>();
 
 	void log(String s) {
-//		if (!logged.containsKey(s)) {
-//			logged.put(s,true);
-			System.out.println("UIManager: " + s);
-//		}
+        if (LOGGING)
+		    System.out.println("UIManager: " + s);
 	}
 
 
@@ -109,21 +108,21 @@ public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
 	}
 
 	public ImageHolder<Image> loadImage(int width, int height) {
-		//log(String.format("loadImage(%s,%s)",width,height));
+		log(String.format("loadImage(%s,%s)",width,height));
 		return delegate.loadImage(width, height);
 	}
 
-	public ImageHolder<Image> createSurface(int width, int height) {
-		log(String.format("createSurface(%s,%s)", width,height));
-		return delegate.createSurface(width, height);
+	public ImageHolder<Image> createSurface(int handle, int width, int height) {
+		log(String.format("createSurface[%s](%s,%s)", handle,width,height));
+		return delegate.createSurface(handle, width, height);
 	}
 
 	public ImageHolder<Image> readImage(File cachedFile) throws Exception {
-		log("readImage File");
+		log("readImage File: " + cachedFile.getName());
 		return delegate.readImage(cachedFile);
 	}
 
-	public ImageHolder<Image> readImage(ByteArrayInputStream bais) throws Exception {
+	public ImageHolder<Image> readImage(InputStream bais) throws Exception {
 		log("readImage Stream");
 		return delegate.readImage(bais);
 	}
@@ -164,7 +163,7 @@ public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
 	}
 
 	public void loadImageLine(int handle, ImageHolder<?> image, int line, int len2, byte[] cmddata) {
-		//log(String.format("loadImageLine[%s](%s)", handle, line));
+		log(String.format("loadImageLine[%s](%s)", handle, line));
 		delegate.loadImageLine(handle, image, line, len2, cmddata);
 	}
 

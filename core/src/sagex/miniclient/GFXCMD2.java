@@ -526,7 +526,7 @@ public class GFXCMD2 {
 				int imghandle = handleCount++;
 				width = readInt(0, cmddata);
 				height = readInt(4, cmddata);
-				ImageHolder<?> img = windowManager.createSurface(width, height);
+				ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
 				;
 				imageMap.put(new Integer(imghandle), img);
 				// imghandle=STBGFX.GFX_loadImage(width, height);
@@ -857,42 +857,88 @@ public class GFXCMD2 {
 			}
 			break;
 		case GFXCMD_LOADIMAGECOMPRESSED:
-			// handle, line, len, data
-			if (len >= 8 && len >= (8 + readInt(4, cmddata))) {
-				int handle, len2;
-				handle = readInt(0, cmddata);
-				len2 = readInt(4, cmddata);
-				if (lastImageResourceID != null && lastImageResourceIDHandle == handle) {
-					saveCacheData(lastImageResourceID, cmddata, 12, len2);
-					myConn.postOfflineCacheChange(true, lastImageResourceID);
-				}
-				java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(cmddata, 12, len2); // an
-																											// extra
-																											// 4
-																											// for
-																											// the
-																											// header
-
-				if (doesUseAdvancedImageCaching()) {
-					handle = handleCount++;
-					hasret[0] = 1;
-				} else
-					hasret[0] = 0;
-				registerImageAccess(handle);
-				try {
-					ImageHolder<?> bi = windowManager.readImage(bais);
-					if (bi != null) {
-						imageMap.put(handle, bi);
-						imageCacheSize += bi.getWidth() * bi.getHeight() * 4;
-						return handle;
-					}
-				} catch (Exception e) {
-					System.out.println("ERROR loading compressed image: " + e);
-				}
-			} else {
-				System.out.println("Invalid len for GFXCMD_LOADIMAGECOMPRESSED : " + len);
-			}
-			break;
+            // handle, line, len, data
+            if(len>=8 && len>=(8+readInt(4, cmddata)))
+            {
+                int handle, len2;
+                handle=readInt(0, cmddata);
+                len2=readInt(4, cmddata);
+                java.io.File cacheFile = null;
+                // Save this image to our disk cache
+                java.io.FileOutputStream fos = null;
+                boolean deleteCacheFile = false;
+                String resID = null;
+                try
+                {
+                    boolean cacheAdd = false;
+                    if (lastImageResourceID != null && lastImageResourceIDHandle == handle)
+                    {
+                        cacheFile = getCachedImageFile(lastImageResourceID, false);
+                        resID = lastImageResourceID;
+                        if (cacheFile != null && (!cacheFile.isFile() || cacheFile.length() == 0))
+                            cacheAdd = true;
+                    }
+                    if (cacheFile == null)
+                    {
+                        cacheFile = java.io.File.createTempFile("stv", "img");
+                        deleteCacheFile = true;
+                    }
+                    fos = new java.io.FileOutputStream(cacheFile);
+                    fos.write(cmddata, 12, len2); // an extra 4 for the header
+                    if (cacheAdd)
+                    {
+                        myConn.postOfflineCacheChange(true, lastImageResourceID);
+                    }
+                }
+                catch (java.io.IOException e)
+                {
+                    System.out.println("ERROR writing to cache file " + cacheFile + " of " + e);
+                    cacheFile = null;
+                }
+                finally
+                {
+                    try
+                    {
+                        if (fos != null)
+                            fos.close();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                    fos = null;
+                }
+                registerImageAccess(handle);
+                if (cacheFile != null)
+                {
+                    if (!doesUseAdvancedImageCaching())
+                    {
+                        handle = handleCount++;
+                        hasret[0] = 1;
+                    }
+                    else
+                        hasret[0] = 0;
+                    try
+                    {
+                        ImageHolder<?> img = null;
+                        img = windowManager.readImage(cacheFile);
+                        imageMap.put(handle, img);
+                            imageCacheSize += img.getWidth() * img.getHeight() * 4;
+                            if (deleteCacheFile)
+                                cacheFile.delete();
+                            return handle;
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("ERROR loading compressed image: " + e);
+                    }
+                }
+                if (deleteCacheFile && cacheFile != null)
+                    cacheFile.delete();
+            }
+            else
+            {
+                System.out.println("Invalid len for GFXCMD_LOADIMAGECOMPRESSED : " + len);
+            }			break;
 		case GFXCMD_XFMIMAGE:
 			// srcHandle, destHandle, destWidth, destHeight, maskCornerArc
 			if (len >= 20) {
@@ -998,8 +1044,10 @@ public class GFXCMD2 {
 			return;
 		java.io.FileOutputStream fos = null;
 		try {
+			System.out.println("Writing Cached Image: " + resourceID);
 			fos = new java.io.FileOutputStream(new java.io.File(cacheDir, resourceID));
 			fos.write(data, offset, length);
+			fos.flush();
 		} catch (java.io.IOException ioe) {
 			System.out.println("ERROR writing cache data to file of :" + ioe);
 		} finally {

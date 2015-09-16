@@ -908,25 +908,25 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						propVal = "TRUE";
 						usesAdvancedImageCaching = true;
 					} else if ("GFX_BITMAP_FORMAT".equals(propName)) {
-						if (useLocalNetworkOptimizations/*
-														 * || (!MiniClient.
-														 * WINDOWS_OS &&
-														 * "true".equals(
-														 * MiniClient.
-														 * myProperties.
-														 * getProperty("opengl",
-														 * "false")))
-														 */)
-							propVal = "";
-						else
-							propVal = "PNG,JPG,GIF,BMP";
+//						if (useLocalNetworkOptimizations/*
+//														 * || (!MiniClient.
+//														 * WINDOWS_OS &&
+//														 * "true".equals(
+//														 * MiniClient.
+//														 * myProperties.
+//														 * getProperty("opengl",
+//														 * "false")))
+//														 */)
+//							propVal = "";
+//						else
+							propVal = "PNG,JPG";
 					} else if ("GFX_COMPOSITE".equals(propName)) {
 						if ("true".equals(MiniClient.myProperties.getProperty("opengl", "true")))
 							propVal = "BLEND";
 						else
 							propVal = "COLORKEY";
 					} else if ("GFX_SURFACES".equals(propName)) {
-						propVal = "TRUE";
+						propVal = "FALSE";
 						// propVal = "FALSE";
 					} else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
 						// if (myGfx instanceof DirectX9GFXCMD)

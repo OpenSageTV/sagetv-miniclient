@@ -2,58 +2,47 @@ package sagex.miniclient.gl;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.assets.loaders.PixmapLoader;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.sun.org.apache.xml.internal.utils.ThreadControllerWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-import javax.swing.Spring;
+import java.util.Objects;
 
 import sagex.miniclient.FontHolder;
 import sagex.miniclient.GFXCMD2;
 import sagex.miniclient.ImageHolder;
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientConnectionGateway;
 import sagex.miniclient.MiniClientMain;
 import sagex.miniclient.UIManager;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Keys;
-import sagex.miniclient.uibridge.LoggingUIManager;
-import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIFactory;
+import sagex.miniclient.util.IOUtil;
 
-public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
+public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> {
 	private MiniClientConnectionGateway myConn;
 
-    private Pixmap backbuffer;
-    private Pixmap renderBuffer;
+    private FrameBuffer mainbuffer0;
+    private FrameBuffer backbuffer;
+    private TextureRegion renderBuffer;
 
-    public OpenGLUIManager(MiniClientConnectionGateway conn) {
+    public OpenGLFBUIManager(MiniClientConnectionGateway conn) {
 		this.myConn = conn;
         setSize(MiniClientMain.WIDTH, MiniClientMain.WIDTH);
         setPosition(0, 0);
@@ -95,7 +84,7 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
             public void tap(InputEvent event, float x, float y, int count, int button) {
                 System.out.println("TAP: " + x + "," + y);
                 //myConn.postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 16, (int) x, MiniClientMain.HEIGHT - (int) y, 1, 1, 0));
-                myConn.postKeyEvent(Keys.VK_ENTER, 0, (char)0);
+                myConn.postKeyEvent(Keys.VK_ENTER, 0, (char) 0);
             }
 
             @Override
@@ -113,6 +102,7 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
                 }
             }
         });
+        Gdx.graphics.requestRendering();
 	}
 
 	public void dispose() {
@@ -174,8 +164,8 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
 	}
     private Color getColor(int color) {
         // System.out.println(Integer.toHexString(color));
-        Color c = new Color((byte) ((color >> 16) & 0xFF), (byte) ((color >> 8) & 0xFF), (byte) ((color >> 0) & 0xFF), (byte) ((color >> 24) & 0xFF));
-        Color.rgba8888ToColor(c, color);
+        //Color c = new Color((byte) ((color >> 16) & 0xFF), (byte) ((color >> 8) & 0xFF), (byte) ((color >> 0) & 0xFF), (byte) ((color >> 24) & 0xFF));
+        Color c= new Color(color);
 //        c.r = ((color >> 16) & 0xFF);
 //        c.g = ((color >> 8) & 0xFF);
 //        c.b = ((color >> 0) & 0xFF);
@@ -191,69 +181,97 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
     }
 
 	public void drawTexture(final int x, final int y, final int width, final int height, int handle, final ImageHolder<?> img, final int srcx, final int srcy, final int srcwidth,	final int srcheight, final int blend) {
-        //if (target==0) return;
-        Pixmap.setBlending(Pixmap.Blending.SourceOver);
-        if (width>0) {
-            if (height<0) {
-                Pixmap.setBlending(Pixmap.Blending.None);
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                backbuffer.begin();
+                //if (target==0) return;
+                gl.glEnable(gl.GL_BLEND);
+                gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE_MINUS_SRC_ALPHA);
+                if (height < 0) {
+                    gl.glBlendFunc(gl.GL_ONE, gl.GL_ZERO);
+                }
+                Texture t = null;
+                Object o = img.get();
+                if (o instanceof Pixmap) {
+                    t = new Texture((Pixmap) img.get());
+                } else {
+                    t = ((FrameBuffer)o).getColorBufferTexture();
+                }
+                batch.begin();
+                Color c = batch.getColor();
+                if (width<0) {
+                    // font
+                    batch.setColor(getColor(blend));
+                }
+                batch.draw(t, x, MiniClientMain.HEIGHT-y-Math.abs(height), Math.abs(width), Math.abs(height), srcx, srcy, srcwidth, srcheight, false, false);
+                batch.setColor(c);
+                batch.end();
+                backbuffer.end();
+                //t.dispose();
+                //backbuffer.drawPixmap((Pixmap)img.get(), srcx, srcy, srcwidth, srcheight, x, (MiniClientMain.HEIGHT-y-Math.abs(height), Math.abs(width), Math.abs(height));
             }
-        } else {
-            //((Pixmap)img.get()).setColor(getColor(blend));
-//            Pixmap pm = (Pixmap) img.get();
-//            IntBuffer ib = pm.getPixels().asIntBuffer();
-//            int size= ib.limit();
-//            int p = 0;
-//            int w = Color.rgba8888(1,1,1,1);
-//            for (int i=0;i<size;i++) {
-//                p = ib.get(i);
-//                if (p==w) {
-//                    System.out.println("WHITE PIXEL");
-//                    ib.put(i, getRGBAColor(blend));
-//                }
-//            }
-        }
-        backbuffer.drawPixmap((Pixmap) img.get(), srcx, srcy, srcwidth, srcheight, x, y, Math.abs(width), Math.abs(height));
-        //backbuffer.drawPixmap((Pixmap)img.get(), srcx, srcy, srcwidth, srcheight, x, (MiniClientMain.HEIGHT-y-Math.abs(height), Math.abs(width), Math.abs(height));
+        });
 	}
 
 	public void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2) {
 	}
 
-	public ImageHolder<Pixmap> loadImage(int width, int height) {
+	public ImageHolder<Object> loadImage(int width, int height) {
         Pixmap pm = new Pixmap(width,height, Pixmap.Format.RGBA8888);
-		return new ImageHolder<Pixmap>(pm);
+		return new ImageHolder<Object>(pm);
 	}
 
 	private GL20 getGL2() {
         return Gdx.gl20;
 	}
 
-	public ImageHolder<Pixmap> createSurface(int handle, int width, int height) {
-        Pixmap pm = loadImage(width,height).get();
-        return new ImageHolder<Pixmap>(pm);
+	public ImageHolder<Object> createSurface(int handle, final int width, final int height) {
+        final FrameBufferHolder fbh = new FrameBufferHolder();
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+                fbh.set(fb);
+                // be nice if SageTV called SetTargetSurface
+                backbuffer = fb;
+                backbuffer.begin();
+                Gdx.gl.glClearColor(0, 0, 0, 0);
+                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                backbuffer.end();
+            }
+        });
+        return fbh;
 	}
 
-	public ImageHolder<Pixmap> readImage(File cachedFile) throws Exception {
-        return null;
+	public ImageHolder<Object> readImage(File cachedFile) throws Exception {
+        return readImage(new FileInputStream(cachedFile));
 	}
 
-	public ImageHolder<Pixmap> readImage(InputStream bais) throws Exception {
-        return null;
+	public ImageHolder<Object> readImage(InputStream bais) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream(64*1024);
+        IOUtil.fastCopy(bais, os);
+        os.flush();
+        Pixmap pm = new Pixmap(os.toByteArray(), 0, os.size());
+        os.close();
+        return new ImageHolder<Object>(pm);
 	}
 
-	public ImageHolder<Pixmap> newImage(int width, int height) {
+	public ImageHolder<Object> newImage(int width, int height) {
 		return loadImage(width, height);
 	}
 
-	public void setTargetSurface(final int handle, ImageHolder<?> image) {
-        if (handle==0) {
-            backbuffer = createSurface(-1, MiniClientMain.WIDTH, MiniClientMain.HEIGHT).get();
-        } else {
-            if (backbuffer!=null) {
-                backbuffer.dispose();
+	public void setTargetSurface(final int handle, final ImageHolder<?> image) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (handle==0) {
+                    backbuffer=mainbuffer0;
+                } else {
+                    backbuffer= (FrameBuffer) image.get();
+                }
             }
-            backbuffer= (Pixmap) image.get();
-        }
+        });
 	}
 
 	public FontHolder<Void> createFont(InputStream fis) {
@@ -270,41 +288,36 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
 	}
 
 	public void flipBuffer() {
-        if (renderBuffer!=null) {
-            try {
-                renderBuffer.dispose();
-            } catch (Throwable t) {}
-        }
-
-        renderBuffer=backbuffer;
-        backbuffer=null;
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                renderBuffer=new TextureRegion(backbuffer.getColorBufferTexture());
+                renderBuffer.flip(false, true);
+            }
+        });
 
         Gdx.graphics.requestRendering();
-//        final Pixmap mybuffer = backbuffer;
-//        backbuffer = null;
-//        invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (mybuffer!=null) {
-//                    gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-//                    gl.glClear(gl.GL_COLOR_BUFFER_BIT);
-//                    batch.begin();
-//                    Texture t = new Texture(mybuffer);
-//                    batch.draw(t, 0, 0);
-//                    batch.end();
-//                    t.dispose();
-//                    mybuffer.dispose();
-//                    Gdx.graphics.requestRendering();
-//                }
-//            }
-//        });
 	}
 
 	public void startFrame() {
-        if (backbuffer!=null) {
-            backbuffer.dispose();
-        }
-        backbuffer = loadImage(MiniClientMain.WIDTH, MiniClientMain.HEIGHT).get();
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (mainbuffer0==null) {
+                    mainbuffer0 = new FrameBuffer(Pixmap.Format.RGBA8888, MiniClientMain.WIDTH, MiniClientMain.HEIGHT, false);
+                    if (backbuffer==null) {
+                        backbuffer=mainbuffer0;
+                    } else {
+                        backbuffer.dispose();
+                        backbuffer=mainbuffer0;
+                    }
+                }
+                backbuffer.begin();
+                Gdx.gl.glClearColor(0, 0, 0, 0);
+                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                backbuffer.end();
+            }
+        });
 	}
 
 	public void loadImageLine(int handle, ImageHolder<?> image, int line, int len2, byte[] cmddata) {
@@ -331,7 +344,7 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
 	}
 
 	public Dimension getMaxScreenSize() {
-		sagex.miniclient.uibridge.Dimension reportedScrSize = new sagex.miniclient.uibridge.Dimension(MiniClientMain.WIDTH, MiniClientMain.HEIGHT);
+		Dimension reportedScrSize = new Dimension(MiniClientMain.WIDTH, MiniClientMain.HEIGHT);
 		return reportedScrSize;
 	}
 
@@ -354,24 +367,18 @@ public class OpenGLUIManager extends Actor implements UIManager<Pixmap, Void> {
     public void draw(Batch batch, float parentAlpha) {
         if (renderBuffer!=null) {
             try {
-                Texture t = new Texture(renderBuffer);
-                batch.draw(t, 0, 0);
-                batch.end();
-                t.dispose();
-                batch.begin();
+                batch.draw(renderBuffer, 0, 0);
             } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
-        //System.out.println("RENDERFRAME");
-
     }
 
     public static UIFactory getUIFactory() {
 		return new UIFactory() {
 			public UIManager<?, ?> getUIManager(MiniClientConnection conn) {
-				return new LoggingUIManager(new OpenGLFBUIManager(conn));
-                //return new OpenGLFBUIManager(conn);
+				// return new LoggingUIManager(new OpenGLUIManager(conn));
+                return new OpenGLFBUIManager(conn);
 			}
 		};
 	}

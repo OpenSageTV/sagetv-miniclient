@@ -46,7 +46,7 @@ public class MiniClientMain extends ApplicationAdapter {
 	@Override
 	public void create () {
         INSTANCE=this;
-        //Gdx.graphics.setContinuousRendering(false);
+        Gdx.graphics.setContinuousRendering(false);
 
         background=new ShapeRenderer();
         Camera camera = new OrthographicCamera(WIDTH, HEIGHT);
