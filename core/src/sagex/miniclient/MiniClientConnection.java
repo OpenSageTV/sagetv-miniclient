@@ -1098,8 +1098,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						}
 						propValBytes = encryptedSecretKeyBytes;
 					} else if ("GFX_SUPPORTED_RESOLUTIONS".equals(propName)) {
-						propVal = Integer.toString(reportedScrSize.width) + "x" + Integer.toString(reportedScrSize.height)
-								+ ";windowed";
+						propVal = Integer.toString(reportedScrSize.width) + "x" + Integer.toString(reportedScrSize.height);
+								//+ ";windowed";
 					} else if ("GFX_RESOLUTION".equals(propName)) {
 						Dimension winny = myGfx.getScreenSize();
 						if (winny != null)

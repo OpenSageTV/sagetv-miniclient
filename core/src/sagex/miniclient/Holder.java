@@ -1,5 +1,7 @@
 package sagex.miniclient;
 
+import java.util.Objects;
+
 /**
  * Simple holder pattern that holds a value type
  * @author seans
@@ -22,5 +24,8 @@ public class Holder<T> {
 	
 	public void set(T value) {
 		this.value=value;
+	}
+	public void force(Object value) {
+		this.value=(T)value;
 	}
 }
