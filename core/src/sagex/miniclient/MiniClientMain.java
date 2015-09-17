@@ -32,7 +32,7 @@ public class MiniClientMain extends ApplicationAdapter {
     public static int HEIGHT=480;
 
     public static MiniClientMain INSTANCE;
-    public static boolean CONTINUOUS_RENDERING=true;
+    public static boolean CONTINUOUS_RENDERING=false;
 
     ShapeRenderer background;
     Stage stage = null;
