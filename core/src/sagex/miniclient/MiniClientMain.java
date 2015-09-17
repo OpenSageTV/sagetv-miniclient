@@ -32,6 +32,7 @@ public class MiniClientMain extends ApplicationAdapter {
     public static int HEIGHT=480;
 
     public static MiniClientMain INSTANCE;
+    public static boolean CONTINUOUS_RENDERING=true;
 
     ShapeRenderer background;
     Stage stage = null;
@@ -46,7 +47,7 @@ public class MiniClientMain extends ApplicationAdapter {
 	@Override
 	public void create () {
         INSTANCE=this;
-        Gdx.graphics.setContinuousRendering(false);
+        Gdx.graphics.setContinuousRendering(CONTINUOUS_RENDERING);
 
         background=new ShapeRenderer();
         Camera camera = new OrthographicCamera(WIDTH, HEIGHT);
@@ -54,16 +55,7 @@ public class MiniClientMain extends ApplicationAdapter {
         Gdx.input.setInputProcessor(getStage());
         Gdx.input.setCatchBackKey(true);
 
-        //Gdx.graphics.requestRendering();
-
-//		batch = new SpriteBatch();
-//        Texture t  =new Texture("");
-		img = new Pixmap(Gdx.files.internal("badlogic.jpg"));
-        larger = new Pixmap(HEIGHT,HEIGHT, Pixmap.Format.RGBA8888);
-        //larger.drawPixmap(img, 0, 0, 256, 256, 0, 0,256, 256);
-        larger.drawPixmap(img, 0,0);
-        larger.setColor(Color.CYAN);
-        larger.drawLine(0,0,511,0);
+        if (!CONTINUOUS_RENDERING) Gdx.graphics.requestRendering();
 	}
 
     boolean started=false;
@@ -98,13 +90,16 @@ public class MiniClientMain extends ApplicationAdapter {
 
     @Override
     public void render() {
+        if (!CONTINUOUS_RENDERING) System.out.println("BEGIN RENDER");
         // 0xF5 F6 CE 00 (yellowish)
         // BD BD BD
+
         Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         getStage().act(Gdx.graphics.getDeltaTime());
         getStage().draw();
+        if (!CONTINUOUS_RENDERING) System.out.println("END RENDER");
 
 //        drawBackground(getStage().getBatch(), 1);
 //        getStage().getBatch().begin();

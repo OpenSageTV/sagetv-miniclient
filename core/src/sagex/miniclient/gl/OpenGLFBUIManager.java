@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,13 +14,13 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
+import java.util.List;
 
 import sagex.miniclient.FontHolder;
 import sagex.miniclient.GFXCMD2;
@@ -38,13 +37,18 @@ import sagex.miniclient.util.IOUtil;
 public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> {
 	private MiniClientConnectionGateway myConn;
 
+    private boolean buffers=true;
+
     private FrameBuffer mainbuffer0;
     private FrameBuffer backbuffer;
     private TextureRegion renderBuffer;
 
+    private List<Runnable> renderQueue = new ArrayList<Runnable>(64);
+    private boolean renderQueueItems =true;
+
     public OpenGLFBUIManager(MiniClientConnectionGateway conn) {
 		this.myConn = conn;
-        setSize(MiniClientMain.WIDTH, MiniClientMain.WIDTH);
+        setSize(MiniClientMain.WIDTH, MiniClientMain.HEIGHT);
         setPosition(0, 0);
 	}
 
@@ -102,7 +106,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
                 }
             }
         });
-        Gdx.graphics.requestRendering();
+        if (!MiniClientMain.CONTINUOUS_RENDERING) Gdx.graphics.requestRendering();
 	}
 
 	public void dispose() {
@@ -184,7 +188,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                backbuffer.begin();
+                if (buffers) backbuffer.begin();
                 //if (target==0) return;
                 gl.glEnable(gl.GL_BLEND);
                 gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE_MINUS_SRC_ALPHA);
@@ -193,12 +197,15 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
                 }
                 Texture t = null;
                 Object o = img.get();
-                if (o instanceof Pixmap) {
+                if (o instanceof Texture) {
+                    t = (Texture) o;
+                } else if (o instanceof Pixmap) {
                     t = new Texture((Pixmap) img.get());
+                    img.force(t);
                 } else {
                     t = ((FrameBuffer)o).getColorBufferTexture();
                 }
-                batch.begin();
+                //batch.begin();
                 Color c = batch.getColor();
                 if (width<0) {
                     // font
@@ -206,10 +213,9 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
                 }
                 batch.draw(t, x, MiniClientMain.HEIGHT-y-Math.abs(height), Math.abs(width), Math.abs(height), srcx, srcy, srcwidth, srcheight, false, false);
                 batch.setColor(c);
-                batch.end();
-                backbuffer.end();
+                //batch.end();
+                if (buffers) backbuffer.end();
                 //t.dispose();
-                //backbuffer.drawPixmap((Pixmap)img.get(), srcx, srcy, srcwidth, srcheight, x, (MiniClientMain.HEIGHT-y-Math.abs(height), Math.abs(width), Math.abs(height));
             }
         });
 	}
@@ -234,11 +240,11 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
                 FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
                 fbh.set(fb);
                 // be nice if SageTV called SetTargetSurface
-                backbuffer = fb;
-                backbuffer.begin();
-                Gdx.gl.glClearColor(0, 0, 0, 0);
-                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-                backbuffer.end();
+                if (buffers) backbuffer = fb;
+                if (buffers) backbuffer.begin();
+//                Gdx.gl.glClearColor(0, 0, 0, 0);
+//                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                if (buffers) backbuffer.end();
             }
         });
         return fbh;
@@ -291,33 +297,40 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                renderBuffer=new TextureRegion(backbuffer.getColorBufferTexture());
-                renderBuffer.flip(false, true);
+                if (buffers) {
+                    renderBuffer = new TextureRegion(backbuffer.getColorBufferTexture());
+                    renderBuffer.flip(false, true);
+                }
             }
         });
-
-        Gdx.graphics.requestRendering();
+        renderQueueItems =true;
+        if (!MiniClientMain.CONTINUOUS_RENDERING) Gdx.graphics.requestRendering();
 	}
 
 	public void startFrame() {
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (mainbuffer0==null) {
-                    mainbuffer0 = new FrameBuffer(Pixmap.Format.RGBA8888, MiniClientMain.WIDTH, MiniClientMain.HEIGHT, false);
-                    if (backbuffer==null) {
-                        backbuffer=mainbuffer0;
-                    } else {
-                        backbuffer.dispose();
-                        backbuffer=mainbuffer0;
+        synchronized (renderQueue) {
+            renderQueueItems = false;
+            invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (buffers) {
+                        if (mainbuffer0 == null) {
+                            mainbuffer0 = new FrameBuffer(Pixmap.Format.RGBA8888, MiniClientMain.WIDTH, MiniClientMain.HEIGHT, false);
+                            if (backbuffer == null) {
+                                backbuffer = mainbuffer0;
+                            } else {
+                                backbuffer.dispose();
+                                backbuffer = mainbuffer0;
+                            }
+                        }
+                        backbuffer.begin();
                     }
+                    //Gdx.gl.glClearColor(0, 0, 0, 0);
+                    //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                    if (buffers) backbuffer.end();
                 }
-                backbuffer.begin();
-                Gdx.gl.glClearColor(0, 0, 0, 0);
-                Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-                backbuffer.end();
-            }
-        });
+            });
+        }
 	}
 
 	public void loadImageLine(int handle, ImageHolder<?> image, int line, int len2, byte[] cmddata) {
@@ -349,7 +362,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
 	}
 
 	public Dimension getScreenSize() {
-		return new Dimension(MiniClientMain.WIDTH, MiniClientMain.WIDTH);
+		return new Dimension(MiniClientMain.WIDTH, MiniClientMain.HEIGHT);
 	}
 
 	public void setFullScreen(boolean b) {
@@ -360,16 +373,33 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
 	}
 
 	public void invokeLater(Runnable runnable) {
-        Gdx.app.postRunnable(runnable);
+        //Gdx.app.postRunnable(runnable);
+        renderQueue.add(runnable);
 	}
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        if (renderBuffer!=null) {
-            try {
-                batch.draw(renderBuffer, 0, 0);
-            } catch (Throwable t) {
-                t.printStackTrace();
+        if (!renderQueueItems) {
+            if (!MiniClientMain.CONTINUOUS_RENDERING) System.out.println("RENDER OLD BUFFER");
+            // frame not finished, render last buffer
+            if (renderBuffer != null) {
+                try {
+                    batch.draw(renderBuffer, 0, 0);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+        } else {
+            synchronized (renderQueue) {
+                if (!MiniClientMain.CONTINUOUS_RENDERING) System.out.println("RENDER QUEUE");
+                // frame complete.. render it
+                for (Runnable r : renderQueue) {
+                    r.run();
+                }
+                renderQueue.clear();
+                renderQueueItems=false;
+                if (renderBuffer!=null)
+                    batch.draw(renderBuffer, 0, 0);
             }
         }
     }
