@@ -4,5 +4,5 @@ import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.UIManager;
 
 public interface UIFactory {
-	UIManager<?, ?> getUIManager(MiniClientConnection conn);
+	UIManager<?> getUIManager(MiniClientConnection conn);
 }

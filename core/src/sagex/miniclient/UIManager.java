@@ -1,12 +1,11 @@
 package sagex.miniclient;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 
 import sagex.miniclient.uibridge.Dimension;
 
-public interface UIManager<Image,Font> {
+public interface UIManager<Image> {
 	void init();
 	void dispose();
 	void close();
@@ -34,19 +33,14 @@ public interface UIManager<Image,Font> {
 	ImageHolder<Image> readImage(InputStream bais) throws Exception;
 	ImageHolder<Image> newImage(int destWidth, int destHeight);
 	void setTargetSurface(int handle, ImageHolder<?> image);
-	FontHolder<Font> createFont(InputStream fis);
-	FontHolder<Font> loadFont(String string, int style, int size);
-	FontHolder<Font> deriveFont(FontHolder<?> cachedFont, float size);
 	void flipBuffer();
 	void startFrame();
 	void loadImageLine(int handle, ImageHolder<?> image, int line, int len2, byte[] cmddata);
 	void xfmImage(int srcHandle, ImageHolder<?> srcImg, int destHandle, ImageHolder<?> destImg, int destWidth, int destHeight, int maskCornerArc);
 	boolean hasGraphicsCanvas();
-	void drawText(int x, int y, int textlen, String text, int fontHandle, FontHolder<?> fontHolder, int argb, int clipX, int clipY, int clipW, int clipH);
 	Dimension getMaxScreenSize();
 	Dimension getScreenSize();
 	void setFullScreen(boolean b);
 	void setSize(int w, int h);
 	void invokeLater(Runnable runnable);
-
 }

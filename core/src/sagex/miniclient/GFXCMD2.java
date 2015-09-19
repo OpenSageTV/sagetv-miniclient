@@ -155,7 +155,7 @@ public class GFXCMD2 {
 		return (short) (((cmddata[pos + 1] & 0xFF) << 8) | (cmddata[pos + 0] & 0xFF));
 	}
 
-	private UIManager<?, ?> windowManager;
+	private UIManager<?> windowManager;
 	private MiniClientConnectionGateway myConn;
 
 	protected long offlineImageCacheLimit;
@@ -163,13 +163,6 @@ public class GFXCMD2 {
 	private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
 	private boolean usesAdvancedImageCaching;
 
-	private java.util.Map<Integer, FontHolder<?>> fontMap = new java.util.HashMap<Integer, FontHolder<?>>();
-	private java.util.Map<String, FontHolder<?>> cachedFontMap = new java.util.HashMap<String, FontHolder<?>>(); // for
-																													// fonts
-																													// from
-																													// our
-																													// disk
-																													// cache
 	private java.util.Map<Integer, ImageHolder<?>> imageMap = new java.util.HashMap<Integer, ImageHolder<?>>();
 	private int handleCount = 2;
 
@@ -180,7 +173,7 @@ public class GFXCMD2 {
 	private String lastImageResourceID;
 	private int lastImageResourceIDHandle;
 
-	public GFXCMD2(MiniClientConnectionGateway myConn, UIManager<?,?> manager) {
+	public GFXCMD2(MiniClientConnectionGateway myConn, UIManager<?> manager) {
 		this.windowManager = manager;
 		this.myConn = myConn;
 		imageCacheLimit = 32000000;
@@ -408,29 +401,29 @@ public class GFXCMD2 {
 			break;
 		case GFXCMD_DRAWTEXT:
 			// x, y, len, text, handle, argb, clipX, clipY, clipW, clipH
-			if (len >= 36 && len >= (36 + readInt(8, cmddata) * 2)) {
-				int x, y, textlen, fontHandle, argb, clipX, clipY, clipW, clipH;
-				StringBuffer text = new StringBuffer();
-				int i;
-
-				x = readInt(0, cmddata);
-				y = readInt(4, cmddata);
-				textlen = readInt(8, cmddata);
-				for (i = 0; i < textlen; i++) {
-					text.append((char) readShort(12 + i * 2, cmddata));
-				}
-				fontHandle = readInt(textlen * 2 + 12, cmddata);
-				argb = readInt(textlen * 2 + 16, cmddata);
-				clipX = readInt(textlen * 2 + 20, cmddata);
-				clipY = readInt(textlen * 2 + 24, cmddata);
-				clipW = readInt(textlen * 2 + 28, cmddata);
-				clipH = readInt(textlen * 2 + 32, cmddata);
-				if (System.getProperty("java.version").startsWith("1.4"))
-					clipW = clipW * 5 / 4;
-				windowManager.drawText(x, y, textlen, text.toString(), fontHandle, fontMap.get(fontHandle), argb, clipX, clipY, clipW, clipH);
-			} else {
-				System.out.println("Invalid len for GFXCMD_DRAWTEXT : " + len);
-			}
+//			if (len >= 36 && len >= (36 + readInt(8, cmddata) * 2)) {
+//				int x, y, textlen, fontHandle, argb, clipX, clipY, clipW, clipH;
+//				StringBuffer text = new StringBuffer();
+//				int i;
+//
+//				x = readInt(0, cmddata);
+//				y = readInt(4, cmddata);
+//				textlen = readInt(8, cmddata);
+//				for (i = 0; i < textlen; i++) {
+//					text.append((char) readShort(12 + i * 2, cmddata));
+//				}
+//				fontHandle = readInt(textlen * 2 + 12, cmddata);
+//				argb = readInt(textlen * 2 + 16, cmddata);
+//				clipX = readInt(textlen * 2 + 20, cmddata);
+//				clipY = readInt(textlen * 2 + 24, cmddata);
+//				clipW = readInt(textlen * 2 + 28, cmddata);
+//				clipH = readInt(textlen * 2 + 32, cmddata);
+//				if (System.getProperty("java.version").startsWith("1.4"))
+//					clipW = clipW * 5 / 4;
+//				windowManager.drawText(x, y, textlen, text.toString(), fontHandle, fontMap.get(fontHandle), argb, clipX, clipY, clipW, clipH);
+//			} else {
+//				System.out.println("Invalid len for GFXCMD_DRAWTEXT : " + len);
+//			}
 			break;
 		case GFXCMD_DRAWTEXTURED:
 			// x, y, width, height, handle, srcx, srcy, srcwidth, srcheight,
@@ -588,6 +581,7 @@ public class GFXCMD2 {
 							}
 						} catch (Exception e) {
 							System.out.println("ERROR loading compressed image: " + e);
+							e.printStackTrace();
 						}
 					}
 				}
@@ -728,91 +722,91 @@ public class GFXCMD2 {
 			break;
 		case GFXCMD_LOADFONT:
 			// namelen, name, style, size
-			if (len >= 12 && len >= (12 + readInt(0, cmddata))) {
-				int namelen, style, size;
-				StringBuffer name = new StringBuffer();
-				int i;
-				int fonthandle = handleCount++;
-
-				namelen = readInt(0, cmddata);
-				for (i = 0; i < namelen - 1; i++) // skip the terminating \0
-													// character
-				{
-					name.append((char) cmddata[8 + i]); // an extra 4 for the
-														// header
-				}
-				style = readInt(namelen + 4, cmddata);
-				size = readInt(namelen + 8, cmddata);
-				FontHolder<?> fonty = windowManager.loadFont(name.toString(), style, size);
-				String cacheName = name.toString() + "-" + style;
-				if (myConn.hasFontServer()) {
-					// Check in the cache for the font since we load them from
-					// the server
-					if (!cachedFontMap.containsKey(cacheName)) {
-						// Fonts in the Dialog family are the default ones
-						// that come with Java that cause problems, so
-						// load this from the other way if it's here.
-						java.io.File cachedFile = getCachedImageFile(cacheName + "-" + myConn.getServerName());
-						if (cachedFile.isFile() && cachedFile.length() > 0) {
-							System.out.println("Loading font from cache for " + cacheName);
-							// We've got it locally in our cache! Read it
-							// from there.
-							java.io.FileInputStream fis = null;
-							try {
-								fis = new java.io.FileInputStream(cachedFile);
-								FontHolder<?> cacheFont = windowManager.createFont(fis);
-								fis.close();
-								fis = null;
-								cachedFontMap.put(cacheName, cacheFont);
-							} catch (java.io.IOException e1) {
-								System.out.println("ERROR loading font of:" + e1);
-							}
-						}
-					}
-
-					FontHolder<?> cachedFont = cachedFontMap.get(cacheName);
-					if (cachedFont != null) {
-						// Narflex: 5/11/06 - I'm not all that sure about
-						// this....but the data for character widths line up
-						// correctly
-						// when not applying the style here and don't line
-						// up if we do (for the default Java fonts).
-						// It makes sense because we're already caching
-						// fonts based on name + style so why would we need
-						// to
-						// re-apply the style? Unless there's the same font
-						// file for both...but that's the case with the Java
-						// fonts
-						// and applying the style there causes incorrect
-						// widths. Interesting...
-						fonty = windowManager.deriveFont(cachedFont, /* style, */(float) size);
-					} else {
-						// Return that we don't have this font so it'll load
-						// it into our cache
-						hasret[0] = 1;
-						return 0;
-					}
-				}
-				System.out.println("Loaded Font=" + fonty);
-				fontMap.put(fonthandle, fonty);
-				// fonthandle=STBGFX.GFX_loadFont(name.toString(), style, size);
-				hasret[0] = 1;
-				return fonthandle;
-			} else {
-				System.out.println("Invalid len for GFXCMD_LOADFONT : " + len);
-			}
+//			if (len >= 12 && len >= (12 + readInt(0, cmddata))) {
+//				int namelen, style, size;
+//				StringBuffer name = new StringBuffer();
+//				int i;
+//				int fonthandle = handleCount++;
+//
+//				namelen = readInt(0, cmddata);
+//				for (i = 0; i < namelen - 1; i++) // skip the terminating \0
+//													// character
+//				{
+//					name.append((char) cmddata[8 + i]); // an extra 4 for the
+//														// header
+//				}
+//				style = readInt(namelen + 4, cmddata);
+//				size = readInt(namelen + 8, cmddata);
+//				FontHolder<?> fonty = windowManager.loadFont(name.toString(), style, size);
+//				String cacheName = name.toString() + "-" + style;
+//				if (myConn.hasFontServer()) {
+//					// Check in the cache for the font since we load them from
+//					// the server
+//					if (!cachedFontMap.containsKey(cacheName)) {
+//						// Fonts in the Dialog family are the default ones
+//						// that come with Java that cause problems, so
+//						// load this from the other way if it's here.
+//						java.io.File cachedFile = getCachedImageFile(cacheName + "-" + myConn.getServerName());
+//						if (cachedFile.isFile() && cachedFile.length() > 0) {
+//							System.out.println("Loading font from cache for " + cacheName);
+//							// We've got it locally in our cache! Read it
+//							// from there.
+//							java.io.FileInputStream fis = null;
+//							try {
+//								fis = new java.io.FileInputStream(cachedFile);
+//								FontHolder<?> cacheFont = windowManager.createFont(fis);
+//								fis.close();
+//								fis = null;
+//								cachedFontMap.put(cacheName, cacheFont);
+//							} catch (java.io.IOException e1) {
+//								System.out.println("ERROR loading font of:" + e1);
+//							}
+//						}
+//					}
+//
+//					FontHolder<?> cachedFont = cachedFontMap.get(cacheName);
+//					if (cachedFont != null) {
+//						// Narflex: 5/11/06 - I'm not all that sure about
+//						// this....but the data for character widths line up
+//						// correctly
+//						// when not applying the style here and don't line
+//						// up if we do (for the default Java fonts).
+//						// It makes sense because we're already caching
+//						// fonts based on name + style so why would we need
+//						// to
+//						// re-apply the style? Unless there's the same font
+//						// file for both...but that's the case with the Java
+//						// fonts
+//						// and applying the style there causes incorrect
+//						// widths. Interesting...
+//						fonty = windowManager.deriveFont(cachedFont, /* style, */(float) size);
+//					} else {
+//						// Return that we don't have this font so it'll load
+//						// it into our cache
+//						hasret[0] = 1;
+//						return 0;
+//					}
+//				}
+//				System.out.println("Loaded Font=" + fonty);
+//				fontMap.put(fonthandle, fonty);
+//				// fonthandle=STBGFX.GFX_loadFont(name.toString(), style, size);
+//				hasret[0] = 1;
+//				return fonthandle;
+//			} else {
+//				System.out.println("Invalid len for GFXCMD_LOADFONT : " + len);
+//			}
 
 			break;
 		case GFXCMD_UNLOADFONT:
 			// handle
-			if (len == 4) {
-				int handle;
-				handle = readInt(0, cmddata);
-				// STBGFX.GFX_unloadFont(handle);
-				fontMap.remove(handle);
-			} else {
-				System.out.println("Invalid len for GFXCMD_UNLOADFONT : " + len);
-			}
+//			if (len == 4) {
+//				int handle;
+//				handle = readInt(0, cmddata);
+//				// STBGFX.GFX_unloadFont(handle);
+//				fontMap.remove(handle);
+//			} else {
+//				System.out.println("Invalid len for GFXCMD_UNLOADFONT : " + len);
+//			}
 			break;
 		case GFXCMD_LOADFONTSTREAM:
 			// namelen, name, len, data
@@ -1132,7 +1126,7 @@ public class GFXCMD2 {
 		return this.windowManager.getScreenSize();
 	}
 
-	public UIManager<?, ?> getWindow() {
+	public UIManager<?> getWindow() {
 		return windowManager;
 	}
 }

@@ -1,20 +1,18 @@
 package sagex.miniclient.uibridge;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import sagex.miniclient.FontHolder;
 import sagex.miniclient.ImageHolder;
 import sagex.miniclient.UIManager;
 
-public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
+public class LoggingUIManager<Image> implements UIManager<Image> {
     private static final boolean LOGGING = false;
-    private UIManager<Image, Font> delegate;
+    private UIManager<Image> delegate;
 
-	public LoggingUIManager(UIManager<Image, Font> delegate) {
+	public LoggingUIManager(UIManager<Image> delegate) {
 		this.delegate=delegate;
 	}
 
@@ -113,7 +111,7 @@ public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
 	}
 
 	public ImageHolder<Image> createSurface(int handle, int width, int height) {
-		log(String.format("createSurface[%s](%s,%s)", handle,width,height));
+		log(String.format("createSurface[%s](%s,%s)", handle, width, height));
 		return delegate.createSurface(handle, width, height);
 	}
 
@@ -128,28 +126,13 @@ public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
 	}
 
 	public ImageHolder<Image> newImage(int destWidth, int destHeight) {
-		log(String.format("newImage(%s,%s)",destWidth, destHeight));
+		log(String.format("newImage(%s,%s)", destWidth, destHeight));
 		return delegate.newImage(destWidth, destHeight);
 	}
 
 	public void setTargetSurface(int handle, ImageHolder<?> image) {
 		log(String.format("setTargetSurface[%s]", handle));
 		delegate.setTargetSurface(handle, image);
-	}
-
-	public FontHolder<Font> createFont(InputStream fis) {
-		log("createFont");
-		return delegate.createFont(fis);
-	}
-
-	public FontHolder<Font> loadFont(String string, int style, int size) {
-		log("loadFont");
-		return delegate.loadFont(string, style, size);
-	}
-
-	public FontHolder<Font> deriveFont(FontHolder<?> cachedFont, float size) {
-		log("deriveFont");
-		return delegate.deriveFont(cachedFont, size);
 	}
 
 	public void flipBuffer() {
@@ -176,12 +159,6 @@ public class LoggingUIManager<Image, Font> implements UIManager<Image, Font> {
 	public boolean hasGraphicsCanvas() {
 		//log("hasGraphicsCanvas");
 		return delegate.hasGraphicsCanvas();
-	}
-
-	public void drawText(int x, int y, int textlen, String text, int fontHandle, FontHolder<?> fontHolder, int argb, int clipX,
-			int clipY, int clipW, int clipH) {
-		log("drawText");
-		delegate.drawText(x, y, textlen, text, fontHandle, fontHolder, argb, clipX, clipY, clipW, clipH);
 	}
 
 	public Dimension getMaxScreenSize() {

@@ -1,7 +1,6 @@
 package sagex.miniclient.gl;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -9,21 +8,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import sagex.miniclient.FontHolder;
 import sagex.miniclient.GFXCMD2;
 import sagex.miniclient.ImageHolder;
 import sagex.miniclient.MiniClientConnection;
@@ -31,12 +25,10 @@ import sagex.miniclient.MiniClientConnectionGateway;
 import sagex.miniclient.MiniClientMain;
 import sagex.miniclient.UIManager;
 import sagex.miniclient.uibridge.Dimension;
-import sagex.miniclient.uibridge.Keys;
-import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.util.IOUtil;
 
-public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> {
+public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
     private MiniClientConnectionGateway myConn;
 
     private List<Runnable> renderQueue = new ArrayList<Runnable>(64);
@@ -54,106 +46,54 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
     GL20 gl = Gdx.gl20;
     Batch batch;
 
-    static final HashMap<Integer, Integer> KEYMAP = new HashMap<Integer, Integer>();
-    static {
-        KEYMAP.put(Input.Keys.UP, Keys.VK_UP);
-        KEYMAP.put(Input.Keys.DPAD_UP, Keys.VK_UP);
-        KEYMAP.put(Input.Keys.DOWN, Keys.VK_DOWN);
-        KEYMAP.put(Input.Keys.DPAD_DOWN, Keys.VK_DOWN);
-        KEYMAP.put(Input.Keys.LEFT, Keys.VK_LEFT);
-        KEYMAP.put(Input.Keys.DPAD_LEFT, Keys.VK_LEFT);
-        KEYMAP.put(Input.Keys.RIGHT, Keys.VK_RIGHT);
-        KEYMAP.put(Input.Keys.DPAD_RIGHT, Keys.VK_RIGHT);
-    }
+    SageTVKeyListener keyListener;
+    SageTVGestureListener gestureListener;
+
+    ShapeRenderer shapeRenderer = null;
 
     public void init() {
+        System.out.println("BEGIN INIT");
         batch=MiniClientMain.INSTANCE.getStage().getBatch();
 
+        keyListener=new SageTVKeyListener(myConn);
+        gestureListener=new SageTVGestureListener(myConn);
+
         MiniClientMain.INSTANCE.getStage().addActor(this);
-        MiniClientMain.INSTANCE.getStage().addListener(new InputListener() {
-            @Override
-            public boolean keyUp(InputEvent event, int keycode) {
-                System.out.println("Post Key Press: " + keycode + "; char: " + event.getCharacter());
-                if (KEYMAP.containsKey(keycode)) {
-                    keycode = KEYMAP.get(keycode);
-                }
-                myConn.postKeyEvent(keycode, 0, event.getCharacter());
-                return true;
-            }
+        MiniClientMain.INSTANCE.getStage().addListener(keyListener);
+        MiniClientMain.INSTANCE.getStage().addListener(gestureListener);
 
+        renderQueue.add(new Runnable() {
             @Override
-            public boolean mouseMoved(InputEvent event, float x, float y) {
-                myConn.postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 16, (int)x, MiniClientMain.HEIGHT - (int)y, 1, 1, 0));
-                return true;
+            public void run() {
+                System.out.println("Rendering Background");
+                try {
+                    Texture t = new Texture("Background.jpg");
+                    batch.draw(t, 0, 0, MiniClientMain.WIDTH, MiniClientMain.HEIGHT);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+                System.out.println("Done Rendering Background");
+                //t.dispose();
             }
         });
+        //flipBuffer();
 
-        MiniClientMain.INSTANCE.getStage().addListener(new ActorGestureListener() {
-            @Override
-            public void tap(InputEvent event, float x, float y, int count, int button) {
-                System.out.println("TAP: " + x + "," + y);
-                myConn.postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 16, (int)x, MiniClientMain.HEIGHT - (int)y, 1, 1, 0));
-            }
-
-            int flingThreshold = 200;
-
-            @Override
-            public void touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                myConn.postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_PRESSED, System.currentTimeMillis(), 16, (int)x, MiniClientMain.HEIGHT - (int)y, 1, 1, 0));
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                myConn.postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_RELEASED, System.currentTimeMillis(), 16, (int)x, MiniClientMain.HEIGHT - (int)y, 1, 1, 0));
-            }
-
-            @Override
-            public boolean longPress(Actor actor, float x, float y) {
-                myConn.postKeyEvent(Keys.VK_ENTER, 0, (char)13);
-                return true;
-            }
-
-            @Override
-            public void pan(InputEvent event, float x, float y, float deltaX, float deltaY) {
-                myConn.postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_MOVED, System.currentTimeMillis(), 16, (int)x, MiniClientMain.HEIGHT - (int)y, 1, 1, 0));
-            }
-
-            @Override
-            public void fling(InputEvent event, float velocityX, float velocityY, int button) {
-                System.out.println("FLING: " + velocityX + "," + velocityY);
-                if (velocityX > flingThreshold) {
-                    System.out.println("Flight Right");
-                    myConn.postKeyEvent(Keys.VK_RIGHT, 0, (char) 0);
-                } else if (velocityX < -flingThreshold) {
-                    myConn.postKeyEvent(Keys.VK_LEFT, 0, (char) 0);
-                } else if (velocityY > flingThreshold) {
-                    myConn.postKeyEvent(Keys.VK_UP, 0, (char) 0);
-                } else if (velocityY < -flingThreshold) {
-                    myConn.postKeyEvent(Keys.VK_DOWN, 0, (char) 0);
-                }
-            }
-
-            @Override
-            public void pinch(InputEvent event, Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
-                System.out.println("Pinch == Escape");
-                myConn.postKeyEvent(Keys.VK_ESCAPE, 0, (char)27);
-            }
-
-            @Override
-            public void zoom(InputEvent event, float initialDistance, float distance) {
-                System.out.println("Zoom == Enter");
-                myConn.postKeyEvent(Keys.VK_ENTER, 0, (char)13);
-            }
-        });
         if (!MiniClientMain.CONTINUOUS_RENDERING) Gdx.graphics.requestRendering();
+        System.out.println("END INIT");
     }
 
+    boolean disposed=false;
     public void dispose() {
+        if (disposed) return;
+        disposed=true;
+        MiniClientMain.INSTANCE.getStage().removeListener(keyListener);
+        MiniClientMain.INSTANCE.getStage().removeListener(gestureListener);
         remove();
+        Gdx.app.exit();
     }
 
     public void close() {
-        remove();
+        dispose();
     }
 
     public void refresh() {
@@ -168,43 +108,86 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
         // TODO Auto-generated method stub
     }
 
-    public void drawRect(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL) {
-        // TODO Auto-generated method stub
+    float Y(int y, int height) {
+        return MiniClientMain.HEIGHT-y-height;
     }
 
-    public void fillRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-        // TODO Auto-generated method stub
+    public void drawLine(final int x1, final int y1, final int x2, final int y2, final int argb1, final int argb2) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
 
+                getStage().getCamera().update();
+                shapeRenderer.setProjectionMatrix(getStage().getCamera().combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+                shapeRenderer.line(x1, Y(y1, 0), x2, Y(y2, 0), getColor(argb1), getColor(argb2));
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
+    }
+
+    public void drawRect(final int x, final int y, final int width, final int height, int thickness, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
+
+                getStage().getCamera().update();
+                shapeRenderer.setProjectionMatrix(getStage().getCamera().combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
+    }
+
+    public void fillRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
+
+                getStage().getCamera().update();
+                shapeRenderer.setProjectionMatrix(getStage().getCamera().combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
     }
 
     public void clearRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-        // TODO Auto-generated method stub
-
+        throw new UnsupportedOperationException("clearRect unsopported");
     }
 
     public void drawOval(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL,
                          int clipX, int clipY, int clipW, int clipH) {
-        // TODO Auto-generated method stub
-
+        throw new UnsupportedOperationException("drawOval unsopported");
     }
 
     public void fillOval(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY,
                          int clipW, int clipH) {
-        // TODO Auto-generated method stub
-
+        throw new UnsupportedOperationException("fillOval unsopported");
     }
 
     public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR,
                               int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        // TODO Auto-generated method stub
-
+        //throw new UnsupportedOperationException("drawRoundRect unsopported");
+        drawRect(x, y, width, height, thickness, argbTL, argbTR, argbBR, argbBL);
     }
 
     public void fillRoundRect(int x, int y, int width, int height, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL,
                               int clipX, int clipY, int clipW, int clipH) {
-        // TODO Auto-generated method stub
-
+        fillRect(x,y,width,height,argbTL,argbTR, argbBR, argbBL);
     }
+
     private Color getColor(int color) {
         Color c= new Color();
         c.a = ((color & 0xff000000) >>> 24) / 255f;
@@ -228,11 +211,6 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                gl.glEnable(gl.GL_BLEND);
-                gl.glBlendFunc(gl.GL_ONE, gl.GL_ONE_MINUS_SRC_ALPHA);
-                if (height < 0) {
-                    gl.glBlendFunc(gl.GL_ONE, gl.GL_ZERO);
-                }
                 Texture t = null;
                 Object o = img.get();
                 if (o instanceof Texture) {
@@ -241,23 +219,30 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
                     t = new Texture((Pixmap) img.get());
                     img.force(t);
                 } else {
-                    t = ((FrameBuffer)o).getColorBufferTexture();
+                    t = ((FrameBuffer) o).getColorBufferTexture();
                 }
+                t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
                 Color c = batch.getColor();
-                if (width<0) {
-                    // font
+                batch.end();
+
+                batch.begin();
+                batch.enableBlending();
+                if (height < 0) {
+                    batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ZERO);
+                } else {
+                    batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                }
+                if (width >= 0) {
                     batch.setColor(getColor(blend));
                 } else {
-                    batch.setColor(getAlpha(blend));
+                    batch.setColor(getColor(blend));
                 }
-                t.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-                batch.draw(t, x, MiniClientMain.HEIGHT-y-Math.abs(height), Math.abs(width), Math.abs(height), srcx, srcy, srcwidth, srcheight, false, false);
-                batch.setColor(c);
+                batch.draw(t, x, MiniClientMain.HEIGHT - y - Math.abs(height), Math.abs(width), Math.abs(height), srcx, srcy, srcwidth, srcheight, false, false);
+//                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//                batch.setColor(1, 1, 1, 1);
+                batch.disableBlending();
             }
         });
-    }
-
-    public void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2) {
     }
 
     public ImageHolder<Object> loadImage(int width, int height) {
@@ -294,19 +279,6 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
         return loadImage(width, height);
     }
 
-    public FontHolder<Void> createFont(InputStream fis) {
-        return null;
-    }
-
-    public FontHolder<Void> loadFont(String string, int style, int size) {
-        return null;
-    }
-
-    public FontHolder<Void> deriveFont(FontHolder<?> cachedFont, float size) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     public void flipBuffer() {
         synchronized (renderQueue) {
             // move the frame operations to the render queue
@@ -333,18 +305,15 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
 
     public void xfmImage(int srcHandle, ImageHolder<?> srcImg, int destHandle, ImageHolder<?> destImg, int destWidth,
                          int destHeight, int maskCornerArc) {
+        throw new UnsupportedOperationException("xfmImage not implemented");
     }
 
     public boolean hasGraphicsCanvas() {
         return true;
     }
 
-    public void drawText(int x, int y, int textlen, String text, int fontHandle, FontHolder<?> fontHolder, int argb, int clipX,
-                         int clipY, int clipW, int clipH) {
-    }
-
     public Dimension getMaxScreenSize() {
-        Dimension reportedScrSize = new Dimension(MiniClientMain.WIDTH, MiniClientMain.HEIGHT);
+        Dimension reportedScrSize = new Dimension(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         return reportedScrSize;
     }
 
@@ -367,10 +336,14 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
     public void draw(Batch batch, float parentAlpha) {
         synchronized (renderQueue) {
             if (renderQueue.size()>0) {
-                if (!MiniClientMain.CONTINUOUS_RENDERING) System.out.println("RENDER QUEUE");
+                //if (!MiniClientMain.CONTINUOUS_RENDERING) System.out.println("RENDER QUEUE");
 
                 if (mainbuffer==null) {
                     mainbuffer = new FrameBuffer(Pixmap.Format.RGBA8888, MiniClientMain.WIDTH, MiniClientMain.HEIGHT, false);
+                }
+
+                if (shapeRenderer==null) {
+                    shapeRenderer = new ShapeRenderer();
                 }
 
                 // render the queue to a frame texture to capure it so that we can replay it later instead of re-rendering the items
@@ -387,7 +360,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
                 batch.draw(lastFrame, 0, 0);
                 renderQueue.clear();
             } else {
-                if (!MiniClientMain.CONTINUOUS_RENDERING) System.out.println("RENDER LAST FRAME");
+                //if (!MiniClientMain.CONTINUOUS_RENDERING) System.out.println("RENDER LAST FRAME");
                 if (lastFrame!=null) {
                     // render the last frame
                     batch.draw(lastFrame, 0, 0);
@@ -398,9 +371,9 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object, Void> 
 
     public static UIFactory getUIFactory() {
         return new UIFactory() {
-            public UIManager<?, ?> getUIManager(MiniClientConnection conn) {
+            public UIManager<?> getUIManager(MiniClientConnection conn) {
                 // return new LoggingUIManager(new OpenGLUIManager(conn));
-                return new OpenGLFBUIManagerNEW(conn);
+                return new OpenGLFBUIManager(conn);
             }
         };
     }
