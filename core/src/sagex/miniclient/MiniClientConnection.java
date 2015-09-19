@@ -167,7 +167,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 	public static int LOW_SECURITY_FS = 1;
 
 	public static MiniClientConnection currConnection = null;
-	private UIManager<?, ?> uiManager;
+	private UIManager<?> uiManager;
 	private UIFactory uiFactory;
 
 	public MiniClientConnection(String serverName, String myID, boolean useLocalNetworkOptimizations, MgrServerInfo msi,
@@ -919,7 +919,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 //														 */)
 //							propVal = "";
 //						else
-							propVal = "PNG,JPG";
+							//propVal = "PNG,JPG";
+						propVal="";
 					} else if ("GFX_COMPOSITE".equals(propName)) {
 						if ("true".equals(MiniClient.myProperties.getProperty("opengl", "true")))
 							propVal = "BLEND";
@@ -945,6 +946,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						// propVal = Integer.toString(AWTUIManager., 16);
 						// while (propVal.length() < 6)
 						// propVal = "0" + propVal;
+						propVal = "080010";
 					} else if ("STREAMING_PROTOCOLS".equals(propName)) {
 						propVal = "file,stv";
 					} else if ("INPUT_DEVICES".equals(propName)) {
@@ -1098,8 +1100,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						}
 						propValBytes = encryptedSecretKeyBytes;
 					} else if ("GFX_SUPPORTED_RESOLUTIONS".equals(propName)) {
-						propVal = Integer.toString(reportedScrSize.width) + "x" + Integer.toString(reportedScrSize.height);
-								//+ ";windowed";
+						propVal = Integer.toString(reportedScrSize.width) + "x" + Integer.toString(reportedScrSize.height)
+								+ ";windowed";
 					} else if ("GFX_RESOLUTION".equals(propName)) {
 						Dimension winny = myGfx.getScreenSize();
 						if (winny != null)

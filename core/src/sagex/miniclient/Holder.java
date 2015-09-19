@@ -1,7 +1,5 @@
 package sagex.miniclient;
 
-import java.util.Objects;
-
 /**
  * Simple holder pattern that holds a value type
  * @author seans

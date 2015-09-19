@@ -28,6 +28,16 @@ public class ServerDiscovery {
 	ServerDiscovery() {
 	}
 
+	public static void discoverServersAsync(final int discoveryTimeout, final ServerDiscoverCallback callback) {
+		Thread t = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				discoverServers(discoveryTimeout, callback);
+			}
+		});
+        t.start();
+	}
+
 	public static ServerInfo[] discoverServers(int discoveryTimeout, ServerDiscoverCallback callback) {
 		List<ServerInfo> servers = (callback == null) ? new ArrayList<ServerInfo>() : null;
 		System.out.println("Sending out discovery packets to find SageTVPlaceshifter Servers...");
