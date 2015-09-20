@@ -908,20 +908,19 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						propVal = "TRUE";
 						usesAdvancedImageCaching = true;
 					} else if ("GFX_BITMAP_FORMAT".equals(propName)) {
-//						if (useLocalNetworkOptimizations/*
-//														 * || (!MiniClient.
-//														 * WINDOWS_OS &&
-//														 * "true".equals(
-//														 * MiniClient.
-//														 * myProperties.
-//														 * getProperty("opengl",
-//														 * "false")))
-//														 */)
-//							propVal = "";
-//						else
-							//propVal = "PNG,JPG";
-						propVal="";
-					} else if ("GFX_COMPOSITE".equals(propName)) {
+						if (useLocalNetworkOptimizations/*
+														 * || (!MiniClient.
+														 * WINDOWS_OS &&
+														 * "true".equals(
+														 * MiniClient.
+														 * myProperties.
+														 * getProperty("opengl",
+														 * "false")))
+														 */)
+							propVal = "";
+						else
+    						propVal="PNG,JPG,GIF,BMP";
+    				} else if ("GFX_COMPOSITE".equals(propName)) {
 						if ("true".equals(MiniClient.myProperties.getProperty("opengl", "true")))
 							propVal = "BLEND";
 						else
@@ -1106,9 +1105,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						Dimension winny = myGfx.getScreenSize();
 						if (winny != null)
 							propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height);
-					} else if ("GFX_DRAWMODE".equals(propName)
-							&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
-						propVal = "FULLSCREEN";
+					} else if ("GFX_DRAWMODE".equals(propName)) {
+							//&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
+						//propVal = "FULLSCREEN";
 					}
 					System.out.println("GetProperty: " + propName + " = " + propVal);
 					try {
@@ -2222,6 +2221,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 		// Cleanup the offline cache...just dump the oldest half of it
 		java.io.File[] cacheFiles = cacheDir.listFiles();
 		long size = 0;
+		if (cacheFiles==null) return;
 		for (int i = 0; i < cacheFiles.length; i++) {
 			size += cacheFiles[i].length();
 			if (size > offlineImageCacheLimit) {
@@ -2246,6 +2246,10 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 			}
 		}
 	}
+
+    public UIManager<?> getUiManager() {
+        return uiManager;
+    }
 
 	public void registerImageAccess(int handle) {
 		lruImageMap.put(new Integer(handle), new Long(System.currentTimeMillis()));

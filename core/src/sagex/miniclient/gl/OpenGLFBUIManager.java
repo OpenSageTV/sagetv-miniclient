@@ -25,6 +25,7 @@ import sagex.miniclient.MiniClientConnectionGateway;
 import sagex.miniclient.MiniClientMain;
 import sagex.miniclient.UIManager;
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.util.IOUtil;
 
@@ -36,6 +37,8 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
 
     FrameBuffer mainbuffer = null;
     TextureRegion lastFrame = null;
+
+    Scale scale = new Scale(1,1);
 
     public OpenGLFBUIManager(MiniClientConnectionGateway conn) {
         this.myConn = conn;
@@ -51,7 +54,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
 
     ShapeRenderer shapeRenderer = null;
 
-    public void init() {
+    public void GFXCMD_INIT() {
         System.out.println("BEGIN INIT");
         batch=MiniClientMain.INSTANCE.getStage().getBatch();
 
@@ -73,7 +76,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
                     t.printStackTrace();
                 }
                 System.out.println("Done Rendering Background");
-                //t.dispose();
+                //t.GFXCMD_DEINIT();
             }
         });
         //flipBuffer();
@@ -83,7 +86,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
     }
 
     boolean disposed=false;
-    public void dispose() {
+    public void GFXCMD_DEINIT() {
         if (disposed) return;
         disposed=true;
         MiniClientMain.INSTANCE.getStage().removeListener(keyListener);
@@ -93,7 +96,7 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
     }
 
     public void close() {
-        dispose();
+        GFXCMD_DEINIT();
     }
 
     public void refresh() {
@@ -330,6 +333,11 @@ public class OpenGLFBUIManager extends Actor implements UIManager<Object> {
 
     public void invokeLater(Runnable runnable) {
         frameQueue.add(runnable);
+    }
+
+    @Override
+    public Scale getScale() {
+        return scale;
     }
 
     @Override

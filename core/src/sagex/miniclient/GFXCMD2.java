@@ -246,10 +246,10 @@ public class GFXCMD2 {
 		switch (cmd) {
 		case GFXCMD_INIT:
 			hasret[0] = 1;
-			windowManager.init();
+			windowManager.GFXCMD_INIT();
 			return 1;
 		case GFXCMD_DEINIT:
-			windowManager.dispose();
+			windowManager.GFXCMD_DEINIT();
 			break;
 		case GFXCMD_DRAWRECT:
 			if (len == 36) {
