@@ -1,4 +1,4 @@
-package sagex.miniclient;
+package sagex.miniclient.uibridge;
 
 /**
  * Simple holder pattern that holds a value type

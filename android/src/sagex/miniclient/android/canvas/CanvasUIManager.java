@@ -22,10 +22,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 import sagex.miniclient.GFXCMD2;
-import sagex.miniclient.ImageHolder;
-import sagex.miniclient.UIManager;
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
+import sagex.miniclient.uibridge.UIManager;
 
 /**
  * Created by seans on 20/09/15.
@@ -214,7 +214,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     }
 
     @Override
-    public void drawTexture(final int x, final int y, final int width, final int height, int handle, final ImageHolder<?> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
+    public void drawTexture(final int x, final int y, final int width, final int height, int handle, final ImageHolder<Bitmap> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
         srcRect.set(srcx, srcy, srcx + srcwidth, srcy + srcheight);
         dstRect.set(x, y, x + Math.abs(width), y + Math.abs(height));
 
@@ -310,7 +310,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     }
 
     @Override
-    public void loadImageLine(int handle, final ImageHolder<?> image, final int line, final int len2, final byte[] cmddata) {
+    public void loadImageLine(int handle, final ImageHolder<Bitmap> image, final int line, final int len2, final byte[] cmddata) {
         Bitmap b = (Bitmap) image.get();
         int dataPos = 12;
         int pixel = 0;
@@ -330,12 +330,12 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     }
 
     @Override
-    public void setTargetSurface(int handle, ImageHolder<?> image) {
+    public void setTargetSurface(int handle, ImageHolder<Bitmap> image) {
         throw new UnsupportedOperationException("setTargetSurface not implemented");
     }
 
     @Override
-    public void xfmImage(int srcHandle, ImageHolder<?> srcImg, int destHandle, ImageHolder<?> destImg, int destWidth, int destHeight, int maskCornerArc) {
+    public void xfmImage(int srcHandle, ImageHolder<Bitmap> srcImg, int destHandle, ImageHolder<Bitmap> destImg, int destWidth, int destHeight, int maskCornerArc) {
         throw new UnsupportedOperationException("xfmImage not implemented");
     }
 

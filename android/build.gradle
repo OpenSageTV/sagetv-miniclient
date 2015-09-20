@@ -59,7 +59,7 @@ task run(type: Exec) {
     }
 
     def adb = path + "/platform-tools/adb"
-    commandLine "$adb", 'shell', 'am', 'start', '-n', 'sagex.miniclient.android/sagex.miniclient.android.AndroidLauncher'
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'sagex.miniclient.android/sagex.miniclient.android.ServersActivity'
 }
 
 // sets up the Android Eclipse project, using the old Ant based build.

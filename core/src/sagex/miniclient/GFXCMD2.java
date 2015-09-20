@@ -16,6 +16,7 @@
 package sagex.miniclient;
 
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.ImageHolder;
 
 public class GFXCMD2 {
 	public static final boolean ENABLE_MOUSE_MOTION_EVENTS = true;
@@ -155,7 +156,7 @@ public class GFXCMD2 {
 		return (short) (((cmddata[pos + 1] & 0xFF) << 8) | (cmddata[pos + 0] & 0xFF));
 	}
 
-	private UIManager<?> windowManager;
+	private sagex.miniclient.uibridge.UIManager<?> windowManager;
 	private MiniClientConnectionGateway myConn;
 
 	protected long offlineImageCacheLimit;
@@ -163,7 +164,7 @@ public class GFXCMD2 {
 	private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
 	private boolean usesAdvancedImageCaching;
 
-	private java.util.Map<Integer, ImageHolder<?>> imageMap = new java.util.HashMap<Integer, ImageHolder<?>>();
+	private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
 	private int handleCount = 2;
 
 	private long imageCacheSize;
@@ -173,7 +174,7 @@ public class GFXCMD2 {
 	private String lastImageResourceID;
 	private int lastImageResourceIDHandle;
 
-	public GFXCMD2(MiniClientConnectionGateway myConn, UIManager<?> manager) {
+	public GFXCMD2(MiniClientConnectionGateway myConn, sagex.miniclient.uibridge.UIManager<?> manager) {
 		this.windowManager = manager;
 		this.myConn = myConn;
 		imageCacheLimit = 32000000;
@@ -471,7 +472,7 @@ public class GFXCMD2 {
 				if (width * height * 4 + imageCacheSize > imageCacheLimit)
 					imghandle = 0;
 				else {
-					ImageHolder<?> img = windowManager.loadImage(width, height);
+					sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
 					imageMap.put(imghandle, img);
 					imageCacheSize += width * height * 4;
 				}
@@ -503,7 +504,7 @@ public class GFXCMD2 {
 						break;
 					}
 				}
-				ImageHolder<?> img = windowManager.loadImage(width, height);
+				sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
 				imageMap.put(imghandle, img);
 				imageCacheSize += width * height * 4;
 				registerImageAccess(imghandle);
@@ -519,7 +520,7 @@ public class GFXCMD2 {
 				int imghandle = handleCount++;
 				width = readInt(0, cmddata);
 				height = readInt(4, cmddata);
-				ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
+				sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
 				;
 				imageMap.put(new Integer(imghandle), img);
 				// imghandle=STBGFX.GFX_loadImage(width, height);
@@ -560,7 +561,7 @@ public class GFXCMD2 {
 							if (cachedFile != null) {
 								// We've got it locally in our cache! Read it
 								// from there.
-								ImageHolder<?> bi = windowManager.readImage(cachedFile);
+								sagex.miniclient.uibridge.ImageHolder<?> bi = windowManager.readImage(cachedFile);
 								if (bi == null || bi.getWidth() != width || bi.getHeight() != height) {
 									if (bi != null) {
 										// It doesn't match the cache
@@ -662,7 +663,7 @@ public class GFXCMD2 {
 
 						// We've got it locally in our cache! Read it from
 						// there.
-						ImageHolder<?> bi = windowManager.readImage(cachedFile);
+						sagex.miniclient.uibridge.ImageHolder<?> bi = windowManager.readImage(cachedFile);
 						if (bi == null || bi.getWidth() != width || bi.getHeight() != height) {
 							if (bi != null) {
 								// It doesn't match the cache
@@ -913,7 +914,7 @@ public class GFXCMD2 {
                         hasret[0] = 0;
                     try
                     {
-                        ImageHolder<?> img = null;
+                        sagex.miniclient.uibridge.ImageHolder<?> img = null;
                         img = windowManager.readImage(cacheFile);
                         imageMap.put(handle, img);
                             imageCacheSize += img.getWidth() * img.getHeight() * 4;
@@ -948,11 +949,11 @@ public class GFXCMD2 {
 					hasret[0] = 1;
 				} else
 					hasret[0] = 0;
-				ImageHolder<?> srcImg = imageMap.get(srcHandle);
+				sagex.miniclient.uibridge.ImageHolder srcImg = imageMap.get(srcHandle);
 				if ((hasret[0] == 1 && destWidth * destHeight * 4 + imageCacheSize > imageCacheLimit) || srcImg == null)
 					rvHandle = 0;
 				else {
-					ImageHolder<?> destImg = windowManager.newImage(destWidth, destHeight);
+					sagex.miniclient.uibridge.ImageHolder destImg = windowManager.newImage(destWidth, destHeight);
 					imageMap.put(rvHandle, destImg);
 					imageCacheSize += destWidth * destHeight * 4;
 					windowManager.xfmImage(srcHandle, srcImg, destHandle, destImg, destWidth, destHeight, maskCornerArc);
@@ -1126,7 +1127,7 @@ public class GFXCMD2 {
 		return this.windowManager.getScreenSize();
 	}
 
-	public UIManager<?> getWindow() {
+	public sagex.miniclient.uibridge.UIManager<?> getWindow() {
 		return windowManager;
 	}
 }

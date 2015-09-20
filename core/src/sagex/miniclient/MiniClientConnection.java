@@ -167,7 +167,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 	public static int LOW_SECURITY_FS = 1;
 
 	public static MiniClientConnection currConnection = null;
-	private UIManager<?> uiManager;
+	private sagex.miniclient.uibridge.UIManager<?> uiManager;
 	private UIFactory uiFactory;
 
 	public MiniClientConnection(String serverName, String myID, boolean useLocalNetworkOptimizations, MgrServerInfo msi,
@@ -2247,7 +2247,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 		}
 	}
 
-    public UIManager<?> getUiManager() {
+    public sagex.miniclient.uibridge.UIManager<?> getUiManager() {
         return uiManager;
     }
 
