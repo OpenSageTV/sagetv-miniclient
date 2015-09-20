@@ -10,17 +10,6 @@ import java.util.List;
  */
 public class ServerDiscovery {
 
-	public static class ServerInfo {
-		public String address;
-		public int port;
-		public String name;
-		public String locatorID;
-
-		public String toString() {
-			return name + " " + address;
-		}
-	}
-
 	public interface ServerDiscoverCallback {
 		public void serverDiscovered(ServerInfo si);
 	}

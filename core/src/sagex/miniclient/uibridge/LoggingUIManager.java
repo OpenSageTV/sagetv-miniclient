@@ -24,14 +24,14 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 	}
 
 
-	public void init() {
-		log("init");
-		delegate.init();
+	public void GFXCMD_INIT() {
+		log("GFXCMD_INIT");
+		delegate.GFXCMD_INIT();
 	}
 
-	public void dispose() {
-		log("dispose");
-		delegate.dispose();
+	public void GFXCMD_DEINIT() {
+		log("GFXCMD_DEINIT");
+		delegate.GFXCMD_DEINIT();
 	}
 
 	public void close() {
@@ -184,6 +184,12 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 	public void invokeLater(Runnable runnable) {
 		log("invokeLater");
 		delegate.invokeLater(runnable);
+	}
+
+	@Override
+	public Scale getScale() {
+		log("getScale");
+		return delegate.getScale();
 	}
 
 }

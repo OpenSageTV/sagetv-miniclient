@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.InputStream;
 
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.Scale;
 
 public interface UIManager<Image> {
-	void init();
-	void dispose();
+	void GFXCMD_INIT();
+	void GFXCMD_DEINIT();
+
 	void close();
 	void refresh();
-	
 	void hideCursor();
 	void showBusyCursor();
 	
@@ -43,4 +44,5 @@ public interface UIManager<Image> {
 	void setFullScreen(boolean b);
 	void setSize(int w, int h);
 	void invokeLater(Runnable runnable);
+    Scale getScale();
 }

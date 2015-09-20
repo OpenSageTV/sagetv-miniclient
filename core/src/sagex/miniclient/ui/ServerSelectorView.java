@@ -19,6 +19,7 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientMain;
 import sagex.miniclient.ServerDiscovery;
+import sagex.miniclient.ServerInfo;
 import sagex.miniclient.gl.OpenGLFBUIManager;
 
 import static sagex.miniclient.MiniClientMain.HEIGHT;
@@ -39,7 +40,7 @@ public class ServerSelectorView extends Group {
         return listView;
     }
 
-    List<ServerDiscovery.ServerInfo> listView;
+    List<ServerInfo> listView;
 
     public void create() {
         setSize(WIDTH, HEIGHT);
@@ -50,8 +51,8 @@ public class ServerSelectorView extends Group {
         table.add(searching);
         addActor(table);
 
-        final Array<ServerDiscovery.ServerInfo> items = new Array<ServerDiscovery.ServerInfo>();
-        listView = new List<ServerDiscovery.ServerInfo>(Assets.get().skin);
+        final Array<ServerInfo> items = new Array<ServerInfo>();
+        listView = new List<ServerInfo>(Assets.get().skin);
         listView.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -100,7 +101,7 @@ public class ServerSelectorView extends Group {
 
         ServerDiscovery.discoverServersAsync(10000, new ServerDiscovery.ServerDiscoverCallback() {
             @Override
-            public void serverDiscovered(final ServerDiscovery.ServerInfo si) {
+            public void serverDiscovered(final ServerInfo si) {
                 getStage().setKeyboardFocus(listView);
                 ServerWidget sw = new ServerWidget(si);
                 items.add(si);
@@ -110,7 +111,7 @@ public class ServerSelectorView extends Group {
         });
     }
 
-    private void connectTo(ServerDiscovery.ServerInfo si) {
+    private void connectTo(ServerInfo si) {
         // remove this page from the UI
         remove();
 

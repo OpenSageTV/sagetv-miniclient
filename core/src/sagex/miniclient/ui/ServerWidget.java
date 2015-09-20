@@ -4,14 +4,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import sagex.miniclient.Assets;
 import sagex.miniclient.ServerDiscovery;
+import sagex.miniclient.ServerInfo;
 
 /**
  * Created by seans on 18/09/15.
  */
 public class ServerWidget extends Table {
-    private final ServerDiscovery.ServerInfo server;
+    private final ServerInfo server;
 
-    public ServerWidget(ServerDiscovery.ServerInfo si) {
+    public ServerWidget(ServerInfo si) {
         super(Assets.get().skin);
         this.server = si;
         add(si.name);

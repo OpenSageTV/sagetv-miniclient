@@ -17,4 +17,5 @@ public interface MiniClientConnectionGateway {
 	void addTimerTask(TimerTask timerTask, long delay, long period);
 	void postImageUnload(int oldestImage);
 	void postRepaintEvent(int i, int j, int width, int height);
+	public UIManager<?> getUiManager();
 }
