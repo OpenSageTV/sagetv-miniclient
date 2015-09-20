@@ -5,7 +5,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import sagex.miniclient.MiniClientConnectionGateway;
-import sagex.miniclient.MiniClientMain;
 import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.MouseEvent;
 

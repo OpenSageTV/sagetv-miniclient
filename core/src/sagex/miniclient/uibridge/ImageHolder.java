@@ -1,4 +1,4 @@
-package sagex.miniclient;
+package sagex.miniclient.uibridge;
 
 public class ImageHolder<T> extends Holder<T> {
 	private int width;

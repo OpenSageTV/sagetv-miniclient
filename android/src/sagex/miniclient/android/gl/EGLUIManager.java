@@ -5,10 +5,10 @@ import android.opengl.GLES20;
 import java.io.File;
 import java.io.InputStream;
 
-import sagex.miniclient.ImageHolder;
-import sagex.miniclient.UIManager;
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
+import sagex.miniclient.uibridge.UIManager;
 
 /**
  * Created by seans on 19/09/15.
@@ -82,7 +82,7 @@ public class EGLUIManager implements UIManager<EGLTexture> {
     }
 
     @Override
-    public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<?> img, int srcx, int srcy, int srcwidth, int srcheight, int blend) {
+    public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<EGLTexture> img, int srcx, int srcy, int srcwidth, int srcheight, int blend) {
 //        int texturet[] = ((EGLTexture) img.get()).get();
 //        if (texturet != null) {
 //            gl.glEnable(gl.GL_BLEND);
@@ -163,7 +163,7 @@ public class EGLUIManager implements UIManager<EGLTexture> {
     }
 
     @Override
-    public void loadImageLine(int handle, ImageHolder<?> image, int line, int len2, byte[] cmddata) {
+    public void loadImageLine(int handle, ImageHolder<EGLTexture> image, int line, int len2, byte[] cmddata) {
 //        int texturet[] = ((EGLTexture)image.get()).get();
 //        int texturedata[] = new int[len2];
 //        int dataPos = 12;
@@ -198,7 +198,7 @@ public class EGLUIManager implements UIManager<EGLTexture> {
     }
 
     @Override
-    public void setTargetSurface(int handle, ImageHolder<?> image) {
+    public void setTargetSurface(int handle, ImageHolder<EGLTexture> image) {
 
     }
 
@@ -213,7 +213,7 @@ public class EGLUIManager implements UIManager<EGLTexture> {
     }
 
     @Override
-    public void xfmImage(int srcHandle, ImageHolder<?> srcImg, int destHandle, ImageHolder<?> destImg, int destWidth, int destHeight, int maskCornerArc) {
+    public void xfmImage(int srcHandle, ImageHolder<EGLTexture> srcImg, int destHandle, ImageHolder<EGLTexture> destImg, int destWidth, int destHeight, int maskCornerArc) {
 
     }
 

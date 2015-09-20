@@ -1,36 +1,32 @@
 package sagex.miniclient.android.canvas;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
-import com.badlogic.gdx.Input;
-
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import sagex.miniclient.MgrServerInfo;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
-import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
-import sagex.miniclient.UIManager;
 import sagex.miniclient.android.R;
-import sagex.miniclient.android.canvas.CanvasUIManager;
-import sagex.miniclient.android.canvas.UIGestureListener;
-import sagex.miniclient.gl.*;
-import sagex.miniclient.gl.SageTVGestureListener;
 import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.UIFactory;
+import sagex.miniclient.uibridge.UIManager;
 
 /**
  * Created by seans on 20/09/15.
@@ -85,7 +81,7 @@ public class MiniClientActivity extends Activity {
             }
         };
         MgrServerInfo info = new MgrServerInfo(si.address, (si.port==0)?31099:si.port, si.locatorID);
-        client = new MiniClientConnection(si.address, null, false, info, factory);
+        client = new MiniClientConnection(si.address, getMACAddress(), false, info, factory);
 
         final UIGestureListener gestureListener =new UIGestureListener(client);
         mDetector = new GestureDetectorCompat(this, gestureListener);
@@ -158,4 +154,32 @@ public class MiniClientActivity extends Activity {
             }
         });
     }
+
+    public String getMACAddress() {
+        try {
+            WifiManager manager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = manager.getConnectionInfo();
+            return info.getMacAddress();
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    @Override
+        public void onBackPressed() {
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("Closing MiniClient")
+                    .setMessage("Are you sure you want to close the SageTV MiniClient?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        }
 }

@@ -5,9 +5,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import sagex.miniclient.ImageHolder;
-import sagex.miniclient.UIManager;
-
 public class LoggingUIManager<Image> implements UIManager<Image> {
     private static final boolean LOGGING = false;
     private UIManager<Image> delegate;
@@ -94,7 +91,7 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 		delegate.fillRoundRect(x, y, width, height, arcRadius, argbTL, argbTR, argbBR, argbBL, clipX, clipY, clipW, clipH);
 	}
 
-	public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<?> img, int srcx, int srcy, int srcwidth,
+	public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<Image> img, int srcx, int srcy, int srcwidth,
 			int srcheight, int blend) {
 		//log(String.format("drawTexture[%s](%s,%s,%s,%s,%s,%s,%s,%s)", handle, x,y, width, height, srcx, srcy, srcwidth,srcheight));
 		delegate.drawTexture(x, y, width, height, handle, img, srcx, srcy, srcwidth, srcheight, blend);
@@ -130,7 +127,7 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 		return delegate.newImage(destWidth, destHeight);
 	}
 
-	public void setTargetSurface(int handle, ImageHolder<?> image) {
+	public void setTargetSurface(int handle, ImageHolder<Image> image) {
 		log(String.format("setTargetSurface[%s]", handle));
 		delegate.setTargetSurface(handle, image);
 	}
@@ -145,12 +142,12 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 		delegate.startFrame();
 	}
 
-	public void loadImageLine(int handle, ImageHolder<?> image, int line, int len2, byte[] cmddata) {
+	public void loadImageLine(int handle, ImageHolder<Image> image, int line, int len2, byte[] cmddata) {
 		log(String.format("loadImageLine[%s](%s)", handle, line));
 		delegate.loadImageLine(handle, image, line, len2, cmddata);
 	}
 
-	public void xfmImage(int srcHandle, ImageHolder<?> srcImg, int destHandle, ImageHolder<?> destImg, int destWidth,
+	public void xfmImage(int srcHandle, ImageHolder<Image> srcImg, int destHandle, ImageHolder<Image> destImg, int destWidth,
 			int destHeight, int maskCornerArc) {
 		log("xfmImage");
 		delegate.xfmImage(srcHandle, srcImg, destHandle, destImg, destWidth, destHeight, maskCornerArc);

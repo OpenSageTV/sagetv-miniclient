@@ -6,16 +6,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.canvas.MiniClientActivity;
-import sagex.miniclient.ui.ServerWidget;
-
-import static sagex.miniclient.MiniClientMain.requestRendering;
 
 /**
  * Created by seans on 20/09/15.
