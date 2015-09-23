@@ -250,12 +250,14 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
             public void run() {
                 // set the image location on the screen
                 // We have to create the vertices of our triangles (ie, 2 of them to make a rectangle)
-                final int y1 = Math.abs(y);
+                final int y1 = y;
+                final int h1 = Math.abs(h);
+                final int w1 = Math.abs(w);
                 vertices = new float[]
                         {  x, Y(y1), 0.0f,
-                                x, Y(y1+h), 0.0f,
-                                x+w, Y(y1+h), 0.0f,
-                                x+w, Y(y1), 0.0f,
+                                x, Y(y1+h1), 0.0f,
+                                x+w1, Y(y1+h1), 0.0f,
+                                x+w1, Y(y1), 0.0f,
                         };
 
                 indices = new short[] {0, 1, 2, 0, 2, 3}; // The order of vertexrendering.
@@ -356,7 +358,7 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                         "s_texture" );
 
                 // Set the sampler texture unit to 0, where we have saved the texture.
-                GLES20.glUniform1i ( mSamplerLoc, 0);
+                GLES20.glUniform1i(mSamplerLoc, 0);
 
                 // Draw the triangle
                 GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.length,
