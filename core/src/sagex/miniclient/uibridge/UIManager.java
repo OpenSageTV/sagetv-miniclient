@@ -3,6 +3,8 @@ package sagex.miniclient.uibridge;
 import java.io.File;
 import java.io.InputStream;
 
+import sagex.miniclient.MiniClientConnectionGateway;
+
 public interface UIManager<Image> {
 	void GFXCMD_INIT();
 	void GFXCMD_DEINIT();

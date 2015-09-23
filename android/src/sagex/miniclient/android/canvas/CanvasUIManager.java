@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 import sagex.miniclient.GFXCMD2;
+import sagex.miniclient.MiniClientConnection;
+import sagex.miniclient.MiniClientConnectionGateway;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -32,8 +34,8 @@ import sagex.miniclient.uibridge.UIManager;
  */
 public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callback {
     private static final String TAG = "CanvasUI";
-    private static final int WIDTH = 720;
-    private static final int HEIGHT = 480;
+    private int WIDTH = 720;
+    private int HEIGHT = 480;
 
     private SurfaceHolder holder;
     private final MiniClientActivity ctx;
@@ -45,6 +47,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
 
     boolean logFrameTime=true;
     long frameTime = 0;
+    long frameOps=0;
     long frame=0;
 
     // this only ever accessed by a single thread
@@ -54,12 +57,21 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     Paint fontPaint = new Paint();
     Paint texturePaint = new Paint();
 
+    MiniClientConnectionGateway myConn = null;
+
     public CanvasUIManager(MiniClientActivity ctx) {
         this.ctx = ctx;
     }
 
+    public void setConnection(MiniClientConnectionGateway conn) {
+        this.myConn=conn;
+    }
+
     @Override
     public void GFXCMD_INIT() {
+        Log.d(TAG, "Setting Screen Size: " + getScreenSize());
+        myConn.postResizeEvent(getScreenSize());
+
         fontPaint.setAntiAlias(true);
         fontPaint.setDither(false);
         fontPaint.setFilterBitmap(true);
@@ -115,6 +127,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         updateColor(shapePaint, argbTL);
         canvas.drawRect(x, y, x + width, y + height, shapePaint);
         shapePaint.setStrokeWidth(1);
+        frameOps++;
     }
 
     @Override
@@ -125,11 +138,13 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         updateColor(shapePaint, argbTL);
         canvas.drawRect(x, y, x + width, y + height, shapePaint);
         shapePaint.setStrokeWidth(1);
+        frameOps++;
     }
 
     @Override
     public void clearRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
         fillRect(x, y, width, height, 0, 0, 0, 0);
+        frameOps++;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -144,6 +159,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         } else {
             Log.d(TAG, "drawOval() requires Lollipop");
         }
+        frameOps++;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -157,6 +173,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         } else {
             Log.d(TAG, "fillOval() requires Lollipop");
         }
+        frameOps++;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -172,6 +189,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
             Log.d(TAG, "drawRoundRect() requires Lollipop");
             drawRect(x, y, width, height, thickness, argbTL, argbTR, argbBR, argbBL);
         }
+        frameOps++;
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -186,6 +204,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
             Log.d(TAG, "fillRoundRect() requires Lollipop");
             fillRect(x, y, width, height, argbTL, argbTR, argbBR, argbBL);
         }
+        frameOps++;
     }
 
     @Override
@@ -195,6 +214,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         shapePaint.setStrokeWidth(1);
         updateColor(shapePaint, argb1);
         canvas.drawLine(x1, y1, x2, y2, shapePaint);
+        frameOps++;
     }
 
     @Override
@@ -219,11 +239,15 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         dstRect.set(x, y, x + Math.abs(width), y + Math.abs(height));
 
         if (width < 0) {
+            // font
             fontPaint.setColorFilter(getColorFilter(blend));
             canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, fontPaint);
         } else {
-            canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, texturePaint);
+            // faster with no paint
+            canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, null);
+            //canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, texturePaint);
         }
+        frameOps++;
     }
 
     HashMap<Integer, ColorFilter> colorFilters = new HashMap<>();
@@ -245,16 +269,17 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         holder.unlockCanvasAndPost(canvas);
         canvas = null;
         if (logFrameTime) {
-            Log.d(TAG, "FRAME: " + (frame++) + "; Time: " + (System.currentTimeMillis()-frameTime) + "ms");
+            Log.d(TAG, "FRAME: " + (frame++) + "; Time: " + (System.currentTimeMillis()-frameTime) + "ms; Ops: " + frameOps);
         }
     }
 
     @Override
     public void startFrame() {
         frameTime=System.currentTimeMillis();
+        frameOps=0;
         canvas = holder.lockCanvas();
-        scale.setScale(((float) canvas.getWidth()) / ((float) WIDTH), ((float) canvas.getHeight()) / ((float) HEIGHT));
-        canvas.scale(scale.getXScale(), scale.getYScale());
+        // scale.setScale(((float) canvas.getWidth()) / ((float) WIDTH), ((float) canvas.getHeight()) / ((float) HEIGHT));
+        // canvas.scale(scale.getXScale(), scale.getYScale());
     }
 
     @Override
@@ -348,6 +373,9 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "Surface Changed");
+        this.WIDTH=width;
+        this.HEIGHT=height;
+        this.scale.setScale(1,1);
     }
 
     @Override
