@@ -1,4 +1,4 @@
-package sagex.miniclient.android.canvas;
+package sagex.miniclient.android.gl;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
@@ -13,6 +14,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -26,6 +29,8 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.canvas.CanvasUIManager;
+import sagex.miniclient.android.canvas.UIGestureListener;
 import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.uibridge.UIManager;
@@ -33,49 +38,61 @@ import sagex.miniclient.uibridge.UIManager;
 /**
  * Created by seans on 20/09/15.
  */
-public class MiniClientActivity extends Activity {
+public class MiniClientGLActivity extends Activity {
     public static final String ARG_SERVER_INFO = "server_info";
 
     private static final String TAG = "MINICLIENT";
-    SurfaceView surface;
+    FrameLayout surfaceHolder;
 
     View pleaseWait = null;
     TextView plaseWaitText = null;
 
-    CanvasUIManager mgr;
+    EGLUIManager mgr;
     GestureDetectorCompat mDetector = null;
     private MiniClientConnection client;
 
-    public MiniClientActivity() {
+    public MiniClientGLActivity() {
         MiniClient.startup(new String[]{});
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.miniclient_layout);
-        surface=(SurfaceView)findViewById(R.id.surface);
+        setContentView(R.layout.miniclientgl_layout);
+        surfaceHolder=(FrameLayout)findViewById(R.id.surface);
         pleaseWait = (View)findViewById(R.id.waitforit);
         plaseWaitText = (TextView)findViewById(R.id.pleaseWaitText);
 
-        mgr = new CanvasUIManager(this);
-        surface.getHolder().addCallback(mgr);
+        MiniClientSurfaceView surface  = new MiniClientSurfaceView(this);
+        FrameLayout.LayoutParams param = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        surfaceHolder.addView(surface, param);
 
-        System.setProperty("user.home", getCacheDir().getAbsolutePath());
+        mgr = new EGLUIManager(this, surface);
+        surface.setRenderer(mgr);
 
-        ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
-        if (si==null) {
-            Log.e(TAG, "Missing SERVER INFO in Intent: " + ARG_SERVER_INFO );
-            finish();
-        }
+        // non-continous rendering
+        // must call GLSurfaceView.requestRender()
+        surface.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-        plaseWaitText.setText("Connecting to " + si.address + "...");
-        setConnectingIsVisible(true);
 
+//
+//        ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
+//        if (si==null) {
+//            Log.e(TAG, "Missing SERVER INFO in Intent: " + ARG_SERVER_INFO );
+//            finish();
+//        }
+//
+//        plaseWaitText.setText("Connecting to " + si.address + "...");
+//        setConnectingIsVisible(true);
+//
+        ServerInfo si = new ServerInfo();
+        si.address="192.168.1.176";
+        si.name="localhost";
         startMiniClient(si);
     }
 
     public void startMiniClient(final ServerInfo si) {
+        System.setProperty("user.home", getCacheDir().getAbsolutePath());
         final UIFactory factory = new UIFactory() {
             @Override
             public UIManager<?> getUIManager(MiniClientConnection conn) {
@@ -171,7 +188,7 @@ public class MiniClientActivity extends Activity {
         }
     }
 
-    static String loadFileAsString(String filePath) throws java.io.IOException{
+    static String loadFileAsString(String filePath) throws IOException{
         StringBuffer fileData = new StringBuffer(1000);
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
         char[] buf = new char[1024];
