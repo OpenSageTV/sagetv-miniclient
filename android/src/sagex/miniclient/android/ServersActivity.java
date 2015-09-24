@@ -11,6 +11,7 @@ import android.widget.ListView;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.canvas.MiniClientActivity;
+import sagex.miniclient.android.gl.MiniClientGLActivity;
 
 /**
  * Created by seans on 20/09/15.
@@ -79,8 +80,8 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         ServerInfo si = adapter.getCastedItem(position);
-        Intent i = new Intent(getBaseContext(), MiniClientActivity.class);
-        i.putExtra(MiniClientActivity.ARG_SERVER_INFO, si);
+        Intent i = new Intent(getBaseContext(), MiniClientGLActivity.class);
+        i.putExtra(MiniClientGLActivity.ARG_SERVER_INFO, si);
         startActivity(i);
     }
 }

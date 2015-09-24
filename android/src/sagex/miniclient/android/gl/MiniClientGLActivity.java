@@ -75,19 +75,16 @@ public class MiniClientGLActivity extends Activity {
         surface.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
 
-//
-//        ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
-//        if (si==null) {
-//            Log.e(TAG, "Missing SERVER INFO in Intent: " + ARG_SERVER_INFO );
-//            finish();
-//        }
-//
-//        plaseWaitText.setText("Connecting to " + si.address + "...");
-//        setConnectingIsVisible(true);
-//
-        ServerInfo si = new ServerInfo();
-        si.address="192.168.1.176";
-        si.name="localhost";
+
+        ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
+        if (si==null) {
+            Log.e(TAG, "Missing SERVER INFO in Intent: " + ARG_SERVER_INFO );
+            finish();
+        }
+
+        plaseWaitText.setText("Connecting to " + si.address + "...");
+        setConnectingIsVisible(true);
+
         startMiniClient(si);
     }
 

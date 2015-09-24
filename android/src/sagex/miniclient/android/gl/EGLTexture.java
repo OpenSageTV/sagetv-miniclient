@@ -21,6 +21,8 @@ public class EGLTexture {
     private int[] texture;
     private File file=null;
     public boolean loaded=false;
+    public int width;
+    public int height;
 
     public EGLTexture(File file) {
         this.file=file;
@@ -50,7 +52,8 @@ public class EGLTexture {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
-
+            this.width=bitmap.getWidth();
+            this.height=bitmap.getHeight();
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
             bitmap.recycle();
             loaded=true;

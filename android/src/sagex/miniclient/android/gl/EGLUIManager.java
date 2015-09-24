@@ -52,6 +52,8 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     Scale scale = new Scale(1,1);
     Dimension size = null;
 
+    boolean firstFrame=true;
+
     private final MiniClientGLActivity activity;
     private final MiniClientSurfaceView surface;
 
@@ -95,18 +97,23 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
         public static final String vs_Image =
                 "uniform mat4 uMVPMatrix;" +
                         "attribute vec4 vPosition;" +
+                        "attribute vec4 a_Color;" +
                         "attribute vec2 a_texCoord;" +
+                        "varying vec4 v_Color;" +
                         "varying vec2 v_texCoord;" +
                         "void main() {" +
                         "  gl_Position = uMVPMatrix * vPosition;" +
                         "  v_texCoord = a_texCoord;" +
+                        "  v_Color = a_Color;" +
                         "}";
         public static final String fs_Image =
                 "precision mediump float;" +
                         "varying vec2 v_texCoord;" +
+                        "varying vec4 v_Color;" +
                         "uniform sampler2D s_texture;" +
                         "void main() {" +
-                        "  gl_FragColor = texture2D( s_texture, v_texCoord );" +
+                        "  gl_FragColor = texture2D( s_texture, v_texCoord ) * v_Color;" +
+                        "  gl_FragColor.rgb *= v_Color.a;" +
                         "}";
         public static int loadShader(int type, String shaderCode){
 
@@ -132,6 +139,7 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     public static float vertices[];
     public static short indices[];
     public static float uvs[];
+    public static float colors[];
     public FloatBuffer vertexBuffer;
     public ShortBuffer drawListBuffer;
     public FloatBuffer uvBuffer;
@@ -156,6 +164,9 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     @Override
     public void GFXCMD_INIT() {
         connection.postResizeEvent(getScreenSize());
+        if (firstFrame) {
+            activity.setConnectingIsVisible(firstFrame);
+        }
     }
 
     @Override
@@ -228,20 +239,15 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     }
 
     private float UX(float x, float w) {
-        return x/w;
+        float v = x/w;
+        //Log.d(TAG, "X: " + x + ", W: " + w + " = " + v);
+        return v;
     }
     private float UY(float y, float h) {
-        return y/h;
+        float v = y/h;
+        //Log.d(TAG, "Y: " + y + ", H: " + h + " = " + v);
+        return v;
     }
-
-    private void setGLColor(int color)
-    {
-        //System.out.println(Integer.toHexString(color));
-        GLES10.glColor4x((byte) ((color >> 16) & 0xFF), (byte) ((color >> 8) & 0xFF),
-                (byte) ((color >> 0) & 0xFF), (byte) ((color >> 24) & 0xFF));
-
-    }
-
 
     @Override
     public void drawTexture(final int x, final int y, final int w, final int h, final int handle, final ImageHolder<EGLTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
@@ -276,18 +282,17 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                 drawListBuffer.put(indices);
                 drawListBuffer.position(0);
 
+                // texture width and height
+                float tw=img.get().width;
+                float th=img.get().height;
+
                 // setup the Image to render
                 // Create our UV coordinates.
                 uvs = new float[] {
-//                        0.0f, 0.0f,
-//                        0.0f, 1.0f,
-//                        1.0f, 1.0f,
-//                        1.0f, 0.0f
-
-                        UX(srcx,srcwidth), UY(srcy,srcheight),
-                        UX(srcx,srcwidth), UY(srcy+srcheight,srcheight),
-                        UX(srcx+srcwidth,srcwidth), UY(srcy+srcheight,srcheight),
-                        UX(srcx+srcwidth,srcwidth), UY(srcy,srcheight)
+                        UX(srcx,tw), UY(srcy,th),
+                        UX(srcx,tw), UY(srcy + srcheight,th),
+                        UX(srcx+ srcwidth,tw), UY(srcy + srcheight,th),
+                        UX(srcx+ srcwidth,tw), UY(srcy,th)
                 };
 
                 // The texture buffer
@@ -296,6 +301,37 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                 uvBuffer = bb.asFloatBuffer();
                 uvBuffer.put(uvs);
                 uvBuffer.position(0);
+
+//                // setup color
+                colors = new float[] {
+                    1f*((blend >> 16) & 0xFF)/255f,
+                        1f*((blend >> 8) & 0xFF)/255f,
+                        1f*((blend >> 0) & 0xFF)/255f,
+                        1f*((blend >> 24) & 0xFF)/255f,
+
+                        1f*((blend >> 16) & 0xFF)/255f,
+                        1f*((blend >> 8) & 0xFF)/255f,
+                        1f*((blend >> 0) & 0xFF)/255f,
+                        1f*((blend >> 24) & 0xFF)/255f,
+
+                        1f*((blend >> 16) & 0xFF)/255f,
+                        1f*((blend >> 8) & 0xFF)/255f,
+                        1f*((blend >> 0) & 0xFF)/255f,
+                        1f*((blend >> 24) & 0xFF)/255f,
+
+                        1f*((blend >> 16) & 0xFF)/255f,
+                        1f*((blend >> 8) & 0xFF)/255f,
+                        1f*((blend >> 0) & 0xFF)/255f,
+                        1f*((blend >> 24) & 0xFF)/255f
+                };
+
+                // color
+                // The vertex buffer.
+                ByteBuffer bb3 = ByteBuffer.allocateDirect(colors.length * 4);
+                bb3.order(ByteOrder.nativeOrder());
+                FloatBuffer colorBuffer = bb3.asFloatBuffer();
+                colorBuffer.put(colors);
+                colorBuffer.position(0);
 
 
                 GLES10.glEnable(GLES10.GL_BLEND);
@@ -306,8 +342,6 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                 if (h<0) {
                     GLES10.glBlendFunc(GLES10.GL_ONE, GLES10.GL_ZERO);
                 }
-
-                setGLColor(blend);
 
                 // bind the image
                 EGLTexture texture = img.get();
@@ -346,6 +380,22 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                         false,
                         0, uvBuffer);
 
+
+                // set the color
+                int mColorHandle = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
+                        "a_Color");
+
+                // Enable a handle to the triangle vertices
+                GLES20.glEnableVertexAttribArray(mColorHandle);
+
+                // Prepare the background coordinate data
+                GLES20.glVertexAttribPointer(mColorHandle, 4,
+                        GLES20.GL_FLOAT, false,
+                        0, colorBuffer);
+
+
+                //GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_UNSIGNED_BYTE, GLES20.GL_TRUE, 0, pColors2);
+
                 // Get handle to shape's transformation matrix
                 int mtrxhandle = GLES20.glGetUniformLocation(riGraphicTools.sp_Image,
                         "uMVPMatrix");
@@ -367,6 +417,7 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                 // Disable vertex array
                 GLES20.glDisableVertexAttribArray(mPositionHandle);
                 GLES20.glDisableVertexAttribArray(mTexCoordLoc);
+                GLES20.glDisableVertexAttribArray(mColorHandle);
 
                 GLES10.glDisable(GLES10.GL_BLEND);
                 GLES10.glDisable(GLES10.GL_TEXTURE_2D);
@@ -415,15 +466,17 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
     }
 
-    boolean dropFrame=false;
     @Override
     public void flipBuffer() {
-        dropFrame=true;
+        if (firstFrame) {
+            firstFrame = false;
+            activity.setConnectingIsVisible(false);
+        }
+
         synchronized (renderQueue) {
             renderQueue.addAll(frameQueue);
             frameQueue.clear();
         }
-        dropFrame=false;
         surface.requestRender();
         if (logFrameTime) {
             Log.d(TAG, "FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis()-frameTime) + "ms; Ops: " + frameOps);
@@ -564,10 +617,6 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
         synchronized (renderQueue) {
             for (Runnable r : renderQueue) {
-                if (dropFrame) {
-                    dropFrame=false;
-                    break;
-                }
                 r.run();
             }
             renderQueue.clear();
