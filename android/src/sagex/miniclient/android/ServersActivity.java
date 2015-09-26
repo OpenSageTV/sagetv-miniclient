@@ -15,6 +15,7 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.Servers;
+import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.gl.MiniClientGLActivity;
 
 /**
@@ -102,10 +103,14 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             f.setRetainInstance(true);
             f.show(getFragmentManager(),"addserver");
         } else {
-            // connect to server
-            Intent i = new Intent(getBaseContext(), MiniClientGLActivity.class);
-            i.putExtra(MiniClientGLActivity.ARG_SERVER_INFO, si);
+//            // connect to server
+//            Intent i = new Intent(getBaseContext(), MiniClientGLActivity.class);
+//            i.putExtra(MiniClientGLActivity.ARG_SERVER_INFO, si);
+//            startActivity(i);
+            Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
+            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
             startActivity(i);
+
         }
     }
 

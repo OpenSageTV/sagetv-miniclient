@@ -16,6 +16,7 @@ allprojects {
     version = '1.0'
     ext {
         appName = "SageTVMiniclient"
+        gdxVersion = "1.6.5"
     }
 
     repositories {
@@ -35,6 +36,13 @@ project(":android") {
         compile "com.android.support:support-v4:22.2.0"
         compile 'com.android.support:appcompat-v7:22.2.0'
         compile 'com.jakewharton:butterknife:7.0.1'
+
+        // gdx
+        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
+        natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
     }
 }
 
