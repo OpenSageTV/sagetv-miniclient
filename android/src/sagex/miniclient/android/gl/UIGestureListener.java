@@ -1,4 +1,4 @@
-package sagex.miniclient.android.canvas;
+package sagex.miniclient.android.gl;
 
 import android.util.Log;
 import android.view.GestureDetector;

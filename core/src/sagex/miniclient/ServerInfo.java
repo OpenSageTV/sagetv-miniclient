@@ -1,6 +1,9 @@
 package sagex.miniclient;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by seans on 20/09/15.
@@ -10,6 +13,12 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
     public int port;
     public String name;
     public String locatorID;
+    public int serverType;
+    public long lastConnectTime;
+    public String authBlock;
+
+    public ServerInfo() {
+    }
 
     @Override
     public String toString() {

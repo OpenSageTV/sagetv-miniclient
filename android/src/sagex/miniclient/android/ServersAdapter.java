@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.Servers;
 
 /**
  * Created by seans on 20/09/15.
  */
 public class ServersAdapter extends BaseAdapter {
+    public static String NEW_SERVER_ID="New Server";
     private final Context context;
     private final LayoutInflater layoutInflater;
     List<ServerInfo> items = new ArrayList<>();
@@ -23,6 +25,13 @@ public class ServersAdapter extends BaseAdapter {
     public ServersAdapter(Context ctx) {
         this.context=ctx;
         this.layoutInflater = LayoutInflater.from(context);
+        ServerInfo newServer = new ServerInfo();
+        newServer.name=NEW_SERVER_ID;
+        newServer.address="Add New Server";
+        items.add(newServer);
+
+        // get the saved servers, and add them
+        items.addAll(Servers.getSavedServers());
     }
 
     @Override

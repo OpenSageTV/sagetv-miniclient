@@ -1010,13 +1010,14 @@ public class GFXCMD2 {
 	}
 
 	private void unloadImage(int handle) {
-		ImageHolder<?> bi = imageMap.get(handle);
+		ImageHolder bi = imageMap.get(handle);
 		if (bi != null)
 			imageCacheSize -= bi.getWidth() * bi.getHeight() * 4;
 		imageMap.remove(handle);
 		if (bi != null)
 			bi.flush();
 		clearImageAccess(handle);
+		windowManager.unloadImage(handle, bi);
 	}
 
 	public String getVideoOutParams() {

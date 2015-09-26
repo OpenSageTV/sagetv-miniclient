@@ -28,7 +28,8 @@ public interface UIManager<Image> {
 	void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<Image> img, int srcx, int srcy, int srcwidth, int srcheight, int blend);
 	void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2);
 	ImageHolder<Image> loadImage(int width, int height);
-	ImageHolder<Image> createSurface(int handle, int width, int height);
+    void unloadImage(int handle, ImageHolder<Image> bi);
+    ImageHolder<Image> createSurface(int handle, int width, int height);
 	ImageHolder<Image> readImage(File cachedFile) throws Exception;
 	ImageHolder<Image> readImage(InputStream bais) throws Exception;
 	ImageHolder<Image> newImage(int destWidth, int destHeight);
