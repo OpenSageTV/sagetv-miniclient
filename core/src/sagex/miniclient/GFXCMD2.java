@@ -915,12 +915,13 @@ public class GFXCMD2 {
                     try
                     {
                         sagex.miniclient.uibridge.ImageHolder<?> img = null;
+						// TODO Need a way to get real image size back
                         img = windowManager.readImage(cacheFile);
                         imageMap.put(handle, img);
-                            imageCacheSize += img.getWidth() * img.getHeight() * 4;
-                            if (deleteCacheFile)
-                                cacheFile.delete();
-                            return handle;
+						imageCacheSize += img.getWidth() * img.getHeight() * 4;
+						if (deleteCacheFile)
+							cacheFile.delete();
+						return handle;
                     }
                     catch (Exception e)
                     {
