@@ -33,6 +33,8 @@ project(":android") {
     dependencies {
         compile project(":core")
         compile "com.android.support:support-v4:22.2.0"
+        compile 'com.android.support:appcompat-v7:22.2.0'
+        compile 'com.jakewharton:butterknife:7.0.1'
     }
 }
 

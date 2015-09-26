@@ -26,6 +26,7 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.gl.UIGestureListener;
 import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.uibridge.UIManager;

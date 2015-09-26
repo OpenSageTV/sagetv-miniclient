@@ -330,6 +330,11 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     }
 
     @Override
+    public void unloadImage(int handle, ImageHolder<Bitmap> bi) {
+        bi.get().recycle();
+    }
+
+    @Override
     public ImageHolder<Bitmap> newImage(int destWidth, int destHeight) {
         return loadImage(destWidth, destHeight);
     }

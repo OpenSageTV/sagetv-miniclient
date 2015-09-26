@@ -1,21 +1,16 @@
 package sagex.miniclient.android.gl;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.opengl.GLES10;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.Log;
 import android.view.Display;
-import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -28,6 +23,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import sagex.miniclient.MiniClientConnection;
+import sagex.miniclient.android.gl.shapes.Line;
+import sagex.miniclient.android.gl.shapes.Rect;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -40,8 +37,8 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     private static final String TAG = EGLUIManager.class.getSimpleName().toUpperCase();
 
     // logging stuff
-    boolean logFrameTime=true;
-    boolean logTextureTime=true;
+    boolean logFrameTime=false;
+    boolean logTextureTime=false;
     long longestTextureTime=0;
     long totalTextureTime=0;
 
@@ -143,6 +140,14 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     public FloatBuffer vertexBuffer;
     public ShortBuffer drawListBuffer;
     public FloatBuffer uvBuffer;
+    private FloatBuffer colorBuffer;
+
+    private int mPositionHandle;
+    private int mTexCoordLoc;
+    private int mColorHandle;
+    private int mtrxhandle;
+    private int mSamplerLoc;
+
 
     // Our screenresolution
     float   mScreenWidth = 1280;
@@ -176,12 +181,13 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
     @Override
     public void close() {
-
+        GFXCMD_DEINIT();
+        activity.finish();
     }
 
     @Override
     public void refresh() {
-
+        connection.postRepaintEvent(0,0,(int)mScreenWidth,(int)mScreenHeight);
     }
 
     @Override
@@ -195,12 +201,20 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     }
 
     @Override
-    public void drawRect(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+    public void drawRect(final int x, final int y, final int width, final int height, int thickness, final int argbTL, int argbTR, int argbBR, int argbBL) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Rect r = new Rect();
+                r.SetRectXY(x,y,width,height,argbTL, mScreenWidth, mScreenHeight);
+                r.draw(mtrxProjectionAndView);
+            }
+        });
     }
 
     @Override
     public void fillRect(int x, int y, int w, int h, int argbTL, int argbTR, int argbBR, int argbBL) {
+        drawRect(x,y,w,h,1,argbTL,0,0,0);
     }
 
     @Override
@@ -220,40 +234,36 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
     @Override
     public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+        drawRect(x,y,width,height,1,argbTL,0,0,0);
     }
 
     @Override
     public void fillRoundRect(int x, int y, int width, int height, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
-    }
-
-    private float X(float x) {
-        //return -1f+(x/size.getWidth())*2;
-        return x;
+        drawRect(x,y,width,height,1,argbTL,0,0,0);
     }
 
     private float Y(float y) {
-        //return -1f+((size.getHeight()-y)/size.getHeight())*2;
         return mScreenHeight-y;
     }
 
     private float UX(float x, float w) {
         float v = x/w;
-        //Log.d(TAG, "X: " + x + ", W: " + w + " = " + v);
         return v;
     }
     private float UY(float y, float h) {
         float v = y/h;
-        //Log.d(TAG, "Y: " + y + ", H: " + h + " = " + v);
         return v;
     }
 
+    int lastColor = -1;
     @Override
     public void drawTexture(final int x, final int y, final int w, final int h, final int handle, final ImageHolder<EGLTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
         invokeLater(new Runnable() {
             @Override
             public void run() {
+                // Set our shader programm
+                GLES20.glUseProgram(riGraphicTools.sp_Image);
+
                 // set the image location on the screen
                 // We have to create the vertices of our triangles (ie, 2 of them to make a rectangle)
                 final int y1 = y;
@@ -266,21 +276,9 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                                 x+w1, Y(y1), 0.0f,
                         };
 
-                indices = new short[] {0, 1, 2, 0, 2, 3}; // The order of vertexrendering.
-
                 // The vertex buffer.
-                ByteBuffer bb = ByteBuffer.allocateDirect(vertices.length * 4);
-                bb.order(ByteOrder.nativeOrder());
-                vertexBuffer = bb.asFloatBuffer();
                 vertexBuffer.put(vertices);
                 vertexBuffer.position(0);
-
-                // initialize byte buffer for the draw list
-                ByteBuffer dlb = ByteBuffer.allocateDirect(indices.length * 2);
-                dlb.order(ByteOrder.nativeOrder());
-                drawListBuffer = dlb.asShortBuffer();
-                drawListBuffer.put(indices);
-                drawListBuffer.position(0);
 
                 // texture width and height
                 float tw=img.get().width;
@@ -296,43 +294,47 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                 };
 
                 // The texture buffer
-                bb = ByteBuffer.allocateDirect(uvs.length * 4);
-                bb.order(ByteOrder.nativeOrder());
-                uvBuffer = bb.asFloatBuffer();
                 uvBuffer.put(uvs);
                 uvBuffer.position(0);
 
+                if (blend!=lastColor) {
 //                // setup color
-                colors = new float[] {
-                    1f*((blend >> 16) & 0xFF)/255f,
-                        1f*((blend >> 8) & 0xFF)/255f,
-                        1f*((blend >> 0) & 0xFF)/255f,
-                        1f*((blend >> 24) & 0xFF)/255f,
+                    colors = new float[]{
+                            1f * ((blend >> 16) & 0xFF) / 255f,
+                            1f * ((blend >> 8) & 0xFF) / 255f,
+                            1f * ((blend >> 0) & 0xFF) / 255f,
+                            1f * ((blend >> 24) & 0xFF) / 255f,
 
-                        1f*((blend >> 16) & 0xFF)/255f,
-                        1f*((blend >> 8) & 0xFF)/255f,
-                        1f*((blend >> 0) & 0xFF)/255f,
-                        1f*((blend >> 24) & 0xFF)/255f,
+                            1f * ((blend >> 16) & 0xFF) / 255f,
+                            1f * ((blend >> 8) & 0xFF) / 255f,
+                            1f * ((blend >> 0) & 0xFF) / 255f,
+                            1f * ((blend >> 24) & 0xFF) / 255f,
 
-                        1f*((blend >> 16) & 0xFF)/255f,
-                        1f*((blend >> 8) & 0xFF)/255f,
-                        1f*((blend >> 0) & 0xFF)/255f,
-                        1f*((blend >> 24) & 0xFF)/255f,
+                            1f * ((blend >> 16) & 0xFF) / 255f,
+                            1f * ((blend >> 8) & 0xFF) / 255f,
+                            1f * ((blend >> 0) & 0xFF) / 255f,
+                            1f * ((blend >> 24) & 0xFF) / 255f,
 
-                        1f*((blend >> 16) & 0xFF)/255f,
-                        1f*((blend >> 8) & 0xFF)/255f,
-                        1f*((blend >> 0) & 0xFF)/255f,
-                        1f*((blend >> 24) & 0xFF)/255f
-                };
+                            1f * ((blend >> 16) & 0xFF) / 255f,
+                            1f * ((blend >> 8) & 0xFF) / 255f,
+                            1f * ((blend >> 0) & 0xFF) / 255f,
+                            1f * ((blend >> 24) & 0xFF) / 255f
+                    };
 
-                // color
-                // The vertex buffer.
-                ByteBuffer bb3 = ByteBuffer.allocateDirect(colors.length * 4);
-                bb3.order(ByteOrder.nativeOrder());
-                FloatBuffer colorBuffer = bb3.asFloatBuffer();
-                colorBuffer.put(colors);
-                colorBuffer.position(0);
+                    // color
+                    // The vertex buffer.
+                    colorBuffer.put(colors);
+                    colorBuffer.position(0);
+                }
 
+                // set the color
+                // Enable a handle to the triangle vertices
+                GLES20.glEnableVertexAttribArray(mColorHandle);
+
+                // Prepare the background coordinate data
+                GLES20.glVertexAttribPointer(mColorHandle, 4,
+                        GLES20.GL_FLOAT, false,
+                        0, colorBuffer);
 
                 GLES10.glEnable(GLES10.GL_BLEND);
                 GLES10.glEnable(GLES10.GL_TEXTURE_2D);
@@ -352,14 +354,7 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                 }
 
 
-
-
-
                 // ---- Render the Image
-                // get handle to vertex shader's vPosition member
-                int mPositionHandle =
-                        GLES20.glGetAttribLocation(riGraphicTools.sp_Image, "vPosition");
-
                 // Enable generic vertex attribute array
                 GLES20.glEnableVertexAttribArray(mPositionHandle);
 
@@ -368,44 +363,17 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
                         GLES20.GL_FLOAT, false,
                         0, vertexBuffer);
 
-                // Get handle to texture coordinates location
-                int mTexCoordLoc = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
-                        "a_texCoord" );
-
                 // Enable generic vertex attribute array
-                GLES20.glEnableVertexAttribArray ( mTexCoordLoc );
+                GLES20.glEnableVertexAttribArray(mTexCoordLoc);
 
                 // Prepare the texturecoordinates
-                GLES20.glVertexAttribPointer ( mTexCoordLoc, 2, GLES20.GL_FLOAT,
+                GLES20.glVertexAttribPointer(mTexCoordLoc, 2, GLES20.GL_FLOAT,
                         false,
                         0, uvBuffer);
 
 
-                // set the color
-                int mColorHandle = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
-                        "a_Color");
-
-                // Enable a handle to the triangle vertices
-                GLES20.glEnableVertexAttribArray(mColorHandle);
-
-                // Prepare the background coordinate data
-                GLES20.glVertexAttribPointer(mColorHandle, 4,
-                        GLES20.GL_FLOAT, false,
-                        0, colorBuffer);
-
-
-                //GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_UNSIGNED_BYTE, GLES20.GL_TRUE, 0, pColors2);
-
-                // Get handle to shape's transformation matrix
-                int mtrxhandle = GLES20.glGetUniformLocation(riGraphicTools.sp_Image,
-                        "uMVPMatrix");
-
                 // Apply the projection and view transformation
                 GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, mtrxProjectionAndView, 0);
-
-                // Get handle to textures locations
-                int mSamplerLoc = GLES20.glGetUniformLocation (riGraphicTools.sp_Image,
-                        "s_texture" );
 
                 // Set the sampler texture unit to 0, where we have saved the texture.
                 GLES20.glUniform1i(mSamplerLoc, 0);
@@ -421,6 +389,8 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
                 GLES10.glDisable(GLES10.GL_BLEND);
                 GLES10.glDisable(GLES10.GL_TEXTURE_2D);
+
+                lastColor=blend;
             }
         });
 
@@ -428,13 +398,30 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2) {
-
+    public void drawLine(final int x1, final int y1, final int x2, final int y2, final int argb1, int argb2) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Line l = new Line();
+                l.SetLineXY(x1,y1,x2,y2,argb1,mScreenWidth,mScreenHeight);
+                l.draw(mtrxProjectionAndView);
+            }
+        });
     }
 
     @Override
     public ImageHolder<EGLTexture> loadImage(int width, int height) {
         return null;
+    }
+
+    @Override
+    public void unloadImage(int handle, final ImageHolder<EGLTexture> bi) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                GLES10.glDeleteTextures(1, bi.get().get(), 0);
+            }
+        });
     }
 
     @Override
@@ -572,8 +559,51 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
         GLES20.glAttachShader(riGraphicTools.sp_Image, fragmentShader);
         GLES20.glLinkProgram(riGraphicTools.sp_Image);
 
-        // Set our shader programm
-        GLES20.glUseProgram(riGraphicTools.sp_Image);
+        // get handle to vertex shader's vPosition member
+        mPositionHandle =
+                GLES20.glGetAttribLocation(riGraphicTools.sp_Image, "vPosition");
+
+        // Get handle to texture coordinates location
+        mTexCoordLoc = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
+                "a_texCoord" );
+
+        mColorHandle = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
+                "a_Color");
+
+
+        // Get handle to shape's transformation matrix
+        mtrxhandle = GLES20.glGetUniformLocation(riGraphicTools.sp_Image,
+                "uMVPMatrix");
+
+        // Get handle to textures locations
+        mSamplerLoc = GLES20.glGetUniformLocation (riGraphicTools.sp_Image,
+                "s_texture" );
+
+
+        // draw vertex order
+        indices = new short[] {0, 1, 2, 0, 2, 3}; // The order of vertexrendering.
+
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(indices.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(indices);
+        drawListBuffer.position(0);
+
+        // create vertex buffer
+        ByteBuffer bb = ByteBuffer.allocateDirect(3 * 4 * 4); // 3 coords * 4 vertices * 4
+        bb.order(ByteOrder.nativeOrder());
+        vertexBuffer = bb.asFloatBuffer();
+
+        // UV buffer
+        bb = ByteBuffer.allocateDirect(2 * 4 * 4); // 2 coords * 4 vertices * 4
+        bb.order(ByteOrder.nativeOrder());
+        uvBuffer = bb.asFloatBuffer();
+
+        // color buffer
+        bb = ByteBuffer.allocateDirect(4 * 4 * 4); // rgba * 4 vertices * 4
+        bb.order(ByteOrder.nativeOrder());
+        colorBuffer = bb.asFloatBuffer();
     }
 
     @Override
@@ -610,16 +640,20 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
     @Override
     public void onDrawFrame(GL10 notused) {
-        Log.d(TAG, "GL draw frame");
         // clear Screen and Depth Buffer,
         // we have set the clear color as black.
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        long st=System.currentTimeMillis();
         synchronized (renderQueue) {
             for (Runnable r : renderQueue) {
                 r.run();
             }
             renderQueue.clear();
+        }
+        long et=System.currentTimeMillis();
+        if (logFrameTime) {
+            Log.d(TAG, "RENDER: Time: " + (et-st) + "ms");
         }
     }
 }

@@ -107,6 +107,11 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 		return delegate.loadImage(width, height);
 	}
 
+	@Override
+	public void unloadImage(int handle, ImageHolder<Image> bi) {
+		log(String.format("unloadImage(%s)", bi));
+	}
+
 	public ImageHolder<Image> createSurface(int handle, int width, int height) {
 		log(String.format("createSurface[%s](%s,%s)", handle, width, height));
 		return delegate.createSurface(handle, width, height);

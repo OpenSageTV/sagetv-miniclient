@@ -12,7 +12,6 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -29,8 +28,6 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.R;
-import sagex.miniclient.android.canvas.CanvasUIManager;
-import sagex.miniclient.android.canvas.UIGestureListener;
 import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.uibridge.UIManager;
@@ -52,12 +49,14 @@ public class MiniClientGLActivity extends Activity {
     private MiniClientConnection client;
 
     public MiniClientGLActivity() {
-        MiniClient.startup(new String[]{});
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        hideSystemUI();
+
         setContentView(R.layout.miniclientgl_layout);
         surfaceHolder=(FrameLayout)findViewById(R.id.surface);
         pleaseWait = (View)findViewById(R.id.waitforit);
@@ -149,6 +148,8 @@ public class MiniClientGLActivity extends Activity {
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, Keys.VK_LEFT);
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, Keys.VK_RIGHT);
         KEYMAP.put(KeyEvent.KEYCODE_BUTTON_SELECT, Keys.VK_ENTER);
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_START, Keys.VK_ENTER);
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, Keys.VK_ENTER);
         KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, Keys.VK_ENTER);
         KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, Keys.VK_ESCAPE);
     }
@@ -228,4 +229,29 @@ public class MiniClientGLActivity extends Activity {
                     .setNegativeButton("No", null)
                     .show();
         }
+
+    // This snippet hides the system bars.
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        getWindow().getDecorView().setSystemUiVisibility(
+                //View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        //| View.SYSTEM_UI_FLAG_IMMERSIVE
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        );
+    }
+
+    // This snippet shows the system bars. It does this by removing all the flags
+// except for the ones that make the content appear under the system bars.
+    private void showSystemUI() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
 }
