@@ -1,6 +1,8 @@
 package sagex.miniclient.android.gl;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.opengl.GLES10;
 import android.opengl.GLES20;
@@ -11,6 +13,9 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -37,8 +42,8 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     private static final String TAG = EGLUIManager.class.getSimpleName().toUpperCase();
 
     // logging stuff
-    boolean logFrameTime=false;
-    boolean logTextureTime=false;
+    boolean logFrameTime=true;
+    boolean logTextureTime=true;
     long longestTextureTime=0;
     long totalTextureTime=0;
 
@@ -138,7 +143,7 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
             @Override
             public void run() {
                 Rect r = new Rect();
-                r.SetRectXY(x,y,width,height,argbTL, mScreenWidth, mScreenHeight);
+                r.SetRectXY(x, y, width, height, argbTL, mScreenWidth, mScreenHeight);
                 r.draw(mtrxProjectionAndView);
             }
         });
@@ -361,18 +366,36 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     }
 
     @Override
-    public ImageHolder<EGLTexture> createSurface(int handle, int width, int height) {
+    public ImageHolder<EGLTexture> readImage(File file) throws Exception {
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            try {
+                return readImage(fis);
+            } finally {
+                fis.close();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 
     @Override
-    public ImageHolder<EGLTexture> readImage(File cachedFile) throws Exception {
-        return new ImageHolder<>(new EGLTexture(cachedFile));
-    }
+    public ImageHolder<EGLTexture> readImage(InputStream fis) throws Exception {
+        long st = System.currentTimeMillis();
 
-    @Override
-    public ImageHolder<EGLTexture> readImage(InputStream bais) throws Exception {
-        return null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
+
+        long time = System.currentTimeMillis()-st;
+        totalTextureTime+=time;
+        longestTextureTime=Math.max(time,longestTextureTime);
+
+        return new ImageHolder<>(new EGLTexture(bitmap));
     }
 
     @Override
@@ -381,8 +404,27 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     }
 
     @Override
-    public void setTargetSurface(int handle, ImageHolder<EGLTexture> image) {
+    public ImageHolder<EGLTexture> createSurface(int handle, int width, int height) {
+        final EGLTexture t = new EGLTexture(true, width, height);
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // setup the texture and bind the framebuffer
+                t.load();
+                t.bindFramebuffer();
+            }
+        });
+        return new ImageHolder<>(t);
+    }
 
+    @Override
+    public void setTargetSurface(int handle, ImageHolder<EGLTexture> image) {
+        if (handle==0) {
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+            //image.get().unbindFramebuffer();
+        } else {
+            image.get().bindFramebuffer();
+        }
     }
 
     @Override
