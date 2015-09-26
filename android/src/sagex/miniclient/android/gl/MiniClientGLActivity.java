@@ -29,6 +29,7 @@ import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.R;
 import sagex.miniclient.uibridge.Keys;
+import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.uibridge.UIManager;
 
@@ -47,6 +48,7 @@ public class MiniClientGLActivity extends Activity {
     EGLUIManager mgr;
     GestureDetectorCompat mDetector = null;
     private MiniClientConnection client;
+    private UIGestureListener mGestureListener;
 
     public MiniClientGLActivity() {
     }
@@ -99,8 +101,8 @@ public class MiniClientGLActivity extends Activity {
         client = new MiniClientConnection(si.address, getMACAddress(), false, info, factory);
         mgr.setConnection(client);
 
-        final UIGestureListener gestureListener =new UIGestureListener(client);
-        mDetector = new GestureDetectorCompat(this, gestureListener);
+        mGestureListener =new UIGestureListener(client);
+        mDetector = new GestureDetectorCompat(this, mGestureListener);
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -133,8 +135,7 @@ public class MiniClientGLActivity extends Activity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (mDetector!=null) {
-            //Log.d(TAG, "Passing to touch event: " + event);
-            mDetector.onTouchEvent(event);
+            mGestureListener.processRawEvent(mDetector, event);
         }
         return super.onTouchEvent(event);
     }

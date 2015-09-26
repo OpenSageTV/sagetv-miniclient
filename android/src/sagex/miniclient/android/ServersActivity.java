@@ -15,7 +15,6 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.Servers;
-import sagex.miniclient.android.canvas.MiniClientActivity;
 import sagex.miniclient.android.gl.MiniClientGLActivity;
 
 /**

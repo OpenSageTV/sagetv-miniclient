@@ -59,74 +59,6 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
 
-    // --------- BEGIN GL Stuff
-    // http://androidblog.reindustries.com/a-real-opengl-es-2-0-2d-tutorial-part-2/
-    public static class riGraphicTools {
-
-        // Program variables
-        public static int sp_SolidColor;
-        public static int sp_Image;
-
-        /* SHADER Solid
-         *
-         * This shader is for rendering a colored primitive.
-         *
-         */
-        public static final String vs_SolidColor =
-                "uniform    mat4        uMVPMatrix;" +
-                        "attribute  vec4        vPosition;" +
-                        "void main() {" +
-                        "  gl_Position = uMVPMatrix * vPosition;" +
-                        "}";
-
-        public static final String fs_SolidColor =
-                "precision mediump float;" +
-                        "void main() {" +
-                        "  gl_FragColor = vec4(0.5,0,0,1);" +
-                        "}";
-
-        /* SHADER Image
- *
- * This shader is for rendering 2D images straight from a texture
- * No additional effects.
- *
- */
-        public static final String vs_Image =
-                "uniform mat4 uMVPMatrix;" +
-                        "attribute vec4 vPosition;" +
-                        "attribute vec4 a_Color;" +
-                        "attribute vec2 a_texCoord;" +
-                        "varying vec4 v_Color;" +
-                        "varying vec2 v_texCoord;" +
-                        "void main() {" +
-                        "  gl_Position = uMVPMatrix * vPosition;" +
-                        "  v_texCoord = a_texCoord;" +
-                        "  v_Color = a_Color;" +
-                        "}";
-        public static final String fs_Image =
-                "precision mediump float;" +
-                        "varying vec2 v_texCoord;" +
-                        "varying vec4 v_Color;" +
-                        "uniform sampler2D s_texture;" +
-                        "void main() {" +
-                        "  gl_FragColor = texture2D( s_texture, v_texCoord ) * v_Color;" +
-                        "  gl_FragColor.rgb *= v_Color.a;" +
-                        "}";
-        public static int loadShader(int type, String shaderCode){
-
-            // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
-            // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
-            int shader = GLES20.glCreateShader(type);
-
-            // add the source code to the shader and compile it
-            GLES20.glShaderSource(shader, shaderCode);
-            GLES20.glCompileShader(shader);
-
-            // return the shader
-            return shader;
-        }
-    }
-
     // Our matrices
     private final float[] mtrxProjection = new float[16];
     private final float[] mtrxView = new float[16];
@@ -262,7 +194,7 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
             @Override
             public void run() {
                 // Set our shader programm
-                GLES20.glUseProgram(riGraphicTools.sp_Image);
+                GLES20.glUseProgram(GLUtils.TextureShaderUtil.sp_Image);
 
                 // set the image location on the screen
                 // We have to create the vertices of our triangles (ie, 2 of them to make a rectangle)
@@ -531,6 +463,9 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
     public void setConnection(MiniClientConnection connection) {
         this.connection = connection;
     }
+    public MiniClientConnection getConnection() {
+        return connection;
+    }
 
     @Override
     public void onSurfaceCreated(GL10 notused, EGLConfig config) {
@@ -538,45 +473,35 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
 
         // Create the shaders, solid color
-        int vertexShader = riGraphicTools.loadShader(GLES20.GL_VERTEX_SHADER,
-                riGraphicTools.vs_SolidColor);
-        int fragmentShader = riGraphicTools.loadShader(GLES20.GL_FRAGMENT_SHADER,
-                riGraphicTools.fs_SolidColor);
-
-        riGraphicTools.sp_SolidColor = GLES20.glCreateProgram();
-        GLES20.glAttachShader(riGraphicTools.sp_SolidColor, vertexShader);
-        GLES20.glAttachShader(riGraphicTools.sp_SolidColor, fragmentShader);
-        GLES20.glLinkProgram(riGraphicTools.sp_SolidColor);
-
         // Create the shaders, images
-        vertexShader = riGraphicTools.loadShader(GLES20.GL_VERTEX_SHADER,
-                riGraphicTools.vs_Image);
-        fragmentShader = riGraphicTools.loadShader(GLES20.GL_FRAGMENT_SHADER,
-                riGraphicTools.fs_Image);
+        int vertexShader = GLUtils.loadShader(GLES20.GL_VERTEX_SHADER,
+                GLUtils.TextureShaderUtil.vs_Image);
+        int fragmentShader = GLUtils.loadShader(GLES20.GL_FRAGMENT_SHADER,
+                GLUtils.TextureShaderUtil.fs_Image);
 
-        riGraphicTools.sp_Image = GLES20.glCreateProgram();
-        GLES20.glAttachShader(riGraphicTools.sp_Image, vertexShader);
-        GLES20.glAttachShader(riGraphicTools.sp_Image, fragmentShader);
-        GLES20.glLinkProgram(riGraphicTools.sp_Image);
+        GLUtils.TextureShaderUtil.sp_Image = GLES20.glCreateProgram();
+        GLES20.glAttachShader(GLUtils.TextureShaderUtil.sp_Image, vertexShader);
+        GLES20.glAttachShader(GLUtils.TextureShaderUtil.sp_Image, fragmentShader);
+        GLES20.glLinkProgram(GLUtils.TextureShaderUtil.sp_Image);
 
         // get handle to vertex shader's vPosition member
         mPositionHandle =
-                GLES20.glGetAttribLocation(riGraphicTools.sp_Image, "vPosition");
+                GLES20.glGetAttribLocation(GLUtils.TextureShaderUtil.sp_Image, "vPosition");
 
         // Get handle to texture coordinates location
-        mTexCoordLoc = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
+        mTexCoordLoc = GLES20.glGetAttribLocation(GLUtils.TextureShaderUtil.sp_Image,
                 "a_texCoord" );
 
-        mColorHandle = GLES20.glGetAttribLocation(riGraphicTools.sp_Image,
+        mColorHandle = GLES20.glGetAttribLocation(GLUtils.TextureShaderUtil.sp_Image,
                 "a_Color");
 
 
         // Get handle to shape's transformation matrix
-        mtrxhandle = GLES20.glGetUniformLocation(riGraphicTools.sp_Image,
+        mtrxhandle = GLES20.glGetUniformLocation(GLUtils.TextureShaderUtil.sp_Image,
                 "uMVPMatrix");
 
         // Get handle to textures locations
-        mSamplerLoc = GLES20.glGetUniformLocation (riGraphicTools.sp_Image,
+        mSamplerLoc = GLES20.glGetUniformLocation (GLUtils.TextureShaderUtil.sp_Image,
                 "s_texture" );
 
 
@@ -631,11 +556,6 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
 
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, mtrxView, 0);
-
-        // Create the triangles
-//        SetupImageLocation(0, 0, mScreenWidth, mScreenHeight);
-//        // Create the image information
-//        SetupImage();
     }
 
     @Override
