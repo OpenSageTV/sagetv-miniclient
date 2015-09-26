@@ -148,20 +148,34 @@ public class MiniClientGLActivity extends Activity {
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, Keys.VK_DOWN);
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, Keys.VK_LEFT);
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, Keys.VK_RIGHT);
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_SELECT, Keys.VK_ENTER);
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_START, Keys.VK_ENTER);
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, Keys.VK_ENTER);
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, Keys.VK_ENTER);
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, Keys.VK_ESCAPE);
+
+        //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_SELECT, Keys.VK_ENTER);
+        //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_START, Keys.VK_ENTER);
+
+        //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, Keys.VK_ENTER); (DPAD Center will catch this)
+        //KEYMAP.put(KeyEvent.KEYCODE_BACK, Keys.VK_ESCAPE);
+
+        KEYMAP.put(KeyEvent.KEYCODE_BACK, Keys.VK_ESCAPE);
     }
 
+    long lastPress=0;
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        Log.d(TAG, "POST KEYCODE: " +keyCode + "; " + event);
+
+//        // Sometimes the Android remote will auto-send multiple keys
+//        // eg, if you hit A, it also sends
+//        if (System.currentTimeMillis()-lastPress<100) {
+//            Log.d(TAG, "Aborting Android Double Press: " +keyCode + "; " + event);
+//        }
+        lastPress=System.currentTimeMillis();
         if (KEYMAP.containsKey(keyCode)) {
             keyCode = KEYMAP.get(keyCode);
-            client.postKeyEvent(keyCode, 0, (char)0);
+            client.postKeyEvent(keyCode, 0, (char) 0);
         } else {
-            client.postKeyEvent(keyCode, 0, (char)event.getUnicodeChar());
+            // only send keys that we have vetted, sending other keys will cause issues
+            // client.postKeyEvent(keyCode, 0, (char) event.getUnicodeChar());
         }
         return super.onKeyUp(keyCode, event);
     }
