@@ -1,33 +1,22 @@
 package sagex.miniclient.android.gl;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.util.Log;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import javax.microedition.khronos.opengles.GL10;
-import javax.microedition.khronos.opengles.GL11ExtensionPack;
-
-import sagex.miniclient.uibridge.ImageHolder;
 
 /**
  * Created by seans on 19/09/15.
  */
 public class EGLTexture {
     private static final String TAG = "EGLTexture";
-    private int[] texture;
-    private Bitmap bitmap;
     public boolean loaded=false;
     public int width;
     public int height;
-
     boolean createFrameBuffer=false;
+    private int[] texture;
+    private Bitmap bitmap;
 
     public EGLTexture(boolean createFrameBuffer, int width, int height) {
         this.createFrameBuffer=createFrameBuffer;

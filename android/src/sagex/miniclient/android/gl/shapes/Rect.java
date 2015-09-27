@@ -1,13 +1,5 @@
 package sagex.miniclient.android.gl.shapes;
 
-import android.opengl.GLES20;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-
-import sagex.miniclient.android.gl.GLUtils;
-
 /**
  * A very inefficient rectangle...fortunately MiniClient doesn't use it often.  I hope no-one see this :(
  */

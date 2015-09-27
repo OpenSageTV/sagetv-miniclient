@@ -16,13 +16,23 @@
 package sagex.miniclient;
 
 public class MiniClient {
+	public static final String BYTE_CHARSET = "ISO8859_1";
 	public static boolean WINDOWS_OS = false;
 	public static boolean MAC_OS_X = false;
 	public static boolean LINUX_OS = false;
 	public static java.util.Properties myProperties;
 	public static boolean fsStartup = false;
 	public static Integer irKillCode = null;
-	public static final String BYTE_CHARSET = "ISO8859_1";
+	public static String cryptoFormats = "";
+	public static String[] mainArgs;
+	public static java.text.DateFormat DF = new java.text.SimpleDateFormat("EE M/d H:mm:ss.SSS");
+	public static boolean forcedServer = false;
+	public static String forcedMAC = null;
+	private static boolean online = false;
+	private static int ConnectionError = 0;
+	private static java.io.File configDir;
+	private static boolean shuttingDown = false;
+	private static SageLocatorService locatorService;
 
 	static {
 		System.out.println("Starting MiniClient");
@@ -30,11 +40,6 @@ public class MiniClient {
 		MAC_OS_X = System.getProperty("os.name").toLowerCase().indexOf("mac os x") != -1;
 		LINUX_OS = !WINDOWS_OS && !MAC_OS_X;
 	}
-
-	public static String cryptoFormats = "";
-	private static int ConnectionError = 0;
-	public static String[] mainArgs;
-	public static java.text.DateFormat DF = new java.text.SimpleDateFormat("EE M/d H:mm:ss.SSS");;
 
 	public static final String df() {
 		return df(System.currentTimeMillis());
@@ -45,8 +50,6 @@ public class MiniClient {
 			return DF.format(new java.util.Date(time));
 		}
 	}
-
-	private static java.io.File configDir;
 
 	public static void saveConfig() {
 		java.io.OutputStream os = null;
@@ -72,11 +75,6 @@ public class MiniClient {
 			os = null;
 		}
 	}
-
-	private static boolean shuttingDown = false;
-	public static boolean forcedServer = false;
-	public static String forcedMAC = null;
-	private static SageLocatorService locatorService;
 
 	public static void startup(String[] args) {
 		if (MAC_OS_X) {
@@ -157,8 +155,26 @@ public class MiniClient {
 			// If we don't do RSA, then we use DH for the key exchange and DES
 			// for the secret stuff
 			cryptoFormats = "DH,DES";
-		}		
+		}
+
+		online = true;
 	}
+
+	public static boolean isUsingOpenGL() {
+		return getBooleanProperty("opengl", "true");
+	}
+
+	public static boolean getBooleanProperty(String prop, String def) {
+		String v = getProperty(prop, def);
+		return v.equalsIgnoreCase("true") || v.equals("1") || v.equals("yes");
+	}
+
+	public static String getProperty(String prop, String def) {
+		if (!online)
+			throw new RuntimeException("MiniClient.startup() must be called before getProperty()");
+		return myProperties.getProperty(prop, def);
+	}
+
 
 	private static void startupPM() {
 //		sage.PowerManagement pm = MiniClientPowerManagement.getInstance();

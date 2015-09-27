@@ -1,12 +1,10 @@
 package sagex.miniclient.android.gdx;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.opengl.GLES20;
-import android.opengl.GLUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
@@ -17,12 +15,10 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -31,12 +27,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
-import sagex.miniclient.android.gl.EGLTexture;
+import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -70,19 +66,18 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
     Dimension size;
     Scale scale = new Scale(1,1);
-
+    // Current Surface (when surfaces are enabled)
+    GdxTexture currentSurface = null;
     // render queues
     private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
-
     // communication with SageTV
     private MiniClientConnection connection;
-
     // the pipeline is synchonous so only one operations can affect this at a time
     private Color batchColor=null;
-
-    // Current Surface (when surfaces are enabled)
-    GdxTexture currentSurface=null;
+    // Because getColor() is only called on the render queue, in sequence we can do this
+    private Color lastColor = null;
+    private int lastColorInt = -1;
 
     public MiniClientRenderer(MiniClientGDXActivity parent) {
         this.activity=parent;
@@ -302,7 +297,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
                 shapeRenderer.setColor(getColor(argbTL));
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.circle(x,y,height/2);
+                shapeRenderer.circle(x, y, height / 2);
                 shapeRenderer.end();
 
                 batch.begin();
@@ -313,7 +308,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     @Override
     public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
         // TODO: make it rounded (Maybe use Canvas and get bitmap as texture... Not efficient, but not used a lot either)
-        drawRect(x,y,width,height,thickness,argbTL,argbTR,argbBR,argbBL);
+        drawRect(x, y, width, height, thickness, argbTL, argbTR, argbBR, argbBL);
     }
 
     @Override
@@ -322,9 +317,6 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         fillRect(x, y, width, height, argbTL, argbTR, argbBR, argbBL);
     }
 
-    // Because getColor() is only called on the render queue, in sequence we can do this
-    private Color lastColor=null;
-    private int lastColorInt=-1;
     private Color getColor(int color) {
         if (lastColor!=null && color==lastColorInt) return lastColor;
         lastColorInt=color;
@@ -570,6 +562,29 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     @Override
     public Scale getScale() {
         return scale;
+    }
+
+    @Override
+    public boolean createVideo(int width, int height, int format) {
+        Log.d(TAG, "CREATE VIDEO " + width + "x" + height + "; Format: " + format);
+        return false;
+    }
+
+    @Override
+    public boolean updateVideo(int frametype, ByteBuffer buf) {
+        Log.d(TAG, "UPDATE VIDEO FRAMETYPE:" + frametype);
+        return false;
+    }
+
+    @Override
+    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
+        Log.d(TAG, "New Player Requested");
+        return new AndroidMediaPlayer();
+    }
+
+    @Override
+    public void setVideoBounds(Object o, Object o1) {
+        Log.d(TAG, "Set Video Bounds:" + o + " - " + o1);
     }
 
     public void setConnection(MiniClientConnection connection) {

@@ -2,8 +2,10 @@ package sagex.miniclient.uibridge;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
-import sagex.miniclient.MiniClientConnectionGateway;
+import sagex.miniclient.MiniClientConnection;
+import sagex.miniclient.MiniPlayerPlugin;
 
 public interface UIManager<Image> {
 	void GFXCMD_INIT();
@@ -45,4 +47,13 @@ public interface UIManager<Image> {
 	void setSize(int w, int h);
 	void invokeLater(Runnable runnable);
     Scale getScale();
+
+	// video playback
+	boolean createVideo(int width, int height, int format);
+
+	boolean updateVideo(int frametype, ByteBuffer buf);
+
+	MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection);
+
+	void setVideoBounds(Object o, Object o1);
 }

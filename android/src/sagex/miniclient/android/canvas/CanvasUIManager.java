@@ -19,11 +19,13 @@ import android.view.WindowManager;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import sagex.miniclient.GFXCMD2;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientConnectionGateway;
+import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -34,32 +36,28 @@ import sagex.miniclient.uibridge.UIManager;
  */
 public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callback {
     private static final String TAG = "CanvasUI";
-    private int WIDTH = 720;
-    private int HEIGHT = 480;
-
-    private SurfaceHolder holder;
-    private final MiniClientActivity ctx;
-    private Canvas canvas = null;
-
-    private boolean firstFrame = true;
-
+    private final MiniClientCanvasActivity ctx;
     Scale scale = new Scale(1, 1);
-
     boolean logFrameTime=true;
     long frameTime = 0;
     long frameOps=0;
     long frame=0;
-
     // this only ever accessed by a single thread
     Rect srcRect = new Rect();
     Rect dstRect = new Rect();
     Paint shapePaint = new Paint();
     Paint fontPaint = new Paint();
     Paint texturePaint = new Paint();
-
     MiniClientConnectionGateway myConn = null;
+    HashMap<Integer, ColorFilter> colorFilters = new HashMap<>();
+    int targetSurface = 0;
+    private int WIDTH = 720;
+    private int HEIGHT = 480;
+    private SurfaceHolder holder;
+    private Canvas canvas = null;
+    private boolean firstFrame = true;
 
-    public CanvasUIManager(MiniClientActivity ctx) {
+    public CanvasUIManager(MiniClientCanvasActivity ctx) {
         this.ctx = ctx;
     }
 
@@ -82,6 +80,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
 
         shapePaint.setAntiAlias(true);
         shapePaint.setDither(true);
+        shapePaint.setFilterBitmap(true);
 
         // tell android to show our view
         if (firstFrame) {
@@ -235,22 +234,30 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
 
     @Override
     public void drawTexture(final int x, final int y, final int width, final int height, int handle, final ImageHolder<Bitmap> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
+        if (img.get() == null) {
+            Log.d(TAG, "Restoring Surface " + handle);
+            if (canvas.getSaveCount() > 1) {
+                canvas.restore();
+                canvas.save();
+            }
+
+            return;
+        }
         srcRect.set(srcx, srcy, srcx + srcwidth, srcy + srcheight);
         dstRect.set(x, y, x + Math.abs(width), y + Math.abs(height));
 
         if (width < 0) {
             // font
             fontPaint.setColorFilter(getColorFilter(blend));
-            canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, fontPaint);
+            canvas.drawBitmap(img.get(), srcRect, dstRect, fontPaint);
         } else {
             // faster with no paint
-            canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, null);
+            canvas.drawBitmap(img.get(), srcRect, dstRect, texturePaint);
             //canvas.drawBitmap((Bitmap) img.get(), srcRect, dstRect, texturePaint);
         }
         frameOps++;
     }
 
-    HashMap<Integer, ColorFilter> colorFilters = new HashMap<>();
     private ColorFilter getColorFilter(int blend) {
         ColorFilter cf = colorFilters.get(blend);
         if (cf==null) {
@@ -266,6 +273,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
             firstFrame = false;
             ctx.setConnectingIsVisible(false);
         }
+        Log.d(TAG, "End Frame[" + frame + "]");
         holder.unlockCanvasAndPost(canvas);
         canvas = null;
         if (logFrameTime) {
@@ -275,6 +283,7 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
 
     @Override
     public void startFrame() {
+        Log.d(TAG, "Start Frame[" + frame + "]");
         frameTime=System.currentTimeMillis();
         frameOps=0;
         canvas = holder.lockCanvas();
@@ -321,6 +330,26 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
         return scale;
     }
 
+    @Override
+    public boolean createVideo(int width, int height, int format) {
+        return false;
+    }
+
+    @Override
+    public boolean updateVideo(int frametype, ByteBuffer buf) {
+        return false;
+    }
+
+    @Override
+    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
+        return null;
+    }
+
+    @Override
+    public void setVideoBounds(Object o, Object o1) {
+
+    }
+
     // ----- LOCAL NETWORK OPTIMIZATION
     @Override
     public ImageHolder<Bitmap> loadImage(int width, int height) {
@@ -338,10 +367,13 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     public ImageHolder<Bitmap> newImage(int destWidth, int destHeight) {
         return loadImage(destWidth, destHeight);
     }
+    // ----- END LOCAL NETWORK OPTIMIZATION
+
+    // ------- Used for surfaces
 
     @Override
     public void loadImageLine(int handle, final ImageHolder<Bitmap> image, final int line, final int len2, final byte[] cmddata) {
-        Bitmap b = (Bitmap) image.get();
+        Bitmap b = image.get();
         int dataPos = 12;
         int pixel = 0;
         for (int i = 0; i < len2 / 4; i++, dataPos += 4) {
@@ -350,18 +382,30 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
             b.setPixel(i, line, pixel);
         }
     }
-    // ----- END LOCAL NETWORK OPTIMIZATION
-
-    // ------- Used for surfaces
 
     @Override
     public ImageHolder<Bitmap> createSurface(int handle, int width, int height) {
-        throw new UnsupportedOperationException("createSurface not implemented");
+        Log.d(TAG, "Create Surface: " + handle);
+        // just create a empty placeholder, since create surface just tells us to use the offscreen buffer for the next
+        // set of drawing operations, an we'll restore them later
+        ImageHolder i = new ImageHolder<>(null);
+        targetSurface = handle;
+        canvas.save();
+        return i;
     }
 
     @Override
     public void setTargetSurface(int handle, ImageHolder<Bitmap> image) {
-        throw new UnsupportedOperationException("setTargetSurface not implemented");
+        Log.d(TAG, "Set Target Surface doesn't work yet");
+        Log.d(TAG, "Set Target Surface: " + handle + " (save count: " + canvas.getSaveCount() + ")");
+        if (handle != targetSurface) {
+            // save the state of the last surface
+            Log.d(TAG, "Saving Canvas State; Surface changed.");
+            canvas.save();
+        } else {
+            Log.d(TAG, "Surface Is the Same as Last Time: " + handle);
+        }
+        targetSurface = handle;
     }
 
     @Override
@@ -372,12 +416,12 @@ public class CanvasUIManager implements UIManager<Bitmap>, SurfaceHolder.Callbac
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         this.holder = holder;
-        Log.d(TAG, "Surface Created");
+        Log.d(TAG, "Main Surface Created");
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d(TAG, "Surface Changed");
+        Log.d(TAG, "Main Surface Changed");
         this.WIDTH=width;
         this.HEIGHT=height;
         this.scale.setScale(1,1);

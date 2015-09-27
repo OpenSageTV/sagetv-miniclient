@@ -2,18 +2,21 @@ package sagex.miniclient.uibridge;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import sagex.miniclient.MiniClientConnection;
+import sagex.miniclient.MiniPlayerPlugin;
+
 public class LoggingUIManager<Image> implements UIManager<Image> {
     private static final boolean LOGGING = false;
-    private UIManager<Image> delegate;
+	Map<String, Boolean> logged = new HashMap<String, Boolean>();
+	private UIManager<Image> delegate;
 
 	public LoggingUIManager(UIManager<Image> delegate) {
 		this.delegate=delegate;
 	}
-
-	Map<String,Boolean> logged = new HashMap<String, Boolean>();
 
 	void log(String s) {
         if (LOGGING)
@@ -110,6 +113,7 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 	@Override
 	public void unloadImage(int handle, ImageHolder<Image> bi) {
 		log(String.format("unloadImage(%s)", bi));
+		delegate.unloadImage(handle, bi);
 	}
 
 	public ImageHolder<Image> createSurface(int handle, int width, int height) {
@@ -192,6 +196,30 @@ public class LoggingUIManager<Image> implements UIManager<Image> {
 	public Scale getScale() {
 		log("getScale");
 		return delegate.getScale();
+	}
+
+	@Override
+	public boolean createVideo(int width, int height, int format) {
+		log("createVideo");
+		return delegate.createVideo(width, height, format);
+	}
+
+	@Override
+	public boolean updateVideo(int frametype, ByteBuffer buf) {
+		log("updateVideo");
+		return delegate.updateVideo(frametype, buf);
+	}
+
+	@Override
+	public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
+		log("newPlayer");
+		return delegate.newPlayerPlugin(connection);
+	}
+
+	@Override
+	public void setVideoBounds(Object o, Object o1) {
+		log("setVideoBounds");
+		delegate.setVideoBounds(o, o1);
 	}
 
 }
