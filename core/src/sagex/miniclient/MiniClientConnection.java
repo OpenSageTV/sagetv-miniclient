@@ -926,8 +926,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 						else
 							propVal = "COLORKEY";
 					} else if ("GFX_SURFACES".equals(propName)) {
-						propVal = "FALSE";
-						// propVal = "FALSE";
+						//propVal = "FALSE";
+						propVal = "TRUE";
 					} else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
 						// if (myGfx instanceof DirectX9GFXCMD)
 						// propVal = "TRUE";
