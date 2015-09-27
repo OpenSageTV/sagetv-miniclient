@@ -253,28 +253,73 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     }
 
     @Override
-    public void clearRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
+    public void clearRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
 
+                camera.update();
+                shapeRenderer.setProjectionMatrix(camera.combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
     }
 
     @Override
-    public void drawOval(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+    public void drawOval(final int x, final int y, final int width, final int height, int thickness, final int argbTL, final int argbTR, final int argbBR, final int argbBL, int clipX, int clipY, int clipW, int clipH) {
+        // TODO: make ovals
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
 
+                camera.update();
+                shapeRenderer.setColor(getColor(argbTL));
+                shapeRenderer.setProjectionMatrix(camera.combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+                shapeRenderer.circle(x,y,height/2);
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
     }
 
     @Override
-    public void fillOval(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+    public void fillOval(final int x, final int y, int width, final int height, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+        // TODO: make ovals
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
 
+                camera.update();
+                shapeRenderer.setColor(getColor(argbTL));
+                shapeRenderer.setProjectionMatrix(camera.combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.circle(x,y,height/2);
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
     }
 
     @Override
     public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+        // TODO: make it rounded (Maybe use Canvas and get bitmap as texture... Not efficient, but not used a lot either)
+        drawRect(x,y,width,height,thickness,argbTL,argbTR,argbBR,argbBL);
     }
 
     @Override
     public void fillRoundRect(int x, int y, int width, int height, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+        // TODO: make it rounded
+        fillRect(x, y, width, height, argbTL, argbTR, argbBR, argbBL);
     }
 
     // Because getColor() is only called on the render queue, in sequence we can do this
@@ -292,14 +337,19 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                GLES20.glEnable(GLES20.GL_BLEND);
-                GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-                if (height < 0) {
-                    GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);
-                }
+                if (img==null) return;
 
-                batchColor = batch.getColor();
-                batch.setColor(getColor(blend));
+                // we only want to set blending for Non Framebuffer textures
+                if (!img.get().isFrameBuffer) {
+                    GLES20.glEnable(GLES20.GL_BLEND);
+                    GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+                    if (height < 0) {
+                        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);
+                    }
+
+                    batchColor = batch.getColor();
+                    batch.setColor(getColor(blend));
+                }
 
                 int w=Math.abs(width);
                 int h=Math.abs(height);
@@ -360,14 +410,11 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         currentSurface=t;
 
         // start the batch in prep for new surface
-//        camera.update();
-//        batch.setProjectionMatrix(camera.combined);
         batch.begin();
     }
 
     @Override
     public void setTargetSurface(final int handle, final ImageHolder<GdxTexture> image) {
-
         // info on Gdx framebufffer
         // http://stackoverflow.com/questions/24434236/libgdx-framebuffer
         // https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/glutils/FrameBuffer.html
