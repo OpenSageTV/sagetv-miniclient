@@ -17,6 +17,15 @@ public class Scale {
         this.ys=ys;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Scale{");
+        sb.append("xs=").append(xs);
+        sb.append(", ys=").append(ys);
+        sb.append('}');
+        return sb.toString();
+    }
+
     public float getXScale() {
         return xs;
     }

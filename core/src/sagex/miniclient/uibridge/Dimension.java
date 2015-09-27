@@ -9,6 +9,15 @@ public class Dimension {
 		this.height=height;
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("Dimension{");
+		sb.append("height=").append(height);
+		sb.append(", width=").append(width);
+		sb.append('}');
+		return sb.toString();
+	}
+
 	public int getWidth() {
 		return width;
 	}

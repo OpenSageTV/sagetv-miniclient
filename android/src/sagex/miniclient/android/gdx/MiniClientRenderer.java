@@ -48,33 +48,41 @@ import sagex.miniclient.uibridge.UIManager;
 public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTexture> {
     private static final String TAG = "GDXMINICLIENT";
     private final MiniClientGDXActivity activity;
+
+    // GDX stuff
     Stage stage;
     Batch batch;
     Camera camera;
     Viewport viewport;
+    ShapeRenderer shapeRenderer;
 
     // logging stuff
-    boolean logFrameTime=true;
-    boolean logTextureTime=true;
+    boolean logFrameBuffer=true;
+    boolean logFrameTime=false;
+    boolean logTextureTime=false;
     long longestTextureTime=0;
     long totalTextureTime=0;
-
     long frameTime = 0;
     long frameOps=0;
     long frame=0;
-
     boolean firstFrame=true;
+    boolean ready=false;
 
-    private Dimension size;
+    Dimension size;
+    Scale scale = new Scale(1,1);
+
+    // render queues
     private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
+
+    // communication with SageTV
     private MiniClientConnection connection;
 
     // the pipeline is synchonous so only one operations can affect this at a time
     private Color batchColor=null;
 
-    Scale scale = new Scale(1,1);
-    private ShapeRenderer shapeRenderer;
+    // Current Surface (when surfaces are enabled)
+    GdxTexture currentSurface=null;
 
     public MiniClientRenderer(MiniClientGDXActivity parent) {
         this.activity=parent;
@@ -83,6 +91,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     @Override
     public void create() {
         Dimension size = getMaxScreenSize();
+        Log.d(TAG, "CREATE: UI SIZE: " + size);
         camera = new OrthographicCamera(size.getWidth(), size.getHeight());
         viewport = new StretchViewport(size.getWidth(), size.getHeight(), camera);
         stage = new Stage(viewport);
@@ -95,12 +104,20 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     public void resize(int width, int height) {
         this.size.width=width;
         this.size.height=height;
+        this.scale.setScale(1f * width / Gdx.graphics.getWidth(), 1f * height / Gdx.graphics.getHeight());
+
+        stage.getViewport().setWorldSize(width, height);
         stage.getViewport().update(width, height, true);
-        System.out.println("SIZE: width: " + width + "; height: " + height);
-        System.out.println("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
-        System.out.println("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
-        System.out.println("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
-        // scale = getStage().getViewport().getWorldHeight()/ getStage().getViewport().getScreenHeight();
+        Log.d(TAG, "SIZE: width: " + width + "; height: " + height);
+        Log.d(TAG, "VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
+        Log.d(TAG, "VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
+        Log.d(TAG, "WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
+        Log.d(TAG, "SCALE: " + scale);
+                // scale = getStage().getViewport().getWorldHeight()/ getStage().getViewport().getScreenHeight();
+
+        Log.d(TAG, "Notifying SageTV about the Resize Event: " + this.size);
+        connection.postResizeEvent(size);
+        ready=true;
     }
 
     @Override
@@ -145,6 +162,15 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
     @Override
     public void GFXCMD_INIT() {
+        // block until the UI is ready
+        while (!ready) {
+            Log.d(TAG, "Waiting For UI...");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+            }
+        }
     }
 
     @Override
@@ -170,6 +196,24 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     @Override
     public void showBusyCursor() {
 
+    }
+
+    @Override
+    public void drawLine(final int x1, final int y1, final int x2, final int y2, final int argb1, final int argb2) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
+
+                camera.update();
+                shapeRenderer.setProjectionMatrix(camera.combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+                shapeRenderer.line(x1, Y(y1), x2, Y(y2), getColor(argb1), getColor(argb2));
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
     }
 
     @Override
@@ -233,9 +277,14 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
     }
 
+    // Because getColor() is only called on the render queue, in sequence we can do this
     private Color lastColor=null;
+    private int lastColorInt=-1;
     private Color getColor(int color) {
-        return new Color(((color >> 16) & 0xFF)/255f, ((color >> 8) & 0xFF)/255f, ((color) & 0xFF)/255f, ((color >> 24) & 0xFF)/255f);
+        if (lastColor!=null && color==lastColorInt) return lastColor;
+        lastColorInt=color;
+        lastColor = new Color(((color >> 16) & 0xFF)/255f, ((color >> 8) & 0xFF)/255f, ((color) & 0xFF)/255f, ((color >> 24) & 0xFF)/255f);
+        return lastColor;
     }
 
     @Override
@@ -255,7 +304,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
                 int w=Math.abs(width);
                 int h=Math.abs(height);
                 Texture t = img.get().texture();
-                batch.draw(t, x, size.getHeight()-y-h, w, h, srcx, srcy, srcwidth, srcheight, false, false);
+                batch.draw(t, x, Y(y,h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
                 batch.setColor(batchColor);
                 GLES20.glDisable(GLES20.GL_BLEND);
             }
@@ -269,36 +318,86 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     }
 
     @Override
-    public void drawLine(final int x1, final int y1, final int x2, final int y2, final int argb1, final int argb2) {
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
-
-                camera.update();
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.line(x1, Y(y1), x2, Y(y2), getColor(argb1), getColor(argb2));
-                shapeRenderer.end();
-
-                batch.begin();
-            }
-        });
-    }
-
-    @Override
     public ImageHolder<GdxTexture> loadImage(int width, int height) {
         return null;
     }
 
     @Override
     public void unloadImage(int handle, ImageHolder<GdxTexture> bi) {
-
+        if (bi!=null) {
+            bi.get().dispose();
+        }
     }
 
     @Override
     public ImageHolder<GdxTexture> createSurface(int handle, int width, int height) {
-        return null;
+        // need to create a FrameBuffer object
+        // need to create a SpriteBatch and the set the main batch to use it
+        // need to keep a reference to the previous batch
+        // need to set the MAIN surface to be this fbo
+        if (logFrameBuffer) Log.d(TAG, "Creating Framebuffer["+handle+"]: " + width + "x" + height);
+        final GdxTexture t = new GdxTexture(width,height);
+        ImageHolder<GdxTexture> h = new ImageHolder<>(t);
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                t.load();
+                setupSurface(t);
+            }
+        });
+        return h;
+    }
+
+    void setupSurface(GdxTexture t) {
+        if (currentSurface!=null) {
+            t.unbindFrameBuffer();
+        }
+        // close the batch in prep for a new surface
+        batch.end();
+
+        // bind it (is, SetTargetSurface)
+        t.bindFrameBuffer();
+        currentSurface=t;
+
+        // start the batch in prep for new surface
+//        camera.update();
+//        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+    }
+
+    @Override
+    public void setTargetSurface(final int handle, final ImageHolder<GdxTexture> image) {
+
+        // info on Gdx framebufffer
+        // http://stackoverflow.com/questions/24434236/libgdx-framebuffer
+        // https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/glutils/FrameBuffer.html
+
+        // set the main batch to be this fbo
+        // In Draw Texture, if we are asked to render to FB, then we need to get the FB texture and render that
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (handle==0) {
+                    // we are switching to the primary surface (screen)
+                    if (currentSurface!=null) {
+                        if (logFrameBuffer) Log.d(TAG, "Unbinding Old Framebuffer");
+                        batch.end();
+                        currentSurface.unbindFrameBuffer();
+                        currentSurface=null;
+
+                        // reset the camera and batch
+                        camera.update();
+                        batch.setProjectionMatrix(camera.combined);
+                        batch.begin();
+                    } else {
+                        // nothing to do, we are being told to set the surface to 0, but, we are 0
+                    }
+                } else {
+                    if (logFrameBuffer) Log.d(TAG, "Using Framebuffer["+handle+"]");
+                    setupSurface(image.get());
+                }
+            }
+        });
     }
 
     @Override
@@ -344,11 +443,6 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     @Override
     public ImageHolder<GdxTexture> newImage(int destWidth, int destHeight) {
         return null;
-    }
-
-    @Override
-    public void setTargetSurface(int handle, ImageHolder<GdxTexture> image) {
-
     }
 
     @Override
@@ -402,7 +496,6 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
             Point size = new Point();
             display.getSize(size);
             this.size = new Dimension(size.x, size.y);
-            //size = new Dimension(720,480);
         }
         return size;
     }
