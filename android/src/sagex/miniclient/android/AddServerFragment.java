@@ -2,9 +2,8 @@ package sagex.miniclient.android;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.net.Uri;
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +32,10 @@ public class AddServerFragment extends DialogFragment {
 
     private OnAddServerListener mListener;
 
+    public AddServerFragment() {
+        // Required empty public constructor
+    }
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -48,10 +51,6 @@ public class AddServerFragment extends DialogFragment {
         args.putString(ARG_SERVER_ADDR, serverAddr);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    public AddServerFragment() {
-        // Required empty public constructor
     }
 
     @Override
@@ -107,7 +106,7 @@ public class AddServerFragment extends DialogFragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnAddServerListener {
-        public void onAddServer(String name, String addr);
+        void onAddServer(String name, String addr);
     }
 
 }

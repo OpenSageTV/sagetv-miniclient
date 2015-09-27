@@ -70,4 +70,19 @@ public class MouseEvent {
 		return wheelRotation;
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("MouseEvent{");
+		sb.append("button=").append(button);
+		sb.append(", id=").append(id);
+		sb.append(", source=").append(source);
+		sb.append(", when=").append(when);
+		sb.append(", modifiers=").append(modifiers);
+		sb.append(", x=").append(x);
+		sb.append(", y=").append(y);
+		sb.append(", clickCount=").append(clickCount);
+		sb.append(", wheelRotation=").append(wheelRotation);
+		sb.append('}');
+		return sb.toString();
+	}
 }

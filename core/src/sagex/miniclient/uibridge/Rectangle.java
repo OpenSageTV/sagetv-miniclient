@@ -13,4 +13,14 @@ public class Rectangle {
 		this.width=width;
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("Rectangle{");
+		sb.append("height=").append(height);
+		sb.append(", x=").append(x);
+		sb.append(", y=").append(y);
+		sb.append(", width=").append(width);
+		sb.append('}');
+		return sb.toString();
+	}
 }

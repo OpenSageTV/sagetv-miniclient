@@ -17,6 +17,7 @@ package sagex.miniclient;
 
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
+import sagex.miniclient.uibridge.Rectangle;
 
 public class GFXCMD2 {
 	public static final boolean ENABLE_MOUSE_MOTION_EVENTS = true;
@@ -127,50 +128,17 @@ public class GFXCMD2 {
 
 	public static final int GFXCMD_SETVIDEOPROP = 130;
 	// mode, sx, sy, swidth, sheight, ox, oy, owidth, oheight, alpha, activewin
-
-	public static int readInt(int pos, byte[] cmddata) {
-		pos += 4; // for the 4 bytes for the header
-		return ((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8)
-				| (cmddata[pos + 3] & 0xFF);
-	}
-
-	public static float readFloat(int pos, byte[] cmddata) {
-		pos += 4; // for the 4 bytes for the header
-		return Float.intBitsToFloat(((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16)
-				| ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF));
-	}
-
-	public static int readIntSwapped(int pos, byte[] cmddata) {
-		pos += 4; // for the 4 bytes for the header
-		return ((cmddata[pos + 3] & 0xFF) << 24) | ((cmddata[pos + 2] & 0xFF) << 16) | ((cmddata[pos + 1] & 0xFF) << 8)
-				| (cmddata[pos + 0] & 0xFF);
-	}
-
-	public static short readShort(int pos, byte[] cmddata) {
-		pos += 4; // for the 4 bytes for the header
-		return (short) (((cmddata[pos + 0] & 0xFF) << 8) | (cmddata[pos + 1] & 0xFF));
-	}
-
-	public static short readShortSwapped(int pos, byte[] cmddata) {
-		pos += 4; // for the 4 bytes for the header
-		return (short) (((cmddata[pos + 1] & 0xFF) << 8) | (cmddata[pos + 0] & 0xFF));
-	}
-
-	private sagex.miniclient.uibridge.UIManager<?> windowManager;
-	private MiniClientConnectionGateway myConn;
-
 	protected long offlineImageCacheLimit;
 	protected java.io.File cacheDir;
-	private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
+    private sagex.miniclient.uibridge.UIManager<?> windowManager;
+    private MiniClientConnectionGateway myConn;
+    private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
 	private boolean usesAdvancedImageCaching;
-
 	private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
 	private int handleCount = 2;
-
 	private long imageCacheSize;
 	private long imageCacheLimit;
 	private boolean cursorHidden;
-
 	private String lastImageResourceID;
 	private int lastImageResourceIDHandle;
 
@@ -192,8 +160,36 @@ public class GFXCMD2 {
 		} else
 			cacheDir = null;
 	}
-	
-	public void close() {
+
+    public static int readInt(int pos, byte[] cmddata) {
+        pos += 4; // for the 4 bytes for the header
+        return ((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8)
+                | (cmddata[pos + 3] & 0xFF);
+    }
+
+    public static float readFloat(int pos, byte[] cmddata) {
+        pos += 4; // for the 4 bytes for the header
+        return Float.intBitsToFloat(((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16)
+                | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF));
+    }
+
+    public static int readIntSwapped(int pos, byte[] cmddata) {
+        pos += 4; // for the 4 bytes for the header
+        return ((cmddata[pos + 3] & 0xFF) << 24) | ((cmddata[pos + 2] & 0xFF) << 16) | ((cmddata[pos + 1] & 0xFF) << 8)
+                | (cmddata[pos + 0] & 0xFF);
+    }
+
+    public static short readShort(int pos, byte[] cmddata) {
+        pos += 4; // for the 4 bytes for the header
+        return (short) (((cmddata[pos + 0] & 0xFF) << 8) | (cmddata[pos + 1] & 0xFF));
+    }
+
+    public static short readShortSwapped(int pos, byte[] cmddata) {
+        pos += 4; // for the 4 bytes for the header
+        return (short) (((cmddata[pos + 1] & 0xFF) << 8) | (cmddata[pos + 0] & 0xFF));
+    }
+
+    public void close() {
 		windowManager.close();
 	}
 
@@ -521,9 +517,8 @@ public class GFXCMD2 {
 				width = readInt(0, cmddata);
 				height = readInt(4, cmddata);
 				sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
-				;
-				imageMap.put(new Integer(imghandle), img);
-				// imghandle=STBGFX.GFX_loadImage(width, height);
+                imageMap.put(new Integer(imghandle), img);
+                // imghandle=STBGFX.GFX_loadImage(width, height);
 				hasret[0] = 1;
 				return imghandle;
 			} else {
@@ -966,22 +961,20 @@ public class GFXCMD2 {
 			break;
 		case GFXCMD_SETVIDEOPROP:
 			if (len >= 40) {
-				// java.awt.Rectangle srcRect = new
-				// java.awt.Rectangle(readInt(4, cmddata), readInt(8, cmddata),
-				// readInt(12, cmddata),
-				// readInt(16, cmddata));
-				// java.awt.Rectangle destRect = new
-				// java.awt.Rectangle(readInt(20, cmddata), readInt(24,
-				// cmddata),
-				// readInt(28, cmddata), readInt(32, cmddata));
-				// MediaCmd mc = MediaCmd.getInstance();
-				// if (mc != null) {
-				// MiniMPlayerPlugin playa = mc.getPlaya();
-				// if (playa != null)
-				// playa.setVideoRectangles(srcRect, destRect, false);
-				// }
-				// setVideoBounds(srcRect, destRect);
-			} else {
+                Rectangle srcRect = new Rectangle(readInt(4, cmddata), readInt(8, cmddata),
+                        readInt(12, cmddata),
+                        readInt(16, cmddata));
+                Rectangle destRect = new Rectangle(readInt(20, cmddata), readInt(24,
+                        cmddata),
+                        readInt(28, cmddata), readInt(32, cmddata));
+                MediaCmd mc = MediaCmd.getInstance();
+                if (mc != null) {
+                    MiniPlayerPlugin playa = mc.getPlaya();
+                    if (playa != null)
+                        playa.setVideoRectangles(srcRect, destRect, false);
+                }
+                setVideoBounds(srcRect, destRect);
+            } else {
 				System.out.println("Invalid len for GFXCMD_SETVIDEOPROP: " + len);
 			}
 			break;
@@ -1003,12 +996,12 @@ public class GFXCMD2 {
 	}
 
 	public boolean createVideo(int width, int height, int format) {
-		return true;
-	}
+        return windowManager.createVideo(width, height, format);
+    }
 
 	public boolean updateVideo(int frametype, java.nio.ByteBuffer buf) {
-		return true;
-	}
+        return windowManager.updateVideo(frametype, buf);
+    }
 
 	private void unloadImage(int handle) {
 		ImageHolder bi = imageMap.get(handle);
@@ -1131,5 +1124,9 @@ public class GFXCMD2 {
 
 	public sagex.miniclient.uibridge.UIManager<?> getWindow() {
 		return windowManager;
-	}
+    }
+
+    public void setVideoBounds(Object o, Object o1) {
+        windowManager.setVideoBounds(o, o1);
+    }
 }

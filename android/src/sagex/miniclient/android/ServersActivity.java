@@ -15,8 +15,8 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.Servers;
+import sagex.miniclient.android.canvas.MiniClientCanvasActivity;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
-import sagex.miniclient.android.gl.MiniClientGLActivity;
 
 /**
  * Created by seans on 20/09/15.
@@ -103,14 +103,17 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             f.setRetainInstance(true);
             f.show(getFragmentManager(),"addserver");
         } else {
-//            // connect to server
-//            Intent i = new Intent(getBaseContext(), MiniClientGLActivity.class);
-//            i.putExtra(MiniClientGLActivity.ARG_SERVER_INFO, si);
-//            startActivity(i);
-            Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
-            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
-            startActivity(i);
-
+            // connect to server
+            // TODO: Eventually use the property, but for now, force it to use the gl renderer
+            if (true && MiniClient.isUsingOpenGL()) {
+                Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
+                i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
+                startActivity(i);
+            } else {
+                Intent i = new Intent(getBaseContext(), MiniClientCanvasActivity.class);
+                i.putExtra(MiniClientCanvasActivity.ARG_SERVER_INFO, si);
+                startActivity(i);
+            }
         }
     }
 

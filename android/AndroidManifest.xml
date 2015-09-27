@@ -13,9 +13,9 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:hardwareAccelerated="true"
         >
         <activity
             android:name="sagex.miniclient.android.ServersActivity"
@@ -31,20 +31,20 @@
             </intent-filter>
         </activity>
         <activity
-            android:theme="@style/Theme.MyTheme"
-            android:name=".canvas.MiniClientActivity"
+            android:name=".canvas.MiniClientCanvasActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
+            android:theme="@style/Theme.MyTheme">
         </activity>
         <activity
-            android:theme="@style/Theme.MyTheme"
             android:name=".gl.MiniClientGLActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
+            android:theme="@style/Theme.MyTheme">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
                 <!--<category android:name="android.intent.category.LAUNCHER" />-->
@@ -55,12 +55,12 @@
             <!--</intent-filter>-->
         </activity>
         <activity
-            android:theme="@style/Theme.MyTheme"
             android:name=".gdx.MiniClientGDXActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
+            android:theme="@style/Theme.MyTheme">
             <!--<intent-filter>-->
             <!--<action android:name="android.intent.action.MAIN" />-->
             <!--<category android:name="android.intent.category.LAUNCHER" />-->

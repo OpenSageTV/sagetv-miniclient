@@ -28,6 +28,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import sagex.miniclient.MiniClientConnection;
+import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.gl.shapes.Line;
 import sagex.miniclient.android.gl.shapes.Rect;
 import sagex.miniclient.uibridge.Dimension;
@@ -40,62 +41,49 @@ import sagex.miniclient.uibridge.UIManager;
  */
 public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Renderer {
     private static final String TAG = EGLUIManager.class.getSimpleName().toUpperCase();
-
-    // logging stuff
-    boolean logFrameTime=true;
-    boolean logTextureTime=true;
-    long longestTextureTime=0;
-    long totalTextureTime=0;
-
-    long frameTime = 0;
-    long frameOps=0;
-    long frame=0;
-
-    Scale scale = new Scale(1,1);
-    Dimension size = null;
-
-    boolean firstFrame=true;
-
-    private final MiniClientGLActivity activity;
-    private final MiniClientSurfaceView surface;
-
-    private MiniClientConnection connection;
-
-    private List<Runnable> renderQueue = new ArrayList<>();
-    private List<Runnable> frameQueue = new ArrayList<>();
-
-    // Our matrices
-    private final float[] mtrxProjection = new float[16];
-    private final float[] mtrxView = new float[16];
-    private final float[] mtrxProjectionAndView = new float[16];
-
     // Geometric variables
     public static float vertices[];
     public static short indices[];
     public static float uvs[];
     public static float colors[];
+    private final MiniClientGLActivity activity;
+    private final MiniClientSurfaceView surface;
+    // Our matrices
+    private final float[] mtrxProjection = new float[16];
+    private final float[] mtrxView = new float[16];
+    private final float[] mtrxProjectionAndView = new float[16];
     public FloatBuffer vertexBuffer;
     public ShortBuffer drawListBuffer;
     public FloatBuffer uvBuffer;
-    private FloatBuffer colorBuffer;
-
-    private int mPositionHandle;
-    private int mTexCoordLoc;
-    private int mColorHandle;
-    private int mtrxhandle;
-    private int mSamplerLoc;
-
-
+    // logging stuff
+    boolean logFrameTime=true;
+    boolean logTextureTime=true;
+    long longestTextureTime=0;
+    long totalTextureTime=0;
+    long frameTime = 0;
+    long frameOps=0;
+    long frame=0;
+    Scale scale = new Scale(1,1);
+    Dimension size = null;
+    boolean firstFrame=true;
     // Our screenresolution
-    float   mScreenWidth = 1280;
-    float   mScreenHeight = 768;
-
+    float mScreenWidth = 1280;
+    float mScreenHeight = 768;
     // Misc
     Context mContext;
     long mLastTime;
     int mProgram;
+    int lastColor = -1;
+    private MiniClientConnection connection;
+    private List<Runnable> renderQueue = new ArrayList<>();
+    private List<Runnable> frameQueue = new ArrayList<>();
+    private FloatBuffer colorBuffer;
+    private int mPositionHandle;
+    private int mTexCoordLoc;
+    private int mColorHandle;
+    private int mtrxhandle;
     // --------- END GL Stuff
-
+    private int mSamplerLoc;
 
     public EGLUIManager(MiniClientGLActivity miniClientGLActivity, MiniClientSurfaceView surface) {
         this.activity=miniClientGLActivity;
@@ -187,12 +175,12 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
         float v = x/w;
         return v;
     }
+
     private float UY(float y, float h) {
         float v = y/h;
         return v;
     }
 
-    int lastColor = -1;
     @Override
     public void drawTexture(final int x, final int y, final int w, final int h, final int handle, final ImageHolder<EGLTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
         invokeLater(new Runnable() {
@@ -502,11 +490,32 @@ public class EGLUIManager implements UIManager<EGLTexture>, GLSurfaceView.Render
         return scale;
     }
 
-    public void setConnection(MiniClientConnection connection) {
-        this.connection = connection;
+    @Override
+    public boolean createVideo(int width, int height, int format) {
+        return false;
     }
+
+    @Override
+    public boolean updateVideo(int frametype, ByteBuffer buf) {
+        return false;
+    }
+
+    @Override
+    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
+        return null;
+    }
+
+    @Override
+    public void setVideoBounds(Object o, Object o1) {
+
+    }
+
     public MiniClientConnection getConnection() {
         return connection;
+    }
+
+    public void setConnection(MiniClientConnection connection) {
+        this.connection = connection;
     }
 
     @Override

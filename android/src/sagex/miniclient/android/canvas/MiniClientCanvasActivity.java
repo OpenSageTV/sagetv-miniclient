@@ -1,20 +1,21 @@
-package sagex.miniclient.android.gdx;
+package sagex.miniclient.android.canvas;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.TextView;
-
-import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
 import java.io.IOException;
 
 import sagex.miniclient.MgrServerInfo;
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.gdx.MiniClientKeyListener;
+import sagex.miniclient.android.gdx.MiniclientTouchListener;
 import sagex.miniclient.uibridge.UIFactory;
 import sagex.miniclient.uibridge.UIManager;
 
@@ -25,21 +26,20 @@ import static sagex.miniclient.android.AppUtil.hideSystemUI;
 /**
  * Created by seans on 20/09/15.
  */
-public class MiniClientGDXActivity extends AndroidApplication {
+public class MiniClientCanvasActivity extends Activity {
     public static final String ARG_SERVER_INFO = "server_info";
 
-    private static final String TAG = "GDXMINICLIENT";
-    FrameLayout surfaceHolder;
+    private static final String TAG = "MINICLIENT";
+    SurfaceView surface;
 
     View pleaseWait = null;
     TextView plaseWaitText = null;
 
-    MiniClientRenderer mgr;
-
+    CanvasUIManager mgr;
     private MiniClientConnection client;
-    private View miniClientView;
 
-    public MiniClientGDXActivity() {
+    public MiniClientCanvasActivity() {
+        MiniClient.startup(new String[]{});
     }
 
     @Override
@@ -48,27 +48,15 @@ public class MiniClientGDXActivity extends AndroidApplication {
 
         hideSystemUI(this);
 
-        setContentView(R.layout.miniclientgl_layout);
-        surfaceHolder=(FrameLayout)findViewById(R.id.surface);
+        setContentView(R.layout.miniclient_layout);
+        surface=(SurfaceView)findViewById(R.id.surface);
         pleaseWait = findViewById(R.id.waitforit);
         plaseWaitText = (TextView)findViewById(R.id.pleaseWaitText);
 
-        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+        mgr = new CanvasUIManager(this);
+        surface.getHolder().addCallback(mgr);
 
-        mgr = new MiniClientRenderer(this);
-        miniClientView =initializeForView(mgr, config);
-        miniClientView.setFocusable(true);
-        miniClientView.setFocusableInTouchMode(true);
-        miniClientView.setOnTouchListener(null);
-        miniClientView.setOnClickListener(null);
-        miniClientView.setOnKeyListener(null);
-        miniClientView.setOnDragListener(null);
-        miniClientView.setOnFocusChangeListener(null);
-        miniClientView.setOnGenericMotionListener(null);
-        miniClientView.setOnHoverListener(null);
-        miniClientView.setOnTouchListener(null);
-        surfaceHolder.addView(miniClientView);
-        miniClientView.requestFocus();
+        System.setProperty("user.home", getCacheDir().getAbsolutePath());
 
         ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
         if (si==null) {
@@ -83,7 +71,6 @@ public class MiniClientGDXActivity extends AndroidApplication {
     }
 
     public void startMiniClient(final ServerInfo si) {
-        System.setProperty("user.home", getCacheDir().getAbsolutePath());
         final UIFactory factory = new UIFactory() {
             @Override
             public UIManager<?> getUIManager(MiniClientConnection conn) {
@@ -94,8 +81,9 @@ public class MiniClientGDXActivity extends AndroidApplication {
         client = new MiniClientConnection(si.address, getMACAddress(this), false, info, factory);
         mgr.setConnection(client);
 
-        miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
-        miniClientView.setOnKeyListener(new MiniClientKeyListener(client));
+        surface.setOnTouchListener(new MiniclientTouchListener(this, client));
+        surface.setOnKeyListener(new MiniClientKeyListener(client));
+
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -109,11 +97,6 @@ public class MiniClientGDXActivity extends AndroidApplication {
             }
         });
         thread.start();
-    }
-
-    @Override
-    public void onBackPressed() {
-        confirmExit(this);
     }
 
     @Override
@@ -137,5 +120,10 @@ public class MiniClientGDXActivity extends AndroidApplication {
                 pleaseWait.setVisibility((connectingIsVisible) ? View.VISIBLE : View.GONE);
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        confirmExit(this);
     }
 }
