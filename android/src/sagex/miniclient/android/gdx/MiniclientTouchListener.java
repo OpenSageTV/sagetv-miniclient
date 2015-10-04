@@ -5,30 +5,28 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.view.MotionEvent;
 import android.view.View;
 
-import sagex.miniclient.MiniClientConnection;
-import sagex.miniclient.android.gl.UIGestureListener;
+import sagex.miniclient.MiniClient;
 
 /**
  * Created by seans on 26/09/15.
  */
 public class MiniclientTouchListener implements View.OnTouchListener {
-    private MiniClientConnection clientConnection;
-
-    private UIGestureListener mGestureListener;
     GestureDetectorCompat mDetector = null;
+    private MiniClient client;
+    private UIGestureListener mGestureListener;
 
-    public MiniclientTouchListener(Activity act, MiniClientConnection client) {
-        this.clientConnection=client;
+    public MiniclientTouchListener(Activity act, MiniClient client) {
+        this.client = client;
         mGestureListener = new UIGestureListener(client);
         mDetector = new GestureDetectorCompat(act, mGestureListener);
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (clientConnection==null) {
+        if (!client.isConnected()) {
             return false;
         }
-        if (mGestureListener!=null) {
+        if (mGestureListener != null) {
             mGestureListener.processRawEvent(mDetector, event);
         }
         return true;

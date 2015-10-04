@@ -15,8 +15,7 @@
  */
 package sagex.miniclient;
 
-public interface SageTVInputCallback
-{
+public interface SageTVInputCallback {
   /*
    * SageTV Command IDs
 		LEFT = 2;
@@ -124,46 +123,46 @@ public interface SageTVInputCallback
 		STOP = 89;
    */
 
-  /*
-   * Call this method to send a SageTV Command to SageTV.
-   * sageCommandID - ID code for the SageTV Command listed above.
-   */
-  public void recvCommand(int sageCommandID);
+	/*
+	 * Call this method to send a SageTV Command to SageTV.
+     * sageCommandID - ID code for the SageTV Command listed above.
+     */
+	void recvCommand(int sageCommandID);
 
-  /*
-   * Call this method to send a SageTV Command to SageTV with a payload. The payload will be
-   * accessible through the context of any Listener Widget that gets fired as result of this
-   * through the variable named "EventPaylaods".
-   *
-   * sageCommandID - ID code for the SageTV Command listed above.
-   * payload - the payload to pass to SageTV
-   */
-  public void recvCommand(int sageCommandID, String payload);
+	/*
+	 * Call this method to send a SageTV Command to SageTV with a payload. The payload will be
+     * accessible through the context of any Listener Widget that gets fired as result of this
+     * through the variable named "EventPaylaods".
+     *
+     * sageCommandID - ID code for the SageTV Command listed above.
+     * payload - the payload to pass to SageTV
+     */
+	void recvCommand(int sageCommandID, String payload);
 
-  /*
-   * Call this method to send a SageTV Command to SageTV with a payload. The payloads will be
-   * accessible through the context of any Listener Widget that gets fired as result of this
-   * through the variable named "EventPaylaods".
-   *
-   * sageCommandID - ID code for the SageTV Command listed above.
-   * payloads - the payload(s) to pass to SageTV
-   */
-  public void recvCommand(int sageCommandID, String[] payloads);
+	/*
+	 * Call this method to send a SageTV Command to SageTV with a payload. The payloads will be
+     * accessible through the context of any Listener Widget that gets fired as result of this
+     * through the variable named "EventPaylaods".
+     *
+     * sageCommandID - ID code for the SageTV Command listed above.
+     * payloads - the payload(s) to pass to SageTV
+     */
+	void recvCommand(int sageCommandID, String[] payloads);
 
-  /*
-   * Call this method to send SageTV an infrared signal. Used for direct IR control of SageTV.
-   *
-   * infraredCode - the raw data for the infrared signal that uniquely identifies it
-   */
-  public void recvInfrared(byte[] infraredCode);
+	/*
+	 * Call this method to send SageTV an infrared signal. Used for direct IR control of SageTV.
+     *
+     * infraredCode - the raw data for the infrared signal that uniquely identifies it
+     */
+	void recvInfrared(byte[] infraredCode);
 
-  /*
-   * Call this method to send SageTV a keystroke. Used for sending keystrokes directly to SageTV regardless
-   * of system focus.
-   *
-   * keyChar - the character for the representative keystroke, use zero if there's no corresponding character
-   * keyCode - the keycode for the keystroke as defined in java.awt.event.KeyEvent.
-   * keyModifiers - modifiers keys used such as Ctrl, Alt & Shift as defined in java.awt.event.InputEvent
-   */
-  public void recvKeystroke(char keyChar, int keyCode, int keyModifiers);
+	/*
+	 * Call this method to send SageTV a keystroke. Used for sending keystrokes directly to SageTV regardless
+     * of system focus.
+     *
+     * keyChar - the character for the representative keystroke, use zero if there's no corresponding character
+     * keyCode - the keycode for the keystroke as defined in java.awt.event.KeyEvent.
+     * keyModifiers - modifiers keys used such as Ctrl, Alt & Shift as defined in java.awt.event.InputEvent
+     */
+	void recvKeystroke(char keyChar, int keyCode, int keyModifiers);
 }

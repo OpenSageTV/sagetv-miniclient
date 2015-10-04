@@ -1,42 +1,54 @@
 package sagex.miniclient.android.gdx;
 
+import android.graphics.PixelFormat;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
-import sagex.miniclient.MgrServerInfo;
-import sagex.miniclient.MiniClientConnection;
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import sagex.miniclient.MACAddressResolver;
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;
-import sagex.miniclient.uibridge.UIFactory;
-import sagex.miniclient.uibridge.UIManager;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
-import static sagex.miniclient.android.AppUtil.getMACAddress;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
 
 /**
  * Created by seans on 20/09/15.
  */
-public class MiniClientGDXActivity extends AndroidApplication {
+public class MiniClientGDXActivity extends AndroidApplication implements MACAddressResolver {
     public static final String ARG_SERVER_INFO = "server_info";
+    private static final Logger log = LoggerFactory.getLogger(MiniClientGDXActivity.class);
+    @Bind(R.id.surface)
+    FrameLayout uiFrameHolder;
 
-    private static final String TAG = "GDXMINICLIENT";
-    FrameLayout surfaceHolder;
+    @Bind(R.id.video_surface)
+    SurfaceView videoHolder;
 
+    @Bind(R.id.waitforit)
     View pleaseWait = null;
+
+    @Bind(R.id.pleaseWaitText)
     TextView plaseWaitText = null;
 
+    MiniClient client;
     MiniClientRenderer mgr;
 
-    private MiniClientConnection client;
     private View miniClientView;
 
     public MiniClientGDXActivity() {
@@ -49,14 +61,13 @@ public class MiniClientGDXActivity extends AndroidApplication {
         hideSystemUI(this);
 
         setContentView(R.layout.miniclientgl_layout);
-        surfaceHolder=(FrameLayout)findViewById(R.id.surface);
-        pleaseWait = findViewById(R.id.waitforit);
-        plaseWaitText = (TextView)findViewById(R.id.pleaseWaitText);
+        ButterKnife.bind(this);
 
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+        client = MiniClient.get();
 
-        mgr = new MiniClientRenderer(this);
-        miniClientView =initializeForView(mgr, config);
+        mgr = new MiniClientRenderer(this, client);
+        miniClientView = initializeForView(mgr, config);
         miniClientView.setFocusable(true);
         miniClientView.setFocusableInTouchMode(true);
         miniClientView.setOnTouchListener(null);
@@ -67,12 +78,12 @@ public class MiniClientGDXActivity extends AndroidApplication {
         miniClientView.setOnGenericMotionListener(null);
         miniClientView.setOnHoverListener(null);
         miniClientView.setOnTouchListener(null);
-        surfaceHolder.addView(miniClientView);
+        uiFrameHolder.addView(miniClientView);
         miniClientView.requestFocus();
 
         ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
-        if (si==null) {
-            Log.e(TAG, "Missing SERVER INFO in Intent: " + ARG_SERVER_INFO );
+        if (si == null) {
+            log.error("Missing SERVER INFO in Intent: {}", ARG_SERVER_INFO);
             finish();
         }
 
@@ -83,32 +94,25 @@ public class MiniClientGDXActivity extends AndroidApplication {
     }
 
     public void startMiniClient(final ServerInfo si) {
-        System.setProperty("user.home", getCacheDir().getAbsolutePath());
-        final UIFactory factory = new UIFactory() {
-            @Override
-            public UIManager<?> getUIManager(MiniClientConnection conn) {
-                return mgr;
-            }
-        };
-        MgrServerInfo info = new MgrServerInfo(si.address, (si.port==0)?31099:si.port, si.locatorID);
-        client = new MiniClientConnection(si.address, getMACAddress(this), false, info, factory);
-        mgr.setConnection(client);
-
         miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
         miniClientView.setOnKeyListener(new MiniClientKeyListener(client));
-
-        Thread thread = new Thread(new Runnable() {
+        Thread t = new Thread("ANDROID-MINICLIENT") {
             @Override
             public void run() {
                 try {
-                    client.connect();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    // cannot make network connections on the main thread
+                    client.connect(si, MiniClientGDXActivity.this);
+                } catch (final IOException e) {
+                    MiniClientGDXActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MiniClientGDXActivity.this, "Unable to connect to server: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             }
-        });
-        thread.start();
+        };
+        t.start();
     }
 
     @Override
@@ -118,14 +122,12 @@ public class MiniClientGDXActivity extends AndroidApplication {
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "Closing MiniClient Connection");
+        log.debug("Closing MiniClient Connection");
 
         try {
-            if (client!=null) {
-                client.close();
-            }
+            client.closeConnection();
         } catch (Throwable t) {
-            Log.w(TAG, "Error shutting down client", t);
+            log.error("Error shutting down client", t);
         }
         super.onDestroy();
     }
@@ -137,5 +139,17 @@ public class MiniClientGDXActivity extends AndroidApplication {
                 pleaseWait.setVisibility((connectingIsVisible) ? View.VISIBLE : View.GONE);
             }
         });
+    }
+
+    public Surface getVideoSurface() {
+        videoHolder.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+
+        //glview.setZOrderOnTop(true);
+        return videoHolder.getHolder().getSurface();
+    }
+
+    @Override
+    public String getMACAddress() {
+        return AppUtil.getMACAddress(this);
     }
 }

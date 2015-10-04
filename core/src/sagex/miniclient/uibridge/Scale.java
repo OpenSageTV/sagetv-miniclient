@@ -4,17 +4,17 @@ package sagex.miniclient.uibridge;
  * Created by seans on 20/09/15.
  */
 public class Scale {
-    private float xs=1;
-    private float ys=1;
+    private float xs = 1;
+    private float ys = 1;
 
     public Scale(float xs, float ys) {
-        this.xs=xs;
-        this.ys=ys;
+        this.xs = xs;
+        this.ys = ys;
     }
 
     public void setScale(float xs, float ys) {
-        this.xs=xs;
-        this.ys=ys;
+        this.xs = xs;
+        this.ys = ys;
     }
 
     @Override
@@ -35,18 +35,18 @@ public class Scale {
     }
 
     public float xCanvasToScreen(float x) {
-        return x*xs;
+        return x * xs;
     }
 
     public float yCanvasToScreen(float y) {
-        return y*ys;
+        return y * ys;
     }
 
     public float xScreenToCanvas(float x) {
-        return x/xs;
+        return x / xs;
     }
 
     public float yScreenToCanvas(float y) {
-        return y/ys;
+        return y / ys;
     }
 }

@@ -1,14 +1,15 @@
 package sagex.miniclient;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by seans on 20/09/15.
  */
 public class ServerInfo implements Serializable, Comparable<ServerInfo> {
+    public static final int LOCAL_SERVER = 1;
+    public static final int DIRECT_CONNECT_SERVER = 2;
+    public static final int LOCATABLE_SERVER = 3;
+
     public String address;
     public int port;
     public String name;
@@ -52,8 +53,12 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
 
     @Override
     public int compareTo(ServerInfo o) {
-        if (address==null && o.address==null) return 0;
-        if (o.address==null && address!=null) return -1;
+        if (address == null && o.address == null) return 0;
+        if (o.address == null && address != null) return -1;
         return address.compareTo(o.address);
+    }
+
+    public void setAuthBlock(String authBlock) {
+        this.authBlock = authBlock;
     }
 }

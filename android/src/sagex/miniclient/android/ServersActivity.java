@@ -5,27 +5,33 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
-import sagex.miniclient.Servers;
-import sagex.miniclient.android.canvas.MiniClientCanvasActivity;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 
 /**
  * Created by seans on 20/09/15.
  */
 public class ServersActivity extends Activity implements AdapterView.OnItemClickListener, AddServerFragment.OnAddServerListener, AdapterView.OnItemLongClickListener {
-    private static final String TAG = "SERVERS";
+    private static final Logger log = LoggerFactory.getLogger(ServersActivity.class);
+
+    static {
+        AppUtil.initLogging();
+    }
+
     ListView list = null;
     ServersAdapter adapter = null;
     boolean paused = true;
+
     public ServersActivity() {
     }
 
@@ -40,10 +46,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
 
         setContentView(R.layout.servers_layout);
 
-        // Initialize the MiniClient properties
-        // eventually we'll refactor this
-        System.setProperty("user.home", getCacheDir().getAbsolutePath());
-        MiniClient.startup(new String[]{});
+        MiniClient.get().init(getFilesDir(), getCacheDir());
 
         // now show the server selector dialog
         adapter = new ServersAdapter(this);
@@ -55,31 +58,32 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         list.requestFocus();
         list.setAdapter(adapter);
 
-        paused=false;
+        paused = false;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        paused=false;
+        paused = false;
         refreshServers();
     }
 
     @Override
     protected void onPause() {
-        paused=true;
+        paused = true;
+        MiniClient.get().getServerDiscovery().close();
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        paused=true;
+        paused = true;
         super.onDestroy();
     }
 
     public void refreshServers() {
-        Log.d(TAG, "Looking for Servers...");
-        ServerDiscovery.discoverServersAsync(10000, new ServerDiscovery.ServerDiscoverCallback() {
+        log.debug("Looking for Servers...");
+        MiniClient.get().getServerDiscovery().discoverServersAsync(10000, new ServerDiscovery.ServerDiscoverCallback() {
             @Override
             public void serverDiscovered(final ServerInfo si) {
                 if (!paused) {
@@ -101,19 +105,12 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             // add new server
             AddServerFragment f = AddServerFragment.newInstance("My Server", "");
             f.setRetainInstance(true);
-            f.show(getFragmentManager(),"addserver");
+            f.show(getFragmentManager(), "addserver");
         } else {
             // connect to server
-            // TODO: Eventually use the property, but for now, force it to use the gl renderer
-            if (true && MiniClient.isUsingOpenGL()) {
-                Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
-                i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
-                startActivity(i);
-            } else {
-                Intent i = new Intent(getBaseContext(), MiniClientCanvasActivity.class);
-                i.putExtra(MiniClientCanvasActivity.ARG_SERVER_INFO, si);
-                startActivity(i);
-            }
+            Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
+            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
+            startActivity(i);
         }
     }
 
@@ -124,14 +121,14 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             return true;
         }
 
-            AlertDialog.Builder builder =
+        AlertDialog.Builder builder =
                 new AlertDialog.Builder(this, R.style.Theme_AppCompat_Dialog);
         builder.setTitle("Remove Server");
         builder.setMessage("Click OK to remove server");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Servers.deleteServer(adapter.getCastedItem(position).name);
+                MiniClient.get().getServers().deleteServer(adapter.getCastedItem(position).name);
                 adapter.items.remove(position);
                 adapter.notifyDataSetChanged();
             }
@@ -143,11 +140,11 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
 
     @Override
     public void onAddServer(String name, String addr) {
-        if (addr!=null && addr.trim().length()>0) {
+        if (addr != null && addr.trim().length() > 0) {
             ServerInfo si = new ServerInfo();
-            si.name=name;
-            si.address=addr;
-            Servers.saveServer(si);
+            si.name = name;
+            si.address = addr;
+            MiniClient.get().getServers().saveServer(si);
             adapter.addServer(si);
             Toast.makeText(this, "Server Added", Toast.LENGTH_LONG).show();
         }

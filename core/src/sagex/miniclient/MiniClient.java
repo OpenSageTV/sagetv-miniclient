@@ -15,195 +15,195 @@
  */
 package sagex.miniclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * MiniClient is the central access point to all things MiniClient.  It must be initialized, at least once, using
+ * MiniClient.get().init(configDir, cacheDir).
+ */
 public class MiniClient {
-	public static final String BYTE_CHARSET = "ISO8859_1";
-	public static boolean WINDOWS_OS = false;
-	public static boolean MAC_OS_X = false;
-	public static boolean LINUX_OS = false;
-	public static java.util.Properties myProperties;
-	public static boolean fsStartup = false;
-	public static Integer irKillCode = null;
-	public static String cryptoFormats = "";
-	public static String[] mainArgs;
-	public static java.text.DateFormat DF = new java.text.SimpleDateFormat("EE M/d H:mm:ss.SSS");
-	public static boolean forcedServer = false;
-	public static String forcedMAC = null;
-	private static boolean online = false;
-	private static int ConnectionError = 0;
-	private static java.io.File configDir;
-	private static boolean shuttingDown = false;
-	private static SageLocatorService locatorService;
+    public static final Logger log = LoggerFactory.getLogger(MiniClient.class);
+    public static final String BYTE_CHARSET = "ISO8859_1";
+    private static final MiniClient INSTANCE = new MiniClient();
+    private static final String PLACESHIFTER_PROPERTIES = "SageTVPlaceshifter.properties";
+    ServerDiscovery serverDiscovery;
+    Servers servers;
+    Thread connectionThread = null;
+    private String MACAddress;
+    private MiniClientConnection currentConnection;
+    private sagex.miniclient.uibridge.UIRenderer<?> UIRenderer;
+    private java.util.Properties myProperties;
+    private SageLocatorService locatorService;
+    private File cacheDir;
+    private File configDir;
+    private String cryptoFormats;
+    private boolean initialized = false;
 
-	static {
-		System.out.println("Starting MiniClient");
-		WINDOWS_OS = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
-		MAC_OS_X = System.getProperty("os.name").toLowerCase().indexOf("mac os x") != -1;
-		LINUX_OS = !WINDOWS_OS && !MAC_OS_X;
-	}
+    public MiniClient() {
+        this.myProperties = new Properties();
+        this.serverDiscovery = new ServerDiscovery();
+        this.servers = new Servers(this);
+    }
 
-	public static final String df() {
-		return df(System.currentTimeMillis());
-	}
+    public static MiniClient get() {
+        return INSTANCE;
+    }
 
-	public static final String df(long time) {
-		synchronized (DF) {
-			return DF.format(new java.util.Date(time));
-		}
-	}
+    public ServerDiscovery getServerDiscovery() {
+        return serverDiscovery;
+    }
 
-	public static void saveConfig() {
-		java.io.OutputStream os = null;
-		// java.io.File configDir = new
-		// java.io.File(System.getProperty("user.home"), ".sagetv");
-		try {
-			os = new java.io.FileOutputStream(new java.io.File(configDir, "SageTVPlaceshifter.properties.tmp"));
-			myProperties.store(os, "SageTV Placeshifter Properties");
-			os.close();
-			new java.io.File(configDir, "SageTVPlaceshifter.properties").delete();
-			new java.io.File(configDir, "SageTVPlaceshifter.properties.tmp")
-					.renameTo(new java.io.File(configDir, "SageTVPlaceshifter.properties"));
-		} catch (java.io.IOException e) {
-			// Attempting to show a dialog in the shutdown hook is a bad idea,
-			// so don't do that here
-			System.out.println("Error saving configuration properties of:" + e.toString());
-		} finally {
-			try {
-				if (os != null)
-					os.close();
-			} catch (Exception e) {
-			}
-			os = null;
-		}
-	}
+    public Servers getServers() {
+        return servers;
+    }
 
-	public static void startup(String[] args) {
-		if (MAC_OS_X) {
-			try {
-				System.loadLibrary("MiniClient");
-			} catch (Throwable t) {
-				System.out.println("Exception occured loading MiniClient library: " + t);
-			}
-		}
+    public void saveConfig() {
+        java.io.OutputStream os = null;
+        try {
+            log.debug("Saving Configuration");
+            os = new java.io.FileOutputStream(new java.io.File(configDir, PLACESHIFTER_PROPERTIES + ".tmp"));
+            myProperties.store(os, "SageTV Placeshifter Properties");
+            os.close();
+            new java.io.File(configDir, PLACESHIFTER_PROPERTIES).delete();
+            new java.io.File(configDir, PLACESHIFTER_PROPERTIES + ".tmp")
+                    .renameTo(new java.io.File(configDir, PLACESHIFTER_PROPERTIES));
+        } catch (java.io.IOException e) {
+            log.error("Error saving configuration properties", e);
+        } finally {
+            try {
+                if (os != null)
+                    os.close();
+            } catch (Exception e) {
+            }
+            os = null;
+        }
+    }
 
-		myProperties = new java.util.Properties();
-		if (new java.io.File("SageTVPlaceshifter.properties").isFile())
-			configDir = new java.io.File(System.getProperty("user.dir"));
-		else
-			configDir = new java.io.File(System.getProperty("user.home"), ".sagetv");
-		configDir.mkdirs();
-		// If the properties file is in the working directory; then use that one
-		// and save it back there. Otherwise
-		// use the one in the user's home directory
-		java.io.File propFile = new java.io.File(configDir, "SageTVPlaceshifter.properties");
-		if (propFile.isFile()) {
-			java.io.InputStream is = null;
-			try {
-				is = new java.io.FileInputStream(propFile);
-				myProperties.load(is);
-			} catch (java.io.IOException e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					if (is != null)
-						is.close();
-				} catch (Exception e) {
-				}
-				is = null;
-			}
-		} else {
-			// act like we're running opengl on Mac OS X
-			if (MAC_OS_X)
-				myProperties.setProperty("opengl", "true");
-		}
+    public void init(File configDir, File cacheDir) {
+        if (initialized) {
+            destroy();
+        }
+        this.configDir = configDir;
+        this.cacheDir = cacheDir;
+        configDir.mkdirs();
+        cacheDir.mkdirs();
 
-		java.io.PrintStream redir = null;
-		redir = new java.io.PrintStream(new java.io.OutputStream() {
-			public void write(int b) {
-			}
-		}, true) {
+        log.info("MiniClient starting with configDir: {} and cacheDir: {}", configDir, cacheDir);
 
-			public synchronized void println(String s) {
-				System.err.println(df() + " " + s);
-			}
-		};
+        myProperties = new java.util.Properties();
 
-		System.setOut(redir);
-		// System.setErr(redir);
-		mainArgs = args;
-		boolean noretries = false;
-		for (int i = 0; args != null && i < args.length; i++) {
-			if (args[i].equals("-mac") && i < args.length - 1) {
-				forcedMAC = args[++i];
-			} else if (args[i].equals("-fullscreen"))
-				fsStartup = true;
-			else if (args[i].equals("-noretry"))
-				noretries = true;
-			else if (args[i].equals("-irexitcode") && i < args.length - 1) {
-				try {
-					irKillCode = new Integer(args[++i]);
-				} catch (NumberFormatException e) {
-					System.out.println("ERROR: Invalid irexitcode parameter of: " + args[i]);
-				}
-			}
-		}
-		
-		System.out.println("Detecting cryptography support...");
-		try {
-			javax.crypto.Cipher.getInstance("RSA");
-			cryptoFormats = "RSA,Blowfish,DH,DES";
-		} catch (Exception e) {
-			// If we don't do RSA, then we use DH for the key exchange and DES
-			// for the secret stuff
-			cryptoFormats = "DH,DES";
-		}
+        // If the properties file is in the working directory; then use that one
+        // and save it back there. Otherwise
+        // use the one in the user's home directory
+        java.io.File propFile = new java.io.File(configDir, PLACESHIFTER_PROPERTIES);
+        if (propFile.isFile()) {
+            java.io.InputStream is = null;
+            try {
+                is = new java.io.FileInputStream(propFile);
+                myProperties.load(is);
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (is != null)
+                        is.close();
+                } catch (Exception e) {
+                }
+                is = null;
+            }
+        }
 
-		online = true;
-	}
-
-	public static boolean isUsingOpenGL() {
-		return getBooleanProperty("opengl", "true");
-	}
-
-	public static boolean getBooleanProperty(String prop, String def) {
-		String v = getProperty(prop, def);
-		return v.equalsIgnoreCase("true") || v.equals("1") || v.equals("yes");
-	}
-
-	public static String getProperty(String prop, String def) {
-		if (!online)
-			throw new RuntimeException("MiniClient.startup() must be called before getProperty()");
-		return myProperties.getProperty(prop, def);
-	}
+        log.debug("Miniclient Configuration Loaded");
 
 
-	private static void startupPM() {
-//		sage.PowerManagement pm = MiniClientPowerManagement.getInstance();
-//		pm.setLogging(false);
-//		pm.setWaitTime(30000);
-//		pm.setPrerollTime(120000);
-//		pm.setIdleTimeout(120000);
-//		Thread t = new Thread(pm, "PowerManagement");
-//		t.setDaemon(true);
-//		t.setPriority(Thread.MIN_PRIORITY);
-//		t.start();
-	}
+        try {
+            javax.crypto.Cipher.getInstance("RSA");
+            cryptoFormats = "RSA,Blowfish,DH,DES";
+        } catch (Exception e) {
+            // If we don't do RSA, then we use DH for the key exchange and DES
+            // for the secret stuff
+            cryptoFormats = "DH,DES";
+        }
+        log.info("Detecting cryptography support.  Formats {}", cryptoFormats);
+        initialized = true;
+    }
 
-	private static void startupDeviceDetector() {
-//		MiniStorageDeviceDetector dd = new MiniStorageDeviceDetector();
-//		Thread t = new Thread(dd, "DeviceDetector");
-//		t.setDaemon(true);
-//		t.setPriority(Thread.MIN_PRIORITY);
-//		t.start();
-	}
+    private void destroy() {
+        myProperties.clear();
+        initialized = false;
+    }
 
-	public static void safeExit(final int state) {
-		// This can cause deadlocks on some platforms, so execute it in another
-		// thread
-		new Thread(new Runnable() {
-			public void run() {
-				System.exit(state);
-			}
-		}).start();
-	}
+    public Properties properties() {
+        return myProperties;
+    }
 
+    public boolean isUsingOpenGL() {
+        return getBooleanProperty("opengl", "true");
+    }
+
+    public boolean getBooleanProperty(String prop, String def) {
+        String v = getProperty(prop, def);
+        return v.equalsIgnoreCase("true") || v.equals("1") || v.equals("yes");
+    }
+
+    public String getProperty(String prop, String def) {
+        if (!initialized)
+            throw new RuntimeException("MiniClient.get().init() must be called before getProperty()");
+        return myProperties.getProperty(prop, def);
+    }
+
+    public void setProperty(String prop, String value) {
+        log.debug("Setting MiniClient Property {}='{}'", prop, value);
+        myProperties.setProperty(prop, value);
+    }
+
+    public String getCryptoFormats() {
+        return cryptoFormats;
+    }
+
+    public String getMACAddress() {
+        log.warn("TODO: Implement getMACAddress()");
+        return MACAddress;
+    }
+
+    public MiniClientConnection getCurrentConnection() {
+        return currentConnection;
+    }
+
+    public void setCurrentConnection(MiniClientConnection currentConnection) {
+        this.currentConnection = currentConnection;
+    }
+
+    public boolean isConnected() {
+        return currentConnection != null && currentConnection.isConnected();
+    }
+
+    public File getCacheDir() {
+        return cacheDir;
+    }
+
+    public sagex.miniclient.uibridge.UIRenderer<?> getUIRenderer() {
+        return UIRenderer;
+    }
+
+    public void setUIRenderer(sagex.miniclient.uibridge.UIRenderer<?> UIRenderer) {
+        this.UIRenderer = UIRenderer;
+    }
+
+    public void connect(ServerInfo si, MACAddressResolver macAddressResolver) throws IOException {
+        MiniClientConnection connection = new MiniClientConnection(this, si.name, macAddressResolver.getMACAddress(), false, si);
+        connection.connect();
+    }
+
+    public void closeConnection() {
+        if (currentConnection != null) {
+            currentConnection.close();
+            currentConnection = null;
+        }
+    }
 }

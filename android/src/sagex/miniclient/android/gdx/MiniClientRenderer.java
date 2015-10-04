@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.opengl.GLES20;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -22,6 +21,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,95 +33,96 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.video.AndroidMediaPlayer;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
-import sagex.miniclient.uibridge.UIManager;
+import sagex.miniclient.uibridge.UIRenderer;
 
 /**
  * Created by seans on 26/09/15.
  */
-public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTexture> {
-    private static final String TAG = "GDXMINICLIENT";
+public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTexture> {
+    private static final Logger log = LoggerFactory.getLogger(MiniClientRenderer.class);
+    
     private final MiniClientGDXActivity activity;
-
+    private final MiniClient client;
     // GDX stuff
     Stage stage;
     Batch batch;
     Camera camera;
     Viewport viewport;
     ShapeRenderer shapeRenderer;
-
     // logging stuff
-    boolean logFrameBuffer=true;
-    boolean logFrameTime=false;
-    boolean logTextureTime=false;
-    long longestTextureTime=0;
-    long totalTextureTime=0;
+    boolean logFrameBuffer = true;
+    boolean logFrameTime = false;
+    boolean logTextureTime = false;
+    long longestTextureTime = 0;
+    long totalTextureTime = 0;
     long frameTime = 0;
-    long frameOps=0;
-    long frame=0;
-    boolean firstFrame=true;
-    boolean ready=false;
-
+    long frameOps = 0;
+    long frame = 0;
+    boolean firstFrame = true;
+    boolean ready = false;
     Dimension size;
-    Scale scale = new Scale(1,1);
+    Scale scale = new Scale(1, 1);
     // Current Surface (when surfaces are enabled)
     GdxTexture currentSurface = null;
     // render queues
     private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
-    // communication with SageTV
-    private MiniClientConnection connection;
     // the pipeline is synchonous so only one operations can affect this at a time
-    private Color batchColor=null;
+    private Color batchColor = null;
     // Because getColor() is only called on the render queue, in sequence we can do this
     private Color lastColor = null;
     private int lastColorInt = -1;
 
-    public MiniClientRenderer(MiniClientGDXActivity parent) {
-        this.activity=parent;
+    public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
+        this.activity = parent;
+        this.client = client;
+        client.setUIRenderer(this);
     }
 
     @Override
     public void create() {
         Dimension size = getMaxScreenSize();
-        Log.d(TAG, "CREATE: UI SIZE: " + size);
+        log.debug("CREATE: UI SIZE: " + size);
         camera = new OrthographicCamera(size.getWidth(), size.getHeight());
         viewport = new StretchViewport(size.getWidth(), size.getHeight(), camera);
         stage = new Stage(viewport);
-        batch=stage.getBatch();
+        batch = stage.getBatch();
         shapeRenderer = new ShapeRenderer();
         Gdx.graphics.setContinuousRendering(false);
     }
 
     @Override
     public void resize(int width, int height) {
-        this.size.width=width;
-        this.size.height=height;
+        this.size.width = width;
+        this.size.height = height;
         this.scale.setScale(1f * width / Gdx.graphics.getWidth(), 1f * height / Gdx.graphics.getHeight());
 
         stage.getViewport().setWorldSize(width, height);
         stage.getViewport().update(width, height, true);
-        Log.d(TAG, "SIZE: width: " + width + "; height: " + height);
-        Log.d(TAG, "VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
-        Log.d(TAG, "VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
-        Log.d(TAG, "WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
-        Log.d(TAG, "SCALE: " + scale);
-                // scale = getStage().getViewport().getWorldHeight()/ getStage().getViewport().getScreenHeight();
+        log.debug("SIZE: width: " + width + "; height: " + height);
+        log.debug("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
+        log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
+        log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
+        log.debug("SCALE: " + scale);
+        // scale = getStage().getViewport().getWorldHeight()/ getStage().getViewport().getScreenHeight();
 
-        Log.d(TAG, "Notifying SageTV about the Resize Event: " + this.size);
-        connection.postResizeEvent(size);
-        ready=true;
+        log.debug("Notifying SageTV about the Resize Event: " + this.size);
+        client.getCurrentConnection().postResizeEvent(size);
+        ready = true;
     }
 
     @Override
     public void render() {
-        if (renderQueue.size()==0) return;
+        if (renderQueue.size() == 0) return;
 
-        long st=System.currentTimeMillis();
+        long st = System.currentTimeMillis();
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -137,9 +140,9 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
             }
             batch.end();
         }
-        long et=System.currentTimeMillis();
+        long et = System.currentTimeMillis();
         if (logFrameTime) {
-            Log.d(TAG, "RENDER: Time: " + (et-st) + "ms");
+            log.debug("RENDER: Time: " + (et - st) + "ms");
         }
     }
 
@@ -159,7 +162,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     public void GFXCMD_INIT() {
         // block until the UI is ready
         while (!ready) {
-            Log.d(TAG, "Waiting For UI...");
+            log.debug("Waiting For UI...");
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -221,7 +224,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
                 camera.update();
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.rect(x, Y(y,height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
+                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
                 shapeRenderer.end();
 
                 batch.begin();
@@ -277,7 +280,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
                 shapeRenderer.setColor(getColor(argbTL));
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.circle(x,y,height/2);
+                shapeRenderer.circle(x, y, height / 2);
                 shapeRenderer.end();
 
                 batch.begin();
@@ -318,9 +321,9 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     }
 
     private Color getColor(int color) {
-        if (lastColor!=null && color==lastColorInt) return lastColor;
-        lastColorInt=color;
-        lastColor = new Color(((color >> 16) & 0xFF)/255f, ((color >> 8) & 0xFF)/255f, ((color) & 0xFF)/255f, ((color >> 24) & 0xFF)/255f);
+        if (lastColor != null && color == lastColorInt) return lastColor;
+        lastColorInt = color;
+        lastColor = new Color(((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, ((color) & 0xFF) / 255f, ((color >> 24) & 0xFF) / 255f);
         return lastColor;
     }
 
@@ -329,7 +332,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (img==null) return;
+                if (img == null) return;
 
                 // we only want to set blending for Non Framebuffer textures
                 if (!img.get().isFrameBuffer) {
@@ -343,20 +346,22 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
                     batch.setColor(getColor(blend));
                 }
 
-                int w=Math.abs(width);
-                int h=Math.abs(height);
+                int w = Math.abs(width);
+                int h = Math.abs(height);
                 Texture t = img.get().texture();
-                batch.draw(t, x, Y(y,h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
+                batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
                 batch.setColor(batchColor);
                 GLES20.glDisable(GLES20.GL_BLEND);
             }
         });
     }
+
     float Y(int y, int height) {
-        return size.getHeight()-y-height;
+        return size.getHeight() - y - height;
     }
+
     float Y(int y) {
-        return size.getHeight()-y;
+        return size.getHeight() - y;
     }
 
     @Override
@@ -366,7 +371,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
     @Override
     public void unloadImage(int handle, ImageHolder<GdxTexture> bi) {
-        if (bi!=null) {
+        if (bi != null) {
             bi.get().dispose();
         }
     }
@@ -377,8 +382,9 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         // need to create a SpriteBatch and the set the main batch to use it
         // need to keep a reference to the previous batch
         // need to set the MAIN surface to be this fbo
-        if (logFrameBuffer) Log.d(TAG, "Creating Framebuffer["+handle+"]: " + width + "x" + height);
-        final GdxTexture t = new GdxTexture(width,height);
+        if (logFrameBuffer)
+            log.debug("Creating Framebuffer[" + handle + "]: " + width + "x" + height);
+        final GdxTexture t = new GdxTexture(width, height);
         ImageHolder<GdxTexture> h = new ImageHolder<>(t);
         invokeLater(new Runnable() {
             @Override
@@ -391,7 +397,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
     }
 
     void setupSurface(GdxTexture t) {
-        if (currentSurface!=null) {
+        if (currentSurface != null) {
             t.unbindFrameBuffer();
         }
         // close the batch in prep for a new surface
@@ -399,7 +405,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
         // bind it (is, SetTargetSurface)
         t.bindFrameBuffer();
-        currentSurface=t;
+        currentSurface = t;
 
         // start the batch in prep for new surface
         batch.begin();
@@ -416,13 +422,13 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (handle==0) {
+                if (handle == 0) {
                     // we are switching to the primary surface (screen)
-                    if (currentSurface!=null) {
-                        if (logFrameBuffer) Log.d(TAG, "Unbinding Old Framebuffer");
+                    if (currentSurface != null) {
+                        if (logFrameBuffer) log.debug("Unbinding Old Framebuffer");
                         batch.end();
                         currentSurface.unbindFrameBuffer();
-                        currentSurface=null;
+                        currentSurface = null;
 
                         // reset the camera and batch
                         camera.update();
@@ -432,7 +438,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
                         // nothing to do, we are being told to set the surface to 0, but, we are 0
                     }
                 } else {
-                    if (logFrameBuffer) Log.d(TAG, "Using Framebuffer["+handle+"]");
+                    if (logFrameBuffer) log.debug("Using Framebuffer[" + handle + "]");
                     setupSurface(image.get());
                 }
             }
@@ -465,9 +471,9 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         final Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
 
-        long time = System.currentTimeMillis()-st;
-        totalTextureTime+=time;
-        longestTextureTime=Math.max(time,longestTextureTime);
+        long time = System.currentTimeMillis() - st;
+        totalTextureTime += time;
+        longestTextureTime = Math.max(time, longestTextureTime);
 
         final GdxTexture t = new GdxTexture(bitmap);
         invokeLater(new Runnable() {
@@ -497,21 +503,22 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
         }
         Gdx.graphics.requestRendering();
         if (logFrameTime) {
-            Log.d(TAG, "FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis() - frameTime) + "ms; Ops: " + frameOps);
+            log.debug("FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis() - frameTime) + "ms; Ops: " + frameOps);
         }
         if (logTextureTime) {
-            Log.d(TAG, "FRAME: " + (frame) + "; Texture Load Time: " + totalTextureTime + "ms; Longest Single: " + longestTextureTime + "ms");
+            log.debug("FRAME: " + (frame) + "; Texture Load Time: " + totalTextureTime + "ms; Longest Single: " + longestTextureTime + "ms");
         }
         frame++;
     }
 
     @Override
     public void startFrame() {
-        frameTime=System.currentTimeMillis();
-        frameOps=0;
-        totalTextureTime=0;
-        longestTextureTime=0;
+        frameTime = System.currentTimeMillis();
+        frameOps = 0;
+        totalTextureTime = 0;
+        longestTextureTime = 0;
     }
+
     @Override
     public void loadImageLine(int handle, ImageHolder<GdxTexture> image, int line, int len2, byte[] cmddata) {
 
@@ -529,7 +536,7 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
     @Override
     public Dimension getMaxScreenSize() {
-        if (size==null) {
+        if (size == null) {
             WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
             Point size = new Point();
@@ -566,28 +573,24 @@ public class MiniClientRenderer implements ApplicationListener, UIManager<GdxTex
 
     @Override
     public boolean createVideo(int width, int height, int format) {
-        Log.d(TAG, "CREATE VIDEO " + width + "x" + height + "; Format: " + format);
+        log.debug("CREATE VIDEO " + width + "x" + height + "; Format: " + format);
         return false;
     }
 
     @Override
     public boolean updateVideo(int frametype, ByteBuffer buf) {
-        Log.d(TAG, "UPDATE VIDEO FRAMETYPE:" + frametype);
+        log.debug("UPDATE VIDEO FRAMETYPE:" + frametype);
         return false;
     }
 
     @Override
     public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
-        Log.d(TAG, "New Player Requested");
-        return new AndroidMediaPlayer();
+        log.debug("New Player Requested");
+        return new AndroidMediaPlayer(activity);
     }
 
     @Override
     public void setVideoBounds(Object o, Object o1) {
-        Log.d(TAG, "Set Video Bounds:" + o + " - " + o1);
-    }
-
-    public void setConnection(MiniClientConnection connection) {
-        this.connection = connection;
+        log.debug("Set Video Bounds:" + o + " - " + o1);
     }
 }

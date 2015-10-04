@@ -27,8 +27,10 @@ public class AddServerFragment extends DialogFragment {
     private static final String ARG_SERVER_NAME = "servername";
     private static final String ARG_SERVER_ADDR = "serveraddr";
 
-    @Bind(R.id.server_name) EditText serverName;
-    @Bind(R.id.server_address) EditText serverAddr;
+    @Bind(R.id.server_name)
+    EditText serverName;
+    @Bind(R.id.server_address)
+    EditText serverAddr;
 
     private OnAddServerListener mListener;
 

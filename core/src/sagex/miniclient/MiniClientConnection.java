@@ -15,93 +15,99 @@
  */
 package sagex.miniclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
-import sagex.miniclient.uibridge.UIFactory;
+import sagex.miniclient.uibridge.UIRenderer;
 
 public class MiniClientConnection implements SageTVInputCallback, MiniClientConnectionGateway {
-	public static final String QUICKTIME = "Quicktime";
-	public static final String AAC = "AAC";
-	public static final String AC3 = "AC3";
-	public static final String MPEG2_TS = "MPEG2-TS";
-	public static final String MPEG2_VIDEO = "MPEG2-Video";
-	public static final String WMA7 = "WMA7";
-	public static final String WMA8 = "WMA8";
-	public static final String WMA9LOSSLESS = "WMA9Lossless";
-	public static final String WMA_PRO = "WMAPRO";
-	public static final String WMV9 = "WMV9";
-	public static final String WMV8 = "WMV8";
-	public static final String WMV7 = "WMV7";
-	public static final String FLASH_VIDEO = "FlashVideo";
-	public static final String H264 = "H.264";
-	public static final String OGG = "Ogg";
-	public static final String VORBIS = "Vorbis";
-	public static final String MPEG2_PS = "MPEG2-PS";
-	public static final String MPEG2_PES_VIDEO = "MPEG2-PESVideo";
-	public static final String MPEG2_PES_AUDIO = "MPEG2-PESAudio";
-	public static final String MPEG1 = "MPEG1";
-	public static final String JPEG = "JPEG";
-	public static final String GIF = "GIF";
-	public static final String PNG = "PNG";
-	public static final String BMP = "BMP";
-	public static final String MP2 = "MP2";
-	public static final String MP3 = "MP3";
-	public static final String MPEG1_VIDEO = "MPEG1-Video";
-	public static final String MPEG4_VIDEO = "MPEG4-Video";
-	public static final String MPEG4X = "MPEG4X"; // this is our private stream
-													// format we put inside
-													// MPEG2 PS for MPEG4/DivX
-													// video on Windows
-	public static final String AVI = "AVI";
-	public static final String WAV = "WAV";
-	public static final String ASF = "ASF";
-	public static final String FLAC = "FLAC";
-	public static final String MATROSKA = "MATROSKA";
-	public static final String VC1 = "VC1";
-	public static final String ALAC = "ALAC"; // Apple lossless
-	public static final String SMIL = "SMIL"; // for SMIL-XML files which
-												// represent sequences of
-												// content
-	public static final String VP6F = "VP6F";
-	public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS;
-	public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
-			+ "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
-			+ MATROSKA;
-	public static final String MPLAYER_AUDIO_CODECS = AAC + "," + FLAC + "," + MP2 + "," + MP3 + "," + WAV + "," + VORBIS + ","
-			+ WMA7 + "," + WMA8 + "," + AC3;
-	public static final String MPLAYER_VIDEO_CODECS = FLASH_VIDEO + "," + H264 + "," + MPEG1_VIDEO + "," + MPEG2_VIDEO + ","
-			+ MPEG4_VIDEO + "," + WMV7 + "," + WMV8 + "," + WMV9 + "," + VP6F;
-	public static final int DRAWING_CMD_TYPE = 16;
-	public static final int GET_PROPERTY_CMD_TYPE = 0;
-	public static final int SET_PROPERTY_CMD_TYPE = 1;
-	public static final int FS_CMD_TYPE = 2;
-	public static final int IR_EVENT_REPLY_TYPE = 128;
-	public static final int KB_EVENT_REPLY_TYPE = 129;
-	public static final int MPRESS_EVENT_REPLY_TYPE = 130;
-	public static final int MRELEASE_EVENT_REPLY_TYPE = 131;
-	public static final int MCLICK_EVENT_REPLY_TYPE = 132;
-	public static final int MMOVE_EVENT_REPLY_TYPE = 133;
-	public static final int MDRAG_EVENT_REPLY_TYPE = 134;
-	public static final int MWHEEL_EVENT_REPLY_TYPE = 135;
-	public static final int SAGECOMMAND_EVENT_REPLY_TYPE = 136;
-	public static final int UI_RESIZE_EVENT_REPLY_TYPE = 192;
-	public static final int UI_REPAINT_EVENT_REPLY_TYPE = 193;
-	public static final int MEDIA_PLAYER_UPDATE_EVENT_REPLY_TYPE = 201;
-	public static final int REMOTE_FS_HOTPLUG_INSERT_EVENT_REPLY_TYPE = 202;
-	public static final int REMOTE_FS_HOTPLUG_REMOVE_EVENT_REPLY_TYPE = 203;
-	public static final int OUTPUT_MODES_CHANGED_REPLY_TYPE = 224;
-	public static final int SUBTITLE_UPDATE_REPLY_TYPE = 225;
-	public static final int IMAGE_UNLOAD_REPLY_TYPE = 226;
-	public static final int OFFLINE_CACHE_CHANGE_REPLY_TYPE = 227;
-	// Tells the GFX channel to force the media channel to reconnect
-	public static final int GFXCMD_MEDIA_RECONNECT = 131;
-	public static final int FS_RV_SUCCESS = 0;
-	public static final int FS_RV_PATH_EXISTS = 1;
-	public static final int FS_RV_NO_PERMISSIONS = 2;
-	public static final int FS_RV_PATH_DOES_NOT_EXIST = 3;
-	public static final int FS_RV_NO_SPACE_ON_DISK = 4;
-	public static final int FS_RV_ERROR_UNKNOWN = 5;
-	public static final int FSCMD_CREATE_DIRECTORY = 64;
+    public static final String QUICKTIME = "Quicktime";
+    public static final String AAC = "AAC";
+    public static final String AC3 = "AC3";
+    public static final String MPEG2_TS = "MPEG2-TS";
+    public static final String MPEG2_VIDEO = "MPEG2-Video";
+    public static final String WMA7 = "WMA7";
+    public static final String WMA8 = "WMA8";
+    public static final String WMA9LOSSLESS = "WMA9Lossless";
+    public static final String WMA_PRO = "WMAPRO";
+    public static final String WMV9 = "WMV9";
+    public static final String WMV8 = "WMV8";
+    public static final String WMV7 = "WMV7";
+    public static final String FLASH_VIDEO = "FlashVideo";
+    public static final String H264 = "H.264";
+    public static final String OGG = "Ogg";
+    public static final String VORBIS = "Vorbis";
+    public static final String MPEG2_PS = "MPEG2-PS";
+    public static final String MPEG2_PES_VIDEO = "MPEG2-PESVideo";
+    public static final String MPEG2_PES_AUDIO = "MPEG2-PESAudio";
+    public static final String MPEG1 = "MPEG1";
+    public static final String JPEG = "JPEG";
+    public static final String GIF = "GIF";
+    public static final String PNG = "PNG";
+    public static final String BMP = "BMP";
+    public static final String MP2 = "MP2";
+    public static final String MP3 = "MP3";
+    public static final String MPEG1_VIDEO = "MPEG1-Video";
+    public static final String MPEG4_VIDEO = "MPEG4-Video";
+    public static final String MPEG4X = "MPEG4X"; // this is our private stream
+    // format we put inside
+    // MPEG2 PS for MPEG4/DivX
+    // video on Windows
+    public static final String AVI = "AVI";
+    public static final String WAV = "WAV";
+    public static final String ASF = "ASF";
+    public static final String FLAC = "FLAC";
+    public static final String MATROSKA = "MATROSKA";
+    public static final String VC1 = "VC1";
+    public static final String ALAC = "ALAC"; // Apple lossless
+    public static final String SMIL = "SMIL"; // for SMIL-XML files which
+    // represent sequences of
+    // content
+    public static final String VP6F = "VP6F";
+//    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS + "," + MPEG2_TS;
+//    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
+//            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
+//            + MATROSKA;
+
+    public static final String MPLAYER_PUSH_FORMATS = MPEG4_VIDEO;
+    public static final String MPLAYER_PULL_FORMATS = MPEG2_TS;
+
+    public static final String MPLAYER_AUDIO_CODECS = MP3 + "," + AAC;
+    public static final String MPLAYER_VIDEO_CODECS = H264 + "," + MPEG4_VIDEO;
+
+    public static final int DRAWING_CMD_TYPE = 16;
+    public static final int GET_PROPERTY_CMD_TYPE = 0;
+    public static final int SET_PROPERTY_CMD_TYPE = 1;
+    public static final int FS_CMD_TYPE = 2;
+    public static final int IR_EVENT_REPLY_TYPE = 128;
+    public static final int KB_EVENT_REPLY_TYPE = 129;
+    public static final int MPRESS_EVENT_REPLY_TYPE = 130;
+    public static final int MRELEASE_EVENT_REPLY_TYPE = 131;
+    public static final int MCLICK_EVENT_REPLY_TYPE = 132;
+    public static final int MMOVE_EVENT_REPLY_TYPE = 133;
+    public static final int MDRAG_EVENT_REPLY_TYPE = 134;
+    public static final int MWHEEL_EVENT_REPLY_TYPE = 135;
+    public static final int SAGECOMMAND_EVENT_REPLY_TYPE = 136;
+    public static final int UI_RESIZE_EVENT_REPLY_TYPE = 192;
+    public static final int UI_REPAINT_EVENT_REPLY_TYPE = 193;
+    public static final int MEDIA_PLAYER_UPDATE_EVENT_REPLY_TYPE = 201;
+    public static final int REMOTE_FS_HOTPLUG_INSERT_EVENT_REPLY_TYPE = 202;
+    public static final int REMOTE_FS_HOTPLUG_REMOVE_EVENT_REPLY_TYPE = 203;
+    public static final int OUTPUT_MODES_CHANGED_REPLY_TYPE = 224;
+    public static final int SUBTITLE_UPDATE_REPLY_TYPE = 225;
+    public static final int IMAGE_UNLOAD_REPLY_TYPE = 226;
+    public static final int OFFLINE_CACHE_CHANGE_REPLY_TYPE = 227;
+    // Tells the GFX channel to force the media channel to reconnect
+    public static final int GFXCMD_MEDIA_RECONNECT = 131;
+    public static final int FS_RV_SUCCESS = 0;
+    public static final int FS_RV_PATH_EXISTS = 1;
+    public static final int FS_RV_NO_PERMISSIONS = 2;
+    public static final int FS_RV_PATH_DOES_NOT_EXIST = 3;
+    public static final int FS_RV_NO_SPACE_ON_DISK = 4;
+    public static final int FS_RV_ERROR_UNKNOWN = 5;
+    public static final int FSCMD_CREATE_DIRECTORY = 64;
     public static final int FS_PATH_HIDDEN = 0x01;
     public static final int FS_PATH_DIRECTORY = 0x02;
     public static final int FS_PATH_FILE = 0x04;
@@ -115,22 +121,23 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     public static final int FSCMD_UPLOAD_FILE = 71;
     // pathlen, path
     public static final int FSCMD_DELETE_FILE = 72;
+    private static final Logger log = LoggerFactory.getLogger(MiniClientConnection.class);
     // pathlen, path
-	// 64-bit return value
+    // 64-bit return value
     public static boolean detailedBufferStats = false;
     // pathlen, path
-	// 64-bit return value
+    // 64-bit return value
     public static String CONNECT_FAILURE_GENERAL_INTERNET = "The SageTV Placeshifter is having trouble connecting to the Internet. "
             + "Please make sure your Internet connection is established and properly configured. "
             + "If you have firewall software enabled (like ZoneAlarm or the Windows Firewall) be sure that the SageTV Placeshifter is allowed to have outgoing network access.";
     // pathlen, path
-	// 16-bit numEntries, *(16-bit pathlen, path)
+    // 16-bit numEntries, *(16-bit pathlen, path)
     public static String CONNECT_FAILURE_LOCATOR_SERVER = "The SageTV Placeshifter is unable to connect to the SageTV Locator server. "
             + "The SageTV Locator server may be temporarily down, or connection to it may be blocked by a firewall. "
             + "If you have firewall software enabled (like ZoneAlarm or the Windows Firewall) be sure that the SageTV Placeshifter is allowed to have outgoing network access on port 8018. "
             + "If you're on a network that has a firewall, please contact your network administrator and ask them if they can open the outbound port 8018 for you.";
     // pathlen, path
-	// 16-bit numEntries, *(16-bit pathlen, path)
+    // 16-bit numEntries, *(16-bit pathlen, path)
     public static String CONNECT_FAILURE_LOCATOR_REGISTRATION = "The SageTV Placeshifter is unable to connect to the specified SageTV Media Center Server because it is not registered with the SageTV Locator service. "
             + "You may have entered your Locator ID incorrectly. If your Locator ID is correct, please make sure that the Placeshifter is configured on your SageTV Media Center, and that there's no outbound firewall restrictions on port 8018. "
             + "This can be done by going through the Configuration Wizard and testing the Placeshifter connection.";
@@ -144,15 +151,13 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             + "you should try reconfiguring the Placeshifter on the SageTV Server to use a common external port such as 80 or 443. "
             + "This can be done in the Configuration Wizard on the SageTV Media Center.";
     // pathlen, path
-	public static int HIGH_SECURITY_FS = 3;
-	public static int MED_SECURITY_FS = 2;
-	public static int LOW_SECURITY_FS = 1;
-
-	public static MiniClientConnection currConnection = null;
+    public static int HIGH_SECURITY_FS = 3;
+    public static int MED_SECURITY_FS = 2;
+    public static int LOW_SECURITY_FS = 1;
     protected long offlineImageCacheLimit;
     protected java.io.File cacheDir;
-    private sagex.miniclient.uibridge.UIManager<?> uiManager;
-	private UIFactory uiFactory;
+    private MiniClient client;
+    private UIRenderer<?> uiRenderer;
     private MediaCmd myMedia;
     private java.net.Socket gfxSocket;
     private java.net.Socket mediaSocket;
@@ -170,7 +175,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     private int replyCount;
     private GFXCMD2 myGfx;
     private boolean alive;
-    private String currentCrypto = MiniClient.cryptoFormats;
+    private String currentCrypto = null;
     private boolean useLocalNetworkOptimizations;
     private boolean fontServer;
     private java.util.Timer uiTimer;
@@ -189,7 +194,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     private boolean subSupport = false;
     // We need this for being able to store the auth block in the properties
     // file correctly
-    private MgrServerInfo msi;
+    private ServerInfo msi;
     private Dimension reportedScrSize;
     private boolean zipMode;
     private java.util.Map lruImageMap = new java.util.HashMap();
@@ -198,50 +203,38 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     private boolean firstFrameStarted;
     private boolean performingReconnect;
 
-	public MiniClientConnection(String serverName, String myID, boolean useLocalNetworkOptimizations, MgrServerInfo msi,
-			UIFactory factory) {
-		uiFactory = factory;
-		uiManager = factory.getUIManager(this);
+    public MiniClientConnection(MiniClient client, String serverName, String myID, boolean useLocalNetworkOptimizations, ServerInfo msi) {
+        this.client = client;
+        currentCrypto = client.getCryptoFormats();
 
-		if (serverName.indexOf(":") == -1) {
-			this.serverName = serverName;
-			this.port = 31099;
-		} else {
-			this.serverName = serverName.substring(0, serverName.indexOf(":"));
-			this.port = 31099;
-			try {
+        uiRenderer = client.getUIRenderer();
+        if (uiRenderer == null) {
+            throw new RuntimeException("client.setUIRenderer() needs to be set before creating the connection");
+        }
+
+        if (serverName.indexOf(":") == -1) {
+            this.serverName = serverName;
+            this.port = 31099;
+        } else {
+            this.serverName = serverName.substring(0, serverName.indexOf(":"));
+            this.port = 31099;
+            try {
                 this.port = Integer.parseInt(serverName.substring(serverName.indexOf(":") + 1));
             } catch (NumberFormatException e) {
             }
-		}
+        }
         this.myID = myID;
         this.useLocalNetworkOptimizations = useLocalNetworkOptimizations;
         this.msi = msi;
-        offlineImageCacheLimit = Integer.parseInt(MiniClient.myProperties.getProperty("disk_image_cache_size", "100000000"));
-        if ("true".equals(MiniClient.myProperties.getProperty("cache_images_on_disk", "true"))) {
-            java.io.File configDir = new java.io.File(System.getProperty("user.home"), ".sagetv");
-            cacheDir = new java.io.File(configDir, "imgcache");
+        offlineImageCacheLimit = Integer.parseInt(client.getProperty("disk_image_cache_size", "100000000"));
+        if ("true".equals(client.getProperty("cache_images_on_disk", "true"))) {
+            cacheDir = new java.io.File(client.getCacheDir(), "imgcache");
             cacheDir.mkdir();
         } else
             cacheDir = null;
-        if ("true".equals(MiniClient.myProperties.getProperty("force_nonlocal_connection", "false")))
+        if ("true".equals(client.getProperty("force_nonlocal_connection", "false")))
             this.useLocalNetworkOptimizations = false;
         usesAdvancedImageCaching = false;
-    }
-
-    private static boolean fullRead(int fd, byte[] buf, int count) // throws
-    // jtux.UErrorException
-    {
-        // int pos=0;
-        // byte []tempbuf = new byte[count];
-        // while(pos<count)
-        // {
-        // int retval=jtux.UFile.read(fd, tempbuf, count-pos);
-        // if(retval<0) return false;
-        // System.arraycopy(tempbuf, 0, buf, pos, retval);
-        // pos+=retval;
-        // }
-        return true;
     }
 
     // Needed for local video images...
@@ -265,34 +258,34 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             byte[] b = str.getBytes("ISO8859_1");
             System.arraycopy(b, 0, buf, offset, str.length());
         } catch (Exception e) {
-            System.out.println("error:" + e);
+            log.error("putString()", e);
             e.printStackTrace();
         }
-	}
+    }
 
-	private static String getCmdString(byte[] data, int offset) {
-		int length = ((data[offset] & 0xFF) << 8) | (data[offset + 1] & 0xFF);
-		try {
-			return new String(data, offset + 2, length, "UTF-8");
-		} catch (java.io.UnsupportedEncodingException uee) {
-			return new String(data, offset + 2, length);
-		}
-	}
+    private static String getCmdString(byte[] data, int offset) {
+        int length = ((data[offset] & 0xFF) << 8) | (data[offset + 1] & 0xFF);
+        try {
+            return new String(data, offset + 2, length, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException uee) {
+            return new String(data, offset + 2, length);
+        }
+    }
 
-	private static long getCmdLong(byte[] data, int offset) {
-		long rv = 0;
-		for (int i = 0; i < 8; i++)
-			rv = (rv << 8) | ((long) (data[offset + i] & 0xFF));
-		return rv;
-	}
+    private static long getCmdLong(byte[] data, int offset) {
+        long rv = 0;
+        for (int i = 0; i < 8; i++)
+            rv = (rv << 8) | ((long) (data[offset + i] & 0xFF));
+        return rv;
+    }
 
     private java.net.Socket EstablishServerConnection(int connType) throws java.io.IOException {
         int flag = 1;
-        int blockingmode;
         java.net.Socket sake = null;
         java.io.InputStream inStream = null;
         java.io.OutputStream outStream = null;
         try {
+            log.info("Establishing Server Connection {}:{} for Connection Type: {}", serverName, port, connType);
             sake = new java.net.Socket();
             sake.connect(new java.net.InetSocketAddress(serverName, port), 30000);
             sake.setSoTimeout(30000);
@@ -302,67 +295,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             inStream = sake.getInputStream();
             byte[] msg = new byte[7];
             msg[0] = (byte) 1;
+
             if (myID == null) {
-                try {
-                    String prefix;
-                    final Process procy = Runtime.getRuntime().exec(MiniClient.WINDOWS_OS ? "ipconfig /all" : "ifconfig", null,
-                            null);
-                    final java.util.regex.Pattern pat;// =
-                    // java.util.regex.Pattern.compile(MiniClient.WINDOWS_OS
-                    // ?
-                    // "Physical Address(\\. )*\\:
-                    // (\\p{XDigit}\\p{XDigit}\\-\\p{XDigit}\\p{XDigit}\\-\\p{XDigit}\\p{XDigit}\\-\\p{XDigit}\\p{XDigit}\\-\\p{XDigit}\\p{XDigit}\\-\\p{XDigit}\\p{XDigit})"
-                    // :
-                    // "(\\p{XDigit}\\p{XDigit}\\:\\p{XDigit}\\p{XDigit}\\:\\p{XDigit}\\p{XDigit}\\:\\p{XDigit}\\p{XDigit}\\:\\p{XDigit}\\p{XDigit}\\:\\p{XDigit}\\p{XDigit})");
-                    if (MiniClient.WINDOWS_OS)
-                        prefix = "";
-                    else if (MiniClient.MAC_OS_X)
-                        prefix = "ether";
-                    else
-                        prefix = ""; // no prefix for linux since language
-                    // changes the label
-                    pat = java.util.regex.Pattern.compile(prefix + " ((\\p{XDigit}{2}[:-]){5}\\p{XDigit}{2})");
-                    Thread the = new Thread("InputStreamConsumer") {
-                        public void run() {
-                            try {
-                                java.io.BufferedReader buf = new java.io.BufferedReader(
-                                        new java.io.InputStreamReader(procy.getInputStream()));
-                                String s;
-                                while ((s = buf.readLine()) != null) {
-                                    java.util.regex.Matcher m = pat.matcher(s);
-                                    // in case there's multiple adapters we only
-                                    // want the first one
-                                    if (myID == null && m.find()) {
-                                        myID = m.group(1);
-                                    }
-                                }
-                                buf.close();
-                            } catch (Exception e) {
-                            }
-                        }
-                    };
-                    the.setDaemon(true);
-                    the.start();
-                    Thread the2 = new Thread("ErrorStreamConsumer") {
-                        public void run() {
-                            try {
-                                java.io.BufferedReader buf = new java.io.BufferedReader(
-                                        new java.io.InputStreamReader(procy.getErrorStream()));
-                                while (buf.readLine() != null)
-                                    ;
-                                buf.close();
-                            } catch (Exception e) {
-                            }
-                        }
-                    };
-                    the2.setDaemon(true);
-                    the2.start();
-                    the.join();
-                    the2.join();
-                    procy.waitFor();
-                } catch (Exception e) {
-                    System.out.println("Error getting MAC address of:" + e);
-                }
+                myID = client.getMACAddress();
             }
 
             if (myID != null) {
@@ -374,17 +309,17 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             outStream.write(connType);
             int rez = inStream.read();
             if (rez != 2) {
-                System.out.println("Error with reply from server:" + rez);
+                log.error("Error with reply from server: {}", rez);
                 inStream.close();
                 outStream.close();
                 sake.close();
                 return null;
             }
-            System.out.println("Connection accepted by server");
+            log.info("Connection accepted by server: {}", serverName);
             sake.setSoTimeout(0);
             return sake;
         } catch (java.io.IOException e) {
-            System.out.println("ERROR with socket connection: " + e);
+            log.error("ERROR with socket connection", e);
             try {
                 sake.close();
             } catch (Exception e1) {
@@ -402,7 +337,15 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     }
 
     public void connect() throws java.io.IOException {
-        System.out.println("Attempting to connect to server at " + serverName + ":" + port);
+        if (client.getCurrentConnection() != null) {
+            // TODO: We should check if the connection is the same as this one, if so, then just use this connection.
+            if (client.getCurrentConnection() != this) {
+                log.warn("We already have server connection.  Shutting it down before connecting with this one.");
+                client.getCurrentConnection().close();
+            }
+        }
+
+        log.info("Connecting to media server at {}:{}", serverName, port);
         while (mediaSocket == null) {
             mediaSocket = EstablishServerConnection(1);
             if (mediaSocket == null) {
@@ -412,8 +355,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 throw new java.net.ConnectException();
             }
         }
-        System.out.println("Connected to media server");
+        log.info("Connected to media server {}", serverName);
 
+        log.info("Connecting to ui server at {}:{}", serverName, port);
         while (gfxSocket == null) {
             gfxSocket = EstablishServerConnection(0);
             if (gfxSocket == null) {
@@ -423,9 +367,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 throw new java.net.ConnectException();
             }
         }
-        System.out.println("Connected to gfx server");
+        log.info("Connected to gfx server {}", serverName);
 
-        currConnection = this;
+        client.setCurrentConnection(this);
 
         alive = true;
         Thread t = new Thread("Media-" + serverName) {
@@ -445,7 +389,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         };
         t.start();
 
-        String str = MiniClient.myProperties.getProperty("local_fs_security", "high");
+        String str = client.getProperty("local_fs_security", "high");
         if ("low".equals(str))
             fsSecurity = LOW_SECURITY_FS;
         else if ("med".equals(str))
@@ -460,7 +404,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 
     public void close() {
         alive = false;
-        currConnection = null;
+        client.setCurrentConnection(null);
         try {
             gfxSocket.close();
         } catch (Exception e) {
@@ -474,130 +418,11 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         } catch (Exception e) {
         }
         cleanupOfflineCache();
-    }
-
-    protected void closeVideoClient() {
-        System.out.println("closeVideoClient\n");
-        // if(socketfd>=0) try { jtux.UFile.close(socketfd); } catch(Exception
-        // e){}
-        socketfd = -1;
-    }
-
-    protected void closeVideoServer() {
-        System.out.println("closeVideoServer\n");
-        if (tempfile != null)
-            try {
-                tempfile.delete();
-            } catch (Exception e) {
-            }
-        tempfile = null;
-        if (tempfile2 != null)
-            try {
-                tempfile2.delete();
-            } catch (Exception e) {
-            }
-        tempfile2 = null;
-        // if(serverfd>=0) try { jtux.UFile.close(serverfd); } catch(Exception
-        // e){}
-        serverfd = -1;
-    }
-
-    protected void startVideoServer() {
-        // System.out.println("Staring video server");
-        // int fd=-1;
-        // try
-        // {
-        // tempfile = java.io.File.createTempFile("sagevideo","");
-        // tempfile.deleteOnExit();
-        // java.io.RandomAccessFile rafile = new
-        // java.io.RandomAccessFile(tempfile,"rw");
-        // java.nio.channels.FileChannel videoCh =
-        // rafile.getChannel();
-        //
-        // java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(1920);
-        // for(int i=0;i<540*3;i++)
-        // {
-        // buf.clear();
-        // videoCh.write(buf);
-        // }
-        //
-        // mappedVideo =
-        // videoCh.map(java.nio.channels.FileChannel.MapMode.READ_WRITE,
-        // 0, videoCh.size());
-        // videoCh.close();
-        // rafile.close();
-        // // Now we have the mapped video
-        // System.out.println("Temp file:"+tempfile);
-        //
-        // try
-        // {
-        // serverfd = jtux.UNetwork.socket(jtux.UConstant.AF_UNIX,
-        // jtux.UConstant.SOCK_STREAM, 0);
-        // if(serverfd<0)
-        // {
-        // System.out.println("Could not open unix server socket\n");
-        // return;
-        // }
-        // jtux.UNetwork.s_sockaddr_un sa = new jtux.UNetwork.s_sockaddr_un();
-        // sa.sun_family = jtux.UConstant.AF_UNIX;
-        // sa.sun_path = tempfile + ".socket";
-        //
-        // jtux.UNetwork.bind(serverfd, sa, 0);
-        // // Remove socket on exit
-        // tempfile2 = new java.io.File(tempfile + ".socket");
-        // tempfile2.deleteOnExit();
-        // mappedfname=tempfile.toString();
-        // jtux.UNetwork.listen(serverfd, 0);
-        // }
-        // catch(jtux.UErrorException e2)
-        // {
-        // closeVideoServer();
-        // System.out.println("Could not server socket " + e2);
-        // e2.printStackTrace();
-        // return;
-        // }
-        // }
-        // catch(java.io.IOException e)
-        // {
-        // System.out.println("Couldn't create temp file");
-        // return;
-        // }
-    }
-
-    protected void getVideoClient() {
-        // try
-        // {
-        // jtux.UNetwork.s_sockaddr_un clientsa = new
-        // jtux.UNetwork.s_sockaddr_un();
-        // jtux.UUtil.IntHolder clientsalen = new jtux.UUtil.IntHolder();
-        // clientsalen.value=0;
-        // System.out.println("Trying to accept fd: "+serverfd);
-        // socketfd = jtux.UNetwork.accept(serverfd, null, clientsalen);
-        // System.out.println("Got connection on fd: "+socketfd);
-        // }
-        // catch(jtux.UErrorException e)
-        // {
-        // if(socketfd>=0) try { jtux.UFile.close(socketfd); } catch(Exception
-        // e2){}
-        // System.out.println("Could not accept client connection on socket " +
-        // e);
-        // e.printStackTrace();
-        // return;
-        // }
-    }
-
-    public String getVideoSocket() {
-        return tempfile2.toString();
-    }
-
-    protected void readVideoCommand(byte[] cmdBuf) // throws
-    // jtux.UErrorException
-    {
-        // fullRead(socketfd, cmdBuf, 4);
+        client = null;
     }
 
     private void GFXThread() {
-        myGfx = new GFXCMD2(this, uiManager);
+        myGfx = new GFXCMD2(client);
 
         detailedBufferStats = false;
         byte[] cmd = new byte[4];
@@ -609,20 +434,20 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         // pull-mode streaming.
         boolean canDoPullStreaming = false;
         try {
-            System.out.println("Testing to see if server can do a pull mode streaming connection...");
+            log.info("Testing to see if server can do a pull mode streaming connection at {}:{}...", serverName, 7818);
             java.net.Socket mediaTest = new java.net.Socket();
             mediaTest.connect(new java.net.InetSocketAddress(serverName, 7818), 2000);
             mediaTest.close();
             canDoPullStreaming = true;
-            System.out.println("Server can do a pull-mode streaming connection.");
+            log.info("Server can do a pull-mode streaming connection at {}:{}", serverName, 7818);
         } catch (Exception e) {
-            System.out.println("Failed pull mode media test....only use push mode.");
+            log.warn("Failed pull mode media test....only use push mode for server {}", serverName);
         }
 
-        reportedScrSize = uiManager.getMaxScreenSize();
+        reportedScrSize = uiRenderer.getMaxScreenSize();
         if (reportedScrSize.width == 0 || reportedScrSize.height == 0)
-            reportedScrSize = uiManager.getScreenSize();
-        System.out.println("Max screen size=" + reportedScrSize);
+            reportedScrSize = uiRenderer.getScreenSize();
+        log.info("Max screen size={}", reportedScrSize);
 
         final java.util.Vector gfxSyncVector = new java.util.Vector();
 
@@ -649,7 +474,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                 continue;
                             }
                         }
-						try {
+                        try {
                             if (zipMode && !enabledzip) {
                                 // Recreate stream wrappers with ZLIB
                                 com.jcraft.jzlib.ZInputStream zs = new com.jcraft.jzlib.ZInputStream(gfxSocket.getInputStream(),
@@ -670,8 +495,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             if (reconnectAllowed && alive && firstFrameStarted && !encryptEvents) {
                                 performingReconnect = true;
                                 enabledzip = false;
-                                System.out.println(
-                                        "GFX channel detected a connection error and we're in a mode that allows reconnect...try to reconnect to the server now");
+                                log.error(
+                                        "GFX channel detected a connection error and we're in a mode that allows reconnect...try to reconnect to the server now", e);
                                 try {
                                     myStream.close();
                                 } catch (Exception e1) {
@@ -697,9 +522,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                         myStream = new java.io.DataInputStream(zs);
                                         enabledzip = true;
                                     }
-                                    System.out.println("Done doing server reconnect...continue on our merry way!");
+                                    log.info("Done doing server reconnect...continue on our merry way!");
                                 } catch (Exception e1) {
-                                    System.out.println("Failure in reconnecting to server...abort the client");
+                                    log.error("Failure in reconnecting to server...abort the client", e1);
                                     performingReconnect = false;
                                     synchronized (gfxSyncVector) {
                                         gfxSyncVector.add(e);
@@ -724,65 +549,6 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             };
             gfxReadThread.setDaemon(true);
             gfxReadThread.start();
-//			Thread videoReadThread = new Thread("VideoRead") {
-//				public void run() {
-//					byte[] gfxCmds = new byte[4];
-//					byte[] cmdbuffer2 = new byte[4096];
-//					int len;
-//					startVideoServer();
-//					while (alive) {
-//						synchronized (gfxSyncVector) {
-//							if (gfxSyncVector.contains(gfxCmds)) {
-//								try {
-//									gfxSyncVector.wait(5000);
-//								} catch (InterruptedException e) {
-//								}
-//								continue;
-//							}
-//						}
-//						try {
-//							if (socketfd >= 0) {
-//								readVideoCommand(gfxCmds);
-//								len = ((gfxCmds[1] & 0xFF) << 16) | ((gfxCmds[2] & 0xFF) << 8) | (gfxCmds[3] & 0xFF);
-//								if (fullRead(socketfd, cmdbuffer2, len) != true) {
-//									System.out.println("Could not get command from socket ");
-//									closeVideoClient();
-//									continue;
-//								}
-//								// System.out.println("Video cmd "+
-//								// (cmd[0]&0xFF));
-//							} else {
-//								getVideoClient();
-//								continue;
-//							}
-//						} catch (Exception e) {
-//							// Close the connection and wait until we have
-//							// another one...
-//							closeVideoClient();
-//							continue;
-//							// synchronized (gfxSyncVector)
-//							// {
-//							// gfxSyncVector.add(e);
-//							// return;
-//							// }
-//						}
-//						if ((gfxCmds[0] & 0xFF) == 130) {
-//							System.out.println("Received video close command\n");
-//							closeVideoClient();
-//							continue;
-//						}
-//						synchronized (gfxSyncVector) {
-//							gfxSyncVector.add(gfxCmds);
-//							gfxSyncVector.add(cmdbuffer2);
-//							gfxSyncVector.notifyAll();
-//						}
-//					}
-//					closeVideoServer();
-//				}
-//			};
-//			videoReadThread.setDaemon(true);
-//			if (!MiniClient.WINDOWS_OS && !MiniClient.MAC_OS_X)
-//				videoReadThread.start();
 
             while (alive) {
                 byte[] cmdbuffer;
@@ -803,18 +569,15 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         continue;
                     }
                 }
-                // is.readFully(cmd);
 
                 command = (cmd[0] & 0xFF);
                 len = ((cmd[1] & 0xFF) << 16) | ((cmd[2] & 0xFF) << 8) | (cmd[3] & 0xFF);
-                // System.out.println("inside loop command "+command + " len
-                // "+len);
                 if ((command & 0x80) != 0) // Local video update command
                 {
                     byte[] data = cmdbuffer;
                     switch (cmd[0] & 0xFF) {
                         case 0x80: // New video
-                            System.out.println("Video cmd " + (cmd[0] & 0xFF));
+                            log.debug("NOT IMPLEMENTED(0x80): Video cmd {}", (cmd[0] & 0xFF));
                             videowidth = getInt(data, 0);
                             videoheight = getInt(data, 4);
                             videoformat = getInt(data, 8);
@@ -827,20 +590,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             putInt(data, 4 + mappedfname.length() + 12, videowidth / 2); // pitchU
                             putInt(data, 4 + mappedfname.length() + 16, videowidth * videoheight + videowidth * videoheight / 4); // offsetV
                             putInt(data, 4 + mappedfname.length() + 20, videowidth / 2); // pitchV
-                            // try
-                            // {
-                            // jtux.UFile.write(socketfd, data,
-                            // 4+mappedfname.length()+24);
-                            // }
-                            // catch(jtux.UErrorException e)
-                            // {
-                            // System.out.println("Could not send reply to socket "
-                            // + e);
-                            // e.printStackTrace();
-                            // closeVideoClient();
-                            // }
                             break;
                         case 0x81: // New frame
+                            log.debug("NOT IMPLEMENTED(0x81): New Frame command");
                             videoframetype = getInt(data, 0);
                             myGfx.updateVideo(videoframetype, mappedVideo);
                             putInt(data, 0, 0); // offsetY
@@ -849,17 +601,6 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             putInt(data, 12, videowidth / 2); // pitchU
                             putInt(data, 16, videowidth * videoheight + videowidth * videoheight / 4); // offsetV
                             putInt(data, 20, videowidth / 2); // pitchV
-                            // try
-                            // {
-                            // jtux.UFile.write(socketfd, data, 24);
-                            // }
-                            // catch(jtux.UErrorException e)
-                            // {
-                            // System.out.println("Could not send reply to socket "
-                            // + e);
-                            // e.printStackTrace();
-                            // closeVideoClient();
-                            // }
                             break;
                     }
 
@@ -932,17 +673,11 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // else
                         // propVal = "REMOTEFONTS";
                     } else if ("GFX_BLENDMODE".equals(propName)) {
-                        if ("true".equals(MiniClient.myProperties.getProperty("opengl", "true")))
-                            propVal = "PREMULTIPLY";
-                        else
-                            propVal = "POSTMULTIPLY";
+                        propVal = "PREMULTIPLY";
                     } else if ("GFX_SCALING".equals(propName)) {
-                        if ("true".equals(MiniClient.myProperties.getProperty("opengl", "true")))
-                            propVal = "HARDWARE";
-                        else
-                            propVal = "SOFTWARE";
+                        propVal = "HARDWARE";
                     } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
-                        if ("true".equals(MiniClient.myProperties.getProperty("cache_images_on_disk", "true")))
+                        if ("true".equals(client.getProperty("cache_images_on_disk", "true")))
                             propVal = "TRUE";
                         else
                             propVal = "FALSE";
@@ -965,10 +700,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         else
                             propVal = "PNG,JPG,GIF,BMP";
                     } else if ("GFX_COMPOSITE".equals(propName)) {
-                        if ("true".equals(MiniClient.myProperties.getProperty("opengl", "true")))
                             propVal = "BLEND";
-                        else
-                            propVal = "COLORKEY";
                     } else if ("GFX_SURFACES".equals(propName)) {
                         //propVal = "FALSE";
                         propVal = "TRUE";
@@ -989,7 +721,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // propVal = Integer.toString(AWTUIManager., 16);
                         // while (propVal.length() < 6)
                         // propVal = "0" + propVal;
-                        propVal = "080010";
+                        propVal = "000000";
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
@@ -1002,8 +734,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // sage.Version.MICRO_VERSION;
                         propVal = "9.0.0";
                     } else if ("DETAILED_BUFFER_STATS".equals(propName)) {
-                        propVal = "TRUE";
-                        detailedBufferStats = true;
+                        //propVal = "TRUE";
+                        //detailedBufferStats = true;
+                        propVal = "FALSE";
                     } else if ("PUSH_BUFFER_SEEKING".equals(propName))
                         propVal = "TRUE";
                     else if ("GFX_SUBTITLES".equals(propName))
@@ -1028,12 +761,12 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     else if ("ZLIB_COMM".equals(propName))
                         propVal = "TRUE";
                     else if ("VIDEO_CODECS".equals(propName)) {
-                        String extra_codecs = MiniClient.myProperties.getProperty("mplayer/extra_video_codecs", null);
+                        String extra_codecs = client.getProperty("mplayer/extra_video_codecs", null);
                         propVal = MPLAYER_VIDEO_CODECS;
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
                     } else if ("AUDIO_CODECS".equals(propName)) {
-                        String extra_codecs = MiniClient.myProperties.getProperty("mplayer/extra_audio_codecs", null);
+                        String extra_codecs = client.getProperty("mplayer/extra_audio_codecs", null);
                         propVal = MPLAYER_AUDIO_CODECS;
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
@@ -1041,7 +774,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // If we are forced into pull mode then we don't support
                         // pushing
                         if (canDoPullStreaming
-                                && "pull".equalsIgnoreCase(MiniClient.myProperties.getProperty("streaming_mode", "dynamic")))
+                                && "pull".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic")))
                             propVal = "";
                         else
                             propVal = MPLAYER_PUSH_FORMATS;
@@ -1049,7 +782,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // If we're forced into fixed mode then we don't support
                         // pulling
                         if (!canDoPullStreaming
-                                || "fixed".equalsIgnoreCase(MiniClient.myProperties.getProperty("streaming_mode", "dynamic")))
+                                || "fixed".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic")))
                             propVal = "";
                         else
                             propVal = MPLAYER_PULL_FORMATS;
@@ -1059,34 +792,34 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // nature
                         // NOTE: If MPlayer is not being used, this should be
                         // changed...hopefully to a lower value like 0 :)
-                        propVal = MiniClient.MAC_OS_X ? "3000" : "2000";
+                        propVal = "100";
                     } else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName)) {
-                        if ("fixed".equalsIgnoreCase(MiniClient.myProperties.getProperty("streaming_mode", "dynamic"))) {
+                        if ("fixed".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic"))) {
                             // Build the fixed media format string
                             propVal = "videobitrate="
-                                    + MiniClient.myProperties.getProperty("fixed_encoding/video_bitrate_kbps", "300") + "000;";
+                                    + client.getProperty("fixed_encoding/video_bitrate_kbps", "300") + "000;";
                             propVal += "audiobitrate="
-                                    + MiniClient.myProperties.getProperty("fixed_encoding/audio_bitrate_kbps", "64") + "000;";
+                                    + client.getProperty("fixed_encoding/audio_bitrate_kbps", "64") + "000;";
                             int fps = 30;
                             int keyFrameInt = 10;
                             try {
-                                fps = Integer.parseInt(MiniClient.myProperties.getProperty("fixed_encoding/fps", "30"));
+                                fps = Integer.parseInt(client.getProperty("fixed_encoding/fps", "30"));
                                 keyFrameInt = Integer
-                                        .parseInt(MiniClient.myProperties.getProperty("fixed_encoding/key_frame_interval", "10"));
+                                        .parseInt(client.getProperty("fixed_encoding/key_frame_interval", "10"));
                             } catch (NumberFormatException e) {
                             }
                             propVal += "gop=" + (fps * keyFrameInt) + ";";
                             propVal += "bframes="
                                     + ("true".equalsIgnoreCase(
-                                    MiniClient.myProperties.getProperty("fixed_encoding/use_b_frames", "true")) ? "2" : "0")
+                                    client.getProperty("fixed_encoding/use_b_frames", "true")) ? "2" : "0")
                                     + ";";
                             propVal += "fps=" + fps + ";";
-                            propVal += "resolution=" + MiniClient.myProperties.getProperty("fixed_encoding/video_resolution", "CIF")
+                            propVal += "resolution=" + client.getProperty("fixed_encoding/video_resolution", "CIF")
                                     + ";";
                         } else
                             propVal = "";
                     } else if ("CRYPTO_ALGORITHMS".equals(propName))
-                        propVal = MiniClient.cryptoFormats;
+                        propVal = client.getCryptoFormats();
                     else if ("CRYPTO_SYMMETRIC_KEY".equals(propName)) {
                         if (serverPublicKey != null && encryptedSecretKeyBytes == null) {
                             if (currentCrypto.indexOf("RSA") != -1) {
@@ -1103,14 +836,13 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                     encryptCipher.init(javax.crypto.Cipher.ENCRYPT_MODE, serverPublicKey);
                                     encryptedSecretKeyBytes = encryptCipher.doFinal(rawSecretBytes);
                                 } catch (Exception e) {
-                                    System.out.println("Error encrypting data to submit to server: " + e);
-                                    e.printStackTrace();
+                                    log.error("Error encrypting data to submit to server", e);
                                 }
                             } else {
                                 // We need to finish the DH key agreement and
                                 // generate the shared secret key
                                 /*
-								 * Bob gets the DH parameters associated with
+                                 * Bob gets the DH parameters associated with
 								 * Alice's public key. He must use the same
 								 * parameters when he generates his own key
 								 * pair.
@@ -1119,7 +851,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                         .getParams();
 
                                 // Bob creates his own DH key pair
-                                System.out.println("Generate DH keypair ...");
+                                log.debug("Generate DH keypair ...");
                                 java.security.KeyPairGenerator bobKpairGen = java.security.KeyPairGenerator.getInstance("DH");
                                 bobKpairGen.initialize(dhParamSpec);
                                 java.security.KeyPair bobKpair = bobKpairGen.generateKeyPair();
@@ -1151,9 +883,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height);
                     } else if ("GFX_DRAWMODE".equals(propName)) {
                         //&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
-                        //propVal = "FULLSCREEN";
+                        propVal = "FULLSCREEN";
                     }
-                    System.out.println("GetProperty: " + propName + " = " + propVal);
+                    log.debug("GetProperty: {}='{}'", propName, propVal);
                     try {
                         synchronized (eventChannel) {
                             if (propValBytes == null)
@@ -1187,7 +919,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     String propName = new String(cmdbuffer, 4, nameLen);
                     // String propVal = new String(cmdbuffer, 4 + nameLen,
                     // valLen);
-                    System.out.println("SetProperty " + propName);
+                    log.debug("SetProperty {}", propName);
                     synchronized (eventChannel) {
                         boolean encryptThisReply = encryptEvents;
                         if ("CRYPTO_PUBLIC_KEY".equals(propName)) {
@@ -1217,7 +949,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                 encryptEvents = false;
                                 retval = 0;
                             }
-                            System.out.println("SageTVPlaceshifter event encryption is now=" + encryptEvents);
+                            log.debug("SageTVPlaceshifter event encryption is now={}", encryptEvents);
                         } else if ("GFX_RESOLUTION".equals(propName)) {
                             String propVal = new String(cmdbuffer, 4 + nameLen, valLen);
                             // NOTE: These resolution changes need to be done on
@@ -1225,13 +957,13 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             // a window then that may invoke on AWT which could
                             // block against an event coming back in
                             if ("FULLSCREEN".equals(propVal)) {
-                                uiManager.invokeLater(new Runnable() {
+                                uiRenderer.invokeLater(new Runnable() {
                                     public void run() {
                                         myGfx.getWindow().setFullScreen(true);
                                     }
                                 });
                             } else if ("WINDOW".equals(propVal)) {
-                                uiManager.invokeLater(new Runnable() {
+                                uiRenderer.invokeLater(new Runnable() {
                                     public void run() {
                                         myGfx.getWindow().setFullScreen(false);
                                     }
@@ -1318,23 +1050,22 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     gfxSyncVector.remove(0);
                     gfxSyncVector.notifyAll();
                 }
-			}
+            }
         } catch (Throwable e) {
-            System.out.println("Error w/ GFX Thread: " + e);
-            e.printStackTrace();
+            log.error("Error w/ GFX Thread", e);
         } finally {
             try {
                 gfxIs.close();
             } catch (Exception e) {
-			}
+            }
             try {
                 eventChannel.close();
             } catch (Exception e) {
             }
-			try {
-				gfxSocket.close();
-			} catch (Exception e) {
-			}
+            try {
+                gfxSocket.close();
+            } catch (Exception e) {
+            }
 
             if (alive)
                 connectionError();
@@ -1373,11 +1104,11 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     }
 
     public void postIREvent(int IRCode) {
-        if (MiniClient.irKillCode != null && MiniClient.irKillCode.intValue() == IRCode) {
-            System.out.println("IR Exit Code received...terminating");
-            close();
-            return;
-        }
+//        if (MiniClient.irKillCode != null && MiniClient.irKillCode.intValue() == IRCode) {
+//            System.out.println("IR Exit Code received...terminating");
+//            close();
+//            return;
+//        }
         // if (myGfx != null)
         // myGfx.setHidden(false, false);
         // MiniClientPowerManagement.getInstance().kick();
@@ -1403,11 +1134,11 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
-		}
-	}
+        }
+    }
 
     public void postSageCommandEvent(int sageCommand) {
         // if (myGfx != null)
@@ -1435,7 +1166,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1473,7 +1204,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1508,7 +1239,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1554,7 +1285,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1584,7 +1315,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1621,7 +1352,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1695,7 +1426,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1718,7 +1449,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 eventChannel.writeInt(0); // pad
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1753,7 +1484,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     eventChannel.writeShort(0);
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1791,7 +1522,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                 eventChannel.write(devDesc.getBytes());
                 eventChannel.flush();
             } catch (Exception e) {
-                System.out.println("Error w/ event thread: " + e);
+                log.error("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1971,7 +1702,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     // Connects back to the server to initiate a remote FS operation; returns 0
     // if this starts up OK
     private int startAsyncFSOperation(boolean download, int secureID, long fileOffset, long fileSize, java.io.File theFile) {
-        System.out.println("Attempting to connect bak to server on FS channel");
+        log.debug("Attempting to connect bak to server on FS channel");
         java.net.Socket sake = null;
         java.io.OutputStream fsOut = null;
         java.io.InputStream fsIn = null;
@@ -2048,10 +1779,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         fsOut.write(0);
                         fsOut.write(0);
                     }
-                    System.out.println("Finished Remote FS operation!");
+                    log.debug("Finished Remote FS operation!");
                 } catch (Exception e) {
-                    System.out.println("ERROR w/ remote FS operation: " + e);
-                    e.printStackTrace();
+                    log.error("ERROR w/ remote FS operation", e);
                 } finally {
                     if (sake != null)
                         try {
@@ -2087,7 +1817,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         java.io.OutputStream os = null;
         java.io.DataInputStream is = null;
         while (alive) {
-            myMedia = new MediaCmd(this);
+            myMedia = new MediaCmd(client);
             try {
                 os = mediaSocket.getOutputStream();
                 is = new java.io.DataInputStream(mediaSocket.getInputStream());
@@ -2113,8 +1843,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error w/ Media Thread: " + e);
-                e.printStackTrace();
+                log.error("Error w/ Media Thread", e);
             } finally {
                 try {
                     os.close();
@@ -2156,7 +1885,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         if (reconnectAllowed && alive && !encryptEvents && firstFrameStarted) {
             // close the gfx sockets; this'll cause an error in the GFX loop
             // which'll then cause it to do a reconnect
-            System.out.println("Event channel error occurred...closing other sockets to force reconnect...");
+            log.warn("Event channel error occurred...closing other sockets to force reconnect...");
             try {
                 gfxSocket.close();
             } catch (Exception e) {
@@ -2178,7 +1907,9 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             uiTimer.schedule(addMe, delay, period);
     }
 
-    // public MediaCmd getMediaCmd() { return myMedia; }
+    public MediaCmd getMediaCmd() {
+        return myMedia;
+    }
     public GFXCMD2 getGfxCmd() {
         return myGfx;
     }
@@ -2221,7 +1952,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
             fos = new java.io.FileOutputStream(new java.io.File(cacheDir, resourceID));
             fos.write(data, offset, length);
         } catch (java.io.IOException ioe) {
-            System.out.println("ERROR writing cache data to file of :" + ioe);
+            log.error("ERROR writing cache data to file", ioe);
         } finally {
             if (fos != null) {
                 try {
@@ -2232,80 +1963,80 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         }
     }
 
-	private String getOfflineCacheList() {
-		if (cacheDir == null)
-			return "";
-		StringBuffer sb = new StringBuffer();
-		java.io.File[] cacheFiles = cacheDir.listFiles();
-		for (int i = 0; cacheFiles != null && i < cacheFiles.length; i++) {
-			sb.append(cacheFiles[i].getName());
-			sb.append("|");
-		}
-		return sb.toString();
-	}
-
-	private void cleanupOfflineCache() {
-		// Cleanup the offline cache...just dump the oldest half of it
-		java.io.File[] cacheFiles = cacheDir.listFiles();
-		long size = 0;
-		if (cacheFiles==null) return;
-		for (int i = 0; i < cacheFiles.length; i++) {
-			size += cacheFiles[i].length();
-			if (size > offlineImageCacheLimit) {
-				System.out.println("Dumping offline image cache because it's exceeded the maximum size");
-				java.util.Arrays.sort(cacheFiles, new java.util.Comparator() {
-					public int compare(Object o1, Object o2) {
-						java.io.File f1 = (java.io.File) o1;
-						java.io.File f2 = (java.io.File) o2;
-						long l1 = f1.lastModified();
-						long l2 = f2.lastModified();
-						if (l1 < l2)
-							return -1;
-						else if (l1 > l2)
-							return 1;
-						else
-							return 0;
-					}
-				});
-				for (int j = 0; j < cacheFiles.length / 2; j++)
-					cacheFiles[j].delete();
-				break;
-			}
-		}
-	}
-
-    public sagex.miniclient.uibridge.UIManager<?> getUiManager() {
-        return uiManager;
+    private String getOfflineCacheList() {
+        if (cacheDir == null)
+            return "";
+        StringBuffer sb = new StringBuffer();
+        java.io.File[] cacheFiles = cacheDir.listFiles();
+        for (int i = 0; cacheFiles != null && i < cacheFiles.length; i++) {
+            sb.append(cacheFiles[i].getName());
+            sb.append("|");
+        }
+        return sb.toString();
     }
 
-	public void registerImageAccess(int handle) {
-		lruImageMap.put(new Integer(handle), new Long(System.currentTimeMillis()));
-	}
+    private void cleanupOfflineCache() {
+        // Cleanup the offline cache...just dump the oldest half of it
+        java.io.File[] cacheFiles = cacheDir.listFiles();
+        long size = 0;
+        if (cacheFiles == null) return;
+        for (int i = 0; i < cacheFiles.length; i++) {
+            size += cacheFiles[i].length();
+            if (size > offlineImageCacheLimit) {
+                log.info("Dumping offline image cache because it's exceeded the maximum size");
+                java.util.Arrays.sort(cacheFiles, new java.util.Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        java.io.File f1 = (java.io.File) o1;
+                        java.io.File f2 = (java.io.File) o2;
+                        long l1 = f1.lastModified();
+                        long l2 = f2.lastModified();
+                        if (l1 < l2)
+                            return -1;
+                        else if (l1 > l2)
+                            return 1;
+                        else
+                            return 0;
+                    }
+                });
+                for (int j = 0; j < cacheFiles.length / 2; j++)
+                    cacheFiles[j].delete();
+                break;
+            }
+        }
+    }
 
-	public void clearImageAccess(int handle) {
-		lruImageMap.remove(new Integer(handle));
-	}
+    public UIRenderer<?> getUiRenderer() {
+        return uiRenderer;
+    }
 
-	public int getOldestImage() {
-		java.util.Iterator walker = lruImageMap.entrySet().iterator();
-		Integer oldestHandle = null;
-		long oldestTime = Long.MAX_VALUE;
-		while (walker.hasNext()) {
-			java.util.Map.Entry ent = (java.util.Map.Entry) walker.next();
-			long currTime = ((Long) ent.getValue()).longValue();
-			if (currTime < oldestTime) {
-				oldestTime = currTime;
-				oldestHandle = (Integer) ent.getKey();
-			}
-		}
-		return (oldestHandle == null) ? 0 : oldestHandle.intValue();
-	}
+    public void registerImageAccess(int handle) {
+        lruImageMap.put(new Integer(handle), new Long(System.currentTimeMillis()));
+    }
+
+    public void clearImageAccess(int handle) {
+        lruImageMap.remove(new Integer(handle));
+    }
+
+    public int getOldestImage() {
+        java.util.Iterator walker = lruImageMap.entrySet().iterator();
+        Integer oldestHandle = null;
+        long oldestTime = Long.MAX_VALUE;
+        while (walker.hasNext()) {
+            java.util.Map.Entry ent = (java.util.Map.Entry) walker.next();
+            long currTime = ((Long) ent.getValue()).longValue();
+            if (currTime < oldestTime) {
+                oldestTime = currTime;
+                oldestHandle = (Integer) ent.getKey();
+            }
+        }
+        return (oldestHandle == null) ? 0 : oldestHandle.intValue();
+    }
 
     public MiniPlayerPlugin newPlayerPlugin() {
-        return uiManager.newPlayerPlugin(this);
+        return uiRenderer.newPlayerPlugin(this);
     }
 
-	public boolean doesUseAdvancedImageCaching() {
-		return usesAdvancedImageCaching;
-	}
+    public boolean doesUseAdvancedImageCaching() {
+        return usesAdvancedImageCaching;
+    }
 }
