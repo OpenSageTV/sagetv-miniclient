@@ -12,6 +12,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.android.BasicLogcatConfigurator;
+
 /**
  * Created by seans on 27/09/15.
  */
@@ -93,5 +96,15 @@ public class AppUtil {
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
+
+    public static void setLoggingLevel(ch.qos.logback.classic.Level level) {
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        root.setLevel(level);
+    }
+
+    public static void initLogging() {
+        BasicLogcatConfigurator.configureDefaultContext();
+        setLoggingLevel(Level.DEBUG);
     }
 }

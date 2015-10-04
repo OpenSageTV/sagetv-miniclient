@@ -15,20 +15,64 @@
  */
 package sagex.miniclient;
 
+import java.io.IOException;
+
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
 public interface MiniPlayerPlugin extends Runnable {
-    int EOS_STATE = 1;
+    /**
+     * Indicates the MediaPlayer is in an uninitialized state
+     */
+    int NO_STATE = 0;
+    /**
+     * Indicates the MediaPlayer has loaded a file and is ready for playback
+     */
+    int LOADED_STATE = 1;
+    /**
+     * The MediaPlayer is playing
+     */
+    int PLAY_STATE = 2;
+    /**
+     * The MediaPlayer is paused
+     */
+    int PAUSE_STATE = 3;
+    /**
+     * The MediaPlayer is stopped
+     */
+    int STOPPED_STATE = 4;
+    /**
+     * The MediaPlayer has encountered an end of stream
+     */
+    int EOS_STATE = 5;
 
     void free();
 
+    /**
+     * Sets the push to true to use PUSH or false to use PULL
+     *
+     * @param b
+     */
     void setPushMode(boolean b);
 
+    /**
+     * Should check pushMode to determine if PUSH or PULL is being used
+     * @param b
+     * @param b1
+     * @param s
+     * @param urlString
+     * @param o
+     * @param b2
+     * @param i
+     */
     void load(byte b, byte b1, String s, String urlString, Object o, boolean b2, int i);
 
     long getMediaTimeMillis();
 
+    /**
+     * Appears to be used only during detailed buffered stats
+     * @return
+     */
     int getState();
 
     void setMute(boolean b);
@@ -53,4 +97,7 @@ public interface MiniPlayerPlugin extends Runnable {
 
     Dimension getVideoDimensions();
 
+    void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException;
+
+    void flush();
 }

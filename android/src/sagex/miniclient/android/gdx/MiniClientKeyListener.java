@@ -1,22 +1,25 @@
 package sagex.miniclient.android.gdx;
 
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import sagex.miniclient.MiniClientConnection;
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.uibridge.Keys;
 
 /**
  * Created by seans on 26/09/15.
  */
 public class MiniClientKeyListener implements View.OnKeyListener {
+    private static final Logger log = LoggerFactory.getLogger(MiniClientKeyListener.class);
+
     private static final Map<Integer, Integer> LONG_KEYMAP = new HashMap<>();
     private static final Map<Integer, Integer> KEYMAP = new HashMap<>();
-    private static final String TAG = "GDXMINICLIENTKEY";
 
     static {
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, Keys.VK_UP);
@@ -41,24 +44,26 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         LONG_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, Keys.VK_ESCAPE);
     }
 
-    private final MiniClientConnection connection;
+    private final MiniClient client;
+
     int skipKey = -1;
     boolean skipUp = false;
-    public MiniClientKeyListener(MiniClientConnection connection) {
-        this.connection=connection;
+
+    public MiniClientKeyListener(MiniClient client) {
+        this.client = client;
     }
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            Log.d(TAG, "DOWN KEYCODE: " + keyCode + "; " + event);
+            log.debug("DOWN KEYCODE: " + keyCode + "; " + event);
             if (LONG_KEYMAP.containsKey(keyCode)) {
                 if (event.isLongPress()) {
-                    Log.d(TAG, "LONG PRESS KEYCODE: " + keyCode + "; " + event);
+                    log.debug("LONG PRESS KEYCODE: {}; {}", keyCode, event);
                     if (LONG_KEYMAP.containsKey(keyCode)) {
                         skipKey = keyCode;
                         keyCode = LONG_KEYMAP.get(keyCode);
-                        connection.postKeyEvent(keyCode, 0, (char) 0);
+                        client.getCurrentConnection().postKeyEvent(keyCode, 0, (char) 0);
                         skipUp = true;
                         return true;
                     }
@@ -75,11 +80,11 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                 skipKey = -1;
                 return true;
             }
-            Log.d(TAG, "POST KEYCODE: " + keyCode + "; " + event + "; longpress: " + event.isLongPress());
+            log.debug("POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
 
             if (KEYMAP.containsKey(keyCode)) {
                 keyCode = KEYMAP.get(keyCode);
-                connection.postKeyEvent(keyCode, 0, (char) 0);
+                client.getCurrentConnection().postKeyEvent(keyCode, 0, (char) 0);
                 return true;
             }
         }

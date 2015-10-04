@@ -10,28 +10,28 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
-import sagex.miniclient.Servers;
 
 /**
  * Created by seans on 20/09/15.
  */
 public class ServersAdapter extends BaseAdapter {
-    public static String NEW_SERVER_ID="New Server";
+    public static String NEW_SERVER_ID = "New Server";
     private final Context context;
     private final LayoutInflater layoutInflater;
     List<ServerInfo> items = new ArrayList<>();
 
     public ServersAdapter(Context ctx) {
-        this.context=ctx;
+        this.context = ctx;
         this.layoutInflater = LayoutInflater.from(context);
         ServerInfo newServer = new ServerInfo();
-        newServer.name=NEW_SERVER_ID;
-        newServer.address="Add New Server";
+        newServer.name = NEW_SERVER_ID;
+        newServer.address = "Add New Server";
         items.add(newServer);
 
         // get the saved servers, and add them
-        items.addAll(Servers.getSavedServers());
+        items.addAll(MiniClient.get().getServers().getSavedServers());
     }
 
     @Override
@@ -55,7 +55,7 @@ public class ServersAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView==null) {
+        if (convertView == null) {
             convertView = layoutInflater.inflate(android.R.layout.simple_list_item_2, parent, false);
         }
         return bindView(convertView, getCastedItem(position));

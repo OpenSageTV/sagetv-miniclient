@@ -15,6 +15,13 @@
  */
 package sagex.miniclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
@@ -23,49 +30,59 @@ import sagex.miniclient.uibridge.Rectangle;
  */
 public class MediaCmd {
     public static final int MEDIACMD_INIT = 0;
-
     public static final int MEDIACMD_DEINIT = 1;
-
     public static final int MEDIACMD_OPENURL = 16;
-    // length, url
-
     public static final int MEDIACMD_GETMEDIATIME = 17;
-
+    // length, url
     public static final int MEDIACMD_SETMUTE = 18;
-    // mute
-
     public static final int MEDIACMD_STOP = 19;
-
+    // mute
     public static final int MEDIACMD_PAUSE = 20;
-
     public static final int MEDIACMD_PLAY = 21;
-
     public static final int MEDIACMD_FLUSH = 22;
-
     public static final int MEDIACMD_PUSHBUFFER = 23;
-    // size, flags, data
-
     public static final int MEDIACMD_GETVIDEORECT = 24;
-    // returns 16bit width, 16bit height
-
+    // size, flags, data
     public static final int MEDIACMD_SETVIDEORECT = 25;
-    // x, y, width, height, x, y, width, height
-
+    // returns 16bit width, 16bit height
     public static final int MEDIACMD_GETVOLUME = 26;
-
+    // x, y, width, height, x, y, width, height
     public static final int MEDIACMD_SETVOLUME = 27;
     // volume
     public static final int MEDIACMD_FRAMESTEP = 28;
-
     public static final int MEDIACMD_SEEK = 29;
-    // 64-bit time (for pull mode only)
 
-    private static MediaCmd globalMediaCmd;
+    public static final Map<Integer, String> CMDMAP = new HashMap<Integer, String>();
+    private static final Logger log = LoggerFactory.getLogger(MediaCmd.class);
+
+    static {
+        CMDMAP.put(MEDIACMD_INIT, "MEDIACMD_INIT");
+        CMDMAP.put(MEDIACMD_DEINIT, "MEDIACMD_DEINIT");
+        CMDMAP.put(MEDIACMD_OPENURL, "MEDIACMD_OPENURL");
+        CMDMAP.put(MEDIACMD_GETMEDIATIME, "MEDIACMD_GETMEDIATIME");
+
+        CMDMAP.put(MEDIACMD_SETMUTE, "MEDIACMD_SETMUTE");
+        CMDMAP.put(MEDIACMD_STOP, "MEDIACMD_STOP");
+
+        CMDMAP.put(MEDIACMD_PAUSE, "MEDIACMD_PAUSE");
+        CMDMAP.put(MEDIACMD_PLAY, "MEDIACMD_PLAY");
+        CMDMAP.put(MEDIACMD_FLUSH, "MEDIACMD_FLUSH");
+        CMDMAP.put(MEDIACMD_PUSHBUFFER, "MEDIACMD_PUSHBUFFER");
+        CMDMAP.put(MEDIACMD_GETVIDEORECT, "MEDIACMD_GETVIDEORECT");
+
+        CMDMAP.put(MEDIACMD_SETVIDEORECT, "MEDIACMD_SETVIDEORECT");
+
+        CMDMAP.put(MEDIACMD_GETVOLUME, "MEDIACMD_GETVOLUME");
+
+        CMDMAP.put(MEDIACMD_SETVOLUME, "MEDIACMD_SETVOLUME");
+
+        CMDMAP.put(MEDIACMD_FRAMESTEP, "MEDIACMD_FRAMESTEP");
+        CMDMAP.put(MEDIACMD_SEEK, "MEDIACMD_SEEK");
+    }
+
+    private final MiniClient client;
     private MiniPlayerPlugin playa;
-    private java.io.File buffFile;
-    private java.io.FileOutputStream buffStream;
     private long pushDataLeftBeforeInit;
-    //private java.io.RandomAccessFile buffRaf;
     private long bufferFilePushedBytes;
     private boolean pushMode;
     private int numPushedBuffers;
@@ -82,13 +99,9 @@ public class MediaCmd {
     /**
      * Creates a new instance of MediaCmd
      */
-    public MediaCmd(MiniClientConnection myConn) {
-        this.myConn = myConn;
-        globalMediaCmd = this;
-    }
-
-    public static MediaCmd getInstance() {
-        return globalMediaCmd;
+    public MediaCmd(MiniClient client) {
+        this.client = client;
+        this.myConn = client.getCurrentConnection();
     }
 
     public static void writeInt(int value, byte[] data, int offset) {
@@ -121,26 +134,20 @@ public class MediaCmd {
         if (playa != null)
             playa.free();
         playa = null;
-        try {
-            buffStream.close();
-        } catch (Exception e) {
-        }
-        buffStream = null;
-        if (buffFile != null)
-            buffFile.delete();
     }
 
     public int ExecuteMediaCommand(int cmd, int len, byte[] cmddata, byte[] retbuf) {
         // TODO verify sizes...
-        if (cmd != MEDIACMD_PUSHBUFFER)
-            System.out.println("Execute media command " + cmd);
+        //if (cmd != MEDIACMD_PUSHBUFFER)
+        log.debug("Execute media command '{}[{}]'", cmd, CMDMAP.get(cmd));
         switch (cmd) {
             case MEDIACMD_INIT:
+                log.info("MEDIACMD_INIT");
                 try {
-                    DESIRED_VIDEO_PREBUFFER_SIZE = Integer.parseInt(MiniClient.myProperties.getProperty("video_buffer_size", "" + (4 * 1024 * 1024)));
-                    DESIRED_AUDIO_PREBUFFER_SIZE = Integer.parseInt(MiniClient.myProperties.getProperty("audio_buffer_size", "" + (2 * 1024 * 1024)));
+                    DESIRED_VIDEO_PREBUFFER_SIZE = Integer.parseInt(client.getProperty("video_buffer_size", "" + (4 * 1024 * 1024)));
+                    DESIRED_AUDIO_PREBUFFER_SIZE = Integer.parseInt(client.getProperty("audio_buffer_size", "" + (2 * 1024 * 1024)));
                 } catch (Exception e) {
-                    System.out.println("ERROR:" + e);
+                    log.error("MEDIACMD_INIT: ERROR", e);
                 }
                 readInt(0, cmddata); // video format code
                 writeInt(1, retbuf, 0);
@@ -157,7 +164,7 @@ public class MediaCmd {
                     urlString = new String(cmddata, 4, strLen - 1);
                 if (!urlString.startsWith("push:")) {
                     if (urlString.startsWith("dvd:")) {
-                        System.out.println("DVD PlayBack not supported");
+                        log.error("DVD PlayBack not supported");
                     } else if (urlString.startsWith("file://")) {
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         playa.setPushMode(false);
@@ -179,16 +186,6 @@ public class MediaCmd {
                 } else {
                     pushMode = true;
                     {
-                        try {
-                            buffFile = java.io.File.createTempFile("stvbuff", ".dat");
-                            buffStream = new java.io.FileOutputStream(buffFile);
-                            //buffRaf = new java.io.RandomAccessFile(buffFile, "rw");
-                            buffFile.deleteOnExit();
-                        } catch (java.io.IOException e) {
-                            System.out.println("Error with streaming: " + e);
-                            e.printStackTrace();
-                            return 0;
-                        }
                         if (urlString.indexOf("audio") != -1 && urlString.indexOf("bf=vid") == -1) {
                             pushDataLeftBeforeInit = 1024 * 16;
                             maxPrebufferSize = DESIRED_AUDIO_PREBUFFER_SIZE;
@@ -198,7 +195,7 @@ public class MediaCmd {
                         }
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         playa.setPushMode(true);
-                        //						playa.load((byte)0, (byte)0, "", buffFile, null, true, 0);
+                        playa.load((byte) 0, (byte) 0, "", urlString, null, true, 0);
                     }
                 }
                 writeInt(1, retbuf, 0);
@@ -246,30 +243,7 @@ public class MediaCmd {
                 // TODO
                 if (playa != null && pushMode && numPushedBuffers > 0) {
                     numPushedBuffers = 0;
-                    // Be sure all data is written to disk that we've gotten already.
-                    try {
-                        if (buffStream != null)
-                            buffStream.getFD().sync();
-                    } catch (Exception e) {
-                    }
-                    //playa.beginFlush();
-                    //				try
-                    {
-                        //buffStream.close();
-                        //buffStream = new java.io.FileOutputStream(buffFile);
-                        //buffRaf.seek(0);
-                        //						buffFile = java.io.File.createTempFile("stvbuff", ".dat");
-                        //buffStream = new java.io.FileOutputStream(buffFile);
-                        //						buffRaf = new java.io.RandomAccessFile(buffFile, "rw");
-                        //						buffFile.deleteOnExit();
-                        playa.seek(Long.MAX_VALUE);
-                    }
-                    //					catch (java.io.IOException e)
-                    {
-                        //					System.out.println("Error zeroing out buffered stream from disk:" + e);
-                    }
-                    //playa.seek(0);
-                    //playa.play();
+                    playa.flush();
                 }
                 return 4;
             case MEDIACMD_PUSHBUFFER:
@@ -285,32 +259,35 @@ public class MediaCmd {
                     if (playa != null) {
                         prebufferTime = serverMuxTime - playa.getMediaTimeMillis();
                     }
-                    System.out.println("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
+                    log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
-                if (buffSize > 0) {
-                    numPushedBuffers++;
-                }
-                if (pushDataLeftBeforeInit > 0) {
-                    pushDataLeftBeforeInit -= buffSize;
-                    if (pushDataLeftBeforeInit <= 0) {
-                        //playa = new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
-                        //playa.setPushMode(true);
-                        playa.load((byte) 0, (byte) 0, "", buffFile.toString(), null, true, 0);
+                // sometimes pushbuffer is called to just get bandwidth so don't pass that along to the player
+                if (playa != null) {
+                    if (buffSize > 0) {
+                        bufferFilePushedBytes += buffSize;
+                        numPushedBuffers++;
+                        try {
+                            playa.pushData(cmddata, bufDataOffset, buffSize);
+                        } catch (IOException e) {
+                            log.error("Pushbuffer Error", e);
+                            client.closeConnection();
+                        }
+                    }
+                    if (flags == 0x80 && playa != null) {
+                        playa.inactiveFile();
                     }
                 }
-                if (flags == 0x80 && playa != null) {
-                    playa.inactiveFile();
-                }
+
                 int rv;
                 // Always indicate we have at least 512K of buffer...there's NO reason to stop buffering additional
                 // data since as playback goes on we keep writing to the filesystem anyways. Yeah, we could recover some bandwidth
                 // but that's not how any online video players work and we shouldn't be any different than that.
                 if (playa == null)
-                    rv = maxPrebufferSize;
+                    rv = Math.max(maxPrebufferSize, 131072 * 4);
                 else
                     rv = (int) Math.max(131072 * 4, maxPrebufferSize - (bufferFilePushedBytes - playa.getLastFileReadPos()));
-                System.out.println("Finished pushing current data buffer of " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes +
-                        " fileSize=" + (buffFile == null ? 0 : buffFile.length()));
+                log.debug("Finished pushing current data buffer of " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes +
+                        "");
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
