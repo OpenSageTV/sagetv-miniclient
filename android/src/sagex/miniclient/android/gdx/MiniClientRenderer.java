@@ -50,6 +50,22 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     
     private final MiniClientGDXActivity activity;
     private final MiniClient client;
+
+    // Screen and UI resolutions
+    // Total available screan pixels that we have
+    Dimension fullScreenSize = null;
+
+    // UI size is the size of the UI that is built, will be scaled up to the screenSize
+    // this is the size of the UI that sagetv will build and send to us
+    Dimension uiSize = new Dimension(1280, 720);
+
+    // if true, the uiSize is set to the Native resolution
+    boolean useNativeResolution = false;
+
+    // the scale of the uiSize to the screenSize
+    Scale scale = new Scale(1, 1);
+
+
     // GDX stuff
     Stage stage;
     Batch batch;
@@ -67,8 +83,6 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     long frame = 0;
     boolean firstFrame = true;
     boolean ready = false;
-    Dimension size;
-    Scale scale = new Scale(1, 1);
     // Current Surface (when surfaces are enabled)
     GdxTexture currentSurface = null;
     // render queues
@@ -86,12 +100,20 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         client.setUIRenderer(this);
     }
 
+    public static int readInt(int pos, byte[] cmddata) {
+        pos += 4; // for the 4 bytes for the header
+        return ((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF);
+    }
+
     @Override
     public void create() {
-        Dimension size = getMaxScreenSize();
-        log.debug("CREATE: UI SIZE: " + size);
-        camera = new OrthographicCamera(size.getWidth(), size.getHeight());
-        viewport = new StretchViewport(size.getWidth(), size.getHeight(), camera);
+        fullScreenSize = getMaxScreenSize();
+        uiSize = getScreenSize();
+        scale.setScale(uiSize, fullScreenSize);
+
+        log.debug("CREATE: UI SIZE: {}, SCREEN SIZE: {}", uiSize, fullScreenSize);
+        camera = new OrthographicCamera();
+        viewport = new StretchViewport(uiSize.getWidth(), uiSize.getHeight(), camera);
         stage = new Stage(viewport);
         batch = stage.getBatch();
         shapeRenderer = new ShapeRenderer();
@@ -100,21 +122,21 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void resize(int width, int height) {
-        this.size.width = width;
-        this.size.height = height;
-        this.scale.setScale(1f * width / Gdx.graphics.getWidth(), 1f * height / Gdx.graphics.getHeight());
+        fullScreenSize.width = width;
+        fullScreenSize.height = height;
 
-        stage.getViewport().setWorldSize(width, height);
+        this.scale.setScale(uiSize, fullScreenSize);
+
+        stage.getViewport().setWorldSize(uiSize.width, uiSize.height);
         stage.getViewport().update(width, height, true);
         log.debug("SIZE: width: " + width + "; height: " + height);
         log.debug("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
         log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
         log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
         log.debug("SCALE: " + scale);
-        // scale = getStage().getViewport().getWorldHeight()/ getStage().getViewport().getScreenHeight();
 
-        log.debug("Notifying SageTV about the Resize Event: " + this.size);
-        client.getCurrentConnection().postResizeEvent(size);
+        log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
+        client.getCurrentConnection().postResizeEvent(uiSize);
         ready = true;
     }
 
@@ -124,13 +146,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         long st = System.currentTimeMillis();
 
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         camera.update();
 
         if (batch != null) {
             batch.setProjectionMatrix(camera.combined);
+            Gdx.gl.glClearColor(0, 0, 0, 0);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             batch.begin();
             synchronized (renderQueue) {
                 for (Runnable r : renderQueue) {
@@ -357,16 +378,20 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     float Y(int y, int height) {
-        return size.getHeight() - y - height;
+        return uiSize.getHeight() - y - height;
     }
 
     float Y(int y) {
-        return size.getHeight() - y;
+        return uiSize.getHeight() - y;
     }
 
     @Override
     public ImageHolder<GdxTexture> loadImage(int width, int height) {
-        return null;
+        Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        bm.setHasAlpha(true);
+        bm.prepareToDraw();
+        GdxTexture t = new GdxTexture(bm);
+        return new ImageHolder<>(t);
     }
 
     @Override
@@ -487,7 +512,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public ImageHolder<GdxTexture> newImage(int destWidth, int destHeight) {
-        return null;
+        return loadImage(destWidth, destHeight);
     }
 
     @Override
@@ -520,8 +545,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void loadImageLine(int handle, ImageHolder<GdxTexture> image, int line, int len2, byte[] cmddata) {
-
+    public void loadImageLine(int handle, ImageHolder<GdxTexture> image, int line, int len2, byte[] b) {
+        Bitmap bm = image.get().bitmap;
+        int datapos, x;
+        for (datapos = 12, x = 0; x < len2 / 4; x++, datapos += 4) {
+            bm.setPixel(x, line, readInt(datapos, b));
+        }
     }
 
     @Override
@@ -536,19 +565,22 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public Dimension getMaxScreenSize() {
-        if (size == null) {
+        if (fullScreenSize == null) {
             WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            this.size = new Dimension(size.x, size.y);
+            this.fullScreenSize = new Dimension(size.x, size.y);
         }
-        return size;
+        return fullScreenSize;
     }
 
     @Override
     public Dimension getScreenSize() {
-        return getMaxScreenSize();
+        if (useNativeResolution) {
+            uiSize = getMaxScreenSize();
+        }
+        return uiSize;
     }
 
     @Override
