@@ -17,6 +17,10 @@ public class Scale {
         this.ys = ys;
     }
 
+    public void setScale(Dimension uiSize, Dimension screenSize) {
+        setScale(((float) screenSize.width) / (float) uiSize.width, ((float) screenSize.height) / (float) uiSize.height);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Scale{");
