@@ -24,11 +24,14 @@ public class PullBufferMediaDataSource implements UriDataSource {
 
     private static final int MAX_BUFFER = 32768;
     Socket remoteServer;
-    byte buffer[] = new byte[MAX_BUFFER + 1];
+    byte buffer[] = new byte[MAX_BUFFER];
     private Uri uri;
     private DataSpec dataSpec;
+
+    // pipes are used to hold and buffer the data
     private PipedOutputStream provider;
     private PipedInputStream consumer;
+
     private InputStream remoteReader;
     private OutputStream remoteWriter;
     private long bytesRead = 0; // how many bytes have we requested
@@ -122,14 +125,13 @@ public class PullBufferMediaDataSource implements UriDataSource {
     }
 
     private void sendStringCommand(String cmd) throws IOException {
-        log.debug("Send Command: {}", cmd);
         remoteWriter.write((cmd + "\r\n").getBytes());
         remoteWriter.flush();
         int read = readBuffer(4);
+        String val = null;
         if (read > 0) {
-            String val = new String(buffer, 0, read);
-            log.debug("Sent: {}, Received: {}", cmd, val);
+            val = new String(buffer, 0, read);
         }
-        log.debug("Send Command: {}, Got Bytes {} Back", cmd, read);
+        log.debug("Send Command: {}, Got Bytes {} Back with data[{}]", cmd, read, val);
     }
 }
