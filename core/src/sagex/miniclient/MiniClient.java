@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
+
 /**
  * MiniClient is the central access point to all things MiniClient.  It must be initialized, at least once, using
  * MiniClient.get().init(configDir, cacheDir).
@@ -34,6 +36,7 @@ public class MiniClient {
     ServerDiscovery serverDiscovery;
     Servers servers;
     Thread connectionThread = null;
+    SageTVHttpMediaServerBridge httpBridge = null;
     private String MACAddress;
     private MiniClientConnection currentConnection;
     private sagex.miniclient.uibridge.UIRenderer<?> UIRenderer;
@@ -43,6 +46,7 @@ public class MiniClient {
     private File configDir;
     private String cryptoFormats;
     private boolean initialized = false;
+    private boolean usingHttpBridge = true;
 
     public MiniClient() {
         this.myProperties = new Properties();
@@ -52,6 +56,27 @@ public class MiniClient {
 
     public static MiniClient get() {
         return INSTANCE;
+    }
+
+    public boolean isUsingHttpBridge() {
+        return usingHttpBridge;
+    }
+
+    public void setUsingHttpBridge(boolean usingHttpBridge) {
+        this.usingHttpBridge = usingHttpBridge;
+    }
+
+    public SageTVHttpMediaServerBridge getHttpBridge() {
+        if (!isUsingHttpBridge()) return null;
+        if (httpBridge == null) {
+            httpBridge = new SageTVHttpMediaServerBridge(this, 9991);
+            try {
+                httpBridge.start(1000, true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return httpBridge;
     }
 
     public ServerDiscovery getServerDiscovery() {
@@ -204,6 +229,20 @@ public class MiniClient {
         if (currentConnection != null) {
             currentConnection.close();
             currentConnection = null;
+        }
+    }
+
+    public void shutdown() {
+        if (isUsingHttpBridge() && httpBridge != null) {
+            httpBridge.stop();
+            this.httpBridge = null;
+        }
+        if (currentConnection != null) {
+            closeConnection();
+        }
+        if (this.UIRenderer != null) {
+            this.UIRenderer.close();
+            this.UIRenderer = null;
         }
     }
 }

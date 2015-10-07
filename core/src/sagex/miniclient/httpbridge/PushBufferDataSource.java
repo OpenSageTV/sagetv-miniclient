@@ -1,10 +1,4 @@
-package sagex.miniclient.android.video;
-
-import android.net.Uri;
-
-import com.google.android.exoplayer.C;
-import com.google.android.exoplayer.upstream.DataSpec;
-import com.google.android.exoplayer.upstream.UriDataSource;
+package sagex.miniclient.httpbridge;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,36 +10,36 @@ import java.io.PipedOutputStream;
 /**
  * used push:// is used, this is the media data source that feeds the video player
  */
-public class PushBufferMediaDataSource implements UriDataSource {
-    private static final Logger log = LoggerFactory.getLogger(PushBufferMediaDataSource.class);
-    private Uri uri;
+public class PushBufferDataSource implements DataSource {
+    private static final int BUFFER_SIZE = 65535;
+    private static final Logger log = LoggerFactory.getLogger(PushBufferDataSource.class);
     private PipedOutputStream provider;
     private PipedInputStream consumer;
+    private String uri;
 
-    public PushBufferMediaDataSource(Uri uri) {
-        log.debug("PushBuffer created using uri: {}", uri);
-        this.uri = uri;
+    public PushBufferDataSource() {
     }
 
     @Override
-    public long open(DataSpec dataSpec) throws IOException {
-        log.debug("Open Called");
+    public long open(String uri) throws IOException {
+        this.uri = uri;
+        log.debug("Open Called: {}", uri);
         if (provider != null) {
             log.debug("Connection is open, closing existing pipes");
             close();
         }
-        consumer = new PipedInputStream(32768);
+        consumer = new PipedInputStream(BUFFER_SIZE);
         provider = new PipedOutputStream();
         try {
             consumer.connect(provider);
         } catch (IOException e) {
             throw new RuntimeException("Could not create PushBufferDataSource");
         }
-        return C.LENGTH_UNBOUNDED;
+        return -1;
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         log.debug("Close on PushBufferDataSource was called", new Exception("**pushbuffer closed**"));
         try {
             provider.close();
@@ -64,7 +58,8 @@ public class PushBufferMediaDataSource implements UriDataSource {
     }
 
     @Override
-    public int read(byte[] bytes, int offset, int len) throws IOException {
+    public int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException {
+        // streamOffset is not used for push
         if (consumer == null) {
             log.warn("consumer is not connected");
             return -1;
@@ -74,9 +69,9 @@ public class PushBufferMediaDataSource implements UriDataSource {
     }
 
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
-        if (log.isDebugEnabled()) {
-            log.debug("pushBytes: offset: {}, len: {}, byteSize: {}", offset, len, bytes.length);
-        }
+//        if (log.isDebugEnabled()) {
+//            log.debug("pushBytes: offset: {}, len: {}, byteSize: {}", offset, len, bytes.length);
+//        }
         if (provider != null) {
             provider.write(bytes, offset, len);
         } else {
@@ -86,6 +81,6 @@ public class PushBufferMediaDataSource implements UriDataSource {
 
     @Override
     public String getUri() {
-        return (uri != null ? uri.toString() : null);
+        return uri;
     }
 }

@@ -1,10 +1,4 @@
-package sagex.miniclient.android.video;
-
-import android.net.Uri;
-
-import com.google.android.exoplayer.C;
-import com.google.android.exoplayer.upstream.DataSpec;
-import com.google.android.exoplayer.upstream.UriDataSource;
+package sagex.miniclient.httpbridge;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,18 +9,18 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.Socket;
+import java.net.URI;
 
 /**
  * Created by seans on 03/10/15.
  */
-public class PullBufferMediaDataSource implements UriDataSource {
-    private static final Logger log = LoggerFactory.getLogger(PullBufferMediaDataSource.class);
+public class PullBufferDataSource implements DataSource {
+    private static final Logger log = LoggerFactory.getLogger(PullBufferDataSource.class);
 
     private static final int MAX_BUFFER = 32768;
     Socket remoteServer;
     byte buffer[] = new byte[MAX_BUFFER];
-    private Uri uri;
-    private DataSpec dataSpec;
+    private String uri;
 
     // pipes are used to hold and buffer the data
     private PipedOutputStream provider;
@@ -38,19 +32,17 @@ public class PullBufferMediaDataSource implements UriDataSource {
     private long bytesPos = 0; // total byte position that we send to sagetv
     private long bytesAvailable = 0; // how many bytes are left unread in our byte queue
 
-    public PullBufferMediaDataSource(Uri uri) {
-        this.uri = uri;
+    public PullBufferDataSource() {
     }
 
-    @Override
     public String getUri() {
-        return uri.toString();
+        return uri;
     }
 
-    @Override
-    public long open(DataSpec dataSpec) throws IOException {
-        log.debug("Open(): {}, {}", uri, dataSpec);
-        this.dataSpec = dataSpec;
+    public long open(String uri) throws IOException {
+        log.debug("Open(): {}", uri);
+        URI uriObj = URI.create(uri);
+        this.uri = uri;
         bytesRead = 0;
         bytesPos = 0;
         bytesAvailable = 0;
@@ -58,17 +50,16 @@ public class PullBufferMediaDataSource implements UriDataSource {
         provider = new PipedOutputStream();
         consumer.connect(provider);
 
-        remoteServer = new java.net.Socket();
-        remoteServer.connect(new java.net.InetSocketAddress(uri.getHost(), 7818), 2000);
+        remoteServer = new Socket();
+        remoteServer.connect(new java.net.InetSocketAddress(uriObj.getHost(), 7818), 2000);
         this.remoteReader = remoteServer.getInputStream();
         this.remoteWriter = remoteServer.getOutputStream();
 
-        sendStringCommand("OPEN " + uri.getPath());
+        sendStringCommand("OPEN " + uriObj.getPath());
 
-        return C.LENGTH_UNBOUNDED;
+        return -1;
     }
 
-    @Override
     public void close() {
         log.debug("Close()");
         try {
@@ -88,8 +79,7 @@ public class PullBufferMediaDataSource implements UriDataSource {
         }
     }
 
-    @Override
-    public int read(byte[] bytes, int offset, int len) throws IOException {
+    public int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException {
         //log.debug("READ: offset: {}, len: {}, bufferSize: {}", offset, len, bytes.length);
         if (bytesAvailable < len) {
             fillBuffer(MAX_BUFFER);
@@ -103,7 +93,7 @@ public class PullBufferMediaDataSource implements UriDataSource {
 
     private int fillBuffer(int len) throws IOException {
         String cmd = ("READ " + String.valueOf(bytesPos) + " " + String.valueOf(len));
-        log.debug("fillBuffer(): {}", cmd);
+        //log.debug("fillBuffer(): {}", cmd);
         remoteWriter.write((cmd + "\r\n").getBytes());
         remoteWriter.flush();
         int bytes = readBuffer(len);
@@ -120,7 +110,7 @@ public class PullBufferMediaDataSource implements UriDataSource {
             read = remoteReader.read(buffer, total, len - total);
             total += read;
         }
-        log.debug("Filled buffer with {} bytes", total);
+        //log.debug("Filled buffer with {} bytes", total);
         return total;
     }
 
