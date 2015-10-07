@@ -36,7 +36,7 @@ import java.util.List;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
-import sagex.miniclient.android.video.AndroidMediaPlayer;
+import sagex.miniclient.android.video.VLCMediaPlayer;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -60,7 +60,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     Dimension uiSize = new Dimension(1280, 720);
 
     // if true, the uiSize is set to the Native resolution
-    boolean useNativeResolution = false;
+    boolean useNativeResolution = true;
 
     // the scale of the uiSize to the screenSize
     Scale scale = new Scale(1, 1);
@@ -93,6 +93,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     // Because getColor() is only called on the render queue, in sequence we can do this
     private Color lastColor = null;
     private int lastColorInt = -1;
+
+    private MiniPlayerPlugin player;
 
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;
@@ -200,6 +202,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     @Override
     public void close() {
         GFXCMD_DEINIT();
+        if (player != null) {
+            player.free();
+            player = null;
+        }
     }
 
     @Override
@@ -618,7 +624,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     @Override
     public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
         log.debug("New Player Requested");
-        return new AndroidMediaPlayer(activity);
+        //return new ExoPlayerMediaPlayer(activity);
+        if (player != null) {
+            player.free();
+        }
+        player = new VLCMediaPlayer(activity);
+        return player;
     }
 
     @Override

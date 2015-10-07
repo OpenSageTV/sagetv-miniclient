@@ -71,8 +71,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
 //            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
 //            + MATROSKA;
 
-    public static final String MPLAYER_PUSH_FORMATS = MPEG2_TS;
-    public static final String MPLAYER_PULL_FORMATS = MPEG4_VIDEO;
+    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS + "," + MPEG2_TS;
+    public static final String MPLAYER_PULL_FORMATS = MPEG4_VIDEO + "," + QUICKTIME;
 
     public static final String MPLAYER_AUDIO_CODECS = MP3 + "," + AAC;
     public static final String MPLAYER_VIDEO_CODECS = H264 + "," + MPEG4_VIDEO;
@@ -706,8 +706,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("GFX_COMPOSITE".equals(propName)) {
                             propVal = "BLEND";
                     } else if ("GFX_SURFACES".equals(propName)) {
-                        propVal = "FALSE";
-                        //propVal = "TRUE";
+                        //propVal = "FALSE";
+                        propVal = "TRUE";
                     } else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
                         // if (myGfx instanceof DirectX9GFXCMD)
                         // propVal = "TRUE";

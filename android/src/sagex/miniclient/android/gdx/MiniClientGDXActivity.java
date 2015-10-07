@@ -1,6 +1,5 @@
 package sagex.miniclient.android.gdx;
 
-import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.Surface;
 import android.view.SurfaceView;
@@ -142,14 +141,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     public Surface getVideoSurface() {
-        videoHolder.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-
-        //glview.setZOrderOnTop(true);
         return videoHolder.getHolder().getSurface();
     }
 
     @Override
     public String getMACAddress() {
         return AppUtil.getMACAddress(this);
+    }
+
+    public SurfaceView getVideoView() {
+        return videoHolder;
     }
 }
