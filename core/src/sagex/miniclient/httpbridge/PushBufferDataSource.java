@@ -17,6 +17,8 @@ public class PushBufferDataSource implements DataSource {
     private PipedInputStream consumer;
     private String uri;
 
+    private Thread readThread;
+
     public PushBufferDataSource() {
     }
 
@@ -31,7 +33,8 @@ public class PushBufferDataSource implements DataSource {
         consumer = new PipedInputStream(BUFFER_SIZE);
         provider = new PipedOutputStream();
         try {
-            consumer.connect(provider);
+            provider.connect(consumer);
+            //consumer.connect(provider);
         } catch (IOException e) {
             throw new RuntimeException("Could not create PushBufferDataSource");
         }
@@ -60,6 +63,7 @@ public class PushBufferDataSource implements DataSource {
     @Override
     public int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException {
         // streamOffset is not used for push
+        //log.debug("[{}]PB READ: {}", Thread.currentThread().getName(), len, new Exception());
         if (consumer == null) {
             log.warn("consumer is not connected");
             return -1;
@@ -69,6 +73,7 @@ public class PushBufferDataSource implements DataSource {
     }
 
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
+        log.debug("PB PUSH: {}", len);
 //        if (log.isDebugEnabled()) {
 //            log.debug("pushBytes: offset: {}, len: {}, byteSize: {}", offset, len, bytes.length);
 //        }
@@ -82,5 +87,10 @@ public class PushBufferDataSource implements DataSource {
     @Override
     public String getUri() {
         return uri;
+    }
+
+    @Override
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

@@ -159,6 +159,7 @@ public class MiniClient {
     }
 
     private void destroy() {
+        shutdown();
         myProperties.clear();
         initialized = false;
     }

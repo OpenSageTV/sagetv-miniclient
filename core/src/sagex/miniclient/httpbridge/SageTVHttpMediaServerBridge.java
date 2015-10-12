@@ -51,7 +51,6 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
                 e.printStackTrace();
             }
         }
-
         inputStream = new DataSourceInputStream(dataSource, dataSource.getUri());
 //        try {
 //            inputStream = new FileInputStream(new File("/sdcard/Movies/TheBigBangTheory-TheFortificationImplementation-13289053-0.ts"));
@@ -78,5 +77,16 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             e.printStackTrace();
         }
         this.dataSource = null;
+    }
+
+    public DataSource createDataSource(boolean pushMode, String uri) {
+        if (pushMode) {
+            dataSource = new PushBufferDataSource();
+            dataSource.setUri(uri);
+        } else {
+            dataSource = new PullBufferDataSource();
+            dataSource.setUri(uri);
+        }
+        return dataSource;
     }
 }

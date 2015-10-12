@@ -24,10 +24,6 @@ import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 public class ServersActivity extends Activity implements AdapterView.OnItemClickListener, AddServerFragment.OnAddServerListener, AdapterView.OnItemLongClickListener {
     private static final Logger log = LoggerFactory.getLogger(ServersActivity.class);
 
-    static {
-        AppUtil.initLogging();
-    }
-
     ListView list = null;
     ServersAdapter adapter = null;
     boolean paused = true;
@@ -45,8 +41,6 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         );
 
         setContentView(R.layout.servers_layout);
-
-        MiniClient.get().init(getFilesDir(), getCacheDir());
 
         // now show the server selector dialog
         adapter = new ServersAdapter(this);

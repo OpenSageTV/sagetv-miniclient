@@ -8,9 +8,12 @@ import java.io.IOException;
 public interface DataSource {
     String getUri();
 
+    void setUri(String uri);
+
     long open(String uri) throws IOException;
 
     int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException;
 
     void close();
+
 }

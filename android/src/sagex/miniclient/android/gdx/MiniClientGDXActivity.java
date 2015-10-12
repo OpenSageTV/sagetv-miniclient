@@ -1,5 +1,7 @@
 package sagex.miniclient.android.gdx;
 
+import android.graphics.PixelFormat;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Surface;
 import android.view.SurfaceView;
@@ -62,11 +64,28 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         setContentView(R.layout.miniclientgl_layout);
         ButterKnife.bind(this);
 
-        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+        AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+        //cfg.useGL20 = false;
+        // we need to change the default pixel format - since it does not include an alpha channel
+        // we need the alpha channel so the camera preview will be seen behind the GL scene
+        cfg.r = 8;
+        cfg.g = 8;
+        cfg.b = 8;
+        cfg.a = 8;
+
         client = MiniClient.get();
 
         mgr = new MiniClientRenderer(this, client);
-        miniClientView = initializeForView(mgr, config);
+        miniClientView = initializeForView(mgr, cfg);
+
+        if (graphics.getView() instanceof SurfaceView) {
+            log.debug("Setting Translucent View");
+            GLSurfaceView glView = (GLSurfaceView) graphics.getView();
+            glView.setZOrderOnTop(true);
+            // force alpha channel - I'm not sure we need this as the GL surface is already using alpha channel
+            glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+        }
+
         miniClientView.setFocusable(true);
         miniClientView.setFocusableInTouchMode(true);
         miniClientView.setOnTouchListener(null);
@@ -77,7 +96,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         miniClientView.setOnGenericMotionListener(null);
         miniClientView.setOnHoverListener(null);
         miniClientView.setOnTouchListener(null);
+        //miniClientView.setBackgroundColor(Color.TRANSPARENT);
         uiFrameHolder.addView(miniClientView);
+        //uiFrameHolder.setBackgroundColor(Color.TRANSPARENT);
         miniClientView.requestFocus();
 
         ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
@@ -90,6 +111,32 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         setConnectingIsVisible(true);
 
         startMiniClient(si);
+    }
+
+    public void hideUI() {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                uiFrameHolder.setVisibility(View.GONE);
+//            }
+//        });
+    }
+
+    public void showUI() {
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                uiFrameHolder.setVisibility(View.VISIBLE);
+//            }
+//        });
+    }
+
+    public void showVideo() {
+        hideUI();
+    }
+
+    public void hideVideo() {
+        showUI();
     }
 
     public void startMiniClient(final ServerInfo si) {
