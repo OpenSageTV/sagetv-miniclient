@@ -18,7 +18,7 @@ public class DataSourceInputStream extends InputStream {
     private String uri;
 
     public DataSourceInputStream(DataSource source, String uri) {
-        log.debug("Opened(): {}", uri);
+        log.debug("DataSourceInputStream(): {}", uri);
         this.dataSource = source;
         this.uri = uri;
     }
@@ -41,7 +41,12 @@ public class DataSourceInputStream extends InputStream {
     public int read(byte[] buffer, int offset, int length) throws IOException {
         checkOpened();
         //log.debug("Read(): {}, {}", offset, length);
-        return dataSource.read(0, buffer, offset, length);
+        try {
+            return dataSource.read(0, buffer, offset, length);
+        } catch (Throwable t) {
+            log.error("READ FAILED", t);
+            throw new IOException(t);
+        }
     }
 
     @Override
@@ -61,7 +66,7 @@ public class DataSourceInputStream extends InputStream {
 
     private void checkOpened() throws IOException {
         if (!opened) {
-            log.debug("Reopning DataSource");
+            log.debug("opning DataSource: {}", uri);
             dataSource.open(uri);
             opened = true;
         }

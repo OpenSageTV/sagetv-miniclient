@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.opengl.GLES20;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -36,7 +35,7 @@ import java.util.List;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
-import sagex.miniclient.android.video.VLCMediaPlayer;
+import sagex.miniclient.android.video.VLCMediaPlayerImpl;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -137,9 +136,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
         log.debug("SCALE: " + scale);
 
+        ready = true;
+        if (client == null || client.getCurrentConnection() == null) {
+            return;
+        }
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
         client.getCurrentConnection().postResizeEvent(uiSize);
-        ready = true;
     }
 
     @Override
@@ -148,12 +150,21 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         long st = System.currentTimeMillis();
 
+
+//        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+        Gdx.gl20.glClearColor(0, 0, 0, 0);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+//        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
+//        Gdx.gl.glEnable(GL10.GL_TEXTURE);
+//        Gdx.gl.glEnable(GL10.GL_TEXTURE_2D);
+//        Gdx.gl.glEnable(GL10.GL_LINE_SMOOTH);
+//        Gdx.gl.glDepthFunc(GL10.GL_LEQUAL);
+//        Gdx.gl.glClearDepthf(1.0F);
+
         camera.update();
 
         if (batch != null) {
             batch.setProjectionMatrix(camera.combined);
-            Gdx.gl.glClearColor(0, 0, 0, 0);
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             batch.begin();
             synchronized (renderQueue) {
                 for (Runnable r : renderQueue) {
@@ -265,6 +276,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             @Override
             public void run() {
                 batch.end();
+                log.debug("*** FILL RECT ** {},{}", width, height);
 
                 camera.update();
                 shapeRenderer.setProjectionMatrix(camera.combined);
@@ -282,13 +294,24 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         invokeLater(new Runnable() {
             @Override
             public void run() {
+                log.debug("*** CLEAR RECT ** {},{}", width, height);
                 batch.end();
 
                 camera.update();
+//                shapeRenderer.setProjectionMatrix(camera.combined);
+//                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+//                shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
+//                shapeRenderer.end();
+
+//                Gdx.gl.glEnable(GL10.GL_BLEND);
+//                Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
+                shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
                 shapeRenderer.end();
+
+//                Gdx.gl.glDisable(GL10.GL_BLEND);
 
                 batch.begin();
             }
@@ -363,10 +386,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
                 // we only want to set blending for Non Framebuffer textures
                 if (!img.get().isFrameBuffer) {
-                    GLES20.glEnable(GLES20.GL_BLEND);
-                    GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+                    Gdx.gl20.glEnable(GL20.GL_BLEND);
+                    Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                     if (height < 0) {
-                        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);
+                        Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
                     }
 
                     batchColor = batch.getColor();
@@ -378,7 +401,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 Texture t = img.get().texture();
                 batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
                 batch.setColor(batchColor);
-                GLES20.glDisable(GLES20.GL_BLEND);
+                if (!img.get().isFrameBuffer) {
+                    Gdx.gl20.glDisable(GL20.GL_BLEND);
+                }
             }
         });
     }
@@ -628,7 +653,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (player != null) {
             player.free();
         }
-        player = new VLCMediaPlayer(activity);
+        player = new VLCMediaPlayerImpl(activity);
+        //player = new IJKMediaPlayerImpl(activity);
         return player;
     }
 

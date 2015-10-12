@@ -1,8 +1,6 @@
 package sagex.miniclient.android.video;
 
 import android.content.res.Configuration;
-import android.graphics.PixelFormat;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
@@ -10,8 +8,6 @@ import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.videolan.libvlc.IVideoPlayer;
-import org.videolan.libvlc.LibVLC;
 
 import java.io.IOException;
 
@@ -19,34 +15,35 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.httpbridge.DataSource;
-import sagex.miniclient.httpbridge.PullBufferDataSource;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
 import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
+import tv.danmaku.ijk.media.player.IMediaPlayer;
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 /**
  * Created by seans on 06/10/15.
  */
-public class VLCMediaPlayer implements MiniPlayerPlugin, IVideoPlayer, SurfaceHolder.Callback {
-    private static final Logger log = LoggerFactory.getLogger(VLCMediaPlayer.class);
+public class IJKMediaPlayerImpl implements MiniPlayerPlugin {
+    private static final Logger log = LoggerFactory.getLogger(IJKMediaPlayerImpl.class);
     private final static int VideoSizeChanged = -1;
     private final MiniClientGDXActivity context;
     DataSource dataSource = null;
     private boolean pushMode;
     private boolean playerReady;
-    private LibVLC libvlc;
+    private IjkMediaPlayer player;
     private SurfaceView mSurface;
     private SurfaceHolder holder;
     // media player
     private int mVideoWidth;
     private int mVideoHeight;
 
-    public VLCMediaPlayer(MiniClientGDXActivity activity) {
+    public IJKMediaPlayerImpl(MiniClientGDXActivity activity) {
         this.context = activity;
         this.mSurface = activity.getVideoView();
         this.holder = mSurface.getHolder();
-        this.holder.addCallback(this);
+        //this.holder.addCallback(this);
     }
 
     @Override
@@ -65,46 +62,52 @@ public class VLCMediaPlayer implements MiniPlayerPlugin, IVideoPlayer, SurfaceHo
 
     @Override
     public void load(byte b, byte b1, String s, String urlString, Object o, boolean b2, int i) {
-        if (pushMode) {
-            dataSource = new PushBufferDataSource();
-        } else {
-            dataSource = new PullBufferDataSource();
+        // we need to use the http bridge
+        SageTVHttpMediaServerBridge bridge = MiniClient.get().getHttpBridge();
+        dataSource = bridge.createDataSource(pushMode, urlString);
+
+        createPlayer();
+
+        log.debug("Sending URL to mediaplayer");
+        try {
+            player.setDataSource("http://localhost:9991/stream");
+            //player.setDataSource("http://techslides.com/demos/sample-videos/small.mp4");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        context.runOnUiThread(new Runnable() {
+        player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
-            public void run() {
-                // we need to use the http bridge
-                MiniClient.get().setUsingHttpBridge(true);
-                SageTVHttpMediaServerBridge bridge = MiniClient.get().getHttpBridge();
-                bridge.setDataSource(dataSource);
-
-                // Setup VLC
-                createPlayer();
+            public void onPrepared(IMediaPlayer mp) {
                 playerReady = true;
-                log.debug("Sending URL to libbvc");
-                libvlc.playMRL("http://localhost:9991/stream");
-                log.debug("LibVLC has our URL");
             }
         });
+        player.prepareAsync();
+        player.start();
+        //libvlc.playMRL("http://ia801903.us.archive.org/18/items/rmE163ArabicSubHdarabRunnersTeamBingutopHangukSib.mkv/rmE163ArabicSubHdarabRunnersTeamBingutopHangukSib.mp4");
+        log.debug("mediaplayer has our URL");
     }
 
     /**
      * Waits until the player has been contructed
      */
     void waitForPlayer() {
+        log.debug("waiting for player...");
         while (!playerReady) {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
+                Thread.interrupted();
                 e.printStackTrace();
+                break;
             }
         }
+        log.debug("player is ready...");
     }
 
     @Override
     public long getMediaTimeMillis() {
-        return libvlc.getTime();
+        return player.getCurrentPosition();
     }
 
     @Override
@@ -119,21 +122,24 @@ public class VLCMediaPlayer implements MiniPlayerPlugin, IVideoPlayer, SurfaceHo
 
     @Override
     public void stop() {
-        libvlc.stop();
+        player.stop();
     }
 
     @Override
     public void pause() {
-        waitForPlayer();
         log.debug("pause()");
-        libvlc.pause();
+        if (player.isPlaying()) {
+            player.pause();
+        }
     }
 
     @Override
     public void play() {
-        waitForPlayer();
         log.debug("play()");
-        libvlc.play();
+        //waitForPlayer();
+        if (!player.isPlaying()) {
+            player.start();
+        }
     }
 
     @Override
@@ -148,7 +154,7 @@ public class VLCMediaPlayer implements MiniPlayerPlugin, IVideoPlayer, SurfaceHo
 
     @Override
     public long getLastFileReadPos() {
-        return (long) libvlc.getPosition();
+        return player.getCurrentPosition();
     }
 
     @Override
@@ -186,40 +192,6 @@ public class VLCMediaPlayer implements MiniPlayerPlugin, IVideoPlayer, SurfaceHo
     @Override
     public void run() {
 
-    }
-
-    @Override
-    public void setSurfaceLayout(int width, int height, int visible_width, int visible_height, int sar_num, int sar_den) {
-        log.debug("setSurfaceLayout: {}, {}, {}, {}", width, height, visible_width, visible_height);
-        setSize(width, height);
-    }
-
-    @Override
-    public int configureSurface(Surface surface, int width, int height, int hal) {
-        log.debug("configureSurface: {}, {}", width, height);
-        return 0;
-    }
-
-    @Override
-    public void eventHardwareAccelerationError() {
-        log.error("eventHardwareAccelerationError()");
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        log.debug("surfaceCreated()");
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        log.debug("surfaceChanged(): {}, {}", width, height);
-        if (libvlc != null)
-            libvlc.attachSurface(holder.getSurface(), this);
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        log.debug("surfaceDestroyed()");
     }
 
     private void setSize(int width, int height) {
@@ -264,48 +236,24 @@ public class VLCMediaPlayer implements MiniPlayerPlugin, IVideoPlayer, SurfaceHo
         log.debug("Creating Player");
         releasePlayer();
         try {
-//            if (media.length() > 0) {
-//                Toast toast = Toast.makeText(this, media, Toast.LENGTH_LONG);
-//                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0,
-//                        0);
-//                toast.show();
-//            }
+            player = new IjkMediaPlayer();
+            player.setLogEnabled(true);
+            player.setDisplay(holder);
 
-            // Create a new media player
-            LibVLC.setOnNativeCrashListener(new LibVLC.OnNativeCrashListener() {
-                @Override
-                public void onNativeCrash() {
-                    log.error("**** LIBVLC CRASHED ****");
-                }
-            });
-            log.debug("Creating VLC");
-            libvlc = new LibVLC();
-            log.debug("Created VLC");
-            libvlc.setHardwareAcceleration(LibVLC.HW_ACCELERATION_AUTOMATIC);
-            libvlc.setSubtitlesEncoding("");
-            libvlc.setAout(LibVLC.AOUT_OPENSLES);
-            libvlc.setTimeStretching(true);
-            libvlc.setChroma("RV32");
-            libvlc.setVerboseMode(true);
-            libvlc.init(context);
-            holder.setFormat(PixelFormat.RGBX_8888);
-            holder.setKeepScreenOn(true);
-
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "analyzeduration", 200000);
+            player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "probesize", 163840);
         } catch (Exception e) {
             Toast.makeText(context, "Error creating player!", Toast.LENGTH_LONG).show();
         }
     }
 
     private void releasePlayer() {
-        if (libvlc == null)
+        if (player == null)
             return;
         log.debug("Releasing Player");
-        libvlc.stop();
-        libvlc.detachSurface();
+        player.stop();
+        player.release();
         holder = null;
-        libvlc.destroy();
-        libvlc = null;
-
         mVideoWidth = 0;
         mVideoHeight = 0;
     }

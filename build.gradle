@@ -52,6 +52,15 @@ project(":android") {
         // vlc video player
         compile "de.mrmaffen:vlc-android-sdk:1.+"
 
+        // ijkplayer
+        compile 'tv.danmaku.ijk.media:ijkplayer-java:0.4+'
+        compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.4+'
+
+//        # optional
+//        compile 'tv.danmaku.ijk.media:ijkplayer-armv5:0.4.1'
+//        compile 'tv.danmaku.ijk.media:ijkplayer-arm64:0.4.1'
+//        compile 'tv.danmaku.ijk.media:ijkplayer-x86:0.4.1'
+
         // logging
         compile "com.github.tony19:logback-android-core:1.1.1-4"
         compile "com.github.tony19:logback-android-classic:1.1.1-4"

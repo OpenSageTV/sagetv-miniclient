@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
@@ -45,9 +47,9 @@ public class GdxTexture {
         if (texture != null) return;
 
         Texture tex = new Texture(bitmap.getWidth(), bitmap.getHeight(), Pixmap.Format.RGBA8888);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex.getTextureObjectHandle());
+        Gdx.gl20.glBindTexture(GL20.GL_TEXTURE_2D, tex.getTextureObjectHandle());
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        Gdx.gl20.glBindTexture(GL20.GL_TEXTURE_2D, 0);
         bitmap.recycle();
         bitmap = null;
 
@@ -56,7 +58,7 @@ public class GdxTexture {
 
     private void createFrameBuffer() {
         if (frameBuffer == null) {
-            frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+            frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, true);
         }
     }
 

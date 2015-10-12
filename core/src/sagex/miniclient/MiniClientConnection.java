@@ -66,16 +66,24 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     // represent sequences of
     // content
     public static final String VP6F = "VP6F";
+    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS;
+    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
+            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
+            + MATROSKA;
+
+    public static final String MPLAYER_AUDIO_CODECS = AAC + "," + FLAC + "," +
+            MP2 + "," + MP3 + "," + WAV + "," +
+            VORBIS + "," + WMA7 + "," + WMA8 + "," +
+            AC3;
+    public static final String MPLAYER_VIDEO_CODECS = FLASH_VIDEO + "," + H264 + "," +
+            MPEG1_VIDEO + "," + MPEG2_VIDEO + "," + MPEG4_VIDEO + "," +
+            WMV7 + "," + WMV8 + "," + WMV9 + "," + VP6F;
+
 //    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS + "," + MPEG2_TS;
-//    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
-//            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
-//            + MATROSKA;
-
-    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS + "," + MPEG2_TS;
-    public static final String MPLAYER_PULL_FORMATS = MPEG4_VIDEO + "," + QUICKTIME;
-
-    public static final String MPLAYER_AUDIO_CODECS = MP3 + "," + AAC;
-    public static final String MPLAYER_VIDEO_CODECS = H264 + "," + MPEG4_VIDEO;
+//    public static final String MPLAYER_PULL_FORMATS = MPEG4_VIDEO + "," + QUICKTIME;
+//
+//    public static final String MPLAYER_AUDIO_CODECS = MP3 + "," + AAC;
+//    public static final String MPLAYER_VIDEO_CODECS = H264 + "," + MPEG4_VIDEO;
 
     public static final int DRAWING_CMD_TYPE = 16;
     public static final int GET_PROPERTY_CMD_TYPE = 0;
@@ -677,7 +685,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // else
                         // propVal = "REMOTEFONTS";
                     } else if ("GFX_BLENDMODE".equals(propName)) {
-                        propVal = "PREMULTIPLY";
+                        //propVal = "PREMULTIPLY";
+                        propVal = "POSTMULTIPLY";
                     } else if ("GFX_SCALING".equals(propName)) {
                         propVal = "HARDWARE";
                     } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
@@ -706,8 +715,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("GFX_COMPOSITE".equals(propName)) {
                             propVal = "BLEND";
                     } else if ("GFX_SURFACES".equals(propName)) {
-                        //propVal = "FALSE";
-                        propVal = "TRUE";
+                        propVal = "FALSE";
+                        //propVal = "TRUE";
                     } else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
                         // if (myGfx instanceof DirectX9GFXCMD)
                         // propVal = "TRUE";
@@ -729,7 +738,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
-                        propVal = "IR,KEYBOARD,MOUSE";
+                        propVal = "IR,KEYBOARD"; // ,MOUSE
                     } else if ("DISPLAY_OVERSCAN".equals(propName)) {
                         propVal = "0;0;1.0;1.0";
                     } else if ("FIRMWARE_VERSION".equals(propName)) {
