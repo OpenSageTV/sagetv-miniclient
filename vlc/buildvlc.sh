@@ -17,7 +17,7 @@ export PATH=$PATH:$ANDROID_SDK/platform-tools:$ANDROID_SDK/tools
 git clone git://git.videolan.org/vlc-ports/android.git
 cd android
 
- 2035  vim vlc/contrib/contrib-android-arm-linux-androideabi/libgpg-error/configure.ac
+# line ~158 the gettext version should change 19.2
+# vim vlc/contrib/contrib-android-arm-linux-androideabi/libgpg-error/configure.ac
 
 ./compile.sh 
-
