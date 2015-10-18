@@ -3,12 +3,20 @@ buildscript {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         jcenter()
+
+//        flatDir{
+//            dirs 'aarlibs'
+//        }
+
+//        maven { url file('mavenlocal').absoluteFile.toURI()}
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.3.0'
         classpath 'org.robovm:robovm-gradle-plugin:1.6.0'
     }
 }
+
+System.out.println(file('mavenlocal').absoluteFile.toURI())
 
 allprojects {
     apply plugin: "eclipse"
@@ -25,6 +33,7 @@ allprojects {
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        maven { url file('mavenlocal').absoluteFile.toURI() }
     }
 }
 
@@ -39,6 +48,9 @@ project(":android") {
         compile 'com.android.support:appcompat-v7:22.2.0'
         compile 'com.jakewharton:butterknife:7.0.1'
 
+        // vlc from aarlibs dir
+        compile('sagetv.libvlc:libvlc-armv7a:3.0.0@aar')
+
         // gdx
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
@@ -50,7 +62,7 @@ project(":android") {
         // compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.0', ext: 'aar')
 
         // vlc video player
-        compile "de.mrmaffen:vlc-android-sdk:1.+"
+//        compile "de.mrmaffen:vlc-android-sdk:1.+"
 
         // ijkplayer
         compile 'tv.danmaku.ijk.media:ijkplayer-java:0.4+'

@@ -66,18 +66,25 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     // represent sequences of
     // content
     public static final String VP6F = "VP6F";
-    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS;
-    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
-            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
-            + MATROSKA;
 
-    public static final String MPLAYER_AUDIO_CODECS = AAC + "," + FLAC + "," +
-            MP2 + "," + MP3 + "," + WAV + "," +
-            VORBIS + "," + WMA7 + "," + WMA8 + "," +
-            AC3;
-    public static final String MPLAYER_VIDEO_CODECS = FLASH_VIDEO + "," + H264 + "," +
-            MPEG1_VIDEO + "," + MPEG2_VIDEO + "," + MPEG4_VIDEO + "," +
-            WMV7 + "," + WMV8 + "," + WMV9 + "," + VP6F;
+
+    public static final String MPLAYER_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG";
+    public static final String MPLAYER_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3";
+    public static final String MPLAYER_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
+    public static final String MPLAYER_PUSH_FORMATS = "MPEG2-PS,MPEG2-TS,MPEG1-PS";
+
+//    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS;
+//    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
+//            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
+//            + MATROSKA;
+//
+//    public static final String MPLAYER_AUDIO_CODECS = AAC + "," + FLAC + "," +
+//            MP2 + "," + MP3 + "," + WAV + "," +
+//            VORBIS + "," + WMA7 + "," + WMA8 + "," +
+//            AC3;
+//    public static final String MPLAYER_VIDEO_CODECS = FLASH_VIDEO + "," + H264 + "," +
+//            MPEG1_VIDEO + "," + MPEG2_VIDEO + "," + MPEG4_VIDEO + "," +
+//            WMV7 + "," + WMV8 + "," + WMV9 + "," + VP6F;
 
 //    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS + "," + MPEG2_TS;
 //    public static final String MPLAYER_PULL_FORMATS = MPEG4_VIDEO + "," + QUICKTIME;
@@ -738,7 +745,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
-                        propVal = "IR,KEYBOARD"; // ,MOUSE
+                        propVal = "IR,KEYBOARD,MOUSE"; // ,MOUSE
                     } else if ("DISPLAY_OVERSCAN".equals(propName)) {
                         propVal = "0;0;1.0;1.0";
                     } else if ("FIRMWARE_VERSION".equals(propName)) {

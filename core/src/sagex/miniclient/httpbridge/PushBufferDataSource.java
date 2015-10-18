@@ -20,16 +20,6 @@ public class PushBufferDataSource implements DataSource {
     private Thread readThread;
 
     public PushBufferDataSource() {
-    }
-
-    @Override
-    public long open(String uri) throws IOException {
-        this.uri = uri;
-        log.debug("Open Called: {}", uri);
-        if (provider != null) {
-            log.debug("Connection is open, closing existing pipes");
-            close();
-        }
         consumer = new PipedInputStream(BUFFER_SIZE);
         provider = new PipedOutputStream();
         try {
@@ -38,6 +28,12 @@ public class PushBufferDataSource implements DataSource {
         } catch (IOException e) {
             throw new RuntimeException("Could not create PushBufferDataSource");
         }
+    }
+
+    @Override
+    public long open(String uri) throws IOException {
+        this.uri = uri;
+        log.debug("Open Called: {}", uri);
         return -1;
     }
 
@@ -73,7 +69,7 @@ public class PushBufferDataSource implements DataSource {
     }
 
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
-        log.debug("PB PUSH: {}", len);
+        //log.debug("PB PUSH: {}", len);
 //        if (log.isDebugEnabled()) {
 //            log.debug("pushBytes: offset: {}, len: {}, byteSize: {}", offset, len, bytes.length);
 //        }
