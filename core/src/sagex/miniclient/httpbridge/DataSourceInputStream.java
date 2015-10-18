@@ -40,7 +40,7 @@ public class DataSourceInputStream extends InputStream {
     @Override
     public int read(byte[] buffer, int offset, int length) throws IOException {
         checkOpened();
-        //log.debug("Read(): {}, {}", offset, length);
+        //log.debug("Read(): {}, {}", offset, length, new Exception());
         try {
             return dataSource.read(0, buffer, offset, length);
         } catch (Throwable t) {

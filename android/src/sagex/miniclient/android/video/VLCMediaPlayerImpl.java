@@ -2,22 +2,23 @@ package sagex.miniclient.android.video;
 
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
 
 import java.io.IOException;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.android.video.vlc.VLCInstance;
+import sagex.miniclient.android.video.vlc.VLCOptions;
 import sagex.miniclient.httpbridge.DataSource;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
 import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
@@ -29,16 +30,15 @@ import sagex.miniclient.uibridge.Rectangle;
 /**
  * Created by seans on 06/10/15.
  */
-public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
+public class VLCMediaPlayerImpl implements MiniPlayerPlugin {
     private static final Logger log = LoggerFactory.getLogger(VLCMediaPlayerImpl.class);
     private final static int VideoSizeChanged = -1;
     private final MiniClientGDXActivity context;
     DataSource dataSource = null;
     private boolean pushMode;
     private boolean playerReady;
-    private LibVLC libvlc;
+    private MediaPlayer player;
     private SurfaceView mSurface;
-    private SurfaceHolder holder;
     // media player
     private int mVideoWidth;
     private int mVideoHeight;
@@ -46,8 +46,6 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
     public VLCMediaPlayerImpl(MiniClientGDXActivity activity) {
         this.context = activity;
         this.mSurface = activity.getVideoView();
-        this.holder = mSurface.getHolder();
-        //this.holder.addCallback(this);
     }
 
     @Override
@@ -79,18 +77,23 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
             @Override
             public void run() {
                 // we need to use the http bridge
-                MiniClient.get().setUsingHttpBridge(true);
-                SageTVHttpMediaServerBridge bridge = MiniClient.get().getHttpBridge();
-                bridge.setDataSource(dataSource);
+                // MiniClient.get().setUsingHttpBridge(true);
+                // SageTVHttpMediaServerBridge bridge = MiniClient.get().getHttpBridge();
+                //bridge.setDataSource(dataSource);
 
                 // Setup VLC
-                createPlayer();
+                //Media media = new Media(VLCInstance.get(context), Uri.parse("http://localhost:9991/stream/file.ts"));
+                Media media = new Media(VLCInstance.get(context), Uri.parse("http://192.168.1.176:8000/TheBigBangTheory-TheFortificationImplementation-13289053-0.ts"));
+                // Media media = new Media(VLCInstance.get(context), "/sdcard/Movies/small.ts");
+                VLCOptions.setMediaOptions(media, context, VLCOptions.MEDIA_VIDEO);
+                createPlayer(media);
+                log.debug("Sending URL to libbvc: {}", media.getUri());
+
+                //player.setMedia(media);
                 playerReady = true;
-                log.debug("Sending URL to libbvc");
-                libvlc.playMRL("http://localhost:9991/stream?uri=" + Uri.encode(urlString));
                 //libvlc.playMRL("http://techslides.com/demos/sample-videos/small.mp4");
                 //libvlc.playMRL("http://ia801903.us.archive.org/18/items/rmE163ArabicSubHdarabRunnersTeamBingutopHangukSib.mkv/rmE163ArabicSubHdarabRunnersTeamBingutopHangukSib.mp4");
-                log.debug("LibVLC has our URL");
+                log.debug("LibVLC has our URL: {} ({})", urlString, media);
             }
         });
     }
@@ -99,6 +102,7 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
      * Waits until the player has been contructed
      */
     void waitForPlayer() {
+        log.debug("wait for player");
         while (!playerReady) {
             try {
                 Thread.sleep(50);
@@ -110,7 +114,7 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
 
     @Override
     public long getMediaTimeMillis() {
-        return libvlc.getTime();
+        return player.getTime();
     }
 
     @Override
@@ -126,25 +130,38 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
     @Override
     public void stop() {
         context.hideVideo();
-        libvlc.stop();
+        player.stop();
     }
 
     @Override
     public void pause() {
-        waitForPlayer();
         log.debug("pause()");
-        if (libvlc.isPlaying()) {
-            libvlc.pause();
-        }
+        waitForPlayer();
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (player.isPlaying()) {
+                    player.pause();
+                }
+            }
+        });
     }
 
     @Override
     public void play() {
-        waitForPlayer();
         log.debug("play()");
-        if (!libvlc.isPlaying()) {
-            libvlc.play();
-        }
+        waitForPlayer();
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!player.isPlaying()) {
+                    log.warn("Calling MediaPlayer.play()");
+                    player.play();
+                } else {
+                    log.warn("Player was already playing");
+                }
+            }
+        });
     }
 
     @Override
@@ -159,7 +176,7 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
 
     @Override
     public long getLastFileReadPos() {
-        return (long) libvlc.getPosition();
+        return (long) player.getPosition();
     }
 
     @Override
@@ -184,7 +201,7 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
 
     @Override
     public void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException {
-        log.debug("pushData()");
+        //log.debug("pushData()");
         if (dataSource instanceof PushBufferDataSource) {
             ((PushBufferDataSource) dataSource).pushBytes(cmddata, bufDataOffset, buffSize);
         }
@@ -199,22 +216,22 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
 
     }
 
-    @Override
-    public void setSurfaceLayout(int width, int height, int visible_width, int visible_height, int sar_num, int sar_den) {
-        log.debug("setSurfaceLayout: {}, {}, {}, {}", width, height, visible_width, visible_height);
-        setSize(width, height);
-    }
-
-    @Override
-    public int configureSurface(Surface surface, int width, int height, int hal) {
-        log.debug("configureSurface: {}, {}", width, height);
-        return -1;
-    }
-
-    @Override
-    public void eventHardwareAccelerationError() {
-        log.error("eventHardwareAccelerationError()");
-    }
+//    @Override
+//    public void setSurfaceLayout(int width, int height, int visible_width, int visible_height, int sar_num, int sar_den) {
+//        log.debug("setSurfaceLayout: {}, {}, {}, {}", width, height, visible_width, visible_height);
+//        setSize(width, height);
+//    }
+//
+//    @Override
+//    public int configureSurface(Surface surface, int width, int height, int hal) {
+//        log.debug("configureSurface: {}, {}", width, height);
+//        return -1;
+//    }
+//
+//    @Override
+//    public void eventHardwareAccelerationError() {
+//        log.error("eventHardwareAccelerationError()");
+//    }
 //
 //    @Override
 //    public void surfaceCreated(SurfaceHolder holder) {
@@ -266,7 +283,7 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
                     w = (int) (h * videoAR);
 
                 // force surface buffer size
-                holder.setFixedSize(mVideoWidth, mVideoHeight);
+                mSurface.getHolder().setFixedSize(mVideoWidth, mVideoHeight);
 
                 // set display size
                 ViewGroup.LayoutParams lp = mSurface.getLayoutParams();
@@ -278,7 +295,7 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
         });
     }
 
-    private void createPlayer() {
+    private void createPlayer(Media media) {
         log.debug("Creating Player");
         releasePlayer();
         try {
@@ -296,9 +313,11 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
                     log.error("**** LIBVLC CRASHED ****");
                 }
             });
+
             log.debug("Creating VLC");
-            libvlc = new LibVLC();
-            log.debug("Created VLC");
+            player = new MediaPlayer(media);
+
+            //log.debug("Created VLC: {}, {}, {}", libvlc.compiler(), libvlc.version(), libvlc.changeset());
 //            libvlc.setHardwareAcceleration(LibVLC.HW_ACCELERATION_AUTOMATIC);
 //            //libvlc.setSubtitlesEncoding("");
 //            libvlc.setAout(LibVLC.AOUT_OPENSLES);
@@ -306,31 +325,40 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin, IVideoPlayer {
 //            //libvlc.setTimeStretching(true);
 //            //libvlc.setChroma("RV32");
 
-            libvlc.setAout(LibVLC.AOUT_AUDIOTRACK);
-            libvlc.setVout(LibVLC.VOUT_ANDROID_SURFACE);
-            libvlc.setHardwareAcceleration(LibVLC.HW_ACCELERATION_FULL);
-            libvlc.setVerboseMode(true);
-            libvlc.init(context.getApplicationContext());
+//            libvlc.setAout(LibVLC.AOUT_AUDIOTRACK);
+//            libvlc.setVout(LibVLC.VOUT_ANDROID_SURFACE);
+//            libvlc.setHardwareAcceleration(LibVLC.HW_ACCELERATION_FULL);
+//            libvlc.setVerboseMode(true);
+//            libvlc.init(context.getApplicationContext());
 
             //holder.setFormat(PixelFormat.RGBX_8888);
             //holder.setKeepScreenOn(true);
 
-            libvlc.attachSurface(holder.getSurface(), this);
+//            libvlc.attachSurface(holder.getSurface(), this);
+
+            log.debug("Have A SURFCE HOLDER? {}", mSurface.getHolder() != null);
+
+            //player.getVLCVout().setVideoSurface(mSurface.getHolder().getSurface(), mSurface.getHolder());
+            player.getVLCVout().setVideoView(mSurface);
+            player.getVLCVout().attachViews();
 
         } catch (Exception e) {
+            log.error("Error Creating Player", e);
             Toast.makeText(context, "Error creating player!", Toast.LENGTH_LONG).show();
         }
     }
 
     private void releasePlayer() {
-        if (libvlc == null)
-            return;
         log.debug("Releasing Player");
-        libvlc.stop();
-        libvlc.detachSurface();
-        holder = null;
-        libvlc.destroy();
-        libvlc = null;
+        if (player != null) {
+            if (player.isPlaying()) {
+                player.stop();
+            }
+            player.release();
+        }
+        player = null;
+
+        VLCInstance.release(context);
 
         mVideoWidth = 0;
         mVideoHeight = 0;
