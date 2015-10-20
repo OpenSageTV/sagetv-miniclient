@@ -695,7 +695,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         //propVal = "PREMULTIPLY";
                         propVal = "POSTMULTIPLY";
                     } else if ("GFX_SCALING".equals(propName)) {
-                        propVal = "HARDWARE";
+                        propVal = "";
                     } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
                         if ("true".equals(client.getProperty("cache_images_on_disk", "true")))
                             propVal = "TRUE";
@@ -719,11 +719,12 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             propVal = "";
                         else
                             propVal = "PNG,JPG,GIF,BMP";
+                        //propVal="";
                     } else if ("GFX_COMPOSITE".equals(propName)) {
-                            propVal = "BLEND";
+                        propVal = "COLORKEY";
                     } else if ("GFX_SURFACES".equals(propName)) {
-                        propVal = "FALSE";
-                        //propVal = "TRUE";
+                        //propVal = "FALSE";
+                        propVal = "TRUE";
                     } else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
                         // if (myGfx instanceof DirectX9GFXCMD)
                         // propVal = "TRUE";
@@ -741,11 +742,11 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // propVal = Integer.toString(AWTUIManager., 16);
                         // while (propVal.length() < 6)
                         // propVal = "0" + propVal;
-                        propVal = "000000";
+                        propVal = "080010";
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
-                        propVal = "IR,KEYBOARD,MOUSE"; // ,MOUSE
+                        propVal = "IR"; // ,MOUSE,KEYBOARD
                     } else if ("DISPLAY_OVERSCAN".equals(propName)) {
                         propVal = "0;0;1.0;1.0";
                     } else if ("FIRMWARE_VERSION".equals(propName)) {
@@ -903,7 +904,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height);
                     } else if ("GFX_DRAWMODE".equals(propName)) {
                         //&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
-                        propVal = "FULLSCREEN";
+                        //propVal = "FULLSCREEN";
+                        propVal = "";
                     }
                     log.debug("GetProperty: {}='{}'", propName, propVal);
                     try {

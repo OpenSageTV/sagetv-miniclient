@@ -82,8 +82,8 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin {
                 //bridge.setDataSource(dataSource);
 
                 // Setup VLC
-                //Media media = new Media(VLCInstance.get(context), Uri.parse("http://localhost:9991/stream/file.ts"));
-                Media media = new Media(VLCInstance.get(context), Uri.parse("http://192.168.1.176:8000/TheBigBangTheory-TheFortificationImplementation-13289053-0.ts"));
+                Media media = new Media(VLCInstance.get(context), Uri.parse("http://localhost:9991/stream/file.ts"));
+                // Media media = new Media(VLCInstance.get(context), Uri.parse("http://192.168.1.176:8000/TheBigBangTheory-TheFortificationImplementation-13289053-0.ts"));
                 // Media media = new Media(VLCInstance.get(context), "/sdcard/Movies/small.ts");
                 VLCOptions.setMediaOptions(media, context, VLCOptions.MEDIA_VIDEO);
                 createPlayer(media);
