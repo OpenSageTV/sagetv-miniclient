@@ -52,6 +52,8 @@ public class MediaCmd {
     public static final int MEDIACMD_FRAMESTEP = 28;
     public static final int MEDIACMD_SEEK = 29;
 
+    public static final int MEDIACMD_DVD_STREAMS = 36;
+
     public static final Map<Integer, String> CMDMAP = new HashMap<Integer, String>();
     private static final Logger log = LoggerFactory.getLogger(MediaCmd.class);
 
@@ -78,6 +80,8 @@ public class MediaCmd {
 
         CMDMAP.put(MEDIACMD_FRAMESTEP, "MEDIACMD_FRAMESTEP");
         CMDMAP.put(MEDIACMD_SEEK, "MEDIACMD_SEEK");
+
+        CMDMAP.put(MEDIACMD_DVD_STREAMS, "MEDIACMD_DVD_STREAMS");
     }
 
     private final MiniClient client;
@@ -139,7 +143,8 @@ public class MediaCmd {
     public int ExecuteMediaCommand(int cmd, int len, byte[] cmddata, byte[] retbuf) {
         // TODO verify sizes...
         //if (cmd != MEDIACMD_PUSHBUFFER)
-        log.debug("Execute media command '{}[{}]'", cmd, CMDMAP.get(cmd));
+        if (cmd != MEDIACMD_PUSHBUFFER)
+            log.debug("Execute media command '{}[{}]'", cmd, CMDMAP.get(cmd));
         switch (cmd) {
             case MEDIACMD_INIT:
                 log.info("MEDIACMD_INIT");
@@ -286,8 +291,7 @@ public class MediaCmd {
                     rv = Math.max(maxPrebufferSize, 131072 * 4);
                 else
                     rv = (int) Math.max(131072 * 4, maxPrebufferSize - (bufferFilePushedBytes - playa.getLastFileReadPos()));
-                log.debug("Finished pushing current data buffer of " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes +
-                        "");
+                // log.debug("Finished pushing current data buffer of " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "");
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
@@ -340,6 +344,9 @@ public class MediaCmd {
                 if (playa != null)
                     playa.seek(seekTime);
                 return 0;
+            case MEDIACMD_DVD_STREAMS:
+                writeInt(0, retbuf, 0);
+                return 4;
             default:
                 return -1;
         }

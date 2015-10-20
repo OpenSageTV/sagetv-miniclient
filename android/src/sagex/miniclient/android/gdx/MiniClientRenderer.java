@@ -72,7 +72,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     Viewport viewport;
     ShapeRenderer shapeRenderer;
     // logging stuff
-    boolean logFrameBuffer = true;
+    boolean logFrameBuffer = false;
     boolean logFrameTime = false;
     boolean logTextureTime = false;
     long longestTextureTime = 0;
@@ -276,7 +276,6 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             @Override
             public void run() {
                 batch.end();
-                log.debug("*** FILL RECT ** {},{}", width, height);
 
                 camera.update();
                 shapeRenderer.setProjectionMatrix(camera.combined);
