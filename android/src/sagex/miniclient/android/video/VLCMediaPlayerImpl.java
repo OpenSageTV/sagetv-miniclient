@@ -82,7 +82,8 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin {
                 //bridge.setDataSource(dataSource);
 
                 // Setup VLC
-                Media media = new Media(VLCInstance.get(context), Uri.parse("http://localhost:9991/stream/file.ts"));
+                dataSource.setUri(urlString);
+                Media media = new Media(VLCInstance.get(context), Uri.parse("http://localhost:9991/stream/" + dataSource.getFileName()));
                 // Media media = new Media(VLCInstance.get(context), Uri.parse("http://192.168.1.176:8000/TheBigBangTheory-TheFortificationImplementation-13289053-0.ts"));
                 // Media media = new Media(VLCInstance.get(context), "/sdcard/Movies/small.ts");
                 VLCOptions.setMediaOptions(media, context, VLCOptions.MEDIA_VIDEO);
@@ -137,36 +138,36 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin {
     public void pause() {
         log.debug("pause()");
         waitForPlayer();
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+//        context.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
                 if (player.isPlaying()) {
                     player.pause();
                 }
-            }
-        });
+//            }
+//        });
     }
 
     @Override
     public void play() {
         log.debug("play()");
         waitForPlayer();
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+//        context.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
                 if (!player.isPlaying()) {
                     log.warn("Calling MediaPlayer.play()");
                     player.play();
                 } else {
                     log.warn("Player was already playing");
                 }
-            }
-        });
+//            }
+//        });
     }
 
     @Override
     public void seek(long maxValue) {
-
+        log.debug("SEEK: {}", maxValue);
     }
 
     @Override
@@ -176,7 +177,11 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin {
 
     @Override
     public long getLastFileReadPos() {
-        return (long) player.getPosition();
+        if (dataSource instanceof PushBufferDataSource) {
+            return ((PushBufferDataSource) dataSource).getBytesRead();
+        } else {
+            return (long) player.getPosition();
+        }
     }
 
     @Override
@@ -209,6 +214,14 @@ public class VLCMediaPlayerImpl implements MiniPlayerPlugin {
 
     @Override
     public void flush() {
+        log.debug("flush()");
+        dataSource.flush();
+        player.setPosition(player.getPosition() + 1);
+    }
+
+    @Override
+    public int getBufferLeft() {
+        return dataSource.bufferAvailable();
     }
 
     @Override

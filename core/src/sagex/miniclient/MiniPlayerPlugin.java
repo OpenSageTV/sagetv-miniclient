@@ -100,4 +100,11 @@ public interface MiniPlayerPlugin extends Runnable {
     void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException;
 
     void flush();
+
+    /**
+     * Return the # of bytes left in the media buffer
+     *
+     * @return
+     */
+    int getBufferLeft();
 }

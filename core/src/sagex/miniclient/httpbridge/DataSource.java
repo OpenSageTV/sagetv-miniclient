@@ -16,4 +16,10 @@ public interface DataSource {
 
     void close();
 
+    void flush();
+
+    String getFileName();
+
+    int bufferAvailable();
+
 }

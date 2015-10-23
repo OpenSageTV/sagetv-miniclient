@@ -67,7 +67,7 @@ public class VLCOptions {
         } catch (NumberFormatException ignored) {
         }
 
-        int networkCaching = pref.getInt("network_caching_value", 0);
+        int networkCaching = pref.getInt("network_caching_value", 2000);
         if (networkCaching > 60000)
             networkCaching = 60000;
         else if (networkCaching < 0)

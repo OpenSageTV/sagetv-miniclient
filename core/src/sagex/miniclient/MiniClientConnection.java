@@ -137,6 +137,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
     // pathlen, path
     public static final int FSCMD_DELETE_FILE = 72;
     private static final Logger log = LoggerFactory.getLogger(MiniClientConnection.class);
+    // private static final int PUSH_BUFFER_LIMIT = 32 * 1024;
     // pathlen, path
     // 64-bit return value
     public static boolean detailedBufferStats = false;
@@ -813,7 +814,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // nature
                         // NOTE: If MPlayer is not being used, this should be
                         // changed...hopefully to a lower value like 0 :)
-                        propVal = "100";
+                        propVal = "2000";
                     } else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName)) {
                         if ("fixed".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic"))) {
                             // Build the fixed media format string
@@ -906,6 +907,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         //&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
                         //propVal = "FULLSCREEN";
                         propVal = "";
+//                    } else if ("PUSH_BUFFER_LIMIT".equals(propName)) {
+//                        propVal = String.valueOf(PUSH_BUFFER_LIMIT);
                     }
                     log.debug("GetProperty: {}='{}'", propName, propVal);
                     try {
