@@ -32,8 +32,13 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
     @Override
     public Response serve(IHTTPSession session) {
         log.debug("Request: " + session.getUri());
+        if (dataSource instanceof PushBufferDataSource && hasRangeHeader(session)) {
+            // return the last stream
+            return NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", inputStream);
+        }
         if (session.getMethod() == Method.GET) {
-            return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "application/octet-stream", getStreamVideo(), -1);
+            return NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", getStreamVideo());
+            //return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "video/mp2t", getStreamVideo(), -1);
         } else if (session.getMethod() == Method.HEAD) {
             log.error("Invalid Method: " + session.getMethod());
             return NanoHTTPD.newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, "text/plain", "Method Not Allowed: " + session.getMethod());
@@ -41,6 +46,15 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             log.error("Invalid Method: " + session.getMethod());
             return NanoHTTPD.newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, "text/plain", "Method Not Allowed: " + session.getMethod());
         }
+    }
+
+    private boolean hasRangeHeader(IHTTPSession session) {
+        String range = session.getHeaders().get("Range");
+        if (range != null) {
+            log.debug("We Have a Range Header {}", range);
+            return true;
+        }
+        return false;
     }
 
     private InputStream getStreamVideo() {

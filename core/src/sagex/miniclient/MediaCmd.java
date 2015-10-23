@@ -90,7 +90,7 @@ public class MediaCmd {
     private long bufferFilePushedBytes;
     private boolean pushMode;
     private int numPushedBuffers;
-    private int DESIRED_VIDEO_PREBUFFER_SIZE = 4 * 1024 * 1024;
+    private int DESIRED_VIDEO_PREBUFFER_SIZE = 16 * 1024 * 1024;
     private int DESIRED_AUDIO_PREBUFFER_SIZE = 2 * 1024 * 1024;
     private int maxPrebufferSize;
     private MiniClientConnection myConn;
@@ -164,6 +164,7 @@ public class MediaCmd {
             case MEDIACMD_OPENURL:
                 int strLen = readInt(0, cmddata);
                 String urlString = "";
+                bufferFilePushedBytes = 0;
                 maxPrebufferSize = DESIRED_VIDEO_PREBUFFER_SIZE;
                 if (strLen > 1)
                     urlString = new String(cmddata, 4, strLen - 1);
@@ -288,10 +289,12 @@ public class MediaCmd {
                 // data since as playback goes on we keep writing to the filesystem anyways. Yeah, we could recover some bandwidth
                 // but that's not how any online video players work and we shouldn't be any different than that.
                 if (playa == null)
-                    rv = Math.max(maxPrebufferSize, 131072 * 4);
-                else
-                    rv = (int) Math.max(131072 * 4, maxPrebufferSize - (bufferFilePushedBytes - playa.getLastFileReadPos()));
-                // log.debug("Finished pushing current data buffer of " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "");
+                    rv = maxPrebufferSize;
+                else {
+                    //rv = (int)(PushBufferDataSource.PIPE_SIZE - (bufferFilePushedBytes - playa.getLastFileReadPos()));
+                    rv = playa.getBufferLeft();
+                    log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "; Last Read: " + playa.getLastFileReadPos());
+                }
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {

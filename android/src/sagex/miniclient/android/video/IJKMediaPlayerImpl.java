@@ -190,6 +190,11 @@ public class IJKMediaPlayerImpl implements MiniPlayerPlugin {
     }
 
     @Override
+    public int getBufferLeft() {
+        return dataSource.bufferAvailable();
+    }
+
+    @Override
     public void run() {
 
     }

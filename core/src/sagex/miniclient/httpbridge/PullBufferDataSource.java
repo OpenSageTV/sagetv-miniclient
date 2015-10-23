@@ -1,13 +1,14 @@
 package sagex.miniclient.httpbridge;
 
+import com.Ostermiller.util.CircularByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.Socket;
 
 /**
@@ -19,12 +20,11 @@ public class PullBufferDataSource implements DataSource {
     private static final int MAX_BUFFER = 32768;
     Socket remoteServer;
     byte buffer[] = new byte[MAX_BUFFER + 1];
-    private String uri;
-
     // pipes are used to hold and buffer the data
-    private PipedOutputStream provider;
-    private PipedInputStream consumer;
-
+    CircularByteBuffer circularByteBuffer = null;
+    InputStream in = null;
+    OutputStream out = null;
+    private String uri;
     private InputStream remoteReader;
     private OutputStream remoteWriter;
     private long bytesRead = 0; // how many bytes have we requested
@@ -51,9 +51,10 @@ public class PullBufferDataSource implements DataSource {
             bytesRead = 0;
             bytesPos = 0;
             bytesAvailable = 0;
-            consumer = new PipedInputStream(MAX_BUFFER);
-            provider = new PipedOutputStream();
-            consumer.connect(provider);
+
+            circularByteBuffer = new CircularByteBuffer(PushBufferDataSource.PIPE_SIZE);
+            in = circularByteBuffer.getInputStream();
+            out = circularByteBuffer.getOutputStream();
 
             remoteServer = new Socket();
             remoteServer.connect(new java.net.InetSocketAddress(host, 7818), 2000);
@@ -88,20 +89,41 @@ public class PullBufferDataSource implements DataSource {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         try {
-            if (provider != null) provider.close();
+            circularByteBuffer.clear();
+            if (in != null) in.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
-            if (consumer != null) consumer.close();
+            if (out != null) out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    @Override
+    public void flush() {
+        circularByteBuffer.clear();
+    }
+
+    @Override
+    public String getFileName() {
+        if (uri == null) {
+            return "file.mp4";
+        } else {
+            return new File(uri).getName();
+        }
+    }
+
+    @Override
+    public int bufferAvailable() {
+        return circularByteBuffer.getSpaceLeft();
+    }
+
     public int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException {
-        //log.debug("READ: offset: {}, len: {}, bufferSize: {}", offset, len, bytes.length);
+        log.debug("READ: offset: {}, len: {}, bufferSize: {}", offset, len, bytes.length);
         if (bytesAvailable < len) {
             fillBuffer(MAX_BUFFER);
         }
@@ -109,7 +131,7 @@ public class PullBufferDataSource implements DataSource {
         bytesAvailable -= len;
         // increase the read count
         bytesRead += len;
-        return consumer.read(bytes, offset, len);
+        return in.read(bytes, offset, len);
     }
 
     private int fillBuffer(int len) throws IOException {
@@ -123,7 +145,7 @@ public class PullBufferDataSource implements DataSource {
         }
         bytesPos += bytes;
         bytesAvailable += bytes; // add these bytes to queue
-        provider.write(buffer, 0, bytes);
+        out.write(buffer, 0, bytes);
         return bytes;
     }
 
