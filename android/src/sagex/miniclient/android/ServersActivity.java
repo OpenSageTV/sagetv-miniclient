@@ -104,10 +104,15 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             Intent i = new Intent(getBaseContext(), SettingsActivity.class);
             startActivity(i);
         } else {
-            // connect to server
-            Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
-            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
-            startActivity(i);
+            try {
+                // connect to server
+                Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
+                i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
+                startActivity(i);
+            } catch (Throwable t) {
+                log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
+                Toast.makeText(this, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
+            }
         }
     }
 

@@ -97,6 +97,14 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
         }
     }
 
+    @Override
+    public void seek(long maxValue) {
+        log.debug("SEEK: {}", maxValue);
+        if (player != null) {
+            player.seekTo(maxValue);
+        }
+    }
+
     protected void releasePlayer() {
         if (player == null)
             return;

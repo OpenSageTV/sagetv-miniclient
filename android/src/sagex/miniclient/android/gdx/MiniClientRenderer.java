@@ -143,7 +143,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             return;
         }
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
-        client.getCurrentConnection().postResizeEvent(uiSize);
+        try {
+            client.getCurrentConnection().postResizeEvent(uiSize);
+        } catch (Throwable t) {
+            log.info("Error sending Resize Event", t);
+        }
     }
 
     @Override

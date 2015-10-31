@@ -1,42 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:keepScreenOn="true">
-
-    <FrameLayout
-        android:id="@+id/video_surface_frame"
+<?xml version="1.0" encoding="utf-8"?><!-- The main content view -->
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:keepScreenOn="true">
 
-        <SurfaceView
-            android:id="@+id/video_surface"
+        <FrameLayout
+            android:id="@+id/video_surface_frame"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:background="@null"
-            android:visibility="visible" />
-    </FrameLayout>
+            android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/surface"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:background="@null" />
+            <SurfaceView
+                android:id="@+id/video_surface"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@null"
+                android:visibility="visible" />
+        </FrameLayout>
 
-    <RelativeLayout
-        android:id="@+id/waitforit"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:visibility="gone">
-        <ImageView
+        <FrameLayout
+            android:id="@+id/surface"
             android:layout_width="fill_parent"
-            android:layout_height="match_parent" android:scaleType="fitXY" android:src="@drawable/background"/>
-        <TextView
-            android:id="@+id/pleaseWaitText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:padding="30dp"
-            android:textSize="24sp" />
-    </RelativeLayout>
-</FrameLayout>
+            android:layout_height="fill_parent"
+            android:background="@null" />
+
+        <RelativeLayout
+            android:id="@+id/waitforit"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/background" />
+
+            <TextView
+                android:id="@+id/pleaseWaitText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:padding="30dp"
+                android:textSize="24sp" />
+        </RelativeLayout>
+    </FrameLayout>

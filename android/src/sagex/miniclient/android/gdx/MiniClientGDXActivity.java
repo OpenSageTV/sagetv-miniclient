@@ -3,6 +3,7 @@ package sagex.miniclient.android.gdx;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
@@ -12,11 +13,17 @@ import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -25,8 +32,9 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;
+import sagex.miniclient.uibridge.EventRouter;
+import sagex.miniclient.uibridge.SageTVKey;
 
-import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
 
 /**
@@ -59,84 +67,110 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        hideSystemUI(this);
+        try {
+            hideSystemUI(this);
 
-        setContentView(R.layout.miniclientgl_layout);
-        ButterKnife.bind(this);
+            setContentView(R.layout.miniclientgl_layout);
+            ButterKnife.bind(this);
 
-        AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
-        //cfg.useGL20 = false;
-        // we need to change the default pixel format - since it does not include an alpha channel
-        // we need the alpha channel so the camera preview will be seen behind the GL scene
-        cfg.r = 8;
-        cfg.g = 8;
-        cfg.b = 8;
-        cfg.a = 8;
+            AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+            //cfg.useGL20 = false;
+            // we need to change the default pixel format - since it does not include an alpha channel
+            // we need the alpha channel so the camera preview will be seen behind the GL scene
+            cfg.r = 8;
+            cfg.g = 8;
+            cfg.b = 8;
+            cfg.a = 8;
 
-        client = MiniClient.get();
+            client = MiniClient.get();
 
-        mgr = new MiniClientRenderer(this, client);
-        miniClientView = initializeForView(mgr, cfg);
+            mgr = new MiniClientRenderer(this, client);
+            miniClientView = initializeForView(mgr, cfg);
 
-        if (graphics.getView() instanceof SurfaceView) {
-            log.debug("Setting Translucent View");
-            GLSurfaceView glView = (GLSurfaceView) graphics.getView();
-            glView.setZOrderOnTop(true);
-            // force alpha channel - I'm not sure we need this as the GL surface is already using alpha channel
-            glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+            if (graphics.getView() instanceof SurfaceView) {
+                log.debug("Setting Translucent View");
+                GLSurfaceView glView = (GLSurfaceView) graphics.getView();
+                glView.setZOrderOnTop(true);
+                // force alpha channel - I'm not sure we need this as the GL surface is already using alpha channel
+                glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+            }
+
+            miniClientView.setFocusable(true);
+            miniClientView.setFocusableInTouchMode(true);
+            miniClientView.setOnTouchListener(null);
+            miniClientView.setOnClickListener(null);
+            miniClientView.setOnKeyListener(null);
+            miniClientView.setOnDragListener(null);
+            miniClientView.setOnFocusChangeListener(null);
+            miniClientView.setOnGenericMotionListener(null);
+            miniClientView.setOnHoverListener(null);
+            miniClientView.setOnTouchListener(null);
+            //miniClientView.setBackgroundColor(Color.TRANSPARENT);
+            uiFrameHolder.addView(miniClientView);
+            //uiFrameHolder.setBackgroundColor(Color.TRANSPARENT);
+            miniClientView.requestFocus();
+
+            ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
+            if (si == null) {
+                log.error("Missing SERVER INFO in Intent: {}", ARG_SERVER_INFO);
+                finish();
+            }
+
+            setupNavigationDrawer();
+
+            plaseWaitText.setText("Connecting to " + si.address + "...");
+            setConnectingIsVisible(true);
+
+            startMiniClient(si);
+        } catch (Throwable t) {
+            log.error("Failed to start/create the Main Activity for the MiniClient UI", t);
+            throw new RuntimeException("Unable to start Activity", t);
+        }
+    }
+
+    private void setupNavigationDrawer() {
+        if (getResources().getBoolean(R.bool.istv)) {
+            log.debug("Disabling Slide Out Navigation on TV");
+            return;
         }
 
-        miniClientView.setFocusable(true);
-        miniClientView.setFocusableInTouchMode(true);
-        miniClientView.setOnTouchListener(null);
-        miniClientView.setOnClickListener(null);
-        miniClientView.setOnKeyListener(null);
-        miniClientView.setOnDragListener(null);
-        miniClientView.setOnFocusChangeListener(null);
-        miniClientView.setOnGenericMotionListener(null);
-        miniClientView.setOnHoverListener(null);
-        miniClientView.setOnTouchListener(null);
-        //miniClientView.setBackgroundColor(Color.TRANSPARENT);
-        uiFrameHolder.addView(miniClientView);
-        //uiFrameHolder.setBackgroundColor(Color.TRANSPARENT);
-        miniClientView.requestFocus();
+        final Map<Integer, SageTVKey> menuActions = new HashMap<>();
+//if you want to update the items at a later time it is recommended to keep it in a variable
+        PrimaryDrawerItem pausePlay = new PrimaryDrawerItem().withName("Pause/Play").withIdentifier(R.id.pause_play);
+        PrimaryDrawerItem stop = new PrimaryDrawerItem().withName("Stop").withIdentifier(R.id.stop);
+        PrimaryDrawerItem ff = new PrimaryDrawerItem().withName("Skip Forward").withIdentifier(R.id.media_ff);
+        PrimaryDrawerItem rew = new PrimaryDrawerItem().withName("Skip Back").withIdentifier(R.id.media_rew);
 
-        ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);
-        if (si == null) {
-            log.error("Missing SERVER INFO in Intent: {}", ARG_SERVER_INFO);
-            finish();
-        }
+        menuActions.put(R.id.pause_play, EventRouter.MEDIA_PLAY_PAUSE);
+        menuActions.put(R.id.stop, EventRouter.MEDIA_STOP);
+        menuActions.put(R.id.media_ff, EventRouter.MEDIA_FF);
+        menuActions.put(R.id.media_rew, EventRouter.MEDIA_REW);
 
-        plaseWaitText.setText("Connecting to " + si.address + "...");
-        setConnectingIsVisible(true);
-
-        startMiniClient(si);
-    }
-
-    public void hideUI() {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                uiFrameHolder.setVisibility(View.GONE);
-//            }
-//        });
-    }
-
-    public void showUI() {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                uiFrameHolder.setVisibility(View.VISIBLE);
-//            }
-//        });
-    }
-
-    public void showVideo() {
-        hideUI();
-    }
-
-    public void hideVideo() {
-        showUI();
+//create the drawer and remember the `Drawer` result object
+        Drawer result = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(null)
+                .withFullscreen(true)
+                .addDrawerItems(
+                        pausePlay,
+                        stop,
+                        ff,
+                        rew
+                )
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        SageTVKey key = menuActions.get(drawerItem.getIdentifier());
+                        if (key != null) {
+                            EventRouter.post(client, key);
+                        }
+                        return true;
+                    }
+                })
+                .withDrawerGravity(Gravity.START)
+                .withDrawerWidthDp(150)
+                .withShowDrawerOnFirstLaunch(true)
+                .build();
     }
 
     public void startMiniClient(final ServerInfo si) {
@@ -163,7 +197,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Override
     public void onBackPressed() {
-        confirmExit(this);
+        EventRouter.post(client, EventRouter.BACK);
+        //confirmExit(this);
     }
 
     @Override
@@ -199,4 +234,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     public SurfaceView getVideoView() {
         return videoHolder;
     }
+
+
 }

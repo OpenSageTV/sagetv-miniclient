@@ -108,7 +108,7 @@ public class AppUtil {
     }
 
     public static void initLogging(Context ctx, boolean useSDCARD) {
-        if (ctx.getResources().getBoolean(R.bool.istv) || useSDCARD) {
+        if (useSDCARD) {
             configureLogging(ctx, "sdcard");
         } else {
             configureLogging(ctx, "logcat");

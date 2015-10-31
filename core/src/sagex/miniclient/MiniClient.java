@@ -47,6 +47,7 @@ public class MiniClient {
     private String cryptoFormats;
     private boolean initialized = false;
     private boolean usingHttpBridge = true;
+    private boolean videoIsPlaying;
 
     public MiniClient() {
         this.myProperties = new Properties();
@@ -245,5 +246,13 @@ public class MiniClient {
             this.UIRenderer.close();
             this.UIRenderer = null;
         }
+    }
+
+    public void setVideoIsPlaying(boolean videoIsPlaying) {
+        this.videoIsPlaying = videoIsPlaying;
+    }
+
+    public boolean isVideoPlaying() {
+        return videoIsPlaying;
     }
 }

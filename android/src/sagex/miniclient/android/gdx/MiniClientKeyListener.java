@@ -6,11 +6,10 @@ import android.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import sagex.miniclient.MiniClient;
-import sagex.miniclient.uibridge.Keys;
+import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.SageTVKey;
 
 /**
@@ -19,42 +18,25 @@ import sagex.miniclient.uibridge.SageTVKey;
 public class MiniClientKeyListener implements View.OnKeyListener {
     private static final Logger log = LoggerFactory.getLogger(MiniClientKeyListener.class);
 
-    private static final Map<Integer, SageTVKey> LONG_KEYMAP = new HashMap<>();
-    private static final Map<Integer, SageTVKey> KEYMAP = new HashMap<>();
-
     static {
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, new SageTVKey(Keys.VK_UP));
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, new SageTVKey(Keys.VK_DOWN));
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, new SageTVKey(Keys.VK_LEFT));
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, new SageTVKey(Keys.VK_RIGHT));
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, new SageTVKey(Keys.VK_ENTER));
+        // navivation native keymap
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, EventRouter.UP);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, EventRouter.DOWN);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.LEFT);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.RIGHT);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.SELECT);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, EventRouter.ESCAPE);
 
-        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PAUSE, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
-        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
-        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_Y, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PAUSE, EventRouter.MEDIA_PAUSE);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY, EventRouter.MEDIA_PLAY);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, EventRouter.MEDIA_PLAY_PAUSE);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_Y, EventRouter.MEDIA_PLAY_PAUSE);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_X, EventRouter.MEDIA_STOP);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, EventRouter.MEDIA_FF);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, EventRouter.MEDIA_REW);
 
-        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, new SageTVKey(Keys.VK_F, Keys.CTRL_MASK));
-        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, new SageTVKey(Keys.VK_A, Keys.CTRL_MASK));
-
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_R1, new SageTVKey(Keys.VK_F, Keys.CTRL_MASK));
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_L1, new SageTVKey(Keys.VK_A, Keys.CTRL_MASK));
-
-
-        //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_SELECT, Keys.VK_ENTER);
-        //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_START, Keys.VK_ENTER);
-
-        //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, Keys.VK_ENTER); (DPAD Center will catch this)
-        //KEYMAP.put(KeyEvent.KEYCODE_BACK, Keys.VK_ESCAPE);
-
-        // don't like that behaviour
-        //KEYMAP.put(KeyEvent.KEYCODE_BACK, Keys.VK_ESCAPE);
-
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, new SageTVKey(Keys.VK_ESCAPE));
-    }
-
-    static {
-        LONG_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, new SageTVKey(Keys.VK_ESCAPE));
+        // UI Long Presses
+        EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
     }
 
     private final MiniClient client;
@@ -68,16 +50,22 @@ public class MiniClientKeyListener implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
+        Map<Object, SageTVKey> LONG_KEYMAP;
+        Map<Object, SageTVKey> KEYMAP;
+
+        LONG_KEYMAP = EventRouter.NATIVE_UI_LONGPRESS_KEYMAP;
+        KEYMAP = EventRouter.NATIVE_UI_KEYMAP;
+
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            log.debug("DOWN KEYCODE: " + keyCode + "; " + event);
+            log.debug("KEYS: DOWN KEYCODE: " + keyCode + "; " + event + "; Video Playing: " + client.isVideoPlaying());
             if (LONG_KEYMAP.containsKey(keyCode)) {
                 if (event.isLongPress()) {
-                    log.debug("LONG PRESS KEYCODE: {}; {}", keyCode, event);
+                    log.debug("KEYS: LONG PRESS KEYCODE: {}; {}", keyCode, event);
                     if (LONG_KEYMAP.containsKey(keyCode)) {
                         skipKey = keyCode;
                         SageTVKey key = LONG_KEYMAP.get(keyCode);
                         if (key == null) {
-                            log.debug("Invalid Key Code: {}", keyCode);
+                            log.debug("KEYS: Invalid Key Code: {}", keyCode);
                             return false;
                         }
 
@@ -96,18 +84,16 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                 // After a Long Press
                 skipUp = false;
                 skipKey = -1;
+                log.debug("KEYS: Skipping Key {}", keyCode);
                 return true;
             }
-            log.debug("POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
-
             if (KEYMAP.containsKey(keyCode)) {
                 SageTVKey key = KEYMAP.get(keyCode);
-                if (key == null) {
-                    log.debug("Invalid Key Code: {}", keyCode);
-                    return false;
-                }
+                log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
                 client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
                 return true;
+            } else {
+                log.debug("KEYS: Unmapped Key Code: {}", event);
             }
         }
 
