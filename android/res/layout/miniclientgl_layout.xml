@@ -3,35 +3,19 @@
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:keepScreenOn="true">
 
-    <RelativeLayout
-        android:id="@+id/noVideoBackground"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:visibility="visible">
-
-        <ImageView
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitXY"
-            android:src="@drawable/background" />
-
-        <TextView
-            android:id="@+id/noVideoText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:padding="30dp"
-            android:text="If you see this, then there is no video :("
-            android:textSize="24sp" />
-    </RelativeLayout>
-
-    <SurfaceView
-        android:id="@+id/video_surface"
+    <FrameLayout
+        android:id="@+id/video_surface_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:background="@null"
-        android:visibility="visible" />
+        android:layout_height="match_parent">
+
+        <SurfaceView
+            android:id="@+id/video_surface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@null"
+            android:visibility="visible" />
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/surface"

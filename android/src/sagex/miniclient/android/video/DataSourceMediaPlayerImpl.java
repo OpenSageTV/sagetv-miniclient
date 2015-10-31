@@ -24,13 +24,12 @@ import sagex.miniclient.uibridge.Rectangle;
  * Created by seans on 06/10/15.
  */
 public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlugin {
-    private static final Logger log = LoggerFactory.getLogger(DataSourceMediaPlayerImpl.class);
+    protected static final Logger log = LoggerFactory.getLogger(DataSourceMediaPlayerImpl.class);
 
     private final static int VideoSizeChanged = -1;
 
     final MiniClientGDXActivity context;
 
-    DataSource dataSource = null;
     boolean pushMode;
     boolean playerReady;
 
@@ -56,9 +55,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     @Override
     public void free() {
         log.info("Freeing Media Player");
-        if (MiniClient.get().isUsingHttpBridge()) {
-            MiniClient.get().getHttpBridge().setDataSource(null);
-        }
+        MiniClient.get().getHttpBridge().closeSessions();
         releasePlayer();
     }
 
@@ -71,10 +68,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     public void load(byte b, byte b1, String s, final String urlString, Object o, boolean b2, int i) {
         // we need to use the http bridge
         SageTVHttpMediaServerBridge bridge = MiniClient.get().getHttpBridge();
-        dataSource = bridge.createDataSource(pushMode, urlString);
-        dataSource.setUri(urlString);
-
-        final String bridgeUrl = "http://localhost:9991/stream/" + dataSource.getFileName();
+        final String bridgeUrl = bridge.getVideoURI(urlString);
 
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
@@ -150,6 +144,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public long getLastFileReadPos() {
+        DataSource dataSource = getDataSource();
         if (dataSource instanceof PushBufferDataSource) {
             return ((PushBufferDataSource) dataSource).getBytesRead();
         } else {
@@ -180,6 +175,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException {
+        DataSource dataSource = getDataSource();
         //log.debug("pushData()");
         if (dataSource instanceof PushBufferDataSource) {
             ((PushBufferDataSource) dataSource).pushBytes(cmddata, bufDataOffset, buffSize);
@@ -189,13 +185,16 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     @Override
     public void flush() {
         log.debug("flush()");
-        dataSource.flush();
+        getDataSource().flush();
         // player.setPosition(player.getPosition()+1);
     }
 
     @Override
     public int getBufferLeft() {
-        return dataSource.bufferAvailable();
+        if (getDataSource() == null) {
+            return PushBufferDataSource.PIPE_SIZE;
+        }
+        return getDataSource().bufferAvailable();
     }
 
     @Override
@@ -250,8 +249,14 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     protected void releasePlayer() {
         log.debug("Releasing Player");
+        MiniClient.get().getHttpBridge().closeSessions();
         player = null;
         mVideoWidth = 0;
         mVideoHeight = 0;
+    }
+
+    protected DataSource getDataSource() {
+        //log.debug("get data source");
+        return MiniClient.get().getHttpBridge().getCurrentDataSource();
     }
 }

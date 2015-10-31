@@ -696,7 +696,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         //propVal = "PREMULTIPLY";
                         propVal = "POSTMULTIPLY";
                     } else if ("GFX_SCALING".equals(propName)) {
-                        propVal = "";
+                        propVal = "HARDWARE";
                     } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
                         if ("true".equals(client.getProperty("cache_images_on_disk", "true")))
                             propVal = "TRUE";
@@ -747,7 +747,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
-                        propVal = "IR"; // ,MOUSE,KEYBOARD
+                        propVal = "IR,KEYBOARD"; // ,MOUSE,KEYBOARD
                     } else if ("DISPLAY_OVERSCAN".equals(propName)) {
                         propVal = "0;0;1.0;1.0";
                     } else if ("FIRMWARE_VERSION".equals(propName)) {
@@ -814,7 +814,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // nature
                         // NOTE: If MPlayer is not being used, this should be
                         // changed...hopefully to a lower value like 0 :)
-                        propVal = "2000";
+                        propVal = "0";
                     } else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName)) {
                         if ("fixed".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic"))) {
                             // Build the fixed media format string
@@ -905,8 +905,8 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height);
                     } else if ("GFX_DRAWMODE".equals(propName)) {
                         //&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
-                        //propVal = "FULLSCREEN";
-                        propVal = "";
+                        propVal = "FULLSCREEN";
+                        //propVal = "";
 //                    } else if ("PUSH_BUFFER_LIMIT".equals(propName)) {
 //                        propVal = String.valueOf(PUSH_BUFFER_LIMIT);
                     }

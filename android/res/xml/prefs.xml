@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/media_player_preferences">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="use_vlc"
+            android:summary="@string/summary_use_vlc_preference"
+            android:title="@string/title_use_vlc_preference" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="use_hardware_acceleration"
+            android:summary="@string/summary_use_hardware_acceleration_preference"
+            android:title="@string/title_use_hardware_acceleration_preference" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/logging_preferences">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="use_log_to_sdcard"
+            android:summary="@string/summary_use_log_to_sdcard_acceleration_preference"
+            android:title="@string/title_use_log_to_sdcard_preference" />
+
+        <ListPreference
+            android:defaultValue="debug"
+            android:dialogTitle="@string/dialog_title_list_loglevels_preference"
+            android:entries="@array/entries_list_loglevels_preference"
+            android:entryValues="@array/entryvalues_list_loglevels_preference"
+            android:key="log_level"
+            android:summary="@string/summary_list_loglevels_preference"
+            android:title="@string/title_list_loglevels_preference" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -11,6 +11,7 @@ import java.util.Map;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.uibridge.Keys;
+import sagex.miniclient.uibridge.SageTVKey;
 
 /**
  * Created by seans on 26/09/15.
@@ -18,15 +19,27 @@ import sagex.miniclient.uibridge.Keys;
 public class MiniClientKeyListener implements View.OnKeyListener {
     private static final Logger log = LoggerFactory.getLogger(MiniClientKeyListener.class);
 
-    private static final Map<Integer, Integer> LONG_KEYMAP = new HashMap<>();
-    private static final Map<Integer, Integer> KEYMAP = new HashMap<>();
+    private static final Map<Integer, SageTVKey> LONG_KEYMAP = new HashMap<>();
+    private static final Map<Integer, SageTVKey> KEYMAP = new HashMap<>();
 
     static {
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, Keys.VK_UP);
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, Keys.VK_DOWN);
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, Keys.VK_LEFT);
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, Keys.VK_RIGHT);
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, Keys.VK_ENTER);
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, new SageTVKey(Keys.VK_UP));
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, new SageTVKey(Keys.VK_DOWN));
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, new SageTVKey(Keys.VK_LEFT));
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, new SageTVKey(Keys.VK_RIGHT));
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, new SageTVKey(Keys.VK_ENTER));
+
+        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PAUSE, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
+        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
+        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_Y, new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK));
+
+        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, new SageTVKey(Keys.VK_F, Keys.CTRL_MASK));
+        KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, new SageTVKey(Keys.VK_A, Keys.CTRL_MASK));
+
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_R1, new SageTVKey(Keys.VK_F, Keys.CTRL_MASK));
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_L1, new SageTVKey(Keys.VK_A, Keys.CTRL_MASK));
+
 
         //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_SELECT, Keys.VK_ENTER);
         //KEYMAP.put(KeyEvent.KEYCODE_BUTTON_START, Keys.VK_ENTER);
@@ -37,11 +50,11 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         // don't like that behaviour
         //KEYMAP.put(KeyEvent.KEYCODE_BACK, Keys.VK_ESCAPE);
 
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, Keys.VK_ESCAPE);
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, new SageTVKey(Keys.VK_ESCAPE));
     }
 
     static {
-        LONG_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, Keys.VK_ESCAPE);
+        LONG_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, new SageTVKey(Keys.VK_ESCAPE));
     }
 
     private final MiniClient client;
@@ -62,8 +75,13 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                     log.debug("LONG PRESS KEYCODE: {}; {}", keyCode, event);
                     if (LONG_KEYMAP.containsKey(keyCode)) {
                         skipKey = keyCode;
-                        keyCode = LONG_KEYMAP.get(keyCode);
-                        client.getCurrentConnection().postKeyEvent(keyCode, 0, (char) 0);
+                        SageTVKey key = LONG_KEYMAP.get(keyCode);
+                        if (key == null) {
+                            log.debug("Invalid Key Code: {}", keyCode);
+                            return false;
+                        }
+
+                        client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
                         skipUp = true;
                         return true;
                     }
@@ -83,8 +101,12 @@ public class MiniClientKeyListener implements View.OnKeyListener {
             log.debug("POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
 
             if (KEYMAP.containsKey(keyCode)) {
-                keyCode = KEYMAP.get(keyCode);
-                client.getCurrentConnection().postKeyEvent(keyCode, 0, (char) 0);
+                SageTVKey key = KEYMAP.get(keyCode);
+                if (key == null) {
+                    log.debug("Invalid Key Code: {}", keyCode);
+                    return false;
+                }
+                client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
                 return true;
             }
         }

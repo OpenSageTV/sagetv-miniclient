@@ -11,16 +11,17 @@ import java.io.InputStream;
  */
 public class DataSourceInputStream extends InputStream {
     private static final Logger log = LoggerFactory.getLogger(DataSourceInputStream.class);
+    // buffer for when a single byte read is called
     byte singleByteArray[] = new byte[1];
     DataSource dataSource = null;
-    private boolean closed = false;
-    private boolean opened = false;
-    private String uri;
+    long readOffset = 0;
+    int session = 0;
 
-    public DataSourceInputStream(DataSource source, String uri) {
-        log.debug("DataSourceInputStream(): {}", uri);
+    public DataSourceInputStream(DataSource source, long readOffset, int session) {
+        log.debug("[{}]:DataSourceInputStream()[{}]: {}", session, readOffset, source.getUri());
+        this.readOffset = readOffset;
         this.dataSource = source;
-        this.uri = uri;
+        this.session = session;
     }
 
     @Override
@@ -39,10 +40,8 @@ public class DataSourceInputStream extends InputStream {
 
     @Override
     public int read(byte[] buffer, int offset, int length) throws IOException {
-        checkOpened();
-        //log.debug("Read(): {}, {}", offset, length);
         try {
-            return dataSource.read(0, buffer, offset, length);
+            return dataSource.read(readOffset, buffer, offset, length);
         } catch (Throwable t) {
             log.error("READ FAILED", t);
             throw new IOException(t);
@@ -51,25 +50,20 @@ public class DataSourceInputStream extends InputStream {
 
     @Override
     public long skip(long byteCount) throws IOException {
-        checkOpened();
         return super.skip(byteCount);
     }
 
     @Override
     public void close() throws IOException {
-        if (!closed) {
-            log.debug("Close()");
-            dataSource.close();
-            closed = true;
-        }
+        log.debug("[{}]DataSourceInputStream.Close()", session);
+        dataSource.close();
     }
 
-    private void checkOpened() throws IOException {
-        if (!opened) {
-            log.debug("opning DataSource: {}", uri);
-            dataSource.open(uri);
-            opened = true;
-        }
+    public void setReadOffset(long readOffset) {
+        this.readOffset = readOffset;
     }
 
+    public DataSource getDataSource() {
+        return dataSource;
+    }
 }

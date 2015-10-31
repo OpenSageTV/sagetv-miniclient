@@ -5,6 +5,7 @@ import com.Ostermiller.util.CircularByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,20 +19,24 @@ public class PullBufferDataSource implements DataSource {
     private static final Logger log = LoggerFactory.getLogger(PullBufferDataSource.class);
 
     private static final int MAX_BUFFER = 32768;
+    private final int session;
     Socket remoteServer;
     byte buffer[] = new byte[MAX_BUFFER + 1];
     // pipes are used to hold and buffer the data
     CircularByteBuffer circularByteBuffer = null;
     InputStream in = null;
     OutputStream out = null;
+    boolean opened = false;
+    long size = -1;
     private String uri;
-    private InputStream remoteReader;
+    private DataInputStream remoteReader;
     private OutputStream remoteWriter;
     private long bytesRead = 0; // how many bytes have we requested
     private long bytesPos = 0; // total byte position that we send to sagetv
     private long bytesAvailable = 0; // how many bytes are left unread in our byte queue
 
-    public PullBufferDataSource() {
+    public PullBufferDataSource(int session) {
+        this.session = session;
     }
 
     public String getUri() {
@@ -44,7 +49,10 @@ public class PullBufferDataSource implements DataSource {
     }
 
     public long open(String uri) throws IOException {
-        log.debug("Open(): {}", uri);
+        if (opened) {
+            throw new IOException("Attempting to re-open an OPENED datasource for uri " + uri);
+        }
+        log.debug("[{}]:Open(): {}", session, uri);
         try {
             String host = getHost(uri);
             this.uri = uri;
@@ -58,54 +66,74 @@ public class PullBufferDataSource implements DataSource {
 
             remoteServer = new Socket();
             remoteServer.connect(new java.net.InetSocketAddress(host, 7818), 2000);
-            this.remoteReader = remoteServer.getInputStream();
+            this.remoteReader = new DataInputStream(remoteServer.getInputStream());
             this.remoteWriter = remoteServer.getOutputStream();
 
-            sendStringCommand("OPEN " + getPath(uri));
+            sendStringCommandWithReply("OPEN " + getPath(uri));
+            String strSize = sendStringCommandWithReply("SIZE " + getPath(uri));
+            if (strSize != null) {
+                try {
+                    size = Long.parseLong(strSize);
+                } catch (Throwable t) {
+                    log.error("[{}]:Failed to get Size", session, t);
+                    size = 289710402;
+                }
+            }
+
+            opened = true;
         } catch (Throwable t) {
-            log.error("Unable to open: {}", uri, t);
+            log.error("[{}]:Unable to open: {}", session, uri, t);
         }
-        return -1;
+
+        return size;
     }
 
     private String getPath(String uri) {
         if (uri == null) return null;
         String parts[] = uri.split("//");
-        log.debug("PATH: {}({})", uri, parts);
+        log.debug("[{}]:PATH: {}({})", session, uri, parts);
         return "/" + parts[2];
     }
 
     private String getHost(String uri) {
         if (uri == null) return null;
         String parts[] = uri.split("/");
-        log.debug("HOST: {}({})", uri, parts);
+        log.debug("[{}]:HOST: {}({})", session, uri, parts);
         return parts[2];
     }
 
     public void close() {
-        log.debug("Close() from", new Exception("Pull is being closed"));
+        log.debug("[{}]:Close()", session);
         try {
             if (remoteServer != null) remoteServer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         try {
             circularByteBuffer.clear();
             if (in != null) in.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         try {
             if (out != null) out.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
+        opened = false;
     }
 
     @Override
     public void flush() {
-        circularByteBuffer.clear();
+        log.debug("[{}]:Flushing()", session);
+        if (circularByteBuffer != null) {
+            circularByteBuffer.clear();
+        }
+        size = 0;
+        bytesPos = 0;
+        bytesRead = 0;
+        bytesAvailable = 0;
     }
 
     @Override
@@ -119,13 +147,28 @@ public class PullBufferDataSource implements DataSource {
 
     @Override
     public int bufferAvailable() {
+        if (circularByteBuffer == null) return MAX_BUFFER;
         return circularByteBuffer.getSpaceLeft();
     }
 
-    public int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException {
-        log.debug("READ: offset: {}, len: {}, bufferSize: {}", offset, len, bytes.length);
+    @Override
+    public long size() {
+        return size;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return opened;
+    }
+
+    public int read(long readOffset, byte[] bytes, int offset, int len) throws IOException {
+        if (!opened) {
+            throw new IOException("read() called on DataSource that is not opened: " + uri);
+        }
+
+        // log.debug("[{}]:READ: len: {}", session, len);
         if (bytesAvailable < len) {
-            fillBuffer(MAX_BUFFER);
+            fillBuffer(readOffset, MAX_BUFFER);
         }
         // reduce out buffer count
         bytesAvailable -= len;
@@ -134,9 +177,9 @@ public class PullBufferDataSource implements DataSource {
         return in.read(bytes, offset, len);
     }
 
-    private int fillBuffer(int len) throws IOException {
-        String cmd = ("READ " + String.valueOf(bytesPos) + " " + String.valueOf(len));
-        //log.debug("fillBuffer(): {}", cmd);
+    private int fillBuffer(long readOffset, int len) throws IOException {
+        String cmd = ("READ " + String.valueOf(readOffset + bytesPos) + " " + String.valueOf(len));
+        // log.debug("[{}]:fillBuffer(): {}", session, cmd);
         remoteWriter.write((cmd + "\r\n").getBytes());
         remoteWriter.flush();
         int bytes = readBuffer(len);
@@ -157,7 +200,7 @@ public class PullBufferDataSource implements DataSource {
             read = remoteReader.read(buffer, total, len - total);
             if (read == -1) {
                 if (total == 0) {
-                    log.warn("End of File reached for {}", uri);
+                    log.warn("[{}]:End of File reached for {}", session, uri);
                     return -1;
                 } else {
                     return total;
@@ -169,14 +212,30 @@ public class PullBufferDataSource implements DataSource {
         return total;
     }
 
-    private void sendStringCommand(String cmd) throws IOException {
+//    private void sendStringCommand(String cmd) throws IOException {
+//        remoteWriter.write((cmd + "\r\n").getBytes());
+//        remoteWriter.flush();
+//        int read = readBuffer(4);
+//        String val = null;
+//        if (read > 0) {
+//            val = new String(buffer, 0, read);
+//        }
+//        log.debug("Send Command: {}, Got Bytes {} Back with data[{}]", cmd, read, val);
+//    }
+
+    private String sendStringCommandWithReply(String cmd) throws IOException {
         remoteWriter.write((cmd + "\r\n").getBytes());
         remoteWriter.flush();
-        int read = readBuffer(4);
-        String val = null;
-        if (read > 0) {
-            val = new String(buffer, 0, read);
+        byte buf[] = new byte[1024];
+        int total = 0;
+        while (true) {
+            byte b = remoteReader.readByte();
+            if (b == '\r') continue;
+            if (b == '\n') break;
+            buf[total++] = b;
         }
-        log.debug("Send Command: {}, Got Bytes {} Back with data[{}]", cmd, read, val);
+        String val = new String(buf, 0, total);
+        log.debug("[{}]:Send Command: {}, Got Bytes {} Back with data [{}]", session, cmd, total, val);
+        return val;
     }
 }
