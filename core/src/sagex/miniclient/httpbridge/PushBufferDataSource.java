@@ -95,7 +95,7 @@ public class PushBufferDataSource implements DataSource {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }
         // streamOffset is not used for push
-        log.debug("[{}]:[{}]PB READ: {}", session, Thread.currentThread().getName(), len);
+        // log.debug("[{}]:[{}]PB READ: {}", session, Thread.currentThread().getName(), len);
         int read = in.read(bytes, offset, len);
         if (read >= 0) {
             bytesRead += read;
