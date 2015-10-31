@@ -159,6 +159,7 @@ public class MediaCmd {
             case MEDIACMD_DEINIT:
                 writeInt(1, retbuf, 0);
                 close();
+                client.setVideoIsPlaying(false);
                 return 4;
             case MEDIACMD_OPENURL:
                 int strLen = readInt(0, cmddata);
@@ -204,6 +205,10 @@ public class MediaCmd {
                     }
                 }
                 writeInt(1, retbuf, 0);
+
+                // tell the client that we are playing a video
+                client.setVideoIsPlaying(true);
+
                 return 4;
             case MEDIACMD_GETMEDIATIME:
                 if (playa == null)
@@ -230,18 +235,21 @@ public class MediaCmd {
                 if (playa == null)
                     return 4;
                 playa.stop();
+                client.setVideoIsPlaying(false);
                 return 4;
             case MEDIACMD_PAUSE:
                 writeInt(1, retbuf, 0);
                 if (playa == null)
                     return 4;
                 playa.pause();
+                client.setVideoIsPlaying(false);
                 return 4;
             case MEDIACMD_PLAY:
                 writeInt(1, retbuf, 0);
                 if (playa == null)
                     return 4;
                 playa.play();
+                client.setVideoIsPlaying(true);
                 return 4;
             case MEDIACMD_FLUSH:
                 writeInt(1, retbuf, 0);

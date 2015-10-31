@@ -4,11 +4,17 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.videolan.libvlc.util.VLCUtil;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Created by seans on 12/10/15.
@@ -27,23 +33,35 @@ public class MiniclientApplication extends Application {
         super.onCreate();
 
         prefs = new Prefs(getPreferences());
-        if (!VLCUtil.hasCompatibleCPU(this) || VLCUtil.getMachineSpecs().hasX86) {
-            // we don't have x86 for vlc, yet.
+        try {
+            if (!VLCUtil.hasCompatibleCPU(this) || VLCUtil.getMachineSpecs().hasX86) {
+                // we don't have x86 for vlc, yet.
+                prefs.setBoolean(Prefs.Key.use_vlc, false);
+            }
+        } catch (Throwable t) {
+            log.error("Failed to determine VLC support");
+            // no vlc support
             prefs.setBoolean(Prefs.Key.use_vlc, false);
         }
 
-        if (getResources().getBoolean(R.bool.istv)) {
-            // log to sdcard on TV
-            prefs.setBoolean(Prefs.Key.use_log_to_sdcard, true);
+        // by default don't use the sdcard
+        try {
+            AppUtil.initLogging(this, prefs.getBoolean(Prefs.Key.use_log_to_sdcard, false));
+            AppUtil.setLogLevel(prefs.getString(Prefs.Key.log_level, "debug"));
+        } catch (Throwable t) {
+            log.warn("Failed to configure logging", t);
         }
 
-        // by default don't use the sdcard
-        AppUtil.initLogging(this, prefs.getBoolean(Prefs.Key.use_log_to_sdcard, false));
-        AppUtil.setLogLevel(prefs.getString(Prefs.Key.log_level, "debug"));
-
         log.debug("Creating MiniClient");
-        Intent i = new Intent(getBaseContext(), MiniclientService.class);
-        startService(i);
+        log.info("------ Begin CPU INFO -----");
+        log.info(getInfo());
+        log.info("------- End CPU INFO ------");
+        try {
+            Intent i = new Intent(getBaseContext(), MiniclientService.class);
+            startService(i);
+        } catch (Throwable t) {
+            log.error("Failed to start MiniClient service", t);
+        }
     }
 
     @Override
@@ -65,5 +83,25 @@ public class MiniclientApplication extends Application {
 
     public Prefs getPrefs() {
         return prefs;
+    }
+
+    private String getInfo() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("abi: ").append(Build.CPU_ABI).append("\n");
+        if (new File("/proc/cpuinfo").exists()) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(new File("/proc/cpuinfo")));
+                String aLine;
+                while ((aLine = br.readLine()) != null) {
+                    sb.append(aLine + "\n");
+                }
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException e) {
+                log.warn("getInfo() failed", e);
+            }
+        }
+        return sb.toString();
     }
 }

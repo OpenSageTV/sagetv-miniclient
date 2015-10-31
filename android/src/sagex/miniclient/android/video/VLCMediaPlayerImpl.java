@@ -42,6 +42,14 @@ public class VLCMediaPlayerImpl extends DataSourceMediaPlayerImpl<MediaPlayer> {
     }
 
     @Override
+    public void seek(long maxValue) {
+        log.debug("SEEK: {}", maxValue);
+        if (player != null) {
+            player.setPosition(maxValue);
+        }
+    }
+
+    @Override
     public void play() {
         super.play();
         if (!player.isPlaying()) {

@@ -23,11 +23,15 @@ public class MiniclientService extends Service {
     public void onCreate() {
         super.onCreate();
         log.debug("Starting MiniClient Service");
-        MiniClient client = MiniClient.get();
-        client.init(getFilesDir(), getCacheDir());
-        if (client.isUsingHttpBridge()) {
-            // start the http bridge
-            client.getHttpBridge();
+        try {
+            MiniClient client = MiniClient.get();
+            client.init(getFilesDir(), getCacheDir());
+            if (client.isUsingHttpBridge()) {
+                // start the http bridge
+                client.getHttpBridge();
+            }
+        } catch (Throwable t) {
+            log.error("Failed to start miniclient service", t);
         }
     }
 
