@@ -18,6 +18,7 @@ import sagex.miniclient.ServerInfo;
  */
 public class ServersAdapter extends BaseAdapter {
     public static String NEW_SERVER_ID = "New Server";
+    public static String PREFERENCES_ID = "Preferences";
     private final Context context;
     private final LayoutInflater layoutInflater;
     List<ServerInfo> items = new ArrayList<>();
@@ -25,7 +26,13 @@ public class ServersAdapter extends BaseAdapter {
     public ServersAdapter(Context ctx) {
         this.context = ctx;
         this.layoutInflater = LayoutInflater.from(context);
+
         ServerInfo newServer = new ServerInfo();
+        newServer.name = PREFERENCES_ID;
+        newServer.address = "Preferences";
+        items.add(newServer);
+
+        newServer = new ServerInfo();
         newServer.name = NEW_SERVER_ID;
         newServer.address = "Add New Server";
         items.add(newServer);

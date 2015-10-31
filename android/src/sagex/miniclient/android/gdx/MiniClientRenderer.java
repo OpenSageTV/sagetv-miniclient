@@ -35,6 +35,8 @@ import java.util.List;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.Prefs;
+import sagex.miniclient.android.video.IJKMediaPlayerImpl;
 import sagex.miniclient.android.video.VLCMediaPlayerImpl;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
@@ -297,21 +299,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 batch.end();
 
                 camera.update();
-//                shapeRenderer.setProjectionMatrix(camera.combined);
-//                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-//                shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
-//                shapeRenderer.end();
-
-//                Gdx.gl.glEnable(GL10.GL_BLEND);
-//                Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
+                // clear rect full screen calls are taking long time... so clear full screen always
+                // shapeRenderer.rect(0, Y(0, fullScreenSize.height), fullScreenSize.width, fullScreenSize.height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
                 shapeRenderer.end();
-
-//                Gdx.gl.glDisable(GL10.GL_BLEND);
-
                 batch.begin();
             }
         });
@@ -652,8 +645,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (player != null) {
             player.free();
         }
-        player = new VLCMediaPlayerImpl(activity);
-        //player = new IJKMediaPlayerImpl(activity);
+
+        if (Prefs.getBoolean(activity, Prefs.Key.use_vlc, true)) {
+            log.debug("Using VLC Player");
+            player = new VLCMediaPlayerImpl(activity);
+        } else {
+            log.debug("Using IJK Player");
+            player = new IJKMediaPlayerImpl(activity);
+        }
         return player;
     }
 

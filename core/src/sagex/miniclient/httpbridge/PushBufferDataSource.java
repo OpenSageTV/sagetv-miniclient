@@ -15,6 +15,7 @@ import java.io.OutputStream;
 public class PushBufferDataSource implements DataSource {
     public static final int PIPE_SIZE = 16 * 1024 * 1024;
     private static final Logger log = LoggerFactory.getLogger(PushBufferDataSource.class);
+    private final int session;
 
     CircularByteBuffer circularByteBuffer = null;
 
@@ -22,8 +23,10 @@ public class PushBufferDataSource implements DataSource {
     OutputStream out = null;
     private String uri;
     private long bytesRead = 0;
+    private boolean opened = false;
 
-    public PushBufferDataSource() {
+    public PushBufferDataSource(int session) {
+        this.session = session;
         circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
         in = circularByteBuffer.getInputStream();
         out = circularByteBuffer.getOutputStream();
@@ -31,15 +34,19 @@ public class PushBufferDataSource implements DataSource {
 
     @Override
     public long open(String uri) throws IOException {
+        // push:f=MPEG2-TS;dur=1851466;br=2500000;
+        // [bf=vid;f=H.264;index=0;main=yes;tag=1011;fps=59.94006;fpsn=60000;fpsd=1001;ar=1.777778;arn=16;ard=9;w=1280;h=720;]
+        // [bf=aud;f=AAC;index=1;main=yes;tag=1100;sr=48000;ch=2;at=ADTS-MPEG2;]
         this.uri = uri;
-        log.debug("Open Called: {}", uri);
+        log.debug("[{}]:Open Called: {}", session, uri);
         bytesRead = 0;
+        opened = true;
         return -1;
     }
 
     @Override
     public void close() {
-        log.debug("Close on PushBufferDataSource was called", new Exception("**pushbuffer closed**"));
+        log.debug("[{}]: Close on PushBufferDataSource was called", session);
         try {
             circularByteBuffer.clear();
             out.close();
@@ -53,6 +60,7 @@ public class PushBufferDataSource implements DataSource {
 
         in = null;
         out = null;
+        opened = false;
     }
 
     @Override
@@ -72,9 +80,22 @@ public class PushBufferDataSource implements DataSource {
     }
 
     @Override
-    public int read(long streamOffset, byte[] bytes, int offset, int len) throws IOException {
+    public long size() {
+        return -1;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return opened;
+    }
+
+    @Override
+    public int read(long readOffset, byte[] bytes, int offset, int len) throws IOException {
+        if (!opened) {
+            throw new IOException("read() called on DataSource that is not opened: " + uri);
+        }
         // streamOffset is not used for push
-        //log.debug("[{}]PB READ: {}", Thread.currentThread().getName(), len, new Exception());
+        log.debug("[{}]:[{}]PB READ: {}", session, Thread.currentThread().getName(), len);
         int read = in.read(bytes, offset, len);
         if (read >= 0) {
             bytesRead += read;
@@ -83,7 +104,7 @@ public class PushBufferDataSource implements DataSource {
     }
 
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
-        //log.debug("PB PUSH: {}", len);
+        // log.debug("[{}]:[{}]PB PUSH: {}", session, Thread.currentThread().getName(), len);
         out.write(bytes, offset, len);
     }
 

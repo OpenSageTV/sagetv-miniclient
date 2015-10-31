@@ -100,6 +100,9 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             AddServerFragment f = AddServerFragment.newInstance("My Server", "");
             f.setRetainInstance(true);
             f.show(getFragmentManager(), "addserver");
+        } else if (ServersAdapter.PREFERENCES_ID.equals(si.name)) {
+            Intent i = new Intent(getBaseContext(), SettingsActivity.class);
+            startActivity(i);
         } else {
             // connect to server
             Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);

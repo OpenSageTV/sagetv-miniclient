@@ -505,11 +505,11 @@ public class Keys {
      * @since 1.2
      */
     public static final int VK_UNDERSCORE = 0x020B;
+
     /**
      * Constant for the Microsoft Windows "Windows" key.
      * It is used for both the left and right version of the key.
      *
-     * @see #getKeyLocation()
      * @since 1.5
      */
     public static final int VK_WINDOWS = 0x020C;
@@ -712,6 +712,99 @@ public class Keys {
      */
     public static final char CHAR_UNDEFINED = 0xFFFF;
     /**
+     * This flag indicates that the Shift key was down when the event
+     * occurred.
+     */
+    public static final int SHIFT_MASK = 1 << 0;
+
+
+    /**
+     * Input Modifiers
+     */
+    /**
+     * This flag indicates that the Control key was down when the event
+     * occurred.
+     */
+    public static final int CTRL_MASK = 1 << 1;
+    /**
+     * This flag indicates that the Meta key was down when the event
+     * occurred. For mouse events, this flag indicates that the right
+     * button was pressed or released.
+     */
+    public static final int META_MASK = 1 << 2;
+    /**
+     * This flag indicates that the Alt key was down when
+     * the event occurred. For mouse events, this flag indicates that the
+     * middle mouse button was pressed or released.
+     */
+    public static final int ALT_MASK = 1 << 3;
+    /**
+     * The AltGraph key modifier constant.
+     */
+    public static final int ALT_GRAPH_MASK = 1 << 5;
+    /**
+     * The Mouse Button1 modifier constant.
+     * It is recommended that BUTTON1_DOWN_MASK be used instead.
+     */
+    public static final int BUTTON1_MASK = 1 << 4;
+    /**
+     * The Shift key extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int SHIFT_DOWN_MASK = 1 << 6;
+    /**
+     * The Control key extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int CTRL_DOWN_MASK = 1 << 7;
+    /**
+     * The Meta key extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int META_DOWN_MASK = 1 << 8;
+    /**
+     * The Alt key extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int ALT_DOWN_MASK = 1 << 9;
+    /**
+     * The Mouse Button1 extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int BUTTON1_DOWN_MASK = 1 << 10;
+    /**
+     * The Mouse Button2 extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int BUTTON2_DOWN_MASK = 1 << 11;
+    /**
+     * The Mouse Button3 extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int BUTTON3_DOWN_MASK = 1 << 12;
+    /**
+     * The AltGraph key extended modifier constant.
+     *
+     * @since 1.4
+     */
+    public static final int ALT_GRAPH_DOWN_MASK = 1 << 13;
+    static final int FIRST_HIGH_BIT = 1 << 14;
+
+    // the constant below MUST be updated if any extra modifier
+    // bits are to be added!
+    // in fact, it is undesirable to add modifier bits
+    // to the same field as this may break applications
+    // see bug# 5066958
+    static final int JDK_1_3_MODIFIERS = SHIFT_DOWN_MASK - 1;
+    static final int HIGH_MODIFIERS = ~(FIRST_HIGH_BIT - 1);
+    /**
      * Stores the state of native event dispatching system
      * - true, if when the event was created event proxying
      * mechanism was active
@@ -720,4 +813,5 @@ public class Keys {
      * events when proxy is active
      */
     private boolean isProxyActive = false;
+
 }

@@ -142,7 +142,6 @@ public class MediaCmd {
 
     public int ExecuteMediaCommand(int cmd, int len, byte[] cmddata, byte[] retbuf) {
         // TODO verify sizes...
-        //if (cmd != MEDIACMD_PUSHBUFFER)
         if (cmd != MEDIACMD_PUSHBUFFER)
             log.debug("Execute media command '{}[{}]'", cmd, CMDMAP.get(cmd));
         switch (cmd) {
@@ -293,7 +292,7 @@ public class MediaCmd {
                 else {
                     //rv = (int)(PushBufferDataSource.PIPE_SIZE - (bufferFilePushedBytes - playa.getLastFileReadPos()));
                     rv = playa.getBufferLeft();
-                    log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "; Last Read: " + playa.getLastFileReadPos());
+                    // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "; Last Read: " + playa.getLastFileReadPos());
                 }
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {

@@ -49,11 +49,21 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
             log.debug("FLING: " + velocityX + "," + velocityY + "; e1Pointers: " + e1.getPointerCount() + "; e2Pointers: " + e2.getPointerCount());
         }
         if (velocityX > flingThreshold) {
-            if (logTouch) log.debug("Fling Right");
-            client.getCurrentConnection().postKeyEvent(Keys.VK_RIGHT, 0, (char) 0);
+            if (multi() > 2) {
+                if (logTouch) log.debug("Fling Right: Skip Forward");
+                client.getCurrentConnection().postKeyEvent(Keys.VK_F8, Keys.CTRL_MASK, (char) 0);
+            } else {
+                if (logTouch) log.debug("Fling Right");
+                client.getCurrentConnection().postKeyEvent(Keys.VK_RIGHT, 0, (char) 0);
+            }
         } else if (velocityX < -flingThreshold) {
-            if (logTouch) log.debug("Fling Left");
-            client.getCurrentConnection().postKeyEvent(Keys.VK_LEFT, 0, (char) 0);
+            if (multi() > 2) {
+                if (logTouch) log.debug("Fling Left: Skip Back");
+                client.getCurrentConnection().postKeyEvent(Keys.VK_F7, Keys.CTRL_MASK, (char) 0);
+            } else {
+                if (logTouch) log.debug("Fling Left");
+                client.getCurrentConnection().postKeyEvent(Keys.VK_LEFT, 0, (char) 0);
+            }
         } else if (velocityY > flingThreshold) {
             if (multi() > 2) {
                 if (logTouch) log.debug("Fling Show Options");

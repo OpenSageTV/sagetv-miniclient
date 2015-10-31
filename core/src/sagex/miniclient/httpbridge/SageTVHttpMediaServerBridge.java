@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fi.iki.elonen.NanoHTTPD;
 import sagex.miniclient.MiniClient;
@@ -20,8 +23,9 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
 
     private final MiniClient client;
 
-    private DataSource dataSource;
-    private InputStream inputStream;
+    private AtomicInteger sessions = new AtomicInteger();
+    private Map<Integer, DataSourceInputStream> streams = new HashMap<Integer, DataSourceInputStream>();
+    private DataSource currentDataSource;
 
     public SageTVHttpMediaServerBridge(MiniClient client, int port) {
         super(port);
@@ -31,76 +35,109 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
-        log.debug("Request: " + session.getUri());
-        if (dataSource instanceof PushBufferDataSource && hasRangeHeader(session)) {
-            // return the last stream
-            return NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", inputStream);
-        }
-        if (session.getMethod() == Method.GET) {
-            return NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", getStreamVideo());
-            //return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "video/mp2t", getStreamVideo(), -1);
-        } else if (session.getMethod() == Method.HEAD) {
-            log.error("Invalid Method: " + session.getMethod());
-            return NanoHTTPD.newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, "text/plain", "Method Not Allowed: " + session.getMethod());
-        } else {
-            log.error("Invalid Method: " + session.getMethod());
-            return NanoHTTPD.newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, "text/plain", "Method Not Allowed: " + session.getMethod());
-        }
-    }
+        int sess = sessions.incrementAndGet();
 
-    private boolean hasRangeHeader(IHTTPSession session) {
-        String range = session.getHeaders().get("Range");
-        if (range != null) {
-            log.debug("We Have a Range Header {}", range);
-            return true;
-        }
-        return false;
-    }
-
-    private InputStream getStreamVideo() {
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (log.isDebugEnabled()) {
+            log.debug("[{}]: Request[{}]: {}", sess, session.getMethod(), session.getUri());
+            for (Map.Entry<String, String> h : session.getHeaders().entrySet()) {
+                log.debug("[{}]  -- HEADER: {}='{}'", sess, h.getKey(), h.getValue());
             }
         }
-        inputStream = new DataSourceInputStream(dataSource, dataSource.getUri());
-//        try {
-//            inputStream = new FileInputStream(new File("/sdcard/Movies/TheBigBangTheory-TheFortificationImplementation-13289053-0.ts"));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-        return inputStream;
-    }
 
-    public void setDataSource(DataSource dataSource) {
-        log.debug("Setting a new DataSource");
-        closeDataSource();
-        this.dataSource = dataSource;
-    }
-
-    public void closeDataSource() {
-        if (dataSource != null) {
-            log.debug("Terminating old datasource");
-            dataSource.close();
-        }
         try {
-            if (inputStream != null) inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            DataSource dataSource = null;
+            // each request should contain a URL and a sessionid
+            String url = session.getParms().get("url");
+            // we need to create the datasource and stream
+            if (url.startsWith("stv:")) {
+                dataSource = new PullBufferDataSource(sess);
+            } else {
+                dataSource = new PushBufferDataSource(sess);
+            }
+            dataSource.setUri(url);
+            dataSource.open(url);
+
+            // cache it so we can quickly find it
+            currentDataSource = dataSource;
+
+            DataSourceInputStream dis = new DataSourceInputStream(dataSource, 0, sess); // set the offset later
+            streams.put(sess, dis);
+
+            if (session.getMethod() == Method.GET) {
+                if (dataSource instanceof PushBufferDataSource) {
+                    // use chunked for PushBuffer since we don't know the size
+                    return NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", dis);
+                } else {
+                    // it's a pull
+                    long ranges[] = getRange(session);
+                    log.debug("[{}]:PullBufferDataSource: Setting Range: {}-{}", sess, ranges[0], ranges[1]);
+                    dis.setReadOffset(ranges[0]);
+                    Response resp = NanoHTTPD.newFixedLengthResponse(Response.Status.PARTIAL_CONTENT, "video/mp4", dis, dis.getDataSource().size() - ranges[0]);
+                    resp.addHeader("Accept-Ranges", "bytes");
+                    return resp;
+                }
+            } else {
+                log.error("[" + sess + "]:Invalid Method: " + session.getMethod(), new Exception("METHOD NOT SUPPORTED: " + session.getMethod()));
+                return NanoHTTPD.newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, "text/plain", "Method Not Allowed: " + session.getMethod());
+            }
+        } catch (Throwable t) {
+            log.error("[" + sess + "]:Request Failed", t);
+            return NanoHTTPD.newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "text/plain", "Internal Error: " + t.getMessage());
         }
-        this.dataSource = null;
     }
 
-    public DataSource createDataSource(boolean pushMode, String uri) {
-        if (pushMode) {
-            dataSource = new PushBufferDataSource();
-            dataSource.setUri(uri);
-        } else {
-            dataSource = new PullBufferDataSource();
-            dataSource.setUri(uri);
+    long[] getRange(IHTTPSession session) {
+        long ret[] = new long[2];
+        String range = session.getHeaders().get("range");
+        if (range != null) {
+            log.debug("[{}]:We Have a Range Header {}", sessions.get(), range);
+            String bytes = range.split("=")[1];
+            String parts[] = bytes.split("-");
+            if (parts[0].trim().length() == 0) {
+                ret[0] = 0;
+            } else {
+                ret[0] = Long.parseLong(parts[0]);
+            }
+            if (parts.length > 1) {
+                if (parts[1].trim().length() == 0) {
+                    ret[1] = 0;
+                } else {
+                    ret[1] = Long.parseLong(parts[1]);
+                }
+            }
         }
-        return dataSource;
+        return ret;
+    }
+
+    public synchronized void closeSessions() {
+        log.debug("[{}]:Closing {} Sessions", sessions.get(), streams.size());
+        for (DataSourceInputStream dis : streams.values()) {
+            try {
+                dis.close();
+            } catch (IOException e) {
+                log.debug("[{}]:Failed to close session", sessions.get(), e);
+            }
+        }
+        streams.clear();
+    }
+
+    public String getVideoURI(String sageUri) {
+        String bridgeUrl = "http://localhost:9991/stream";
+        if (sageUri.startsWith("stv:")) {
+            bridgeUrl += "/pull";
+        } else {
+            bridgeUrl += "/push";
+        }
+        bridgeUrl += "?url=";
+        try {
+            bridgeUrl += (URLEncoder.encode(sageUri, "UTF-8"));
+        } catch (Throwable t) {
+            bridgeUrl += (URLEncoder.encode(sageUri));
+        }
+        return bridgeUrl;
+    }
+
+    public DataSource getCurrentDataSource() {
+        return currentDataSource;
     }
 }

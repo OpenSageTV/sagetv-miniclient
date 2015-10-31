@@ -32,6 +32,9 @@ import org.videolan.libvlc.util.VLCUtil;
 
 import java.util.ArrayList;
 
+import sagex.miniclient.android.AppUtil;
+import sagex.miniclient.android.Prefs;
+
 
 public class VLCOptions {
     public final static int MEDIA_VIDEO = 0x01;
@@ -67,7 +70,7 @@ public class VLCOptions {
         } catch (NumberFormatException ignored) {
         }
 
-        int networkCaching = pref.getInt("network_caching_value", 2000);
+        int networkCaching = pref.getInt("network_caching_value", 0);
         if (networkCaching > 60000)
             networkCaching = 60000;
         else if (networkCaching < 0)
@@ -139,16 +142,18 @@ public class VLCOptions {
         boolean noHardwareAcceleration = (flags & MEDIA_NO_HWACCEL) != 0;
         boolean noVideo = (flags & MEDIA_VIDEO) == 0;
         final boolean paused = (flags & MEDIA_PAUSED) != 0;
-        // int hardwareAcceleration = HW_ACCELERATION_DISABLED;
+        //int hardwareAcceleration = HW_ACCELERATION_DISABLED;
         int hardwareAcceleration = HW_ACCELERATION_FULL;
 
-//        if (!noHardwareAcceleration) {
-//            try {
-//                final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-//                hardwareAcceleration = Integer.parseInt(pref.getString("hardware_acceleration", "-1"));
-//            } catch (NumberFormatException ignored) {}
-//
-//        }
+        try {
+            final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+            if (!pref.getBoolean(Prefs.Key.use_hardware_acceleration, true)) {
+                AppUtil.log.warn("Hardware Acceleration is DISABLED in the preferences.");
+                hardwareAcceleration = HW_ACCELERATION_DISABLED;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
         if (hardwareAcceleration == HW_ACCELERATION_DISABLED)
             media.setHWDecoderEnabled(false, false);
         else if (hardwareAcceleration == HW_ACCELERATION_FULL || hardwareAcceleration == HW_ACCELERATION_DECODING) {
