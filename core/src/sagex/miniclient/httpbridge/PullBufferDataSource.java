@@ -70,13 +70,13 @@ public class PullBufferDataSource implements DataSource {
             this.remoteWriter = remoteServer.getOutputStream();
 
             sendStringCommandWithReply("OPEN " + getPath(uri));
-            String strSize = sendStringCommandWithReply("SIZE " + getPath(uri));
+            String strSize = sendStringCommandWithReply("SIZE");
             if (strSize != null) {
                 try {
-                    size = Long.parseLong(strSize);
+                    size = Long.parseLong(strSize.split(" ")[0]);
                 } catch (Throwable t) {
                     log.error("[{}]:Failed to get Size", session, t);
-                    size = 289710402;
+                    size = -1;
                 }
             }
 
@@ -105,7 +105,13 @@ public class PullBufferDataSource implements DataSource {
     public void close() {
         log.debug("[{}]:Close()", session);
         try {
-            if (remoteServer != null) remoteServer.close();
+            if (remoteServer != null) {
+                try {
+                    sendStringCommandWithReply("CLOSE");
+                } catch (Throwable t) {
+                }
+                remoteServer.close();
+            }
         } catch (IOException e) {
             //e.printStackTrace();
         }
