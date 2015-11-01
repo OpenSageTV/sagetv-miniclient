@@ -54,11 +54,11 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             } else {
                 dataSource = new PushBufferDataSource(sess);
             }
-            dataSource.setUri(url);
-            dataSource.open(url);
-
             // cache it so we can quickly find it
             currentDataSource = dataSource;
+
+            dataSource.setUri(url);
+            dataSource.open(url);
 
             DataSourceInputStream dis = new DataSourceInputStream(dataSource, 0, sess); // set the offset later
             streams.put(sess, dis);
@@ -66,7 +66,8 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             if (session.getMethod() == Method.GET) {
                 if (dataSource instanceof PushBufferDataSource) {
                     // use chunked for PushBuffer since we don't know the size
-                    return NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", dis);
+                    Response resp = NanoHTTPD.newChunkedResponse(Response.Status.PARTIAL_CONTENT, "video/mp2t", dis);
+                    return resp;
                 } else {
                     // it's a pull
                     long ranges[] = getRange(session);
@@ -119,6 +120,7 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             }
         }
         streams.clear();
+        currentDataSource = null;
     }
 
     public String getVideoURI(String sageUri) {
@@ -138,6 +140,30 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
     }
 
     public DataSource getCurrentDataSource() {
+        if (currentDataSource == null) {
+            log.warn("Something is accessing the datasource, but we don't have, let's wait for 1 second");
+        }
+        long et = System.currentTimeMillis() + 1000;
+        while (currentDataSource == null && System.currentTimeMillis() < et) {
+            try {
+                log.debug("Waiting for datasource...");
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.interrupted();
+            }
+        }
+        if (currentDataSource == null) {
+            throw new RuntimeException("datasource was null... something went wrong");
+        }
         return currentDataSource;
+    }
+
+    public boolean hasDataSource() {
+        return currentDataSource != null;
+    }
+
+    public void removeSession(int session) {
+        streams.remove(session);
     }
 }

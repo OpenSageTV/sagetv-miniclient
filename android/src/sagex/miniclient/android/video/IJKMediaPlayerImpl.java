@@ -2,7 +2,9 @@ package sagex.miniclient.android.video;
 
 import android.widget.Toast;
 
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.httpbridge.PullBufferDataSource;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
@@ -17,6 +19,7 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
 
     @Override
     public long getMediaTimeMillis() {
+        if (player == null) return 0;
         return player.getCurrentPosition();
     }
 
@@ -44,8 +47,10 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
     @Override
     public void flush() {
         super.flush();
-        player.seekTo(Long.MAX_VALUE);
-        getDataSource().flush();
+        if (MiniClient.get().getHttpBridge().hasDataSource()) {
+            getDataSource().flush();
+            player.seekTo(Long.MAX_VALUE);
+        }
     }
 
     @Override
@@ -100,8 +105,11 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
     @Override
     public void seek(long maxValue) {
         log.debug("SEEK: {}", maxValue);
-        if (player != null) {
+        if (player == null) return;
+        if (getDataSource() instanceof PullBufferDataSource) {
             player.seekTo(maxValue);
+        } else {
+            getDataSource().flush();
         }
     }
 

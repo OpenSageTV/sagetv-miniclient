@@ -25,6 +25,8 @@ public class PushBufferDataSource implements DataSource {
     private long bytesRead = 0;
     private boolean opened = false;
 
+    private boolean verboseLogging = false;
+
     public PushBufferDataSource(int session) {
         this.session = session;
         circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
@@ -65,8 +67,13 @@ public class PushBufferDataSource implements DataSource {
 
     @Override
     public void flush() {
+        log.debug("[{}]:FLUSH()", session, new Exception("FLUSH"));
         bytesRead = 0;
         circularByteBuffer.clear();
+//
+//        circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
+//        in = circularByteBuffer.getInputStream();
+//        out = circularByteBuffer.getOutputStream();
     }
 
     @Override
@@ -94,8 +101,10 @@ public class PushBufferDataSource implements DataSource {
         if (!opened) {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }
+        if (in == null) return 0;
         // streamOffset is not used for push
-        // log.debug("[{}]:[{}]PB READ: {}", session, Thread.currentThread().getName(), len);
+        if (verboseLogging && log.isDebugEnabled()) log.debug("[{}]:READ: {}", session, len);
+
         int read = in.read(bytes, offset, len);
         if (read >= 0) {
             bytesRead += read;
@@ -104,7 +113,12 @@ public class PushBufferDataSource implements DataSource {
     }
 
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
-        // log.debug("[{}]:[{}]PB PUSH: {}", session, Thread.currentThread().getName(), len);
+        if (verboseLogging && log.isDebugEnabled()) log.debug("[{}]:PUSH: {}", session, len);
+        if (out == null) {
+            log.warn("PUSH: We are missing this PUSH because our DataSource is closed.");
+            return;
+        }
+
         out.write(bytes, offset, len);
     }
 

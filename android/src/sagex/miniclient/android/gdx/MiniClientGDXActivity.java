@@ -171,6 +171,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                 .withDrawerWidthDp(150)
                 .withShowDrawerOnFirstLaunch(true)
                 .build();
+        result.getRecyclerView().bringToFront();
     }
 
     public void startMiniClient(final ServerInfo si) {

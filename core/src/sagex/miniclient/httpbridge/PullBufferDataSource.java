@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import sagex.miniclient.MiniClient;
+
 /**
  * Created by seans on 03/10/15.
  */
@@ -28,6 +30,7 @@ public class PullBufferDataSource implements DataSource {
     OutputStream out = null;
     boolean opened = false;
     long size = -1;
+    boolean verboseLogging = false;
     private String uri;
     private DataInputStream remoteReader;
     private OutputStream remoteWriter;
@@ -79,7 +82,7 @@ public class PullBufferDataSource implements DataSource {
                     size = -1;
                 }
             }
-
+            log.debug("SIZE got {} for {}", size, uri);
             opened = true;
         } catch (Throwable t) {
             log.error("[{}]:Unable to open: {}", session, uri, t);
@@ -88,18 +91,18 @@ public class PullBufferDataSource implements DataSource {
         return size;
     }
 
-    private String getPath(String uri) {
+    String getPath(String uri) {
         if (uri == null) return null;
-        String parts[] = uri.split("//");
-        log.debug("[{}]:PATH: {}({})", session, uri, parts);
-        return "/" + parts[2];
+        int pos = uri.indexOf("/", "stv://".length());
+        log.debug("[{}]:PATH: {}({})", session, uri, pos);
+        return uri.substring(pos + 1);
     }
 
-    private String getHost(String uri) {
+    String getHost(String uri) {
         if (uri == null) return null;
-        String parts[] = uri.split("/");
-        log.debug("[{}]:HOST: {}({})", session, uri, parts);
-        return parts[2];
+        int s = "stv://".length();
+        int pos = uri.indexOf("/", s);
+        return uri.substring(s, pos);
     }
 
     public void close() {
@@ -111,10 +114,14 @@ public class PullBufferDataSource implements DataSource {
                 } catch (Throwable t) {
                 }
                 remoteServer.close();
+
             }
         } catch (IOException e) {
             //e.printStackTrace();
         }
+        remoteServer = null;
+        remoteReader = null;
+        remoteWriter = null;
 
         try {
             circularByteBuffer.clear();
@@ -127,6 +134,14 @@ public class PullBufferDataSource implements DataSource {
         } catch (IOException e) {
             //e.printStackTrace();
         }
+
+        buffer = null;
+        circularByteBuffer = null;
+        in = null;
+        out = null;
+
+        MiniClient.get().getHttpBridge().removeSession(session);
+
         opened = false;
     }
 
@@ -172,7 +187,7 @@ public class PullBufferDataSource implements DataSource {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }
 
-        // log.debug("[{}]:READ: len: {}", session, len);
+        if (verboseLogging && log.isDebugEnabled()) log.debug("[{}]:READ: len: {}", session, len);
         if (bytesAvailable < len) {
             fillBuffer(readOffset, MAX_BUFFER);
         }
@@ -185,7 +200,8 @@ public class PullBufferDataSource implements DataSource {
 
     private int fillBuffer(long readOffset, int len) throws IOException {
         String cmd = ("READ " + String.valueOf(readOffset + bytesPos) + " " + String.valueOf(len));
-        // log.debug("[{}]:fillBuffer(): {}", session, cmd);
+        if (verboseLogging && log.isDebugEnabled())
+            log.debug("[{}]:fillBuffer(): {}", session, cmd);
         remoteWriter.write((cmd + "\r\n").getBytes());
         remoteWriter.flush();
         int bytes = readBuffer(len);
@@ -202,7 +218,8 @@ public class PullBufferDataSource implements DataSource {
         int total = 0;
         int read = 0;
         while (total < len) {
-            //log.debug("total: {}, len: {}, delta: {}", total, len, (len-total));
+            if (verboseLogging && log.isDebugEnabled())
+                log.debug("total: {}, len: {}, delta: {}", total, len, (len - total));
             read = remoteReader.read(buffer, total, len - total);
             if (read == -1) {
                 if (total == 0) {
