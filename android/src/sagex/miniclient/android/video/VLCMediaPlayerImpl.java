@@ -11,6 +11,7 @@ import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.vlc.VLCInstance;
 import sagex.miniclient.android.video.vlc.VLCOptions;
 import sagex.miniclient.httpbridge.DataSource;
+import sagex.miniclient.httpbridge.PullBufferDataSource;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
 
 //import org.videolan.libvlc.LibVLC;
@@ -25,6 +26,7 @@ public class VLCMediaPlayerImpl extends DataSourceMediaPlayerImpl<MediaPlayer> {
 
     @Override
     public long getMediaTimeMillis() {
+        if (player == null) return 0;
         return player.getTime();
     }
 
@@ -42,10 +44,23 @@ public class VLCMediaPlayerImpl extends DataSourceMediaPlayerImpl<MediaPlayer> {
     }
 
     @Override
-    public void seek(long maxValue) {
-        log.debug("SEEK: {}", maxValue);
-        if (player != null) {
-            player.setPosition(maxValue);
+    public void seek(long seekTimeInMS) {
+        if (player == null) return;
+        log.debug("SEEK: {}", seekTimeInMS);
+        if (getDataSource() instanceof PullBufferDataSource) {
+            if (player != null) {
+                // vlc setPosition is value from 0-1
+                // we need to tranlates seekTimeInMS as percentage of the total available data
+                // datasource will need to provide total duration in ms or use the player's
+                // lenght
+                if (player.getLength() != 0) {
+                    player.setPosition((float) seekTimeInMS / (float) player.getLength());
+                } else {
+                    log.error("We Can't Seek :(");
+                }
+            }
+        } else {
+            getDataSource().flush();
         }
     }
 
@@ -73,8 +88,8 @@ public class VLCMediaPlayerImpl extends DataSourceMediaPlayerImpl<MediaPlayer> {
     @Override
     public void flush() {
         super.flush();
-        player.setPosition(Long.MAX_VALUE);
         getDataSource().flush();
+        player.setPosition(Long.MAX_VALUE);
     }
 
     protected void setupPlayer(String url) {
