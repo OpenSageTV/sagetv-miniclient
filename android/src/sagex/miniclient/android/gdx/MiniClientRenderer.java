@@ -35,9 +35,7 @@ import java.util.List;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
-import sagex.miniclient.android.Prefs;
 import sagex.miniclient.android.video.IJKMediaPlayerImpl;
-import sagex.miniclient.android.video.VLCMediaPlayerImpl;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -650,13 +648,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             player.free();
         }
 
-        if (Prefs.getBoolean(activity, Prefs.Key.use_vlc, true)) {
-            log.debug("Using VLC Player");
-            player = new VLCMediaPlayerImpl(activity);
-        } else {
-            log.debug("Using IJK Player");
-            player = new IJKMediaPlayerImpl(activity);
-        }
+        player = new IJKMediaPlayerImpl(activity);
         return player;
     }
 

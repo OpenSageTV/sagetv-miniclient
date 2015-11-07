@@ -5,12 +5,6 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="use_vlc"
-            android:summary="@string/summary_use_vlc_preference"
-            android:title="@string/title_use_vlc_preference" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
             android:key="use_hardware_acceleration"
             android:summary="@string/summary_use_hardware_acceleration_preference"
             android:title="@string/title_use_hardware_acceleration_preference" />

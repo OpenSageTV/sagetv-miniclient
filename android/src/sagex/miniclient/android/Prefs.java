@@ -55,7 +55,6 @@ public class Prefs {
     }
 
     public static class Key {
-        public static final String use_vlc = "use_vlc";
         public static final String use_hardware_acceleration = "use_hardware_acceleration";
         public static final String use_log_to_sdcard = "use_log_to_sdcard";
         public static final String log_level = "log_level";

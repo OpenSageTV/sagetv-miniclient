@@ -49,7 +49,7 @@ project(":android") {
         compile 'com.jakewharton:butterknife:7.0.1'
 
         // vlc from aarlibs dir
-        compile('sagetv.libvlc:libvlc-armv7a:3.0.0@aar')
+        // compile('sagetv.libvlc:libvlc-armv7a:3.0.0@aar')
 
         // gdx
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
