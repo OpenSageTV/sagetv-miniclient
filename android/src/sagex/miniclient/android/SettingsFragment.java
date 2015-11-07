@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
-import org.videolan.libvlc.util.VLCUtil;
 
 /**
  * Created by seans on 24/10/15.
@@ -19,12 +18,6 @@ public class SettingsFragment extends PreferenceFragment {
 
         try {
             prefs = MiniclientApplication.get(getActivity()).getPrefs();
-            if (!VLCUtil.hasCompatibleCPU(getActivity()) || VLCUtil.getMachineSpecs().hasX86) {
-                prefs.setBoolean(Prefs.Key.use_vlc, false);
-                prefs.setEnabled(this, Prefs.Key.use_vlc, false);
-            } else {
-                prefs.setEnabled(this, Prefs.Key.use_vlc, true);
-            }
 
             //prefs.setEnabled(this, Prefs.Key.use_log_to_sdcard, !getResources().getBoolean(R.bool.istv));
 

@@ -9,7 +9,6 @@ import android.preference.PreferenceManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.videolan.libvlc.util.VLCUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,16 +32,6 @@ public class MiniclientApplication extends Application {
         super.onCreate();
 
         prefs = new Prefs(getPreferences());
-        try {
-            if (!VLCUtil.hasCompatibleCPU(this) || VLCUtil.getMachineSpecs().hasX86) {
-                // we don't have x86 for vlc, yet.
-                prefs.setBoolean(Prefs.Key.use_vlc, false);
-            }
-        } catch (Throwable t) {
-            log.error("Failed to determine VLC support");
-            // no vlc support
-            prefs.setBoolean(Prefs.Key.use_vlc, false);
-        }
 
         // by default don't use the sdcard
         try {
