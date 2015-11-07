@@ -4,9 +4,14 @@ VERSION=0.4.3
 OUTPUT=release
 ARCHES="arm64 armv7a x86 java"
 
-echo "BUILDING..."
+echo "BUILDING NATIVES..."
 cd ijkplayer/android/
 ./compile-ijk.sh all
+cd -
+
+echo "PACKAGING..."
+cd ijkplayer/android/ijkplayer/
+./gradlew assemble
 cd -
 
 echo "COPYING..."
