@@ -48,7 +48,6 @@
  2088  cd ijkplayer-sample/
  2090  cd ..
  2092  less ijkplayer-sample/build.gradle
- 2094  ./gradle release
- 2095  ./gradlew release
  2096  ./gradlew assemble
- 2098  cd ijkplayer-sample/
+ 
+ # use copyresources to build/update mavelLocal
