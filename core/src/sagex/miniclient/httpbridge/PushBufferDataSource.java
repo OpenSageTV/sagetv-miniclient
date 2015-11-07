@@ -68,7 +68,7 @@ public class PushBufferDataSource implements DataSource {
 
     @Override
     public void flush() {
-        log.debug("[{}]:FLUSH()", session, new Exception("FLUSH"));
+        log.debug("[{}]:FLUSH()", session);
         bytesRead = 0;
         circularByteBuffer.clear();
 //
