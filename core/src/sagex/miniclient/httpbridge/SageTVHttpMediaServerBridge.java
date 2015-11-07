@@ -66,7 +66,7 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             if (session.getMethod() == Method.GET) {
                 if (dataSource instanceof PushBufferDataSource) {
                     // use chunked for PushBuffer since we don't know the size
-                    Response resp = NanoHTTPD.newChunkedResponse(Response.Status.PARTIAL_CONTENT, "video/mp2t", dis);
+                    Response resp = NanoHTTPD.newChunkedResponse(Response.Status.OK, "video/mp2t", dis);
                     return resp;
                 } else {
                     // it's a pull
