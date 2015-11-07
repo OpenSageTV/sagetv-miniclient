@@ -63,6 +63,7 @@ public class PushBufferDataSource implements DataSource {
         in = null;
         out = null;
         opened = false;
+        circularByteBuffer = null;
     }
 
     @Override

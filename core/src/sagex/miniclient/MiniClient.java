@@ -223,7 +223,7 @@ public class MiniClient {
     }
 
     public void connect(ServerInfo si, MACAddressResolver macAddressResolver) throws IOException {
-        MiniClientConnection connection = new MiniClientConnection(this, si.name, macAddressResolver.getMACAddress(), false, si);
+        MiniClientConnection connection = new MiniClientConnection(this, si.address, macAddressResolver.getMACAddress(), false, si);
         connection.connect();
     }
 

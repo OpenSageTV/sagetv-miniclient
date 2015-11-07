@@ -64,6 +64,23 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     @Override
+    protected void onPause() {
+        try {
+            // pause video if we are leaving the app
+            if (client.getCurrentConnection() != null && client.getCurrentConnection().getMediaCmd() != null) {
+                if (client.getCurrentConnection().getMediaCmd().getPlaya() != null) {
+                    log.info("We are leaving the App, Make sure Video is stopped.");
+                    client.getCurrentConnection().getMediaCmd().getPlaya().pause();
+                    EventRouter.post(client, EventRouter.MEDIA_STOP);
+                }
+            }
+        } catch (Throwable t) {
+            log.debug("Failed why attempting to pause media player");
+        }
+        super.onPause();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
