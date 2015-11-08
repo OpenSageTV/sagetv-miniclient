@@ -796,6 +796,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("PUSH_AV_CONTAINERS".equals(propName)) {
                         // If we are forced into pull mode then we don't support
                         // pushing
+
                         if (canDoPullStreaming
                                 && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             propVal = "";
@@ -807,8 +808,14 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         if (!canDoPullStreaming
                                 || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             propVal = "";
-                        else
-                            propVal = MPLAYER_PULL_FORMATS;
+                        else {
+                            // if we are being forced into PULL mode, then add the push containers to our PULL containers
+                            if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))) {
+                                propVal = MPLAYER_PUSH_FORMATS + "," + MPLAYER_PULL_FORMATS;
+                            } else {
+                                propVal = MPLAYER_PULL_FORMATS;
+                            }
+                        }
                     } else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName)) {
                         // MPlayer needs an extra 2 seconds of buffer before it
                         // can do playback because of it's single-threaded

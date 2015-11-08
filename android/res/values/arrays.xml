@@ -12,4 +12,14 @@
         <item>warn</item>
         <item>error</item>
     </string-array>
+    <string-array name="entries_list_streaming_mode_preference">
+        <item>Dynamic</item>
+        <item>Pull</item>
+        <item>Fixed</item>
+    </string-array>
+    <string-array name="entryvalues_list_streaming_mode_preference">
+        <item>dynamic</item>
+        <item>pull</item>
+        <item>fixed</item>
+    </string-array>
 </resources>
