@@ -18,6 +18,7 @@ package sagex.miniclient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Rectangle;
@@ -120,16 +121,11 @@ public class GFXCMD2 {
         this.client = client;
         this.windowManager = client.getUIRenderer();
         this.myConn = client.getCurrentConnection();
-        imageCacheLimit = 32000000;
-        try {
-            imageCacheLimit = Integer.parseInt(client.getProperty("image_cache_size", "32000000"));
-        } catch (Exception e) {
-            log.error("Invalid image_cache_size property", e);
-        }
+        imageCacheLimit = client.properties().getLong(PrefStore.Keys.image_cache_size, 32000000);
 
-        offlineImageCacheLimit = Integer.parseInt(client.getProperty("disk_image_cache_size", "100000000"));
-        if ("true".equals(client.getProperty("cache_images_on_disk", "true"))) {
-            cacheDir = new java.io.File(client.getCacheDir(), "imgcache");
+        offlineImageCacheLimit = client.properties().getLong(PrefStore.Keys.disk_image_cache_size, 100000000);
+        if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true)) {
+            cacheDir = new java.io.File(client.options().getCacheDir(), "imgcache");
             cacheDir.mkdir();
         } else
             cacheDir = null;

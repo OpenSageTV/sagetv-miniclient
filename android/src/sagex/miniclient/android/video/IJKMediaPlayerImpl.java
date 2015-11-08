@@ -2,7 +2,7 @@ package sagex.miniclient.android.video;
 
 import android.widget.Toast;
 
-import sagex.miniclient.MiniClient;
+import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.httpbridge.PullBufferDataSource;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -47,8 +47,9 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
     @Override
     public void flush() {
         super.flush();
-        if (MiniClient.get().getHttpBridge().hasDataSource()) {
+        if (MiniclientApplication.get().getClient().getHttpBridge().hasDataSource()) {
             getDataSource().flush();
+            log.debug("Seek1");
             player.seekTo(Long.MAX_VALUE);
         }
     }
@@ -67,13 +68,18 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
                 player = new IjkMediaPlayer();
             }
             player.setLogEnabled(true);
-            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_ERROR);
+            //IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG);
+            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_WARN);
             player.setDisplay(mSurface.getHolder());
 
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1); // enable hardware acceleration
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
+            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
             player.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
+            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
+            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
+
+
 
             player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
                 @Override

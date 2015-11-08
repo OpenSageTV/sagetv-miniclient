@@ -6,6 +6,10 @@ import java.io.IOException;
  * Created by seans on 06/10/15.
  */
 public interface DataSource {
+    DataSourceListener setDataSourceListener(DataSourceListener listener);
+
+    int getSession();
+
     /**
      * Get the URI that opened this DataSource (should be push: or stv:)
      *
@@ -74,4 +78,10 @@ public interface DataSource {
      * @return
      */
     boolean isOpen();
+
+    interface DataSourceListener {
+        void onOpen(DataSource source);
+
+        void onClose(DataSource source);
+    }
 }

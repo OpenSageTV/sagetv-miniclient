@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.httpbridge.DataSource;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
@@ -42,10 +42,13 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     boolean createPlayerOnUI = true;
 
+    SageTVHttpMediaServerBridge httpBridge = null;
+
     public DataSourceMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI) {
         this.context = activity;
         this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
+        httpBridge = MiniclientApplication.get().getClient().getHttpBridge();
     }
 
     public Player getPlayer() {
@@ -55,7 +58,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     @Override
     public void free() {
         log.info("Freeing Media Player");
-        MiniClient.get().getHttpBridge().closeSessions();
+        httpBridge.closeSessions();
         releasePlayer();
     }
 
@@ -67,8 +70,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     @Override
     public void load(byte b, byte b1, String s, final String urlString, Object o, boolean b2, int i) {
         // we need to use the http bridge
-        SageTVHttpMediaServerBridge bridge = MiniClient.get().getHttpBridge();
-        final String bridgeUrl = bridge.getVideoURI(urlString);
+        final String bridgeUrl = httpBridge.getVideoURI(urlString);
 
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
@@ -249,7 +251,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     protected void releasePlayer() {
         log.debug("Releasing Player");
-        MiniClient.get().getHttpBridge().closeSessions();
+        httpBridge.closeSessions();
         player = null;
         mVideoWidth = 0;
         mVideoHeight = 0;
@@ -257,6 +259,6 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     protected DataSource getDataSource() {
         //log.debug("get data source");
-        return MiniClient.get().getHttpBridge().getCurrentDataSource();
+        return httpBridge.getCurrentDataSource();
     }
 }

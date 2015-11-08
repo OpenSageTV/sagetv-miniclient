@@ -18,6 +18,7 @@ package sagex.miniclient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
@@ -246,13 +247,13 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         // this.useLocalNetworkOptimizations=true;
 
         this.msi = msi;
-        offlineImageCacheLimit = Integer.parseInt(client.getProperty("disk_image_cache_size", "100000000"));
-        if ("true".equals(client.getProperty("cache_images_on_disk", "true"))) {
-            cacheDir = new java.io.File(client.getCacheDir(), "imgcache");
+        offlineImageCacheLimit = client.properties().getLong(PrefStore.Keys.disk_image_cache_size, 100000000);
+        if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true)) {
+            cacheDir = new java.io.File(client.options().getCacheDir(), "imgcache");
             cacheDir.mkdir();
         } else
             cacheDir = null;
-        if ("true".equals(client.getProperty("force_nonlocal_connection", "false")))
+        if (client.properties().getBoolean(PrefStore.Keys.force_nonlocal_connection, false))
             this.useLocalNetworkOptimizations = false;
         usesAdvancedImageCaching = false;
     }
@@ -409,7 +410,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
         };
         t.start();
 
-        String str = client.getProperty("local_fs_security", "high");
+        String str = client.properties().getString(PrefStore.Keys.local_fs_security, "high");
         if ("low".equals(str))
             fsSecurity = LOW_SECURITY_FS;
         else if ("med".equals(str))
@@ -698,7 +699,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     } else if ("GFX_SCALING".equals(propName)) {
                         propVal = "HARDWARE";
                     } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
-                        if ("true".equals(client.getProperty("cache_images_on_disk", "true")))
+                        if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true))
                             propVal = "TRUE";
                         else
                             propVal = "FALSE";
@@ -783,12 +784,12 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     else if ("ZLIB_COMM".equals(propName))
                         propVal = "TRUE";
                     else if ("VIDEO_CODECS".equals(propName)) {
-                        String extra_codecs = client.getProperty("mplayer/extra_video_codecs", null);
+                        String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_video_codecs, null);
                         propVal = MPLAYER_VIDEO_CODECS;
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
                     } else if ("AUDIO_CODECS".equals(propName)) {
-                        String extra_codecs = client.getProperty("mplayer/extra_audio_codecs", null);
+                        String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_audio_codecs, null);
                         propVal = MPLAYER_AUDIO_CODECS;
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
@@ -796,7 +797,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // If we are forced into pull mode then we don't support
                         // pushing
                         if (canDoPullStreaming
-                                && "pull".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic")))
+                                && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             propVal = "";
                         else
                             propVal = MPLAYER_PUSH_FORMATS;
@@ -804,7 +805,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // If we're forced into fixed mode then we don't support
                         // pulling
                         if (!canDoPullStreaming
-                                || "fixed".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic")))
+                                || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             propVal = "";
                         else
                             propVal = MPLAYER_PULL_FORMATS;
@@ -816,27 +817,22 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                         // changed...hopefully to a lower value like 0 :)
                         propVal = "0";
                     } else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName)) {
-                        if ("fixed".equalsIgnoreCase(client.getProperty("streaming_mode", "dynamic"))) {
+                        if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))) {
                             // Build the fixed media format string
                             propVal = "videobitrate="
-                                    + client.getProperty("fixed_encoding/video_bitrate_kbps", "300") + "000;";
+                                    + client.properties().getInt(PrefStore.Keys.fixed_encoding_video_bitrate_kbps, 300) + "000;";
                             propVal += "audiobitrate="
-                                    + client.getProperty("fixed_encoding/audio_bitrate_kbps", "64") + "000;";
+                                    + client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 64) + "000;";
                             int fps = 30;
                             int keyFrameInt = 10;
-                            try {
-                                fps = Integer.parseInt(client.getProperty("fixed_encoding/fps", "30"));
-                                keyFrameInt = Integer
-                                        .parseInt(client.getProperty("fixed_encoding/key_frame_interval", "10"));
-                            } catch (NumberFormatException e) {
-                            }
+                            fps = client.properties().getInt(PrefStore.Keys.fixed_encoding_fps, 30);
+                            keyFrameInt = client.properties().getInt(PrefStore.Keys.fixed_encoding_key_frame_interval, 10);
                             propVal += "gop=" + (fps * keyFrameInt) + ";";
                             propVal += "bframes="
-                                    + ("true".equalsIgnoreCase(
-                                    client.getProperty("fixed_encoding/use_b_frames", "true")) ? "2" : "0")
+                                    + (client.properties().getBoolean(PrefStore.Keys.fixed_encoding_use_b_frames, true) ? "2" : "0")
                                     + ";";
                             propVal += "fps=" + fps + ";";
-                            propVal += "resolution=" + client.getProperty("fixed_encoding/video_resolution", "CIF")
+                            propVal += "resolution=" + client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "CIF")
                                     + ";";
                         } else
                             propVal = "";

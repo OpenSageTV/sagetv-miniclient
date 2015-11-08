@@ -18,7 +18,7 @@ import sagex.miniclient.MiniClient;
  * <p/>
  * Created by seans on 06/10/15.
  */
-public class SageTVHttpMediaServerBridge extends NanoHTTPD {
+public class SageTVHttpMediaServerBridge extends NanoHTTPD implements DataSource.DataSourceListener {
     private static Logger log = LoggerFactory.getLogger(SageTVHttpMediaServerBridge.class);
 
     private final MiniClient client;
@@ -54,6 +54,7 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
             } else {
                 dataSource = new PushBufferDataSource(sess);
             }
+            dataSource.setDataSourceListener(this);
             // cache it so we can quickly find it
             currentDataSource = dataSource;
 
@@ -164,6 +165,19 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD {
     }
 
     public void removeSession(int session) {
+        log.debug("Removing HTTP Session {}", session);
         streams.remove(session);
+    }
+
+    @Override
+    public void onOpen(DataSource source) {
+        // don't care
+    }
+
+    @Override
+    public void onClose(DataSource source) {
+        removeSession(source.getSession());
+        // stop listening
+        source.setDataSourceListener(null);
     }
 }

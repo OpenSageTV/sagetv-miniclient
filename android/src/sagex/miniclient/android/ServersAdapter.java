@@ -10,7 +10,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
 
 /**
@@ -38,7 +37,7 @@ public class ServersAdapter extends BaseAdapter {
         items.add(newServer);
 
         // get the saved servers, and add them
-        items.addAll(MiniClient.get().getServers().getSavedServers());
+        items.addAll(MiniclientApplication.get(ctx.getApplicationContext()).getClient().getServers().getSavedServers());
     }
 
     @Override

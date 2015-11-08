@@ -13,7 +13,6 @@ import android.widget.Toast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
@@ -65,7 +64,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
     @Override
     protected void onPause() {
         paused = true;
-        MiniClient.get().getServerDiscovery().close();
+        MiniclientApplication.get(this).getClient().getServerDiscovery().close();
         super.onPause();
     }
 
@@ -77,7 +76,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
 
     public void refreshServers() {
         log.debug("Looking for Servers...");
-        MiniClient.get().getServerDiscovery().discoverServersAsync(10000, new ServerDiscovery.ServerDiscoverCallback() {
+        MiniclientApplication.get(this).getClient().getServerDiscovery().discoverServersAsync(10000, new ServerDiscovery.ServerDiscoverCallback() {
             @Override
             public void serverDiscovered(final ServerInfo si) {
                 if (!paused) {
@@ -130,7 +129,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                MiniClient.get().getServers().deleteServer(adapter.getCastedItem(position).name);
+                MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(adapter.getCastedItem(position).name);
                 adapter.items.remove(position);
                 adapter.notifyDataSetChanged();
             }
@@ -146,7 +145,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             ServerInfo si = new ServerInfo();
             si.name = name;
             si.address = addr;
-            MiniClient.get().getServers().saveServer(si);
+            MiniclientApplication.get(this).getClient().getServers().saveServer(si);
             adapter.addServer(si);
             Toast.makeText(this, "Server Added", Toast.LENGTH_LONG).show();
         }

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
@@ -148,8 +149,8 @@ public class MediaCmd {
             case MEDIACMD_INIT:
                 log.info("MEDIACMD_INIT");
                 try {
-                    DESIRED_VIDEO_PREBUFFER_SIZE = Integer.parseInt(client.getProperty("video_buffer_size", "" + (4 * 1024 * 1024)));
-                    DESIRED_AUDIO_PREBUFFER_SIZE = Integer.parseInt(client.getProperty("audio_buffer_size", "" + (2 * 1024 * 1024)));
+                    DESIRED_VIDEO_PREBUFFER_SIZE = client.properties().getInt(PrefStore.Keys.video_buffer_size, (4 * 1024 * 1024));
+                    DESIRED_AUDIO_PREBUFFER_SIZE = client.properties().getInt(PrefStore.Keys.audio_buffer_size, (2 * 1024 * 1024));
                 } catch (Exception e) {
                     log.error("MEDIACMD_INIT: ERROR", e);
                 }
