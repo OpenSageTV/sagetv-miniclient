@@ -15,26 +15,27 @@ public class Servers {
     }
 
     public void saveServer(ServerInfo si) {
-        client.setProperty("servers/" + si.name + "/type", String.valueOf(si.serverType));
-        if (si.address != null) client.setProperty("servers/" + si.name + "/address", si.address);
+        client.properties().setLong("servers/" + si.name + "/type", si.serverType);
+        if (si.address != null)
+            client.properties().setString("servers/" + si.name + "/address", si.address);
         if (si.locatorID != null)
-            client.setProperty("servers/" + si.name + "/locator_id", si.locatorID);
-        client.setProperty("servers/" + si.name + "/last_connect_time", String.valueOf(si.lastConnectTime));
+            client.properties().setString("servers/" + si.name + "/locator_id", si.locatorID);
+        client.properties().setLong("servers/" + si.name + "/last_connect_time", si.lastConnectTime);
         if (si.authBlock != null)
-            client.setProperty("servers/" + si.name + "/auth_block", si.authBlock);
-        client.saveConfig();
+            client.properties().setString("servers/" + si.name + "/auth_block", si.authBlock);
+        //client.saveConfig();
     }
 
     public void deleteServer(String serverName) {
         String parts[] = null;
-        ArrayList list = new ArrayList(client.properties().keySet());
+        ArrayList list = new ArrayList(client.properties().keys());
         Collections.sort(list);
         for (Object k : list) {
             if (k.toString().startsWith("servers/")) {
                 // process server
                 parts = k.toString().split("/");
                 if (parts.length > 1 && parts[1].equals(serverName)) {
-                    client.properties().remove(k);
+                    client.properties().remove((String) k);
                 }
             }
         }
@@ -42,12 +43,11 @@ public class Servers {
 
     public ServerInfo getServer(String serverName) {
         ServerInfo si = new ServerInfo();
-        si.serverType = Integer.parseInt(client.getProperty("servers/" + serverName + "/type", ""));
-        si.address = client.getProperty("servers/" + serverName + "/address", "");
-        si.locatorID = client.getProperty("servers/" + serverName + "/locator_id", "");
-        si.lastConnectTime = Long
-                .parseLong(client.getProperty("servers/" + serverName + "/last_connect_time", "0"));
-        si.authBlock = client.getProperty("servers/" + serverName + "/auth_block", "");
+        si.serverType = (int) client.properties().getLong("servers/" + serverName + "/type", 0);
+        si.address = client.properties().getString("servers/" + serverName + "/address", "");
+        si.locatorID = client.properties().getString("servers/" + serverName + "/locator_id", "");
+        si.lastConnectTime = client.properties().getLong("servers/" + serverName + "/last_connect_time", 0);
+        si.authBlock = client.properties().getString("servers/" + serverName + "/auth_block", "");
         si.name = serverName;
 
         // not found
@@ -62,7 +62,7 @@ public class Servers {
         String lastServer = null;
         String thisServer = null;
         String parts[] = null;
-        ArrayList list = new ArrayList(client.properties().keySet());
+        ArrayList list = new ArrayList(client.properties().keys());
         Collections.sort(list);
         for (Object k : list) {
             if (k.toString().startsWith("servers/")) {

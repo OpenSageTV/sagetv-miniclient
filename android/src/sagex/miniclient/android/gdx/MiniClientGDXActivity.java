@@ -31,6 +31,7 @@ import sagex.miniclient.MACAddressResolver;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AppUtil;
+import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.SageTVKey;
@@ -99,7 +100,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             cfg.b = 8;
             cfg.a = 8;
 
-            client = MiniClient.get();
+            client = MiniclientApplication.get().getClient();
 
             mgr = new MiniClientRenderer(this, client);
             miniClientView = initializeForView(mgr, cfg);

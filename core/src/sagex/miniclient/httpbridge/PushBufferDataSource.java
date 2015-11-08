@@ -26,6 +26,7 @@ public class PushBufferDataSource implements DataSource {
     private boolean opened = false;
 
     private boolean verboseLogging = false;
+    private DataSourceListener listener;
 
     public PushBufferDataSource(int session) {
         this.session = session;
@@ -42,6 +43,9 @@ public class PushBufferDataSource implements DataSource {
         this.uri = uri;
         log.debug("[{}]:Open Called: {}", session, uri);
         bytesRead = 0;
+        if (listener != null) {
+            listener.onOpen(this);
+        }
         opened = true;
         return -1;
     }
@@ -64,6 +68,10 @@ public class PushBufferDataSource implements DataSource {
         out = null;
         opened = false;
         circularByteBuffer = null;
+
+        if (listener != null) {
+            listener.onClose(this);
+        }
     }
 
     @Override
@@ -121,6 +129,18 @@ public class PushBufferDataSource implements DataSource {
         }
 
         out.write(bytes, offset, len);
+    }
+
+    @Override
+    public DataSourceListener setDataSourceListener(DataSourceListener listener) {
+        DataSourceListener l = this.listener;
+        this.listener = listener;
+        return l;
+    }
+
+    @Override
+    public int getSession() {
+        return session;
     }
 
     @Override

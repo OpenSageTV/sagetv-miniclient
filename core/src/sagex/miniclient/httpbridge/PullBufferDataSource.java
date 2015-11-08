@@ -12,8 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import sagex.miniclient.MiniClient;
-
 /**
  * Created by seans on 03/10/15.
  */
@@ -38,8 +36,22 @@ public class PullBufferDataSource implements DataSource {
     private long bytesPos = 0; // total byte position that we send to sagetv
     private long bytesAvailable = 0; // how many bytes are left unread in our byte queue
 
+    private DataSourceListener listener = null;
+
     public PullBufferDataSource(int session) {
         this.session = session;
+    }
+
+    @Override
+    public DataSourceListener setDataSourceListener(DataSourceListener listener) {
+        DataSourceListener l = this.listener;
+        this.listener = listener;
+        return l;
+    }
+
+    @Override
+    public int getSession() {
+        return session;
     }
 
     public String getUri() {
@@ -84,6 +96,9 @@ public class PullBufferDataSource implements DataSource {
             }
             log.debug("SIZE got {} for {}", size, uri);
             opened = true;
+            if (listener != null) {
+                listener.onOpen(this);
+            }
         } catch (Throwable t) {
             log.error("[{}]:Unable to open: {}", session, uri, t);
         }
@@ -140,7 +155,10 @@ public class PullBufferDataSource implements DataSource {
         in = null;
         out = null;
 
-        MiniClient.get().getHttpBridge().removeSession(session);
+        if (listener != null) {
+            listener.onClose(this);
+        }
+        // MiniClient.get().getHttpBridge().removeSession(session);
 
         opened = false;
     }

@@ -24,8 +24,7 @@ public class MiniclientService extends Service {
         super.onCreate();
         log.debug("Starting MiniClient Service");
         try {
-            MiniClient client = MiniClient.get();
-            client.init(getFilesDir(), getCacheDir());
+            MiniClient client = MiniclientApplication.get(this).getClient();
             if (client.isUsingHttpBridge()) {
                 // start the http bridge
                 client.getHttpBridge();
@@ -39,7 +38,11 @@ public class MiniclientService extends Service {
     public void onDestroy() {
         super.onDestroy();
         log.debug("Stopping MiniClient Service");
-        MiniClient.get().shutdown();
+        try {
+            MiniclientApplication.get(this).getClient().shutdown();
+        } catch (Throwable t) {
+            log.warn("Failed to shutdown MiniClient service", t);
+        }
     }
 
     @Nullable
