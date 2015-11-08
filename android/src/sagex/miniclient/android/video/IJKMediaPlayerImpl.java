@@ -2,7 +2,6 @@ package sagex.miniclient.android.video;
 
 import android.widget.Toast;
 
-import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.httpbridge.PullBufferDataSource;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -12,6 +11,8 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Created by seans on 06/10/15.
  */
 public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer> {
+
+    long preSeekPos = -1;
 
     public IJKMediaPlayerImpl(MiniClientGDXActivity activity) {
         super(activity, true);
@@ -47,7 +48,7 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
     @Override
     public void flush() {
         super.flush();
-        if (MiniclientApplication.get().getClient().getHttpBridge().hasDataSource()) {
+        if (httpBridge.hasDataSource()) {
             getDataSource().flush();
             log.debug("Seek1");
             player.seekTo(Long.MAX_VALUE);
@@ -94,6 +95,11 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
             // player.setDataSource("/sdcard/Movies/twd1.mp4");
             // player.setDataSource("http://192.168.1.176:8000/twd1.mp4");
 
+            if (!pushMode && preSeekPos != -1) {
+                player.seekTo(preSeekPos);
+                preSeekPos = -1;
+            }
+
             player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(IMediaPlayer mp) {
@@ -111,7 +117,10 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
     @Override
     public void seek(long maxValue) {
         log.debug("SEEK: {}", maxValue);
-        if (player == null) return;
+        if (player == null) {
+            preSeekPos = maxValue;
+            return;
+        }
         if (getDataSource() instanceof PullBufferDataSource) {
             player.seekTo(maxValue);
         } else {
