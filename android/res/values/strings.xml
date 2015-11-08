@@ -14,7 +14,10 @@
     <string name="title_use_log_to_sdcard_preference">Log to SDCARD</string>
     <string name="summary_use_log_to_sdcard_acceleration_preference">If enabled, all logging will go to the sagetv-miniclient.txt log file on the root of the SD CARD</string>
     <string name="title_list_loglevels_preference">Loggin Level</string>
-    <string name="summary_list_loglevels_preference">Set the debug log level</string>
+    <string name="summary_list_loglevels_preference">Set the debug log level (Current: %s)</string>
     <string name="dialog_title_list_loglevels_preference">Set Logging Level</string>
+    <string name="dialog_title_list_streaming_mode_preference">Set Stream Mode</string>
+    <string name="summary_list_streaming_mode_preference">If not using LiveTV, you can set this to Pull, so that seeking will work. (Current: %s)</string>
+    <string name="title_list_streaming_mode_preference">Streaming Mode</string>
 
 </resources>

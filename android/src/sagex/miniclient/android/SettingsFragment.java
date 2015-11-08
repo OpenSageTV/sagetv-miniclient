@@ -37,18 +37,29 @@ public class SettingsFragment extends PreferenceFragment {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     AppUtil.setLogLevel((String) newValue);
-                    updateLogLevelSummary(loglevel, (String) newValue);
+                    updateSummary(preference, R.string.summary_list_loglevels_preference, newValue);
                     return true;
                 }
             });
-            updateLogLevelSummary(loglevel, prefs.getString(PrefStore.Keys.log_level, "debug"));
+
+            final Preference streammode = findPreference(PrefStore.Keys.log_level);
+            streammode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    updateSummary(preference, R.string.summary_list_streaming_mode_preference, newValue);
+                    return true;
+                }
+            });
+
+            updateSummary(loglevel, R.string.summary_list_loglevels_preference, prefs.getString(PrefStore.Keys.log_level, "debug"));
+            updateSummary(loglevel, R.string.summary_list_streaming_mode_preference, prefs.getString(PrefStore.Keys.streaming_mode, "dynamic"));
 
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
 
-    private void updateLogLevelSummary(Preference loglevel, String value) {
-        loglevel.setSummary(getResources().getString(R.string.summary_list_loglevels_preference) + " (" + value.toUpperCase() + ")");
+    private void updateSummary(Preference pref, int resId, Object value) {
+        pref.setSummary(getResources().getString(resId, value));
     }
 }
