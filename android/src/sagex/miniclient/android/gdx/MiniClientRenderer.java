@@ -95,6 +95,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     private MiniPlayerPlugin player;
 
+    private boolean resizeHappened = false;
+
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;
         this.client = client;
@@ -123,6 +125,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void resize(int width, int height) {
+        if (resizeHappened) {
+            log.debug("Resize Already Happened, Ignoring this: {}x{}", width, height);
+            return;
+        }
+
         fullScreenSize.width = width;
         fullScreenSize.height = height;
 
@@ -140,9 +147,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (client == null || client.getCurrentConnection() == null) {
             return;
         }
+
+        notifySageTVAboutScreenSize();
+    }
+
+    public void notifySageTVAboutScreenSize() {
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
         try {
             client.getCurrentConnection().postResizeEvent(uiSize);
+            resizeHappened = true;
         } catch (Throwable t) {
             log.info("Error sending Resize Event", t);
         }
@@ -199,6 +212,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     @Override
     public void GFXCMD_INIT() {
         // block until the UI is ready
+        log.debug("GFXCMD_INIT() called");
         while (!ready) {
             log.debug("Waiting For UI...");
             try {
@@ -207,6 +221,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 Thread.interrupted();
             }
         }
+        // one last attempt to setup our screen
+        notifySageTVAboutScreenSize();
     }
 
     @Override

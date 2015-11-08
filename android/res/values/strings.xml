@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SageTVMiniclient</string>
+    <string name="app_name">SageTV MiniClient</string>
 
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="media_player_preferences">Media Player</string>
     <string name="title_use_vlc_preference">Use VLC</string>
-    <string name="summary_use_vlc_preference">If disabled, then IJKMediaPlayer will be used instead of VLC</string>
     <string name="title_use_hardware_acceleration_preference">Use Hardware Acceleration</string>
     <string name="summary_use_hardware_acceleration_preference">If disabled, then no hardware acceleration will be used when decoding the video.</string>
     <string name="logging_preferences">Logging</string>
-    <string name="title_use_log_to_sdcard_preference">Log to SDCARD</string>
+    <string name="title_use_log_to_sdcard_preference">Log to File</string>
     <string name="summary_use_log_to_sdcard_acceleration_preference">If enabled, all logging will go to the sagetv-miniclient.txt log file on the root of the SD CARD</string>
-    <string name="title_list_loglevels_preference">Loggin Level</string>
-    <string name="summary_list_loglevels_preference">Set the debug log level (Current: %s)</string>
+    <string name="title_list_loglevels_preference">Logging Level</string>
+    <string name="summary_list_loglevels_preference">Set the log level (Current: %s)</string>
     <string name="dialog_title_list_loglevels_preference">Set Logging Level</string>
     <string name="dialog_title_list_streaming_mode_preference">Set Stream Mode</string>
     <string name="summary_list_streaming_mode_preference">If not using LiveTV, you can set this to Pull, so that seeking will work. (Current: %s)</string>
