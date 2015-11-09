@@ -95,19 +95,20 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
             // player.setDataSource("/sdcard/Movies/twd1.mp4");
             // player.setDataSource("http://192.168.1.176:8000/twd1.mp4");
 
-            if (!pushMode && preSeekPos != -1) {
-                player.seekTo(preSeekPos);
-                preSeekPos = -1;
-            }
 
             player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(IMediaPlayer mp) {
                     playerReady = true;
+                    player.start();
+                    if (!pushMode && preSeekPos != -1) {
+                        player.seekTo(preSeekPos);
+                        preSeekPos = -1;
+                    }
                 }
             });
             player.prepareAsync();
-            player.start();
+            //player.start();
             log.debug("mediaplayer has our URL");
         } catch (Exception e) {
             Toast.makeText(context, "Error creating player!", Toast.LENGTH_LONG).show();

@@ -1,5 +1,6 @@
 package sagex.miniclient.android;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -53,6 +54,16 @@ public class SettingsFragment extends PreferenceFragment {
 
             updateSummary(loglevel, R.string.summary_list_loglevels_preference, prefs.getString(PrefStore.Keys.log_level, "debug"));
             updateSummary(loglevel, R.string.summary_list_streaming_mode_preference, prefs.getString(PrefStore.Keys.streaming_mode, "dynamic"));
+
+            final Preference sendlog = findPreference("sendlog");
+            sendlog.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    startActivity(new Intent(getActivity().getBaseContext(), SendLogActivity.class));
+                    return true;
+                }
+            });
+
 
         } catch (Throwable t) {
             t.printStackTrace();

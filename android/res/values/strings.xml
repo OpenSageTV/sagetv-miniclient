@@ -16,5 +16,7 @@
     <string name="dialog_title_list_streaming_mode_preference">Set Stream Mode</string>
     <string name="summary_list_streaming_mode_preference">If not using LiveTV, you can set this to Pull, so that seeking will work. (Current: %s)</string>
     <string name="title_list_streaming_mode_preference">Streaming Mode</string>
+    <string name="send_log">Send Log</string>
+    <string name="send_log_summary">If using Send Log, then make sure that you are NOT logging to file.  Logging to a File will result in Send Log only capturing a partial log.</string>
 
 </resources>
