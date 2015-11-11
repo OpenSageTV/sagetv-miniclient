@@ -79,6 +79,7 @@ public class PushBufferDataSource implements DataSource {
         log.debug("[{}]:FLUSH()", session);
         bytesRead = 0;
         circularByteBuffer.clear();
+//        circularByteBuffer = null;
 //
 //        circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
 //        in = circularByteBuffer.getInputStream();
