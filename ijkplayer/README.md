@@ -1,3 +1,4 @@
+```
  2030  git clone git@github.com:stuckless/ijkplayer.git
  2031  cd ijkplayer
  2033  git remote -v
@@ -51,3 +52,4 @@
  2096  ./gradlew assemble
  
  # use copyresources to build/update mavelLocal
+ ```
