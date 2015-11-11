@@ -10,6 +10,7 @@ import java.util.Map;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.uibridge.EventRouter;
+import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.SageTVKey;
 
 /**
@@ -17,6 +18,7 @@ import sagex.miniclient.uibridge.SageTVKey;
  */
 public class MiniClientKeyListener implements View.OnKeyListener {
     private static final Logger log = LoggerFactory.getLogger(MiniClientKeyListener.class);
+    private static String PUNCTUATION = "`~!@#$%^&*()_+{}|:\"<>?-=[];'./,";
 
     static {
         // navivation native keymap
@@ -40,7 +42,6 @@ public class MiniClientKeyListener implements View.OnKeyListener {
     }
 
     private final MiniClient client;
-
     int skipKey = -1;
     boolean skipUp = false;
 
@@ -50,6 +51,14 @@ public class MiniClientKeyListener implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
+        // send a-z 0-9 and PUNCTUATION as is
+        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
+                || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
+                || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
+            client.getCurrentConnection().postKeyEvent((char) event.getUnicodeChar(), androidToSageKeyModifier(event), (char) event.getUnicodeChar());
+            return true;
+        }
+
         Map<Object, SageTVKey> LONG_KEYMAP;
         Map<Object, SageTVKey> KEYMAP;
 
@@ -98,5 +107,19 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         }
 
         return false;
+    }
+
+    private int androidToSageKeyModifier(KeyEvent event) {
+        int modifiers = 0;
+        if (event.isShiftPressed()) {
+            modifiers = modifiers | Keys.SHIFT_MASK;
+        }
+        if (event.isCtrlPressed()) {
+            modifiers = modifiers | Keys.CTRL_MASK;
+        }
+        if (event.isAltPressed()) {
+            modifiers = modifiers | Keys.ALT_MASK;
+        }
+        return 0;
     }
 }

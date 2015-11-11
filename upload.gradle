@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.3.1"
+    id "com.jfrog.bintray" version "1.4"
 }
 
 repositories {
@@ -9,7 +9,7 @@ repositories {
 
 ext {
     appName = "SageTVMiniclient"
-    baseVersion = "0.08-ALPHA"
+    baseVersion = "0.09-ALPHA"
 }
 
 task(copyFiles) << {
@@ -19,11 +19,10 @@ task(copyFiles) << {
     }
 
     copy {
-        from('android/build/outputs/apk/') {
-            include "*.apk"
-        }
+        from "android/build/outputs/apk/"
         into "build"
-        rename '(.+)\\.(.+)', "\$1-${baseVersion}.\$2"
+        include "*debug.apk"
+        rename('(.+)\\.(.+)', "\$1-${baseVersion}.\$2")
     }
 }
 
