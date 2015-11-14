@@ -5,11 +5,15 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.MiniClientOptions;
+import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.prefs.PropertiesPrefStore;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
@@ -21,7 +25,24 @@ public class SageTVHttpMediaServerBridgeTest {
     @Mock
     NanoHTTPD.IHTTPSession session;
 
-    MiniClient client = new MiniClient();
+    MiniClientOptions options = new MiniClientOptions() {
+        @Override
+        public PrefStore getPrefs() {
+            return new PropertiesPrefStore(new File("test.properties"));
+        }
+
+        @Override
+        public File getConfigDir() {
+            return new File(".");
+        }
+
+        @Override
+        public File getCacheDir() {
+            return new File(".");
+        }
+    };
+
+    MiniClient client = new MiniClient(options);
     SageTVHttpMediaServerBridge bridge = new SageTVHttpMediaServerBridge(client, 9000);
 
     @Before
@@ -38,7 +59,7 @@ public class SageTVHttpMediaServerBridgeTest {
 
     void verifyRange(String range, long start, long end) {
         Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Range", "bytes=" + range);
+        headers.put("range", "bytes=" + range);
 
         doReturn(headers).when(session).getHeaders();
 

@@ -15,15 +15,7 @@ public class Servers {
     }
 
     public void saveServer(ServerInfo si) {
-        client.properties().setLong("servers/" + si.name + "/type", si.serverType);
-        if (si.address != null)
-            client.properties().setString("servers/" + si.name + "/address", si.address);
-        if (si.locatorID != null)
-            client.properties().setString("servers/" + si.name + "/locator_id", si.locatorID);
-        client.properties().setLong("servers/" + si.name + "/last_connect_time", si.lastConnectTime);
-        if (si.authBlock != null)
-            client.properties().setString("servers/" + si.name + "/auth_block", si.authBlock);
-        //client.saveConfig();
+        si.save(client.properties());
     }
 
     public void deleteServer(String serverName) {
@@ -43,12 +35,7 @@ public class Servers {
 
     public ServerInfo getServer(String serverName) {
         ServerInfo si = new ServerInfo();
-        si.serverType = (int) client.properties().getLong("servers/" + serverName + "/type", 0);
-        si.address = client.properties().getString("servers/" + serverName + "/address", "");
-        si.locatorID = client.properties().getString("servers/" + serverName + "/locator_id", "");
-        si.lastConnectTime = client.properties().getLong("servers/" + serverName + "/last_connect_time", 0);
-        si.authBlock = client.properties().getString("servers/" + serverName + "/auth_block", "");
-        si.name = serverName;
+        si.load(serverName, client.properties());
 
         // not found
         if ((si.address == null || si.address.trim().length() == 0) && (si.locatorID == null || si.locatorID.trim().length() == 0)) {

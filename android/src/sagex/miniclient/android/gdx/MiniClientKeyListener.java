@@ -51,14 +51,6 @@ public class MiniClientKeyListener implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        // send a-z 0-9 and PUNCTUATION as is
-        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
-                || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
-                || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
-            client.getCurrentConnection().postKeyEvent((char) event.getUnicodeChar(), androidToSageKeyModifier(event), (char) event.getUnicodeChar());
-            return true;
-        }
-
         Map<Object, SageTVKey> LONG_KEYMAP;
         Map<Object, SageTVKey> KEYMAP;
 
@@ -96,6 +88,16 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                 log.debug("KEYS: Skipping Key {}", keyCode);
                 return true;
             }
+
+            // check if we are handling a keypress completion
+            // send a-z 0-9 and PUNCTUATION as is
+            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
+                    || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
+                    || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
+                client.getCurrentConnection().postKeyEvent((char) event.getUnicodeChar(), androidToSageKeyModifier(event), (char) event.getUnicodeChar());
+                return true;
+            }
+
             if (KEYMAP.containsKey(keyCode)) {
                 SageTVKey key = KEYMAP.get(keyCode);
                 log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
