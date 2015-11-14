@@ -1038,8 +1038,10 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                         .getInstance(evtEncryptCipher.getAlgorithm());
                                 decryptCipher.init(javax.crypto.Cipher.DECRYPT_MODE, mySecretKey);
                                 String newAuth = new String(decryptCipher.doFinal(cmdbuffer, 4 + nameLen, valLen));
-                                if (msi != null)
+                                if (msi != null) {
                                     msi.setAuthBlock(newAuth);
+                                    msi.save(client.properties());
+                                }
                             }
                             retval = 0;
                         } else
