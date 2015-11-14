@@ -10,12 +10,12 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 /**
  * Created by seans on 06/10/15.
  */
-public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer> {
+public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> {
 
     long preSeekPos = -1;
 
     public IJKMediaPlayerImpl(MiniClientGDXActivity activity) {
-        super(activity, true);
+        super(activity, true, true);
     }
 
     @Override
@@ -67,18 +67,24 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
         try {
             if (player == null) {
                 player = new IjkMediaPlayer();
+                //player = new IjkExoMediaPlayer(context);
             }
-            player.setLogEnabled(true);
             //IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG);
-            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_WARN);
+            if (player instanceof IjkMediaPlayer) {
+                player.setLogEnabled(true);
+                IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_WARN);
+            }
+
             player.setDisplay(mSurface.getHolder());
 
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1); // enable hardware acceleration
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
-            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
-            player.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
-            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
-            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
+            if (player instanceof IjkMediaPlayer) {
+                ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1); // enable hardware acceleration
+                ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
+                //player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
+                ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
+                //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
+                //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
+            }
 
 
 
@@ -133,15 +139,27 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IjkMediaPlayer
         if (player == null)
             return;
         log.debug("Releasing Player");
+
         try {
-            if (player.isPlaying()) {
-                player.pause();
-                player.stop();
+            try {
+                if (player.isPlaying()) {
+                    try {
+                        player.pause();
+                    } catch (Throwable t) {
+                    }
+                    try {
+                        player.stop();
+                    } catch (Throwable t) {
+                    }
+                }
+            } catch (Throwable t) {
             }
-            player.reset();
+            try {
+                player.reset();
+            } catch (Throwable t) {
+            }
             log.debug("Player Is Stopped");
         } catch (Throwable t) {
-
         }
 
         try {

@@ -41,13 +41,15 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     int mVideoHeight;
 
     boolean createPlayerOnUI = true;
+    boolean waitForPlayer = true;
 
     SageTVHttpMediaServerBridge httpBridge = null;
 
-    public DataSourceMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI) {
+    public DataSourceMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
         this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
+        this.waitForPlayer = waitForPlayer;
         httpBridge = MiniclientApplication.get().getClient().getHttpBridge();
     }
 
@@ -92,6 +94,8 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
      * Waits until the player has been contructed
      */
     void waitForPlayer() {
+        if (!waitForPlayer) return;
+
         log.debug("wait for player");
         while (!playerReady) {
             try {

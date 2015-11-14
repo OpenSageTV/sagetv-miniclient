@@ -665,6 +665,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
 
         player = new IJKMediaPlayerImpl(activity);
+        //player = new ExoMediaPlayerImpl(activity);
         return player;
     }
 
