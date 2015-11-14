@@ -1,3 +1,15 @@
+Step 1 - Initialize the Sources
+./init-sources.sh
+
+Step 2 - Build the player
+./build-player.sh
+
+Step 3 - Rebuild Player and update Project with new player artifacs
+./copy-resources.sh
+
+Step 3 is the only step that needs to be done if you are modifying IJKPlayer sources.
+
+JUST FOR Reference...
 ```
  2030  git clone git@github.com:stuckless/ijkplayer.git
  2031  cd ijkplayer
