@@ -25,6 +25,8 @@ public class EventRouter {
     public static final SageTVKey LEFT = new SageTVKey(Keys.VK_LEFT);
     public static final SageTVKey RIGHT = new SageTVKey(Keys.VK_RIGHT);
     public static final SageTVKey ENTER = new SageTVKey(Keys.VK_ENTER);
+    public static final SageTVKey DELETE = new SageTVKey(Keys.VK_DELETE);
+    public static final SageTVKey BACKSPACE = new SageTVKey(Keys.VK_BACK_SPACE);
     public static final SageTVKey SELECT = ENTER;
     public static final SageTVKey BACK = new SageTVKey(Keys.VK_LEFT, Keys.ALT_MASK);
 
@@ -33,8 +35,10 @@ public class EventRouter {
     public static final SageTVKey POWER = new SageTVKey(Keys.VK_Z, Keys.CTRL_MASK);
     public static final SageTVKey INFO = new SageTVKey(Keys.VK_I, Keys.CTRL_MASK);
     public static final SageTVKey HOME = new SageTVKey(Keys.VK_HOME);
-    public static final SageTVKey OPTIONS = new SageTVKey(Keys.VK_O);
+    public static final SageTVKey OPTIONS = new SageTVKey(Keys.VK_O, Keys.CTRL_MASK);
     public static final SageTVKey ESCAPE = OPTIONS;
+
+    public static final SageTVKey SPACE = new SageTVKey(Keys.VK_SPACE); // o === space??
 
     // these are NATIVE key to SageTV key maps.  Initally Empty, so, each Native
     // client needs to set these on startup

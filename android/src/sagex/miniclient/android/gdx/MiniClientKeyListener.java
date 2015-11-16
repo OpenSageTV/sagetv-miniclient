@@ -37,8 +37,14 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, EventRouter.MEDIA_FF);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, EventRouter.MEDIA_REW);
 
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);
+        // sagetv, STOP == DELETE ??
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DEL, EventRouter.MEDIA_STOP);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_SPACE, EventRouter.SPACE);
+
         // UI Long Presses
         EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
+        EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.OPTIONS);
     }
 
     private final MiniClient client;
@@ -58,7 +64,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         KEYMAP = EventRouter.NATIVE_UI_KEYMAP;
 
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            log.debug("KEYS: DOWN KEYCODE: " + keyCode + "; " + event + "; Video Playing: " + client.isVideoPlaying());
+            // log.debug("KEYS: DOWN KEYCODE: " + keyCode + "; " + event + "; Video Playing: " + client.isVideoPlaying());
             if (LONG_KEYMAP.containsKey(keyCode)) {
                 if (event.isLongPress()) {
                     log.debug("KEYS: LONG PRESS KEYCODE: {}; {}", keyCode, event);
@@ -94,7 +100,12 @@ public class MiniClientKeyListener implements View.OnKeyListener {
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
                     || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
                     || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
-                client.getCurrentConnection().postKeyEvent((char) event.getUnicodeChar(), androidToSageKeyModifier(event), (char) event.getUnicodeChar());
+                log.debug("KEYPRESS: {}; {}; {}", (char) event.getUnicodeChar(), (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON), event.getUnicodeChar());
+                char toSend = (char) event.getUnicodeChar();
+                if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
+                    toSend = (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON);
+                }
+                client.getCurrentConnection().postKeyEvent(toSend, androidToSageKeyModifier(event), (char) event.getUnicodeChar());
                 return true;
             }
 
