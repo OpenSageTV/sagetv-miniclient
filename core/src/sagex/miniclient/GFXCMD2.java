@@ -170,8 +170,8 @@ public class GFXCMD2 {
     public int ExecuteGFXCommand(int cmd, int len, byte[] cmddata, int[] hasret) {
         len -= 4; // for the 4 byte header
         hasret[0] = 0; // Nothing to return by default
-        // System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length)
-        // ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+
+        //System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length)? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
 
         if (!windowManager.hasGraphicsCanvas()) {
             switch (cmd) {
