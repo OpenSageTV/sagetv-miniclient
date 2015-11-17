@@ -14,9 +14,12 @@ export ANDROID_NDK=`pwd`/Ndk/android-ndk-r10e
 #export ANDROID_SDK=/home/sls/Android/Sdk/
 
 cd ijkplayer
+cd config
+ln -sf module-default.sh module.sh
+cd ..
 ./init-android.sh
 cd android/contrib/
-#./compile-ffmpeg.sh clean
+./compile-ffmpeg.sh clean
 ./compile-ffmpeg.sh all
 cd ..
 ./compile-ijk.sh all
