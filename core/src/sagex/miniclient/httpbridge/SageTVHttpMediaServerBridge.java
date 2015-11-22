@@ -19,6 +19,23 @@ import sagex.miniclient.MiniClient;
  * Created by seans on 06/10/15.
  */
 public class SageTVHttpMediaServerBridge extends NanoHTTPD implements DataSource.DataSourceListener {
+    public static class MediaCommand {
+        public static final class ActionType {
+            public static final int Key=1;
+            public static final int Command=2;
+            public static final int Internal=3; // show keyboard, show mic, etc
+        }
+
+        public int type;
+        public int key;
+        public int modifiers;
+        public String command;
+    }
+
+    public interface MediaCommandHandler {
+        boolean onMediaCommand(MediaCommand command);
+    }
+
     private static Logger log = LoggerFactory.getLogger(SageTVHttpMediaServerBridge.class);
 
     private final MiniClient client;
@@ -26,6 +43,8 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD implements DataSource
     private AtomicInteger sessions = new AtomicInteger();
     private Map<Integer, DataSourceInputStream> streams = new HashMap<Integer, DataSourceInputStream>();
     private DataSource currentDataSource;
+
+    private MediaCommandHandler mediaCommandHandler = null;
 
     public SageTVHttpMediaServerBridge(MiniClient client, int port) {
         super(port);
@@ -35,6 +54,24 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD implements DataSource
 
     @Override
     public Response serve(IHTTPSession session) {
+        // handle remote media commands
+        if (log.isDebugEnabled()) {
+            log.debug("Request[{}]: {}", session.getUri(), session.getQueryParameterString());
+        }
+        try {
+            if (session.getUri().contains("command")) {
+                return processCommand(session);
+            } else if (session.getUri().contains("stream")) {
+                return processStreamRequest(session);
+            }
+        } catch (Throwable t) {
+            log.error("Request Failed", t);
+            return NanoHTTPD.newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "text/plain", "Internal Error: " + t.getMessage());
+        }
+        return NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "Unsupported Request: " + session.getUri());
+    }
+
+    private Response processStreamRequest(IHTTPSession session) {
         int sess = sessions.incrementAndGet();
 
         if (log.isDebugEnabled()) {
@@ -86,6 +123,22 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD implements DataSource
             log.error("[" + sess + "]:Request Failed", t);
             return NanoHTTPD.newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "text/plain", "Internal Error: " + t.getMessage());
         }
+    }
+
+    private Response processCommand(IHTTPSession session) {
+        if (mediaCommandHandler != null) {
+            MediaCommand command = new MediaCommand();
+            command.type = Integer.parseInt(session.getParms().get("type"));
+            command.key = Integer.parseInt(session.getParms().get("key"));
+            command.command = session.getParms().get("cmd");
+            command.modifiers = Integer.parseInt(session.getParms().get("modifiers"));
+            if (mediaCommandHandler.onMediaCommand(command)) {
+                return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "text/plain", "Command Handled");
+            }
+        } else {
+            log.debug("Attempted to handle a command, but no command handler is set");
+        }
+        return NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "Command Not Found " + session.getUri());
     }
 
     long[] getRange(IHTTPSession session) {
@@ -180,4 +233,9 @@ public class SageTVHttpMediaServerBridge extends NanoHTTPD implements DataSource
         // stop listening
         source.setDataSourceListener(null);
     }
+
+    public void setMediaCommandHandler(MediaCommandHandler mediaCommandHandler) {
+        this.mediaCommandHandler = mediaCommandHandler;
+    }
+
 }
