@@ -6,20 +6,38 @@
         <item>WARN</item>
         <item>ERROR</item>
     </string-array>
+
     <string-array name="entryvalues_list_loglevels_preference">
         <item>debug</item>
         <item>info</item>
         <item>warn</item>
         <item>error</item>
     </string-array>
+
     <string-array name="entries_list_streaming_mode_preference">
         <item>Dynamic</item>
         <item>Pull</item>
         <item>Fixed</item>
     </string-array>
+
     <string-array name="entryvalues_list_streaming_mode_preference">
         <item>dynamic</item>
         <item>pull</item>
         <item>fixed</item>
+    </string-array>
+
+    <string-array name="entries_list_auto_connect_delay_preference">
+        <item>1 Second</item>
+        <item>2 Seconds</item>
+        <item>5 Seconds</item>
+        <item>8 Seconds</item>
+        <item>10 Seconds</item>
+    </string-array>
+    <string-array name="entryvalues_list_auto_connect_delay_preference">
+        <item>1</item>
+        <item>2</item>
+        <item>5</item>
+        <item>8</item>
+        <item>10</item>
     </string-array>
 </resources>

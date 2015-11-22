@@ -29,7 +29,7 @@ public class AndroidPrefStore implements PrefStore {
 
     @Override
     public void setString(String key, String value) {
-        prefs.edit().putString(key, value).commit();
+        prefs.edit().putString(key, value).apply();
     }
 
     @Override
@@ -39,12 +39,16 @@ public class AndroidPrefStore implements PrefStore {
 
     @Override
     public long getLong(String key, long defValue) {
-        return prefs.getLong(key, defValue);
+        try {
+            return prefs.getLong(key, defValue);
+        } catch (ClassCastException cce) {
+        }
+        return Long.parseLong(prefs.getString(key, String.valueOf(defValue)));
     }
 
     @Override
     public void setLong(String key, long value) {
-        prefs.edit().putLong(key, value).commit();
+        prefs.edit().putLong(key, value).apply();
     }
 
     @Override
@@ -54,12 +58,16 @@ public class AndroidPrefStore implements PrefStore {
 
     @Override
     public int getInt(String key, int defValue) {
-        return prefs.getInt(key, defValue);
+        try {
+            return prefs.getInt(key, defValue);
+        } catch (ClassCastException cce) {
+        }
+        return Integer.parseInt(prefs.getString(key, String.valueOf(defValue)));
     }
 
     @Override
     public void setInt(String key, int value) {
-        prefs.edit().putInt(key, value).commit();
+        prefs.edit().putInt(key, value).apply();
     }
 
     @Override

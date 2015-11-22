@@ -93,6 +93,7 @@ public class PushBufferDataSource implements DataSource {
 
     @Override
     public int bufferAvailable() {
+        if (circularByteBuffer == null) return 0;
         return circularByteBuffer.getSpaceLeft();
     }
 

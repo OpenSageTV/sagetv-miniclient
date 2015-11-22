@@ -53,7 +53,7 @@ public class SettingsFragment extends PreferenceFragment {
             });
 
             updateSummary(loglevel, R.string.summary_list_loglevels_preference, prefs.getString(PrefStore.Keys.log_level, "debug"));
-            updateSummary(loglevel, R.string.summary_list_streaming_mode_preference, prefs.getString(PrefStore.Keys.streaming_mode, "dynamic"));
+            updateSummary(streammode, R.string.summary_list_streaming_mode_preference, prefs.getString(PrefStore.Keys.streaming_mode, "dynamic"));
 
             final Preference sendlog = findPreference("sendlog");
             sendlog.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -71,6 +71,6 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     private void updateSummary(Preference pref, int resId, Object value) {
-        pref.setSummary(getResources().getString(resId, value));
+        //pref.setSummary(getResources().getString(resId, value));
     }
 }
