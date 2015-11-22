@@ -27,7 +27,7 @@ public class MiniclientService extends Service {
             MiniClient client = MiniclientApplication.get(this).getClient();
             if (client.isUsingHttpBridge()) {
                 // start the http bridge
-                client.getHttpBridge();
+                client.getHttpBridge().setMediaCommandHandler(new AndroidMediaCommandHandler(this));
             }
         } catch (Throwable t) {
             log.error("Failed to start miniclient service", t);
