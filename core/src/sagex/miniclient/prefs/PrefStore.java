@@ -74,6 +74,11 @@ public interface PrefStore {
         String video_buffer_size = "video_buffer_size";
         String audio_buffer_size = "audio_buffer_size";
 
+        // auto connect settings
+        String auto_connect_to_last_server = "auto_connect_to_last_server";
+        String auto_connect_delay = "auto_connect_delay";
+        String last_connected_server = "last_connected_server";
+
         /**
          * Log to file
          */

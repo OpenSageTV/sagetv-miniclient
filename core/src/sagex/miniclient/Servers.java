@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sagex.miniclient.prefs.PrefStore;
+
 /**
  * Utility methods for dealing with Server Connection Data
  */
@@ -66,5 +68,16 @@ public class Servers {
             }
         }
         return servers;
+    }
+
+    public void setLastConnectedServer(ServerInfo si) {
+        client.properties().setString(PrefStore.Keys.last_connected_server, si.name);
+    }
+
+    public ServerInfo getLastConnectedServer() {
+        String last = client.properties().getString(PrefStore.Keys.last_connected_server);
+        if (last == null) return null;
+        ServerInfo si = getServer(last);
+        return si;
     }
 }

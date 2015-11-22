@@ -2,6 +2,8 @@ package sagex.miniclient.android.video;
 
 import android.widget.Toast;
 
+import java.io.IOException;
+
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.httpbridge.PullBufferDataSource;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -13,6 +15,8 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> {
 
     long preSeekPos = -1;
+    private String lastUrl;
+    private int flushCount = 0;
 
     public IJKMediaPlayerImpl(MiniClientGDXActivity activity) {
         super(activity, true, true);
@@ -50,8 +54,25 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> 
         super.flush();
         if (httpBridge.hasDataSource()) {
             getDataSource().flush();
-            log.debug("Seek1");
-            player.seekTo(Long.MAX_VALUE);
+            // playing with trying to have the player use a new URL when flushing
+//            log.debug("Seek1");
+//            //player.seekTo(Long.MAX_VALUE);
+//            if (lastUrl!=null) {
+//                player.stop();
+//                player.reset();
+//                String url = lastUrl;
+//                if (lastUrl.indexOf("?")==-1) {
+//                    url += ("?flush=" + (++flushCount));
+//                } else {
+//                    url += ("&flush=" + (++flushCount));
+//                }
+//                try {
+//                    player.setDataSource(url);
+//                    player.start();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
     }
 
@@ -98,6 +119,7 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> 
 
             log.debug("Sending URL to mediaplayer");
             player.setDataSource(url);
+            this.lastUrl = url;
             // player.setDataSource("/sdcard/Movies/twd1.mp4");
             // player.setDataSource("http://192.168.1.176:8000/twd1.mp4");
 

@@ -1,6 +1,7 @@
 package sagex.miniclient.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.prefs.PrefStore;
 
 /**
  * Created by seans on 20/09/15.
@@ -52,6 +54,15 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         list.setAdapter(adapter);
 
         paused = false;
+
+        if (MiniclientApplication.get(this).getClient().properties().getBoolean(PrefStore.Keys.auto_connect_to_last_server, false)) {
+            ServerInfo si = MiniclientApplication.get(this).getClient().getServers().getLastConnectedServer();
+            if (si != null) {
+                // show the connect dialog
+                AutoConnectDialog dialog = new AutoConnectDialog();
+                dialog.show(getFragmentManager(), "autoconnect");
+            }
+        }
     }
 
     @Override
@@ -91,6 +102,22 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         });
     }
 
+    public static void connect(Context ctx, ServerInfo si) {
+        try {
+            // connect to server
+            Intent i = new Intent(ctx, MiniClientGDXActivity.class);
+            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
+            ctx.startActivity(i);
+
+            si.lastConnectTime = System.currentTimeMillis();
+            si.save(MiniclientApplication.get().getClient().properties());
+            MiniclientApplication.get().getClient().getServers().setLastConnectedServer(si);
+        } catch (Throwable t) {
+            log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
+            Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         ServerInfo si = adapter.getCastedItem(position);
@@ -103,15 +130,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
             Intent i = new Intent(getBaseContext(), SettingsActivity.class);
             startActivity(i);
         } else {
-            try {
-                // connect to server
-                Intent i = new Intent(getBaseContext(), MiniClientGDXActivity.class);
-                i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
-                startActivity(i);
-            } catch (Throwable t) {
-                log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
-                Toast.makeText(this, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
-            }
+            connect(this, si);
         }
     }
 
