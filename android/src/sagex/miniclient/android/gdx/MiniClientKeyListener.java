@@ -2,6 +2,7 @@ package sagex.miniclient.android.gdx;
 
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.android.AndroidKeyEventMapper;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Keys;
 import sagex.miniclient.uibridge.SageTVKey;
@@ -19,6 +23,8 @@ import sagex.miniclient.uibridge.SageTVKey;
 public class MiniClientKeyListener implements View.OnKeyListener {
     private static final Logger log = LoggerFactory.getLogger(MiniClientKeyListener.class);
     private static String PUNCTUATION = "`~!@#$%^&*()_+{}|:\"<>?-=[];'./,";
+
+    static AndroidKeyEventMapper keyEventMapper = new AndroidKeyEventMapper();
 
     static {
         // navivation native keymap
@@ -101,7 +107,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
                     || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
                     || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
-                log.debug("KEYPRESS: {}; {}; {}", (char) event.getUnicodeChar(), (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON), event.getUnicodeChar());
+                //log.debug("KEYPRESS: {}; {}; {}", (char) event.getUnicodeChar(), (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON), event.getUnicodeChar());
                 char toSend = (char) event.getUnicodeChar();
                 if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
                     toSend = (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON);
@@ -116,7 +122,13 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                 client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
                 return true;
             } else {
-                log.debug("KEYS: Unmapped Key Code: {}", event);
+                if (client.properties().getBoolean(PrefStore.Keys.debug_log_unmapped_keypresses, false)) {
+                    log.debug("KEYS: Unmapped Key Code: {}", event);
+                    try {
+                        Toast.makeText(MiniclientApplication.get(), "UNMAPPED KEY: " + keyEventMapper.getFieldName(event.getKeyCode()), Toast.LENGTH_LONG).show();
+                    } catch (Throwable t) {
+                    }
+                }
             }
         }
 

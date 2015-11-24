@@ -90,5 +90,10 @@ public interface PrefStore {
         String log_level = "log_level";
 
         String use_hardware_acceleration = "use_hardware_acceleration";
+
+        /**
+         * Debug Settings
+         */
+        String debug_log_unmapped_keypresses = "debug_log_unmapped_keypresses";
     }
 }

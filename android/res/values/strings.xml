@@ -27,5 +27,8 @@
     <string name="msg_auto_connect">Will Auto Connect in %s Seconds</string>
     <string name="ok">OK</string>
     <string name="cancel">CANCEL</string>
+    <string name="debug_preferences">Debug Settings</string>
+    <string name="summary_debug_log_unmapped_keypresses_preference">If enabled then remote key presses that are not mapped will be show as a message in the UI when they happen</string>
+    <string name="title_debug_log_unmapped_keypresses_preference">Show Unmapped Keypresses</string>
 
 </resources>
