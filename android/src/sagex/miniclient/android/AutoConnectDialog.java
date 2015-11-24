@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.github.rahatarmanahmed.cpv.CircularProgressView;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +29,11 @@ public class AutoConnectDialog extends DialogFragment {
     @Bind(R.id.text)
     TextView connectText = null;
 
+    @Bind(R.id.progress_view)
+    CircularProgressView progressView;
+
     int countdownSecs = 5;
+    int totalCountDownMS = countdownSecs * 1000;
     boolean autoConnect = true;
     CountDownTimer countDownTimer;
     boolean connected = false;
@@ -52,10 +58,7 @@ public class AutoConnectDialog extends DialogFragment {
         if (autoConnect) {
             connect();
         } else {
-            try {
-                dismiss();
-            } catch (Throwable t) {
-            }
+            dismissQuietly();
         }
     }
 
@@ -81,7 +84,7 @@ public class AutoConnectDialog extends DialogFragment {
     public void onCancel() {
         autoConnect = false;
         countDownTimer.cancel();
-        dismiss();
+        dismissQuietly();
     }
 
     private void updateText() {
@@ -96,8 +99,16 @@ public class AutoConnectDialog extends DialogFragment {
     public void onPause() {
         if (countDownTimer != null) {
             countDownTimer.cancel();
+            dismissQuietly();
         }
         super.onPause();
+    }
+
+    private void dismissQuietly() {
+        try {
+            dismiss();
+        } catch (Throwable t) {
+        }
     }
 
     @Override
@@ -107,13 +118,18 @@ public class AutoConnectDialog extends DialogFragment {
         serverInfo = MiniclientApplication.get().getClient().getServers().getLastConnectedServer();
         updateText();
 
+        totalCountDownMS = countdownSecs * 1000;
+        progressView.setMaxProgress(totalCountDownMS);
+        progressView.setProgress(totalCountDownMS);
+
         super.onResume();
 
-        countDownTimer = new CountDownTimer(countdownSecs * 1000, 1000) {
+        countDownTimer = new CountDownTimer(totalCountDownMS, 250) {
             @Override
             public void onTick(long millisUntilFinished) {
                 countdownSecs = (int) (millisUntilFinished / 1000);
                 updateText();
+                progressView.setProgress(millisUntilFinished);
             }
 
             @Override
