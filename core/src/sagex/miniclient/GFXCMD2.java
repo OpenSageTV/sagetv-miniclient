@@ -108,7 +108,7 @@ public class GFXCMD2 {
     private UIRenderer<?> windowManager;
     private MiniClientConnectionGateway myConn;
     private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
-    private boolean usesAdvancedImageCaching;
+    private boolean usesAdvancedImageCaching = true;
     private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
     private int handleCount = 2;
     private long imageCacheSize;
@@ -171,7 +171,9 @@ public class GFXCMD2 {
         len -= 4; // for the 4 byte header
         hasret[0] = 0; // Nothing to return by default
 
-        //System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length)? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+        //if (cmd != GFXCMD_DRAWTEXTURED) {
+        //    System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+        //}
 
         if (!windowManager.hasGraphicsCanvas()) {
             switch (cmd) {
@@ -540,8 +542,13 @@ public class GFXCMD2 {
                                         // so we want it for sure!
                                     } else {
                                         imghandle = handleCount++;
-                                        imageMap.put(imghandle, bi);
+
+                                        sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
+                                        imageMap.put(imghandle, img);
                                         imageCacheSize += width * height * 4;
+
+                                        //imageMap.put(imghandle, bi);
+                                        //imageCacheSize += width * height * 4;
                                         hasret[0] = 1;
                                         return -1 * imghandle;
                                     }
@@ -831,7 +838,9 @@ public class GFXCMD2 {
                     String resID = null;
                     try {
                         boolean cacheAdd = false;
+                        //log.debug("LoadImageCompressed: {}", handle);
                         if (lastImageResourceID != null && lastImageResourceIDHandle == handle) {
+                            //log.debug("LoadImageCompressed: {}, {}", handle, lastImageResourceID);
                             cacheFile = getCachedImageFile(lastImageResourceID, false);
                             resID = lastImageResourceID;
                             if (cacheFile != null && (!cacheFile.isFile() || cacheFile.length() == 0))
@@ -840,6 +849,7 @@ public class GFXCMD2 {
                         if (cacheFile == null) {
                             cacheFile = java.io.File.createTempFile("stv", "img");
                             deleteCacheFile = true;
+                            //log.debug("LoadImageCompressed: {}, CACHED: {}", handle, cacheFile);
                         }
                         fos = new java.io.FileOutputStream(cacheFile);
                         fos.write(cmddata, 12, len2); // an extra 4 for the header
@@ -865,6 +875,7 @@ public class GFXCMD2 {
                         } else
                             hasret[0] = 0;
                         try {
+                            //log.debug("LoadImageCompressed: {}, reading Cached File: {}", handle, cacheFile);
                             sagex.miniclient.uibridge.ImageHolder<?> img = null;
                             // TODO Need a way to get real image size back
                             img = windowManager.readImage(cacheFile);
@@ -1006,7 +1017,7 @@ public class GFXCMD2 {
     private String getOfflineCacheList() {
         if (cacheDir == null)
             return "";
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         java.io.File[] cacheFiles = cacheDir.listFiles();
         for (int i = 0; cacheFiles != null && i < cacheFiles.length; i++) {
             sb.append(cacheFiles[i].getName());
@@ -1045,11 +1056,11 @@ public class GFXCMD2 {
     }
 
     public void registerImageAccess(int handle) {
-        lruImageMap.put(new Integer(handle), new Long(System.currentTimeMillis()));
+        lruImageMap.put(handle, System.currentTimeMillis());
     }
 
     public void clearImageAccess(int handle) {
-        lruImageMap.remove(new Integer(handle));
+        lruImageMap.remove(handle);
     }
 
     public int getOldestImage() {
@@ -1064,7 +1075,7 @@ public class GFXCMD2 {
                 oldestHandle = (Integer) ent.getKey();
             }
         }
-        return (oldestHandle == null) ? 0 : oldestHandle.intValue();
+        return (oldestHandle == null) ? 0 : oldestHandle;
     }
 
     public boolean doesUseAdvancedImageCaching() {

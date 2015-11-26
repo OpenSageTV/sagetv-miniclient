@@ -9,7 +9,7 @@ repositories {
 
 ext {
     appName = "SageTVMiniclient"
-    baseVersion = "0.12-ALPHA"
+    baseVersion = "0.14-ALPHA"
 }
 
 task(copyFiles) << {
