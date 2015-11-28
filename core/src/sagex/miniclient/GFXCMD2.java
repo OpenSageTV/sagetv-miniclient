@@ -108,7 +108,7 @@ public class GFXCMD2 {
     private UIRenderer<?> windowManager;
     private MiniClientConnectionGateway myConn;
     private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
-    private boolean usesAdvancedImageCaching = true;
+    private boolean usesAdvancedImageCaching = false;
     private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
     private int handleCount = 2;
     private long imageCacheSize;
