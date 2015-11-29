@@ -1,6 +1,8 @@
 package sagex.miniclient.android.video;
 
 import android.content.res.Configuration;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
@@ -123,6 +125,24 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public void stop() {
+    }
+
+    protected void clearSurface() {
+        if (mSurface != null) {
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        log.debug("Clearing Canvas");
+                        Canvas canvas = mSurface.getHolder().lockCanvas(null);
+                        canvas.drawColor(Color.BLACK);
+                        mSurface.getHolder().unlockCanvasAndPost(canvas);
+                    } catch (Throwable t) {
+                        log.debug("Failed to clear canvas");
+                    }
+                }
+            });
+        }
     }
 
     @Override
