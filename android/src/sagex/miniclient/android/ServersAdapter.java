@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +19,8 @@ import sagex.miniclient.ServerInfo;
  * Created by seans on 20/09/15.
  */
 public class ServersAdapter extends BaseAdapter {
+    private static final Logger log = LoggerFactory.getLogger(ServersAdapter.class);
+
     public static String NEW_SERVER_ID = "New Server";
     public static String PREFERENCES_ID = "Preferences";
     private final Context context;
@@ -78,6 +83,7 @@ public class ServersAdapter extends BaseAdapter {
 
     public void addServer(ServerInfo si) {
         if (!items.contains(si)) {
+            log.debug("Adding Server to List, since it does not exist: {}", si);
             items.add(si);
         }
         notifyDataSetChanged();

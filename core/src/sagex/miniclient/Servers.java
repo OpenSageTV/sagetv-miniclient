@@ -1,5 +1,8 @@
 package sagex.miniclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +13,8 @@ import sagex.miniclient.prefs.PrefStore;
  * Utility methods for dealing with Server Connection Data
  */
 public class Servers {
+    private static final Logger log = LoggerFactory.getLogger(Servers.class);
+
     MiniClient client;
 
     public Servers(MiniClient client) {
@@ -53,6 +58,7 @@ public class Servers {
         String parts[] = null;
         ArrayList list = new ArrayList(client.properties().keys());
         Collections.sort(list);
+        ServerInfo si = null;
         for (Object k : list) {
             if (k.toString().startsWith("servers/")) {
                 // process server
@@ -61,9 +67,10 @@ public class Servers {
                     thisServer = parts[1];
                     if (thisServer.equals(lastServer)) continue;
                     lastServer = thisServer;
-
+                    si = getServer(parts[1]);
                     // add Server
-                    servers.add(getServer(parts[1]));
+                    servers.add(si);
+                    log.debug("Adding Saved Server: {}", si);
                 }
             }
         }
