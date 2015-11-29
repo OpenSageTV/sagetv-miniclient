@@ -170,6 +170,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         Gdx.gl20.glClearColor(0, 0, 0, 0);
+        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE);
@@ -191,6 +192,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             }
             batch.end();
         }
+
+
         long et = System.currentTimeMillis();
         if (logFrameTime) {
             log.debug("RENDER: Time: " + (et - st) + "ms");
@@ -340,7 +343,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 shapeRenderer.setColor(getColor(argbTL));
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.circle(x, y, height / 2);
+                shapeRenderer.ellipse(x, Y(y, height), width, height);
+                //shapeRenderer.circle(x, y, height / 2);
                 shapeRenderer.end();
 
                 batch.begin();
@@ -349,7 +353,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void fillOval(final int x, final int y, int width, final int height, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+    public void fillOval(final int x, final int y, final int width, final int height, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
         // TODO: make ovals
         invokeLater(new Runnable() {
             @Override
@@ -360,7 +364,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 shapeRenderer.setColor(getColor(argbTL));
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.circle(x, y, height / 2);
+                //shapeRenderer.circle(x, y, height / 2);
+                shapeRenderer.ellipse(x, Y(y, height), width, height);
                 shapeRenderer.end();
 
                 batch.begin();
@@ -370,13 +375,39 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        // TODO: make it rounded (Maybe use Canvas and get bitmap as texture... Not efficient, but not used a lot either)
+        // TODO: make it rounded (libgdx support arcs, curves, and lines, just need to figure out the right combination)
         drawRect(x, y, width, height, thickness, argbTL, argbTR, argbBR, argbBL);
     }
 
     @Override
-    public void fillRoundRect(int x, int y, int width, int height, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        // TODO: make it rounded
+    public void fillRoundRect(final int x, final int y, final int width, final int height, final int arcRadius, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+//        invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                batch.end();
+//
+//                camera.update();
+//                shapeRenderer.setColor(getColor(argbTL));
+//                shapeRenderer.setProjectionMatrix(camera.combined);
+//                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+//
+//                shapeRenderer.rect(x, Y(y, height) + arcRadius, width, height - (2 * arcRadius));
+//
+//                shapeRenderer.rect(x + arcRadius, Y(y, height), width - (2 * arcRadius), height);
+//
+//                shapeRenderer.circle(x + arcRadius, Y(y, height) + arcRadius, arcRadius);
+//
+//                shapeRenderer.circle(x + arcRadius, Y(y, height) + height - arcRadius, arcRadius);
+//
+//                shapeRenderer.circle(x + width - arcRadius, Y(y, height) + arcRadius, arcRadius);
+//
+//                shapeRenderer.circle(x+width-arcRadius, Y(y,height)+height-arcRadius, arcRadius);
+//
+//                shapeRenderer.end();
+//
+//                batch.begin();
+//            }
+//        });
         fillRect(x, y, width, height, argbTL, argbTR, argbBR, argbBL);
     }
 
