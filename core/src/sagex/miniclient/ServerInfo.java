@@ -13,7 +13,7 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
     public static final int LOCATABLE_SERVER = 3;
 
     public String address;
-    public int port;
+    public int port = 31099;
     public String name;
     public String locatorID;
     public int serverType;
@@ -41,7 +41,6 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
 
         ServerInfo that = (ServerInfo) o;
 
-        if (port != that.port) return false;
         return address.equals(that.address);
 
     }
