@@ -2,8 +2,6 @@ package sagex.miniclient.android.video;
 
 import android.widget.Toast;
 
-import java.io.IOException;
-
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.httpbridge.PullBufferDataSource;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -186,6 +184,11 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> 
 
         try {
             player.release();
+        } catch (Throwable t) {
+        }
+
+        try {
+            clearSurface();
         } catch (Throwable t) {
         }
         player = null;

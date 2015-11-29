@@ -45,6 +45,8 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, EventRouter.MEDIA_REW);
 
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MENU, EventRouter.OPTIONS);
+
         // sagetv, STOP == DELETE ??
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DEL, EventRouter.MEDIA_STOP);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_SPACE, EventRouter.SPACE);
