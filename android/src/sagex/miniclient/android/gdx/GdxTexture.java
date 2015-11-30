@@ -30,6 +30,10 @@ public class GdxTexture {
 
     public GdxTexture(Bitmap bitmap) {
         this.bitmap = bitmap;
+        if (bitmap != null) {
+            width = bitmap.getWidth();
+            height = bitmap.getHeight();
+        }
     }
 
     public GdxTexture(int width, int height) {
