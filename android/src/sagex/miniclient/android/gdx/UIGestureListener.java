@@ -1,8 +1,11 @@
 package sagex.miniclient.android.gdx;
 
+import android.app.Activity;
+import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.inputmethod.InputMethodManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +21,20 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     private static final Logger log = LoggerFactory.getLogger(UIGestureListener.class);
 
     private final MiniClient client;
+    private final Activity context;
     boolean logTouch = true;
     private int pointers;
 
-    public UIGestureListener(MiniClient client) {
+    public UIGestureListener(Activity act, MiniClient client) {
         super();
         this.client = client;
+        this.context = act;
+    }
+
+    private void showHideKeyboard() {
+        log.debug("Showing Keyboard");
+        InputMethodManager im = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        im.showSoftInput(context.getWindow().getDecorView(), InputMethodManager.SHOW_FORCED);
     }
 
     @Override
@@ -77,7 +88,9 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
                 client.getCurrentConnection().postKeyEvent(Keys.VK_DOWN, 0, (char) 0);
             }
         } else if (velocityY < -flingThreshold) {
-            if (multi() > 1) {
+            if (multi() > 2) {
+                showHideKeyboard();
+            } else if (multi() > 1) {
                 if (logTouch) log.debug("Fling Page Up");
                 client.getCurrentConnection().postKeyEvent(Keys.VK_PAGE_UP, 0, (char) 0);
             } else {

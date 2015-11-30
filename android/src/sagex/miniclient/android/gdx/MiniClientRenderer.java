@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -85,7 +84,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     // Current Surface (when surfaces are enabled)
     GdxTexture currentSurface = null;
     // render queues
-    private List<Runnable> renderQueue = new ArrayList<>();
+    final private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
     // the pipeline is synchonous so only one operations can affect this at a time
     private Color batchColor = null;
@@ -105,7 +104,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     public static int readInt(int pos, byte[] cmddata) {
         pos += 4; // for the 4 bytes for the header
-        return ((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF);
+        return ((cmddata[pos] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF);
     }
 
     @Override
@@ -185,8 +184,13 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             batch.setProjectionMatrix(camera.combined);
             batch.begin();
             synchronized (renderQueue) {
-                for (Runnable r : renderQueue) {
-                    r.run();
+                try {
+                    for (Runnable r : renderQueue) {
+                        r.run();
+                    }
+                } catch (Throwable t) {
+                    log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
+                    // TODO: How should we manage this.. request a re-render??
                 }
                 renderQueue.clear();
             }
@@ -441,8 +445,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 int h = Math.abs(height);
                 Texture t = img.get().texture();
                 batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
-                batch.setColor(batchColor);
                 if (!img.get().isFrameBuffer) {
+                    batch.setColor(batchColor);
                     Gdx.gl20.glDisable(GL20.GL_BLEND);
                 }
             }
@@ -463,7 +467,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         bm.setHasAlpha(true);
         bm.prepareToDraw();
         GdxTexture t = new GdxTexture(bm);
-        return new ImageHolder<>(t);
+        return new ImageHolder<>(t, t.width, t.height);
     }
 
     @Override
@@ -482,7 +486,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (logFrameBuffer)
             log.debug("Creating Framebuffer[" + handle + "]: " + width + "x" + height);
         final GdxTexture t = new GdxTexture(width, height);
-        ImageHolder<GdxTexture> h = new ImageHolder<>(t);
+        ImageHolder<GdxTexture> h = new ImageHolder<>(t, width, height);
         invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -551,8 +555,6 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             } finally {
                 fis.close();
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -579,7 +581,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 t.load();
             }
         });
-        return new ImageHolder<>(t);
+        return new ImageHolder<>(t, t.width, t.height);
     }
 
     @Override

@@ -23,7 +23,7 @@ import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
 
-public class MiniClientConnection implements SageTVInputCallback, MiniClientConnectionGateway {
+public class MiniClientConnection implements SageTVInputCallback {
     public static final String QUICKTIME = "Quicktime";
     public static final String AAC = "AAC";
     public static final String AC3 = "AC3";
@@ -947,7 +947,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                     String propName = new String(cmdbuffer, 4, nameLen);
                     // String propVal = new String(cmdbuffer, 4 + nameLen,
                     // valLen);
-                    log.debug("SetProperty {}", propName);
+                    String propVal = null;
                     synchronized (eventChannel) {
                         boolean encryptThisReply = encryptEvents;
                         if ("CRYPTO_PUBLIC_KEY".equals(propName)) {
@@ -963,6 +963,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             retval = 0;
                         } else if ("CRYPTO_ALGORITHMS".equals(propName)) {
                             currentCrypto = new String(cmdbuffer, 4 + nameLen, valLen);
+                            propVal = currentCrypto;
                             retval = 0;
                         } else if ("CRYPTO_EVENTS_ENABLE".equals(propName)) {
                             if ("TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen))) {
@@ -979,7 +980,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             }
                             log.debug("SageTVPlaceshifter event encryption is now={}", encryptEvents);
                         } else if ("GFX_RESOLUTION".equals(propName)) {
-                            String propVal = new String(cmdbuffer, 4 + nameLen, valLen);
+                            propVal = new String(cmdbuffer, 4 + nameLen, valLen);
                             // NOTE: These resolution changes need to be done on
                             // the AWT thread because if we're disposing
                             // a window then that may invoke on AWT which could
@@ -1016,17 +1017,22 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                                 fontServer = false;
                                 retval = 0;
                             }
+                            propVal = String.valueOf(fontServer);
                         } else if ("ZLIB_COMM_XFER".equals(propName)) {
                             zipMode = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
+                            propVal = String.valueOf(zipMode);
                             retval = 0;
                         } else if ("ADVANCED_IMAGE_CACHING".equals(propName)) {
                             usesAdvancedImageCaching = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
+                            propVal = String.valueOf(usesAdvancedImageCaching);
                             retval = 0;
                         } else if ("RECONNECT_SUPPORTED".equals(propName)) {
                             reconnectAllowed = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
+                            propVal = String.valueOf(reconnectAllowed);
                             retval = 0;
                         } else if ("SUBTITLES_CALLBACKS".equals(propName)) {
                             subSupport = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
+                            propVal = String.valueOf(subSupport);
                             retval = 0;
                         } else if ("SET_CACHED_AUTH".equals(propName)) {
                             // Save this authentication block in the properties
@@ -1069,6 +1075,7 @@ public class MiniClientConnection implements SageTVInputCallback, MiniClientConn
                             eventChannelError();
                         }
                     }
+                    log.debug("SetProperty {}={}", propName, (propVal == null) ? "N/A" : propVal);
                 } else if (command == FS_CMD_TYPE) {
                     command = (cmdbuffer[0] & 0xFF);
                     processFSCmd(command, len, cmdbuffer);

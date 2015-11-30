@@ -106,9 +106,8 @@ public class GFXCMD2 {
     protected long offlineImageCacheLimit;
     protected java.io.File cacheDir;
     private UIRenderer<?> windowManager;
-    private MiniClientConnectionGateway myConn;
+    private MiniClientConnection myConn;
     private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
-    private boolean usesAdvancedImageCaching = false;
     private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
     private int handleCount = 2;
     private long imageCacheSize;
@@ -171,9 +170,9 @@ public class GFXCMD2 {
         len -= 4; // for the 4 byte header
         hasret[0] = 0; // Nothing to return by default
 
-        //if (cmd != GFXCMD_DRAWTEXTURED) {
-        //    System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
-        //}
+//        if (cmd != GFXCMD_DRAWTEXTURED) {
+//            System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+//        }
 
         if (!windowManager.hasGraphicsCanvas()) {
             switch (cmd) {
@@ -502,7 +501,7 @@ public class GFXCMD2 {
                 // width, height
                 if (len >= 8) {
                     int width, height;
-                    // int imghandle = handleCount++;;
+                    //int imghandle = handleCount++;;
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
                     // java.awt.Image img = new java.awt.image.BufferedImage(width,
@@ -533,8 +532,8 @@ public class GFXCMD2 {
                                     if (bi == null || bi.getWidth() != width || bi.getHeight() != height) {
                                         if (bi != null) {
                                             // It doesn't match the cache
-                                            log.debug("CACHE ID verification failed for rezName=" + rezName + " cacheSize="
-                                                    + bi.getWidth() + "x" + bi.getHeight() + " reqSize=" + width + "x" + height);
+                                            log.debug("PREPIMAGE: CACHE ID verification failed for rezName={} cacheSize={}x{} reqSize={}x{}",
+                                                    rezName, bi.getWidth(), bi.getHeight(), width, height);
                                             bi.flush();
                                             cachedFile.delete();
                                         }
@@ -543,12 +542,11 @@ public class GFXCMD2 {
                                     } else {
                                         imghandle = handleCount++;
 
-                                        sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
-                                        imageMap.put(imghandle, img);
-                                        imageCacheSize += width * height * 4;
+                                        log.debug("PREPIMAGE: CACHED: Loading {}", imghandle);
 
-                                        //imageMap.put(imghandle, bi);
-                                        //imageCacheSize += width * height * 4;
+                                        imageMap.put(imghandle, bi);
+                                        imageCacheSize += (width * height * 4);
+
                                         hasret[0] = 1;
                                         return -1 * imghandle;
                                     }
@@ -640,8 +638,8 @@ public class GFXCMD2 {
                             if (bi == null || bi.getWidth() != width || bi.getHeight() != height) {
                                 if (bi != null) {
                                     // It doesn't match the cache
-                                    log.debug("CACHE ID verification failed for rezName=" + rezName + " cacheSize="
-                                            + bi.getWidth() + "x" + bi.getHeight() + " reqSize=" + width + "x" + height);
+                                    log.debug("LOADIMAGECACHE: CACHE ID verification failed for rezName={} cacheSize={}x{} reqSize={}x{}",
+                                            rezName, bi.getWidth(), bi.getHeight(), width, height);
                                     bi.flush();
                                     cachedFile.delete();
                                 }
@@ -849,7 +847,7 @@ public class GFXCMD2 {
                         if (cacheFile == null) {
                             cacheFile = java.io.File.createTempFile("stv", "img");
                             deleteCacheFile = true;
-                            //log.debug("LoadImageCompressed: {}, CACHED: {}", handle, cacheFile);
+                            log.debug("LoadImageCompressed: {}, CACHED: {}", handle, cacheFile);
                         }
                         fos = new java.io.FileOutputStream(cacheFile);
                         fos.write(cmddata, 12, len2); // an extra 4 for the header
@@ -869,15 +867,15 @@ public class GFXCMD2 {
                     }
                     registerImageAccess(handle);
                     if (cacheFile != null) {
-                        if (!doesUseAdvancedImageCaching()) {
+                        if (!myConn.doesUseAdvancedImageCaching()) {
                             handle = handleCount++;
                             hasret[0] = 1;
                         } else
                             hasret[0] = 0;
+                        //log.debug("LOADIMAGE: AdvancedImageCaching: {}, Handle: {}, Return: {}", myConn.doesUseAdvancedImageCaching(), handle, hasret[0]);
                         try {
                             //log.debug("LoadImageCompressed: {}, reading Cached File: {}", handle, cacheFile);
                             sagex.miniclient.uibridge.ImageHolder<?> img = null;
-                            // TODO Need a way to get real image size back
                             img = windowManager.readImage(cacheFile);
                             imageMap.put(handle, img);
                             imageCacheSize += img.getWidth() * img.getHeight() * 4;
@@ -904,7 +902,7 @@ public class GFXCMD2 {
                     destHeight = readInt(12, cmddata);
                     maskCornerArc = readInt(16, cmddata);
                     int rvHandle = destHandle;
-                    if (!doesUseAdvancedImageCaching()) {
+                    if (!myConn.doesUseAdvancedImageCaching()) {
                         rvHandle = handleCount++;
                         hasret[0] = 1;
                     } else
@@ -1076,10 +1074,6 @@ public class GFXCMD2 {
             }
         }
         return (oldestHandle == null) ? 0 : oldestHandle;
-    }
-
-    public boolean doesUseAdvancedImageCaching() {
-        return usesAdvancedImageCaching;
     }
 
     public Dimension getScreenSize() {

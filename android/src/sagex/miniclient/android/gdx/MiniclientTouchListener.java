@@ -17,7 +17,7 @@ public class MiniclientTouchListener implements View.OnTouchListener {
 
     public MiniclientTouchListener(Activity act, MiniClient client) {
         this.client = client;
-        mGestureListener = new UIGestureListener(client);
+        mGestureListener = new UIGestureListener(act, client);
         mDetector = new GestureDetectorCompat(act, mGestureListener);
     }
 
