@@ -94,7 +94,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     private MiniPlayerPlugin player;
 
-    private boolean resizeHappened = false;
+    boolean resizeHappened = false;
 
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;

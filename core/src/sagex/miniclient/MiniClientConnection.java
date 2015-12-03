@@ -425,11 +425,16 @@ public class MiniClientConnection implements SageTVInputCallback {
 
     public void close() {
         alive = false;
-        client.setCurrentConnection(null);
+        try {
+            client.setCurrentConnection(null);
+        } catch (Exception e) {
+        }
+
         try {
             gfxSocket.close();
         } catch (Exception e) {
         }
+
         GFXCMD2 oldGfx = myGfx;
         myGfx = null;
         if (oldGfx != null)

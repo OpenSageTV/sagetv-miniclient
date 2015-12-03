@@ -30,5 +30,7 @@
     <string name="debug_preferences">Debug Settings</string>
     <string name="summary_debug_log_unmapped_keypresses_preference">If enabled then remote key presses that are not mapped will be show as a message in the UI when they happen</string>
     <string name="title_debug_log_unmapped_keypresses_preference">Show Unmapped Keypresses</string>
+    <string name="terminate_onpause_summary">If true, then when the app pauses, it will fully terminate the application and close all connections</string>
+    <string name="terminate_onpause_title">Terminator on Pause</string>
 
 </resources>

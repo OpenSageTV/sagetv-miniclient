@@ -22,9 +22,13 @@ import sagex.miniclient.uibridge.SageTVKey;
  */
 public class MiniClientKeyListener implements View.OnKeyListener {
     private static final Logger log = LoggerFactory.getLogger(MiniClientKeyListener.class);
-    private static String PUNCTUATION = "`~!@#$%^&*()_+{}|:\"<>?-=[];'./,";
+    private static String PUNCTUATION = "`~!@#$%^&*()_+{}|:\"<>?-=[];'./\\,";
 
     static AndroidKeyEventMapper keyEventMapper = new AndroidKeyEventMapper();
+
+    /**
+     * HOME cannot be easily mapped to another Event.  Used to be able to do that, not any more.
+     */
 
     static {
         // navivation native keymap
@@ -50,6 +54,9 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         // sagetv, STOP == DELETE ??
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DEL, EventRouter.MEDIA_STOP);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_SPACE, EventRouter.SPACE);
+
+        // map the back key
+        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BACK, EventRouter.BACK);
 
         // UI Long Presses
         EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
