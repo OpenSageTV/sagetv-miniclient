@@ -1,12 +1,16 @@
 package sagex.miniclient.android.gdx;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +37,7 @@ import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.SageTVKey;
 
@@ -65,7 +70,36 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     @Override
+    protected void onResume() {
+        log.debug("MiniClient UI onResume() called");
+        try {
+            miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
+            miniClientView.setOnKeyListener(new MiniClientKeyListener(client));
+        } catch (Throwable t) {
+            log.error("Failed to restore the key and touch handlers");
+        }
+
+        try {
+            log.debug("Telling SageTV to repaint {}x{}", mgr.uiSize.getWidth(), mgr.uiSize.getHeight());
+            client.getCurrentConnection().postRepaintEvent(0, 0, mgr.uiSize.getWidth(), mgr.uiSize.getHeight());
+        } catch (Throwable t) {
+            log.warn("Failed to do a repaint event on refresh");
+        }
+
+        hideSystemUI(this);
+
+        super.onResume();
+    }
+
+    @Override
     protected void onPause() {
+        try {
+            miniClientView.setOnTouchListener(null);
+            miniClientView.setOnKeyListener(null);
+        } catch (Throwable t) {
+        }
+
+        log.debug("MiniClient UI onPause() called");
         try {
             // pause video if we are leaving the app
             if (client.getCurrentConnection() != null && client.getCurrentConnection().getMediaCmd() != null) {
@@ -77,6 +111,19 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             }
         } catch (Throwable t) {
             log.debug("Failed why attempting to pause media player");
+        }
+        try {
+            if (client.properties().getBoolean(PrefStore.Keys.app_destroy_on_pause)) {
+                try {
+                    client.closeConnection();
+                } catch (Throwable t) {
+                }
+                finish();
+            } else {
+                // TODO: Try to free up memory, clear caches, etc
+            }
+        } catch (Throwable t) {
+            log.debug("Failed to close client connection");
         }
         super.onPause();
     }
@@ -193,8 +240,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     public void startMiniClient(final ServerInfo si) {
-        miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
-        miniClientView.setOnKeyListener(new MiniClientKeyListener(client));
         Thread t = new Thread("ANDROID-MINICLIENT") {
             @Override
             public void run() {
@@ -216,7 +261,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Override
     public void onBackPressed() {
-        EventRouter.post(client, EventRouter.BACK);
+        // hide system ui, in case keyboard is visible
+        hideSystemUI(this);
+        //EventRouter.post(client, EventRouter.BACK);
         //confirmExit(this);
     }
 
@@ -254,5 +301,24 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         return videoHolder;
     }
 
+    public void showHideKeyboard(boolean visible) {
+        InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (visible) {
+            log.debug("Showing Keyboard");
+            im.showSoftInput(miniClientView, InputMethodManager.SHOW_FORCED);
+        } else {
+            im.hideSoftInputFromWindow(miniClientView.getWindowToken(), 0);
+        }
+    }
 
+    public void showHideSoftRemote(boolean visible) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Showing Dialog Window");
+        builder.show();
+    }
+
+
+    public void leftEdgeSwipe(MotionEvent event) {
+        log.debug("Left Edge Swipe");
+    }
 }

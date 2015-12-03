@@ -38,6 +38,12 @@
             android:summary="@string/summary_auto_connect_delay_preference"
             android:title="@string/title_auto_connect_delay_preference" />
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="app_destroy_on_pause"
+            android:summary="@string/terminate_onpause_summary"
+            android:title="@string/terminate_onpause_title" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/debug_preferences">

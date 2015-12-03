@@ -1,11 +1,8 @@
 package sagex.miniclient.android.gdx;
 
-import android.app.Activity;
-import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.inputmethod.InputMethodManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,20 +18,14 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     private static final Logger log = LoggerFactory.getLogger(UIGestureListener.class);
 
     private final MiniClient client;
-    private final Activity context;
+    private final MiniClientGDXActivity context;
     boolean logTouch = true;
     private int pointers;
 
-    public UIGestureListener(Activity act, MiniClient client) {
+    public UIGestureListener(MiniClientGDXActivity act, MiniClient client) {
         super();
         this.client = client;
         this.context = act;
-    }
-
-    private void showHideKeyboard() {
-        log.debug("Showing Keyboard");
-        InputMethodManager im = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        im.showSoftInput(context.getWindow().getDecorView(), InputMethodManager.SHOW_FORCED);
     }
 
     @Override
@@ -58,7 +49,9 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
         float flingThreshold = 2000;
         if (logTouch) {
             log.debug("FLING: " + velocityX + "," + velocityY + "; e1Pointers: " + e1.getPointerCount() + "; e2Pointers: " + e2.getPointerCount());
+            //log.debug("E1:{}, E2: {}", e1, e2);
         }
+
         if (velocityX > flingThreshold) {
             if (multi() > 2) {
                 if (logTouch) log.debug("Fling Right: Skip Forward");
@@ -89,7 +82,9 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
             }
         } else if (velocityY < -flingThreshold) {
             if (multi() > 2) {
-                showHideKeyboard();
+                if (logTouch) log.debug("Fling Show Keyboard");
+                context.showHideKeyboard(true);
+                //context.showHideSoftRemote(true);
             } else if (multi() > 1) {
                 if (logTouch) log.debug("Fling Page Up");
                 client.getCurrentConnection().postKeyEvent(Keys.VK_PAGE_UP, 0, (char) 0);

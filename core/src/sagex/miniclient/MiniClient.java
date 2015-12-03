@@ -84,12 +84,8 @@ public class MiniClient {
         options.getCacheDir().mkdirs();
         options.getConfigDir().mkdirs();
 
-        log.info("MiniClient starting with Options: {}", options);
-
-
-
-        log.debug("Miniclient Configuration Loaded");
-
+        log.info("MiniClient v{} starting", Version.VERSION);
+        log.info("MiniClient cacheDir: {}", options.getCacheDir());
 
         try {
             javax.crypto.Cipher.getInstance("RSA");

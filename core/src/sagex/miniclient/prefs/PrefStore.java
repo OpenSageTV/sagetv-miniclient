@@ -95,5 +95,10 @@ public interface PrefStore {
          * Debug Settings
          */
         String debug_log_unmapped_keypresses = "debug_log_unmapped_keypresses";
+
+        /**
+         * If set to true, then when the app pauses, it will tear down
+         */
+        String app_destroy_on_pause = "app_destroy_on_pause";
     }
 }

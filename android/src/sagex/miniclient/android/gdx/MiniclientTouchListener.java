@@ -1,6 +1,5 @@
 package sagex.miniclient.android.gdx;
 
-import android.app.Activity;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,7 +14,7 @@ public class MiniclientTouchListener implements View.OnTouchListener {
     private MiniClient client;
     private UIGestureListener mGestureListener;
 
-    public MiniclientTouchListener(Activity act, MiniClient client) {
+    public MiniclientTouchListener(MiniClientGDXActivity act, MiniClient client) {
         this.client = client;
         mGestureListener = new UIGestureListener(act, client);
         mDetector = new GestureDetectorCompat(act, mGestureListener);
@@ -26,9 +25,11 @@ public class MiniclientTouchListener implements View.OnTouchListener {
         if (!client.isConnected()) {
             return false;
         }
+
         if (mGestureListener != null) {
             mGestureListener.processRawEvent(mDetector, event);
         }
+
         return true;
     }
 }
