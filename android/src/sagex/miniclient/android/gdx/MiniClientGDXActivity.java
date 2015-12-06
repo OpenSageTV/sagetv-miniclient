@@ -7,7 +7,6 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
@@ -19,10 +18,6 @@ import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.mikepenz.materialdrawer.Drawer;
-import com.mikepenz.materialdrawer.DrawerBuilder;
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
-import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.squareup.otto.DeadEvent;
 import com.squareup.otto.Subscribe;
 
@@ -30,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -45,12 +38,12 @@ import sagex.miniclient.android.R;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideKeyboardEvent;
+import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
-import sagex.miniclient.uibridge.SageTVKey;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
@@ -88,9 +81,11 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         // setup to handle events
         client.eventbus().register(this);
 
+        MiniClientKeyListener keyListener = new MiniClientKeyListener(client);
+
         try {
             miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
-            miniClientView.setOnKeyListener(new MiniClientKeyListener(client));
+            miniClientView.setOnKeyListener(keyListener);
         } catch (Throwable t) {
             log.error("Failed to restore the key and touch handlers");
         }
@@ -213,52 +208,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         }
     }
 
-    private void setupNavigationDrawer() {
-        if (getResources().getBoolean(R.bool.istv)) {
-            log.debug("Disabling Slide Out Navigation on TV");
-            return;
-        }
-
-        final Map<Integer, SageTVKey> menuActions = new HashMap<>();
-//if you want to update the items at a later time it is recommended to keep it in a variable
-        PrimaryDrawerItem pausePlay = new PrimaryDrawerItem().withName("Pause/Play").withIdentifier(R.id.pause_play);
-        PrimaryDrawerItem stop = new PrimaryDrawerItem().withName("Stop").withIdentifier(R.id.stop);
-        PrimaryDrawerItem ff = new PrimaryDrawerItem().withName("Skip Forward").withIdentifier(R.id.media_ff);
-        PrimaryDrawerItem rew = new PrimaryDrawerItem().withName("Skip Back").withIdentifier(R.id.media_rew);
-
-        menuActions.put(R.id.pause_play, EventRouter.MEDIA_PLAY_PAUSE);
-        menuActions.put(R.id.stop, EventRouter.MEDIA_STOP);
-        menuActions.put(R.id.media_ff, EventRouter.MEDIA_FF);
-        menuActions.put(R.id.media_rew, EventRouter.MEDIA_REW);
-
-//create the drawer and remember the `Drawer` result object
-        Drawer result = new DrawerBuilder()
-                .withActivity(this)
-                .withToolbar(null)
-                .withFullscreen(true)
-                .addDrawerItems(
-                        pausePlay,
-                        stop,
-                        ff,
-                        rew
-                )
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        SageTVKey key = menuActions.get(drawerItem.getIdentifier());
-                        if (key != null) {
-                            EventRouter.post(client, key);
-                        }
-                        return true;
-                    }
-                })
-                .withDrawerGravity(Gravity.START)
-                .withDrawerWidthDp(150)
-                .withShowDrawerOnFirstLaunch(true)
-                .build();
-        result.getRecyclerView().bringToFront();
-    }
-
     public void startMiniClient(final ServerInfo si) {
         Thread t = new Thread("ANDROID-MINICLIENT") {
             @Override
@@ -340,14 +289,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     public void showHideSoftRemote(boolean visible) {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setMessage("Showing Dialog Window");
-//        builder.show();
-
-        showNavigationDialog();
+        if (visible) {
+            showNavigationDialog();
+        } else {
+            hideNavigationDialog();
+        }
     }
 
     void showNavigationDialog() {
+        log.debug("Showing Navigation");
         // DialogFragment.show() will take care of adding the fragment
         // in a transaction.  We also want to remove any currently showing
         // dialog, so make our own transaction and take care of that here.
@@ -360,9 +310,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
         // Create and show the dialog.
         DialogFragment newFragment = new NavigationFragment(client);
+
         newFragment.show(ft, "nav");
     }
-
 
     public void leftEdgeSwipe(MotionEvent event) {
         log.debug("Left Edge Swipe");
@@ -389,8 +339,22 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Subscribe
     public void handleOnShowNavigation(ShowNavigationEvent event) {
-        showHideSoftRemote(true);
-        log.debug("MiniClient built-in Naviation is visible");
+        try {
+            log.debug("MiniClient built-in Naviation is visible");
+            showHideSoftRemote(true);
+        } catch (Throwable t) {
+            log.debug("Failed to show navigation");
+        }
+    }
+
+    @Subscribe
+    public void handleOnHideNavigation(HideNavigationEvent event) {
+        try {
+            log.debug("MiniClient built-in Naviation is hidden");
+            showHideSoftRemote(false);
+        } catch (Throwable t) {
+            log.debug("Failed to hide navigation");
+        }
     }
 
     @Subscribe
@@ -402,30 +366,47 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         });
     }
 
-    @Subscribe
-    public void handleOnBackPressed(BackPressedEvent event) {
-        hideSystemUI(this);
-
+    boolean hideNavigationDialog() {
+        log.debug("Hiding Navigation");
         // remove nav OSD
         Fragment prev = getFragmentManager().findFragmentByTag("nav");
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         boolean hidingOSD = false;
         if (prev != null) {
-            DialogFragment dpref = (DialogFragment) prev;
-            if (dpref.isVisible()) {
-                hidingOSD = true;
+            try {
+                DialogFragment f = (DialogFragment) prev;
+                f.dismiss();
+            } catch (Throwable t) {
             }
-            ft.remove(prev);
+            hidingOSD = true;
+            try {
+                ft.remove(prev);
+            } catch (Throwable t) {
+            }
         }
         ft.commit();
 
-        if (!hidingOSD) {
+        // return true if the remote was actually hidden
+        return hidingOSD;
+    }
+
+    @Subscribe
+    public void handleOnBackPressed(BackPressedEvent event) {
+        hideSystemUI(this);
+
+        log.debug("on back pressed");
+
+        if (!hideNavigationDialog()) {
+            log.debug("Navigation wasn't visible so will process normal back");
             if (client.isVideoPlaying()) {
-                //
-                // EventRouter.post(client, EventRouter.MEDIA_STOP);
+                log.debug("Sending Media Stop");
+                EventRouter.post(client, EventRouter.MEDIA_STOP);
             } else {
+                log.debug("Sending Back");
                 EventRouter.post(client, EventRouter.BACK);
             }
+        } else {
+            log.debug("Just hiding navigation");
         }
     }
 

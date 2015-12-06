@@ -13,6 +13,7 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.AndroidKeyEventMapper;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.events.BackPressedEvent;
+import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Keys;
@@ -51,8 +52,8 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_X, EventRouter.MEDIA_STOP);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, EventRouter.MEDIA_FF);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, EventRouter.MEDIA_REW);
-        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, EventRouter.MEDIA_FF);
-        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD, EventRouter.MEDIA_REW);
+        //EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, EventRouter.MEDIA_FF);
+        //EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD, EventRouter.MEDIA_REW);
 
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MENU, EventRouter.OPTIONS);
@@ -68,6 +69,10 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         // UI Long Presses
         EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
         EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.OPTIONS);
+        EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, EventRouter.OPTIONS);
+        EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, EventRouter.MEDIA_PAUSE);
+        EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.MEDIA_PLAY);
+        EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.MEDIA_STOP);
     }
 
     private final MiniClient client;
@@ -98,8 +103,12 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                             log.debug("KEYS: Invalid Key Code: {}", keyCode);
                             return false;
                         }
-
-                        client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
+                        if (client.properties().getBoolean(PrefStore.Keys.long_press_select_for_osd, true) &&
+                                (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                            client.eventbus().post(ShowNavigationEvent.INSTANCE);
+                        } else {
+                            client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
+                        }
                         skipUp = true;
                         return true;
                     }
@@ -134,13 +143,6 @@ public class MiniClientKeyListener implements View.OnKeyListener {
 
             // bit of hack to handle hiding system UI when keyboard is visible
             if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-                // client.eventbus().post(HideSystemUIEvent.INSTANCE);
-                // also if back is pressed when the video is playing, then stop it
-// causes issues when closing the NAV OSD UI
-//                if (client.isVideoPlaying()) {
-//                    EventRouter.post(client, EventRouter.MEDIA_STOP);
-//                    return true;
-//                }
                 client.eventbus().post(BackPressedEvent.INSTANCE);
                 return true;
             }

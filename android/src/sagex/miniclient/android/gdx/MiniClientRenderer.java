@@ -168,7 +168,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
 
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-        Gdx.gl20.glClearColor(0, 0, 0, 1);
+        // must be set to 0,0,0,0 or else overlay on video does not work
+        Gdx.gl20.glClearColor(0, 0, 0, 0);
         //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
