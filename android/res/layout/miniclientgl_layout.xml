@@ -44,4 +44,5 @@
                 android:padding="30dp"
                 android:textSize="24sp" />
         </RelativeLayout>
-    </FrameLayout>
+
+</FrameLayout>

@@ -66,7 +66,7 @@ public class AppUtil {
         }
     }
 
-    public static void confirmExit(final Activity act) {
+    public static void confirmExit(final Activity act, final View.OnClickListener onOK) {
         new AlertDialog.Builder(act)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Closing MiniClient")
@@ -75,6 +75,9 @@ public class AppUtil {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         act.finish();
+                        if (onOK != null) {
+                            onOK.onClick(null);
+                        }
                     }
 
                 })

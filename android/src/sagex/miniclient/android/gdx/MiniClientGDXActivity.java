@@ -1,6 +1,8 @@
 package sagex.miniclient.android.gdx;
 
-import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -21,6 +23,8 @@ import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.squareup.otto.DeadEvent;
+import com.squareup.otto.Subscribe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,11 +40,19 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.NavigationFragment;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.events.BackPressedEvent;
+import sagex.miniclient.android.events.CloseAppEvent;
+import sagex.miniclient.android.events.HideKeyboardEvent;
+import sagex.miniclient.android.events.HideSystemUIEvent;
+import sagex.miniclient.android.events.ShowKeyboardEvent;
+import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.SageTVKey;
 
+import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
 
 /**
@@ -72,6 +84,10 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Override
     protected void onResume() {
         log.debug("MiniClient UI onResume() called");
+
+        // setup to handle events
+        client.eventbus().register(this);
+
         try {
             miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
             miniClientView.setOnKeyListener(new MiniClientKeyListener(client));
@@ -93,6 +109,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Override
     protected void onPause() {
+        // remove ourself from handling events
+        client.eventbus().unregister(this);
+
         try {
             miniClientView.setOnTouchListener(null);
             miniClientView.setOnKeyListener(null);
@@ -155,8 +174,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             if (graphics.getView() instanceof SurfaceView) {
                 log.debug("Setting Translucent View");
                 GLSurfaceView glView = (GLSurfaceView) graphics.getView();
+                // This is needed or else we won't see OSD over video
                 glView.setZOrderOnTop(true);
-                // force alpha channel - I'm not sure we need this as the GL surface is already using alpha channel
+                // This is needed or else we will not see the video playing behind the OSD
                 glView.getHolder().setFormat(PixelFormat.RGBA_8888);
             }
 
@@ -181,7 +201,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                 finish();
             }
 
-            setupNavigationDrawer();
+            //setupNavigationDrawer();
 
             plaseWaitText.setText("Connecting to " + si.address + "...");
             setConnectingIsVisible(true);
@@ -301,24 +321,116 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         return videoHolder;
     }
 
-    public void showHideKeyboard(boolean visible) {
-        InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (visible) {
-            log.debug("Showing Keyboard");
-            im.showSoftInput(miniClientView, InputMethodManager.SHOW_FORCED);
-        } else {
-            im.hideSoftInputFromWindow(miniClientView.getWindowToken(), 0);
-        }
+    public void showHideKeyboard(final boolean visible) {
+
+        miniClientView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (visible) {
+                    log.debug("Showing Keyboard");
+                    miniClientView.requestFocus();
+                    miniClientView.requestFocusFromTouch();
+                    im.showSoftInput(miniClientView, InputMethodManager.SHOW_FORCED);
+                } else {
+                    im.hideSoftInputFromWindow(miniClientView.getWindowToken(), 0);
+                }
+            }
+        }, 200);
     }
 
     public void showHideSoftRemote(boolean visible) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Showing Dialog Window");
-        builder.show();
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setMessage("Showing Dialog Window");
+//        builder.show();
+
+        showNavigationDialog();
+    }
+
+    void showNavigationDialog() {
+        // DialogFragment.show() will take care of adding the fragment
+        // in a transaction.  We also want to remove any currently showing
+        // dialog, so make our own transaction and take care of that here.
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("nav");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // Create and show the dialog.
+        DialogFragment newFragment = new NavigationFragment(client);
+        newFragment.show(ft, "nav");
     }
 
 
     public void leftEdgeSwipe(MotionEvent event) {
         log.debug("Left Edge Swipe");
+    }
+
+    public View getRootView() {
+        return miniClientView;
+    }
+
+    @Subscribe
+    public void handleOnShowKeyboard(ShowKeyboardEvent event) {
+        showHideKeyboard(true);
+    }
+
+    @Subscribe
+    public void handleOnHideKeyboard(HideKeyboardEvent event) {
+        showHideKeyboard(false);
+    }
+
+    @Subscribe
+    public void handleOnHideSystemUI(HideSystemUIEvent event) {
+        hideSystemUI(this);
+    }
+
+    @Subscribe
+    public void handleOnShowNavigation(ShowNavigationEvent event) {
+        showHideSoftRemote(true);
+        log.debug("MiniClient built-in Naviation is visible");
+    }
+
+    @Subscribe
+    public void handleOnCloseApp(CloseAppEvent event) {
+        confirmExit(this, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            }
+        });
+    }
+
+    @Subscribe
+    public void handleOnBackPressed(BackPressedEvent event) {
+        hideSystemUI(this);
+
+        // remove nav OSD
+        Fragment prev = getFragmentManager().findFragmentByTag("nav");
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        boolean hidingOSD = false;
+        if (prev != null) {
+            DialogFragment dpref = (DialogFragment) prev;
+            if (dpref.isVisible()) {
+                hidingOSD = true;
+            }
+            ft.remove(prev);
+        }
+        ft.commit();
+
+        if (!hidingOSD) {
+            if (client.isVideoPlaying()) {
+                //
+                // EventRouter.post(client, EventRouter.MEDIA_STOP);
+            } else {
+                EventRouter.post(client, EventRouter.BACK);
+            }
+        }
+    }
+
+    @Subscribe
+    public void onDeadEvent(DeadEvent event) {
+        log.debug("Unhandled Event: {}", event);
     }
 }
