@@ -35,6 +35,8 @@ public class EventRouter {
     public static final SageTVKey POWER = new SageTVKey(Keys.VK_Z, Keys.CTRL_MASK);
     public static final SageTVKey INFO = new SageTVKey(Keys.VK_I, Keys.CTRL_MASK);
     public static final SageTVKey HOME = new SageTVKey(Keys.VK_HOME);
+    public static final SageTVKey PAGE_UP = new SageTVKey(Keys.VK_PAGE_UP);
+    public static final SageTVKey PAGE_DOWN = new SageTVKey(Keys.VK_PAGE_DOWN);
     public static final SageTVKey OPTIONS = new SageTVKey(Keys.VK_O, Keys.CTRL_MASK);
     public static final SageTVKey ESCAPE = OPTIONS;
 
@@ -54,4 +56,5 @@ public class EventRouter {
     public static void post(MiniClient client, SageTVKey key) {
         client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
     }
+
 }

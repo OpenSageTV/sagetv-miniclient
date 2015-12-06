@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        style="@style/NavButtonContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_close"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-close"
+            android:tag="_close" />
+
+        <View style="@style/NavIconSpacer" />
+
+        <View style="@style/NavIconSpacer" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_home"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-home"
+            android:tag="_HOME" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_options"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-menu"
+            android:tag="_MENU" />
+
+        <View style="@style/NavIconSpacer" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_pgup"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-upload"
+            android:tag="PAGE_UP" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_pgdn"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-download"
+            android:tag="PAGE_DOWN" />
+
+        <View style="@style/NavIconSpacer" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_up"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-caret-up-circle"
+            android:tag="DPAD_UP" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_down"
+            style="@style/NavIconButton"
+            android:tag="DPAD_DOWN"
+            app:iiv_icon="gmd-caret-down-circle" />
+        <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Keyboard"-->
+        <!--/>-->
+        <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="UP"-->
+        <!--/>-->
+        <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="DOWN"-->
+        <!--/>-->
+
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/NavButtonContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_select"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-dot-circle"
+            android:tag="DPAD_CENTER" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_left"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-caret-left-circle"
+            android:tag="DPAD_LEFT" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_right"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-caret-right-circle"
+            android:tag="DPAD_RIGHT" />
+
+        <View style="@style/NavIconSpacer" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_back"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-arrow-back"
+            android:tag="BUTTON_B" />
+
+        <View style="@style/NavIconSpacer" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_keyboard"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-keyboard"
+            android:tag="_keyboard" />
+
+        <LinearLayout
+            android:id="@+id/nav_media_controls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <View style="@style/NavIconSpacer" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_skip_back"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-skip-previous"
+                android:tag="MEDIA_SKIP_BACKWARD" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_pause"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-pause-circle"
+                android:tag="MEDIA_PAUSE" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_play"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-play-circle"
+                android:tag="MEDIA_PLAY" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_skip_forward"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-skip-next"
+                android:tag="MEDIA_SKIP_FORWARD" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_stop"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-stop"
+                android:tag="_MEDIA_STOP" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

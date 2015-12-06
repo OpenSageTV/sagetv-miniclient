@@ -44,9 +44,15 @@ public class MiniClient {
     private boolean initialized = false;
     private boolean usingHttpBridge = true;
     private boolean videoIsPlaying;
+    private IBus eventBus;
 
     public MiniClient(MiniClientOptions options) {
         this.options = options;
+        eventBus = options.getBus();
+        if (eventBus == null) {
+            log.warn("Using a DeadBus for the event bus, since a bus was not provided in the MiniClientOptions");
+            eventBus = DeadBus.INSTANCE;
+        }
         this.serverDiscovery = new ServerDiscovery();
         this.servers = new Servers(this);
         init();
@@ -110,6 +116,10 @@ public class MiniClient {
 
     public MiniClientOptions options() {
         return options;
+    }
+
+    public IBus eventbus() {
+        return eventBus;
     }
 
     public String getCryptoFormats() {

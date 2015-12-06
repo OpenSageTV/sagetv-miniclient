@@ -1,4 +1,36 @@
 <resources>
     <style name="Theme.MyTheme" parent="Theme.AppCompat.NoActionBar">
     </style>
+
+    <style name="Theme.Dialog.DoNotDim" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowTitleStyle">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="NavIconButton">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="iiv_color">#E0F2F1</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <!--<item name="android:focusable">true</item>-->
+        <!--<item name="android:focusableInTouchMode">true</item>-->
+    </style>
+
+    <style name="NavIconSpacer">
+        <item name="android:layout_width">5dp</item>
+        <item name="android:layout_height">5dp</item>
+    </style>
+
+    <style name="NavButtonContainer">
+        <item name="android:background">#22000000</item>
+    </style>
 </resources>

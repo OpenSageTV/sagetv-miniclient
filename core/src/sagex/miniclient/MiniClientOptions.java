@@ -13,4 +13,6 @@ public interface MiniClientOptions {
     File getConfigDir();
 
     File getCacheDir();
+
+    IBus getBus();
 }
