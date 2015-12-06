@@ -168,7 +168,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
 
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-        Gdx.gl20.glClearColor(0, 0, 0, 0);
+        Gdx.gl20.glClearColor(0, 0, 0, 1);
         //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
@@ -183,6 +183,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (batch != null) {
             batch.setProjectionMatrix(camera.combined);
             batch.begin();
+            batch.setColor(Color.BLACK);
             synchronized (renderQueue) {
                 try {
                     for (Runnable r : renderQueue) {
@@ -436,7 +437,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 if (img == null) return;
 
                 // we only want to set blending for Non Framebuffer textures
-                if (!img.get().isFrameBuffer) {
+//                if (!img.get().isFrameBuffer) {
                     Gdx.gl20.glEnable(GL20.GL_BLEND);
                     Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                     if (height < 0) {
@@ -445,16 +446,16 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
                     batchColor = batch.getColor();
                     batch.setColor(getColor(blend));
-                }
+//                }
 
                 int w = Math.abs(width);
                 int h = Math.abs(height);
                 Texture t = img.get().texture();
                 batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
-                if (!img.get().isFrameBuffer) {
+//                if (!img.get().isFrameBuffer) {
                     batch.setColor(batchColor);
                     Gdx.gl20.glDisable(GL20.GL_BLEND);
-                }
+//                }
             }
         });
     }
