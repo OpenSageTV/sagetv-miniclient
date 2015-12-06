@@ -305,10 +305,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 batch.end();
 
                 camera.update();
+                Gdx.gl20.glEnable(GL20.GL_BLEND);
+                Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
                 shapeRenderer.end();
+
+                Gdx.gl20.glDisable(GL20.GL_BLEND);
 
                 batch.begin();
             }
@@ -324,6 +329,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 batch.end();
 
                 camera.update();
+
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
