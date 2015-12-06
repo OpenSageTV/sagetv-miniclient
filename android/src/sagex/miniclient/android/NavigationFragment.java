@@ -15,14 +15,17 @@ import android.view.WindowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
-import sagex.miniclient.android.gdx.MiniClientKeyListener;
-import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
+import sagex.miniclient.uibridge.EventRouter;
+import sagex.miniclient.uibridge.SageTVKey;
 
 /**
  * Created by seans on 05/12/15.
@@ -31,10 +34,19 @@ public class NavigationFragment extends DialogFragment {
     static final Logger log = LoggerFactory.getLogger(NavigationFragment.class);
     private final MiniClient client;
 
-    AndroidMediaCommandHandler keyHandler = null;
+    // preconfigured in the MiniClientKeyListener
+    static Map<Object, SageTVKey> mappedKeys = EventRouter.NATIVE_UI_KEYMAP;
+
+    // map key code strings to keycode events
     AndroidKeyEventMapper keyMapper = new AndroidKeyEventMapper();
-    private MiniClientKeyListener keyListener;
+
     private View navView;
+
+    @Bind(R.id.nav_options)
+    View navOptions = null;
+
+    @Bind(R.id.nav_media_pause)
+    View navPause = null;
 
     public NavigationFragment(MiniClient client) {
         this.client = client;
@@ -44,22 +56,23 @@ public class NavigationFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Theme_Dialog_DoNotDim);
-        keyListener = new MiniClientKeyListener(client);
+        setCancelable(false);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        //return super.onCreateView(inflater, container, savedInstanceState);
-        //GoogleMaterial.Icon.gmd_up
-
-        keyHandler = new AndroidMediaCommandHandler(this.getActivity());
-
-
         navView = inflater.inflate(R.layout.navigation, container, false);
-        navView.setOnKeyListener(keyListener);
 
         ButterKnife.bind(this, navView);
+
+        if (client.isVideoPlaying()) {
+            navPause.requestFocus();
+        } else {
+            navOptions.requestFocus();
+        }
+
+
         return navView;
     }
 
@@ -67,17 +80,24 @@ public class NavigationFragment extends DialogFragment {
             R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_forward,
             R.id.nav_media_stop, R.id.nav_back})
     public void buttonClick(View v) {
-        log.debug("Clicked: {}", v.getTag());
-        SageTVHttpMediaServerBridge.MediaCommand c = new SageTVHttpMediaServerBridge.MediaCommand();
-        c.type = SageTVHttpMediaServerBridge.MediaCommand.ActionType.Key;
-        String key = v.getTag().toString().toLowerCase();
-        boolean hide = key.startsWith("_");
-        if (hide) {
-            key = key.substring(1);
+        try {
+            log.debug("Clicked: {}", v.getTag());
+            String key = v.getTag().toString().toLowerCase();
+            boolean hide = key.startsWith("_");
+            if (hide) {
+                key = key.substring(1);
+            }
+            int androidKey = keyMapper.getField(key);
+            if (hide) dismiss();
+            SageTVKey sageKey = mappedKeys.get(androidKey);
+            if (sageKey == null) {
+                log.warn("Unmapped key: {}, Missing AndroidKey=>SageTVKey", key);
+            } else {
+                EventRouter.post(client, sageKey);
+            }
+        } catch (Throwable t) {
+            log.error("Button Not Implemented for {} with ID {}", v.getTag(), v.getId(), t);
         }
-        c.key = keyMapper.getField(key);
-        if (hide) dismiss();
-        keyHandler.onMediaCommand(c);
     }
 
     @OnClick({R.id.nav_keyboard, R.id.nav_close})
@@ -107,11 +127,9 @@ public class NavigationFragment extends DialogFragment {
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
                     client.eventbus().post(BackPressedEvent.INSTANCE);
-                    //dismiss();
                     return true;
                 }
-
-                return keyListener.onKey(navView, keyCode, event);
+                return false;
             }
         });
         return dialog;

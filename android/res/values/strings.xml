@@ -31,6 +31,14 @@
     <string name="summary_debug_log_unmapped_keypresses_preference">If enabled then remote key presses that are not mapped will be show as a message in the UI when they happen</string>
     <string name="title_debug_log_unmapped_keypresses_preference">Show Unmapped Keypresses</string>
     <string name="terminate_onpause_summary">If true, then when the app pauses, it will fully terminate the application and close all connections</string>
-    <string name="terminate_onpause_title">Terminator on Pause</string>
-
+    <string name="terminate_onpause_title">Terminate on Pause</string>
+    <string name="force_nonlocal_connection_title">Force non local network</string>
+    <string name="force_nonlocal_connection_summary">When enabled, it may increase rendering performance on a WIRED connection.  Never enable for WIFI or Placeshifter.</string>
+    <string name="use_bitmap_images_title">Use Bitmap Images</string>
+    <string name="use_bitmap_images_summary">Disabling this may increase performance for WIRED connections, but should never be enabled for WIFI connections</string>
+    <string name="GFX_SURFACES_title">Use Surfaces</string>
+    <string name="GFX_SURFACES_summary">Disabling this will decrease rendering performance, but may reduce the screen flicker</string>
+    <string name="application_settings">Application Settings</string>
+    <string name="long_press_select_for_osd_preference">Long Press Select for OSD</string>
+    <string name="long_press_select_for_osd_preference_summary">If enabled, then long pressing the SELECT button will bring up the built-in Navigation.  Otherwise, it should bring up the SageTV Options.</string>
 </resources>

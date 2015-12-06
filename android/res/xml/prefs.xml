@@ -20,6 +20,18 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/application_settings">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="long_press_select_for_osd"
+            android:summary="@string/long_press_select_for_osd_preference_summary"
+            android:title="@string/long_press_select_for_osd_preference" />
+
+
+    </PreferenceCategory>
+
+
     <PreferenceCategory android:title="@string/auto_connect_settings">
 
         <CheckBoxPreference
@@ -53,6 +65,18 @@
             android:summary="@string/summary_debug_log_unmapped_keypresses_preference"
             android:title="@string/title_debug_log_unmapped_keypresses_preference" />
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="use_bitmap_images"
+            android:summary="@string/use_bitmap_images_summary"
+            android:title="@string/use_bitmap_images_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="GFX_SURFACES"
+            android:summary="@string/GFX_SURFACES_summary"
+            android:title="@string/GFX_SURFACES_title" />
+
     </PreferenceCategory>
 
 
@@ -76,6 +100,17 @@
             android:key="sendlog"
             android:summary="@string/send_log_summary"
             android:title="@string/send_log" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="About">
+        <Preference
+            android:key="version"
+            android:summary=""
+            android:title="Version" />
+        <Preference
+            android:key="clientid"
+            android:summary=""
+            android:title="Cliend ID" />
     </PreferenceCategory>
 
 

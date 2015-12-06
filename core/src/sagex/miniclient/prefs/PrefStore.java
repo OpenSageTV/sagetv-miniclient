@@ -44,7 +44,7 @@ public interface PrefStore {
         String image_cache_size = "image_cache_size";
         String disk_image_cache_size = "disk_image_cache_size";
         String cache_images_on_disk = "cache_images_on_disk";
-        String force_nonlocal_connection = "force_nonlocal_connection";
+        String use_bitmap_images = "use_bitmap_images";
 
         /**
          * values: high, med, low
@@ -89,6 +89,11 @@ public interface PrefStore {
          */
         String log_level = "log_level";
 
+        /**
+         * if enabled the long press select will bring up OSD
+         */
+        String long_press_select_for_osd = "long_press_select_for_osd";
+
         String use_hardware_acceleration = "use_hardware_acceleration";
 
         /**
@@ -100,5 +105,10 @@ public interface PrefStore {
          * If set to true, then when the app pauses, it will tear down
          */
         String app_destroy_on_pause = "app_destroy_on_pause";
+
+        /**
+         * SageTV GetProperty Keys
+         */
+        java.lang.String GFX_SURFACES = "GFX_SURFACES";
     }
 }

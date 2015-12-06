@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
+import sagex.miniclient.Version;
 import sagex.miniclient.prefs.PrefStore;
 
 
@@ -63,6 +64,12 @@ public class SettingsFragment extends PreferenceFragment {
                     return true;
                 }
             });
+
+            final Preference version = findPreference("version");
+            version.setSummary(Version.VERSION);
+            final Preference clientid = findPreference("clientid");
+            clientid.setSummary(AppUtil.getMACAddress(this.getActivity()));
+
 
 
         } catch (Throwable t) {

@@ -193,7 +193,6 @@ public class MiniClientConnection implements SageTVInputCallback {
     private GFXCMD2 myGfx;
     private boolean alive;
     private String currentCrypto = null;
-    private boolean useLocalNetworkOptimizations;
     private boolean fontServer;
     private java.util.Timer uiTimer;
     private java.io.File tempfile;
@@ -220,7 +219,7 @@ public class MiniClientConnection implements SageTVInputCallback {
     private boolean firstFrameStarted;
     private boolean performingReconnect;
 
-    public MiniClientConnection(MiniClient client, String serverName, String myID, boolean useLocalNetworkOptimizations, ServerInfo msi) {
+    public MiniClientConnection(MiniClient client, String serverName, String myID, ServerInfo msi) {
         this.client = client;
         currentCrypto = client.getCryptoFormats();
 
@@ -241,10 +240,6 @@ public class MiniClientConnection implements SageTVInputCallback {
             }
         }
         this.myID = myID;
-        this.useLocalNetworkOptimizations = useLocalNetworkOptimizations;
-
-        // SEAN: forces loadImage and loadImageLine
-        // this.useLocalNetworkOptimizations=true;
 
         this.msi = msi;
         offlineImageCacheLimit = client.properties().getLong(PrefStore.Keys.disk_image_cache_size, 100000000);
@@ -253,8 +248,6 @@ public class MiniClientConnection implements SageTVInputCallback {
             cacheDir.mkdir();
         } else
             cacheDir = null;
-        if (client.properties().getBoolean(PrefStore.Keys.force_nonlocal_connection, false))
-            this.useLocalNetworkOptimizations = false;
         usesAdvancedImageCaching = false;
     }
 
@@ -714,15 +707,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                         propVal = "TRUE";
                         usesAdvancedImageCaching = true;
                     } else if ("GFX_BITMAP_FORMAT".equals(propName)) {
-                        if (useLocalNetworkOptimizations/*
-                                                         * || (!MiniClient.
-														 * WINDOWS_OS &&
-														 * "true".equals(
-														 * MiniClient.
-														 * myProperties.
-														 * getProperty("opengl",
-														 * "false")))
-														 */)
+                        if (!client.properties().getBoolean(PrefStore.Keys.use_bitmap_images, true))
                             propVal = "";
                         else
                             propVal = "PNG,JPG,GIF,BMP";
@@ -730,8 +715,11 @@ public class MiniClientConnection implements SageTVInputCallback {
                     } else if ("GFX_COMPOSITE".equals(propName)) {
                         propVal = "COLORKEY";
                     } else if ("GFX_SURFACES".equals(propName)) {
-                        //propVal = "FALSE";
-                        propVal = "TRUE";
+                        if (client.properties().getBoolean(PrefStore.Keys.GFX_SURFACES, true)) {
+                            propVal = "TRUE";
+                        } else {
+                            propVal = "FALSE";
+                        }
                     } else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
                         // if (myGfx instanceof DirectX9GFXCMD)
                         // propVal = "TRUE";
