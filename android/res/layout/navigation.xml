@@ -29,13 +29,13 @@
             android:id="@+id/nav_home"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-home"
-            android:tag="_HOME" />
+            android:tag="_home" />
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_options"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-menu"
-            android:tag="_MENU" />
+            android:tag="_options" />
 
         <View style="@style/NavIconSpacer" />
 
@@ -43,13 +43,13 @@
             android:id="@+id/nav_pgup"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-upload"
-            android:tag="PAGE_UP" />
+            android:tag="page_up" />
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_pgdn"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-download"
-            android:tag="PAGE_DOWN" />
+            android:tag="page_down" />
 
         <View style="@style/NavIconSpacer" />
 
@@ -57,12 +57,12 @@
             android:id="@+id/nav_up"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-caret-up-circle"
-            android:tag="DPAD_UP" />
+            android:tag="up" />
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_down"
             style="@style/NavIconButton"
-            android:tag="DPAD_DOWN"
+            android:tag="down"
             app:iiv_icon="gmd-caret-down-circle" />
         <!--<Button-->
         <!--android:layout_width="wrap_content"-->
@@ -92,19 +92,19 @@
             android:id="@+id/nav_select"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-dot-circle"
-            android:tag="DPAD_CENTER" />
+            android:tag="select" />
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_left"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-caret-left-circle"
-            android:tag="DPAD_LEFT" />
+            android:tag="left" />
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_right"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-caret-right-circle"
-            android:tag="DPAD_RIGHT" />
+            android:tag="right" />
 
         <View style="@style/NavIconSpacer" />
 
@@ -112,7 +112,7 @@
             android:id="@+id/nav_back"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-arrow-back"
-            android:tag="BUTTON_B" />
+            android:tag="back" />
 
         <View style="@style/NavIconSpacer" />
 
@@ -134,31 +134,31 @@
                 android:id="@+id/nav_media_skip_back"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-skip-previous"
-                android:tag="MEDIA_REWIND" />
+                android:tag="rew" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_pause"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-pause-circle"
-                android:tag="MEDIA_PAUSE" />
+                android:tag="pause" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_play"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-play-circle"
-                android:tag="MEDIA_PLAY" />
+                android:tag="play" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_skip_forward"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-skip-next"
-                android:tag="MEDIA_FAST_FORWARD" />
+                android:tag="ff" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_stop"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-stop"
-                android:tag="_MEDIA_STOP" />
+                android:tag="_stop" />
         </LinearLayout>
     </LinearLayout>
 

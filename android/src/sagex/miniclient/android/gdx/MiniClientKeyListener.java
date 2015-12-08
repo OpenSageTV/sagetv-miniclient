@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.AndroidKeyEventMapper;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.events.BackPressedEvent;
@@ -17,7 +18,6 @@ import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Keys;
-import sagex.miniclient.uibridge.SageTVKey;
 
 /**
  * Created by seans on 26/09/15.
@@ -52,19 +52,10 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_X, EventRouter.MEDIA_STOP);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, EventRouter.MEDIA_FF);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, EventRouter.MEDIA_REW);
-        //EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, EventRouter.MEDIA_FF);
-        //EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD, EventRouter.MEDIA_REW);
 
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_MENU, EventRouter.OPTIONS);
         EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_HOME, EventRouter.HOME);
-
-        // sagetv, STOP == DELETE ??
-        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_DEL, EventRouter.MEDIA_STOP);
-        EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_SPACE, EventRouter.SPACE);
-
-        // map the back key
-        // EventRouter.NATIVE_UI_KEYMAP.put(KeyEvent.KEYCODE_BACK, EventRouter.BACK);
 
         // UI Long Presses
         EventRouter.NATIVE_UI_LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
@@ -79,18 +70,18 @@ public class MiniClientKeyListener implements View.OnKeyListener {
     int skipKey = -1;
     boolean skipUp = false;
 
+    Map<Object, UserEvent> LONG_KEYMAP;
+    Map<Object, UserEvent> KEYMAP;
+
     public MiniClientKeyListener(MiniClient client) {
         this.client = client;
+
+        LONG_KEYMAP = EventRouter.NATIVE_UI_LONGPRESS_KEYMAP;
+        KEYMAP = EventRouter.NATIVE_UI_KEYMAP;
     }
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        Map<Object, SageTVKey> LONG_KEYMAP;
-        Map<Object, SageTVKey> KEYMAP;
-
-        LONG_KEYMAP = EventRouter.NATIVE_UI_LONGPRESS_KEYMAP;
-        KEYMAP = EventRouter.NATIVE_UI_KEYMAP;
-
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             // log.debug("KEYS: DOWN KEYCODE: " + keyCode + "; " + event + "; Video Playing: " + client.isVideoPlaying());
             if (LONG_KEYMAP.containsKey(keyCode)) {
@@ -98,7 +89,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                     log.debug("KEYS: LONG PRESS KEYCODE: {}; {}", keyCode, event);
                     if (LONG_KEYMAP.containsKey(keyCode)) {
                         skipKey = keyCode;
-                        SageTVKey key = LONG_KEYMAP.get(keyCode);
+                        UserEvent key = LONG_KEYMAP.get(keyCode);
                         if (key == null) {
                             log.debug("KEYS: Invalid Key Code: {}", keyCode);
                             return false;
@@ -107,7 +98,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                                 (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                             client.eventbus().post(ShowNavigationEvent.INSTANCE);
                         } else {
-                            client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
+                            EventRouter.post(client, key);
                         }
                         skipUp = true;
                         return true;
@@ -148,9 +139,9 @@ public class MiniClientKeyListener implements View.OnKeyListener {
             }
 
             if (KEYMAP.containsKey(keyCode)) {
-                SageTVKey key = KEYMAP.get(keyCode);
+                UserEvent key = KEYMAP.get(keyCode);
                 log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
-                client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
+                EventRouter.post(client, key);
                 return true;
             } else {
                 if (client.properties().getBoolean(PrefStore.Keys.debug_log_unmapped_keypresses, false)) {

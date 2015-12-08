@@ -15,17 +15,15 @@ import android.view.WindowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.uibridge.EventRouter;
-import sagex.miniclient.uibridge.SageTVKey;
 
 /**
  * Created by seans on 05/12/15.
@@ -33,12 +31,6 @@ import sagex.miniclient.uibridge.SageTVKey;
 public class NavigationFragment extends DialogFragment {
     static final Logger log = LoggerFactory.getLogger(NavigationFragment.class);
     private final MiniClient client;
-
-    // preconfigured in the MiniClientKeyListener
-    static Map<Object, SageTVKey> mappedKeys = EventRouter.NATIVE_UI_KEYMAP;
-
-    // map key code strings to keycode events
-    AndroidKeyEventMapper keyMapper = new AndroidKeyEventMapper();
 
     private View navView;
 
@@ -87,13 +79,13 @@ public class NavigationFragment extends DialogFragment {
             if (hide) {
                 key = key.substring(1);
             }
-            int androidKey = keyMapper.getField(key);
             if (hide) dismiss();
-            SageTVKey sageKey = mappedKeys.get(androidKey);
-            if (sageKey == null) {
-                log.warn("Unmapped key: {}, Missing AndroidKey=>SageTVKey", key);
+
+            int sageCommand = UserEvent.getEvtCodeForName(key);
+            if (sageCommand == 0) {
+                log.warn("Invalid SageTV Command '{}'", key);
             } else {
-                EventRouter.post(client, sageKey);
+                EventRouter.postCommand(client, sageCommand);
             }
         } catch (Throwable t) {
             log.error("Button Not Implemented for {} with ID {}", v.getTag(), v.getId(), t);

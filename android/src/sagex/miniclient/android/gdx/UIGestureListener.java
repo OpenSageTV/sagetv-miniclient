@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
-import sagex.miniclient.uibridge.Keys;
+import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.MouseEvent;
 
 /**
@@ -65,7 +65,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     @Override
     public void onLongPress(MotionEvent e) {
         if (logTouch) log.debug("onLongPress: Sending ENTER");
-        client.getCurrentConnection().postKeyEvent(Keys.VK_ENTER, 0, (char) 0);
+        EventRouter.post(client, EventRouter.SELECT);
     }
 
     @Override
@@ -84,46 +84,45 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
         if (velocityX > flingThreshold) {
             if (multi() > 2) {
                 if (logTouch) log.debug("Fling Right: Skip Forward");
-                client.getCurrentConnection().postKeyEvent(Keys.VK_F8, Keys.CTRL_MASK, (char) 0);
+                EventRouter.post(client, EventRouter.MEDIA_FF);
             } else {
                 if (isEdgeTouched(EDGE_LEFT)) {
                     if (logTouch) log.debug("Left Edge Trigger for KeyBoard");
                     client.eventbus().post(ShowNavigationEvent.INSTANCE);
                 } else {
                     if (logTouch) log.debug("Fling Right");
-                    client.getCurrentConnection().postKeyEvent(Keys.VK_RIGHT, 0, (char) 0);
+                    EventRouter.post(client, EventRouter.RIGHT);
                 }
             }
         } else if (velocityX < -flingThreshold) {
             if (multi() > 2) {
                 if (logTouch) log.debug("Fling Left: Skip Back");
-                client.getCurrentConnection().postKeyEvent(Keys.VK_F7, Keys.CTRL_MASK, (char) 0);
+                EventRouter.post(client, EventRouter.MEDIA_REW);
             } else {
                 if (logTouch) log.debug("Fling Left");
-                client.getCurrentConnection().postKeyEvent(Keys.VK_LEFT, 0, (char) 0);
+                EventRouter.post(client, EventRouter.LEFT);
             }
         } else if (velocityY > flingThreshold) {
             if (multi() > 2) {
                 if (logTouch) log.debug("Fling Show Options");
-                // send ctrl + o
-                client.getCurrentConnection().postKeyEvent(Keys.VK_O, 2, 'o');
+                EventRouter.post(client, EventRouter.OPTIONS);
             } else if (multi() == 2) {
                 if (logTouch) log.debug("Fling Page Down");
-                client.getCurrentConnection().postKeyEvent(Keys.VK_PAGE_DOWN, 0, (char) 0);
+                EventRouter.post(client, EventRouter.PAGE_DOWN);
             } else {
                 if (logTouch) log.debug("Fling Down");
-                client.getCurrentConnection().postKeyEvent(Keys.VK_DOWN, 0, (char) 0);
+                EventRouter.post(client, EventRouter.DOWN);
             }
         } else if (velocityY < -flingThreshold) {
             if (multi() > 1) {
                 if (logTouch) log.debug("Fling Page Up");
-                client.getCurrentConnection().postKeyEvent(Keys.VK_PAGE_UP, 0, (char) 0);
+                EventRouter.post(client, EventRouter.UP);
             } else {
                 if (isEdgeTouched(EDGE_BOTTOM)) {
                     client.eventbus().post(ShowKeyboardEvent.INSTANCE);
                 } else {
                     if (logTouch) log.debug("Fling Up");
-                    client.getCurrentConnection().postKeyEvent(Keys.VK_UP, 0, (char) 0);
+                    EventRouter.post(client, EventRouter.UP);
                 }
             }
         }
@@ -147,7 +146,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     @Override
     public boolean onDoubleTap(MotionEvent e) {
         if (logTouch) log.debug("onDoubleTap: Sending ENTER");
-        client.getCurrentConnection().postKeyEvent(Keys.VK_ENTER, 0, (char) 0);
+        EventRouter.post(client, EventRouter.SELECT);
         return true;
     }
 
