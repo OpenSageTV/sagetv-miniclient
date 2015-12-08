@@ -361,6 +361,10 @@ public class UserEvent {
         else return ueCode - NUM0;
     }
 
+    public UserEvent(int inType) {
+        this(System.currentTimeMillis(), inType, -1, -1, -1, (char) 0);
+    }
+
     public UserEvent(long inWhen, int inType, long inIR) {
         this(inWhen, inType, inIR, -1, -1, (char) 0);
     }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.UserEvent;
 
 /**
  * Created by seans on 31/10/15.
@@ -12,49 +13,54 @@ public class EventRouter {
     // see EventRouter and UserEvent in SageTV Sources
 
     // media keys
-    public static final SageTVKey MEDIA_PAUSE = new SageTVKey(Keys.VK_S, Keys.CTRL_MASK);
-    public static final SageTVKey MEDIA_PLAY = new SageTVKey(Keys.VK_D, Keys.CTRL_MASK);
-    public static final SageTVKey MEDIA_PLAY_PAUSE = new SageTVKey(Keys.VK_S, Keys.CTRL_MASK | Keys.SHIFT_MASK);
-    public static final SageTVKey MEDIA_STOP = new SageTVKey(Keys.VK_G, Keys.CTRL_MASK);
-    public static final SageTVKey MEDIA_FF = new SageTVKey(Keys.VK_F, Keys.CTRL_MASK);
-    public static final SageTVKey MEDIA_REW = new SageTVKey(Keys.VK_A, Keys.CTRL_MASK);
+    public static final UserEvent MEDIA_PAUSE = new UserEvent(UserEvent.PAUSE);
+    public static final UserEvent MEDIA_PLAY = new UserEvent(UserEvent.PLAY);
+    public static final UserEvent MEDIA_PLAY_PAUSE = new UserEvent(UserEvent.PLAY_PAUSE);
+    public static final UserEvent MEDIA_STOP = new UserEvent(UserEvent.STOP);
+    public static final UserEvent MEDIA_FF = new UserEvent(UserEvent.FF);
+    public static final UserEvent MEDIA_REW = new UserEvent(UserEvent.REW);
 
     // navigation keys
-    public static final SageTVKey UP = new SageTVKey(Keys.VK_UP);
-    public static final SageTVKey DOWN = new SageTVKey(Keys.VK_DOWN);
-    public static final SageTVKey LEFT = new SageTVKey(Keys.VK_LEFT);
-    public static final SageTVKey RIGHT = new SageTVKey(Keys.VK_RIGHT);
-    public static final SageTVKey ENTER = new SageTVKey(Keys.VK_ENTER);
-    public static final SageTVKey DELETE = new SageTVKey(Keys.VK_DELETE);
-    public static final SageTVKey BACKSPACE = new SageTVKey(Keys.VK_BACK_SPACE);
-    public static final SageTVKey SELECT = ENTER;
-    public static final SageTVKey BACK = new SageTVKey(Keys.VK_LEFT, Keys.ALT_MASK);
+    public static final UserEvent UP = new UserEvent(UserEvent.UP);
+    public static final UserEvent DOWN = new UserEvent(UserEvent.DOWN);
+    public static final UserEvent LEFT = new UserEvent(UserEvent.LEFT);
+    public static final UserEvent RIGHT = new UserEvent(UserEvent.RIGHT);
+    public static final UserEvent ENTER = new UserEvent(UserEvent.SELECT);
+    public static final UserEvent DELETE = new UserEvent(UserEvent.DELETE);
+    public static final UserEvent SELECT = ENTER;
+    public static final UserEvent BACK = new UserEvent(UserEvent.BACK);
 
-    public static final SageTVKey WATCHED = new SageTVKey(Keys.VK_W, Keys.CTRL_MASK);
-    public static final SageTVKey GUIDE = new SageTVKey(Keys.VK_X, Keys.CTRL_MASK);
-    public static final SageTVKey POWER = new SageTVKey(Keys.VK_Z, Keys.CTRL_MASK);
-    public static final SageTVKey INFO = new SageTVKey(Keys.VK_I, Keys.CTRL_MASK);
-    public static final SageTVKey HOME = new SageTVKey(Keys.VK_HOME);
-    public static final SageTVKey PAGE_UP = new SageTVKey(Keys.VK_PAGE_UP);
-    public static final SageTVKey PAGE_DOWN = new SageTVKey(Keys.VK_PAGE_DOWN);
-    public static final SageTVKey OPTIONS = new SageTVKey(Keys.VK_O, Keys.CTRL_MASK);
-    public static final SageTVKey ESCAPE = OPTIONS;
-
-    public static final SageTVKey SPACE = new SageTVKey(Keys.VK_SPACE); // o === space??
+    public static final UserEvent WATCHED = new UserEvent(UserEvent.WATCHED);
+    public static final UserEvent GUIDE = new UserEvent(UserEvent.GUIDE);
+    public static final UserEvent POWER = new UserEvent(UserEvent.POWER);
+    public static final UserEvent INFO = new UserEvent(UserEvent.INFO);
+    public static final UserEvent HOME = new UserEvent(UserEvent.HOME);
+    public static final UserEvent PAGE_UP = new UserEvent(UserEvent.PAGE_UP);
+    public static final UserEvent PAGE_DOWN = new UserEvent(UserEvent.PAGE_DOWN);
+    public static final UserEvent OPTIONS = new UserEvent(UserEvent.OPTIONS);
 
     // these are NATIVE key to SageTV key maps.  Initally Empty, so, each Native
     // client needs to set these on startup
-    public static final Map<Object, SageTVKey> NATIVE_UI_KEYMAP = new HashMap<Object, SageTVKey>();
-    public static final Map<Object, SageTVKey> NATIVE_UI_LONGPRESS_KEYMAP = new HashMap<Object, SageTVKey>();
+    public static final Map<Object, UserEvent> NATIVE_UI_KEYMAP = new HashMap<Object, UserEvent>();
+    public static final Map<Object, UserEvent> NATIVE_UI_LONGPRESS_KEYMAP = new HashMap<Object, UserEvent>();
 
     /**
-     * Post the SageTVKey event to the server using the given MiniClient connection
+     * Post the UserEvent event to the server using the given MiniClient connection
      *
      * @param client
-     * @param key
+     * @param event
      */
-    public static void post(MiniClient client, SageTVKey key) {
-        client.getCurrentConnection().postKeyEvent(key.keyCode, key.modifiers, key.keyChar);
+    public static void post(MiniClient client, UserEvent event) {
+        if (event.isKB()) {
+            client.getCurrentConnection().postKeyEvent(event.getKeyCode(), event.getKeyModifiers(), event.getKeyChar());
+        } else if (event.isIR()) {
+            //client.getCurrentConnection().postIREvent(event.getIRCode());
+        } else {
+            client.getCurrentConnection().postSageCommandEvent(event.getType());
+        }
     }
 
+    public static void postCommand(MiniClient client, int command) {
+        client.getCurrentConnection().postSageCommandEvent(command);
+    }
 }
