@@ -1,5 +1,6 @@
 package sagex.miniclient.android.video.exoplayer;
 
+import com.google.android.exoplayer.C;
 import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.upstream.DataSpec;
 
@@ -26,8 +27,7 @@ public class ExoPushBufferDataSource implements DataSource {
         pushSource.setUri(dataSpec.uri.toString());
         pushSource.open(dataSpec.uri.toString());
         log.debug("Opening ExoPushDataSource {}", dataSpec.uri);
-        //return C.LENGTH_UNBOUNDED;
-        return 1750740468L;
+        return C.LENGTH_UNBOUNDED;
     }
 
     @Override
