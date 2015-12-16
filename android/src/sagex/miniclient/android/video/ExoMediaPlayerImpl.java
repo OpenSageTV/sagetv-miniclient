@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.android.video.exoplayer.ExoNativePushBufferDataSource;
 import sagex.miniclient.android.video.exoplayer.ExoPullDataSource;
-import sagex.miniclient.android.video.exoplayer.ExoPushBufferDataSource;
 import sagex.miniclient.android.video.exoplayer.SageTVExtractorRendererBuilder;
 import sagex.miniclient.android.video.exoplayer.SageTVPlayer;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
@@ -101,7 +101,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
         log.debug("Setting up the media player: {}", uri);
 
         if (pushMode) {
-            dataSource = new ExoPushBufferDataSource();
+            dataSource = new ExoNativePushBufferDataSource();
         } else {
             dataSource = new ExoPullDataSource();
         }
@@ -173,7 +173,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
     public void seek(long timeInMS) {
         super.seek(timeInMS);
         if (playerReady) {
-            if (dataSource instanceof ExoPullDataSource) {
+            if (!pushMode) {
                 if (player != null) {
                     player.seekTo(timeInMS);
                 } else {
@@ -182,7 +182,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
                 }
             } else {
                 if (dataSource != null) {
-                    ((ExoPushBufferDataSource) dataSource).flush();
+                    ((ExoNativePushBufferDataSource) dataSource).flush();
                 }
             }
         } else {
@@ -194,7 +194,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
     @Override
     public void flush() {
         if (dataSource != null) {
-            ((ExoPushBufferDataSource) dataSource).flush();
+            ((ExoNativePushBufferDataSource) dataSource).flush();
         }
 
         if (playerReady) {
@@ -220,13 +220,13 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
             }
         }
         // log.debug("push data");
-        ((ExoPushBufferDataSource) dataSource).pushBytes(cmddata, bufDataOffset, buffSize);
+        ((ExoNativePushBufferDataSource) dataSource).pushBytes(cmddata, bufDataOffset, buffSize);
     }
 
     @Override
     public int getBufferLeft() {
         if (dataSource == null) return PushBufferDataSource.PIPE_SIZE;
-        return ((ExoPushBufferDataSource) dataSource).bufferAvailable();
+        return ((ExoNativePushBufferDataSource) dataSource).bufferAvailable();
     }
 
     @Override
