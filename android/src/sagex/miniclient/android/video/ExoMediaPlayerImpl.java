@@ -44,6 +44,8 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
         player.setPlayWhenReady(true);
     }
 
+    long resumePos = -1;
+
     protected void releasePlayer() {
         if (player == null)
             return;
@@ -120,7 +122,13 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
         player.addListener(eventLogger);
 
         player.setBackgrounded(false);
-        player.seekTo(0);
+        if (resumePos >= 0) {
+            log.debug("Resume Seek Postion: {}", resumePos);
+            player.seekTo(resumePos);
+            resumePos = -1;
+        } else {
+            //player.seekTo(0);
+        }
         player.prepare();
 
         // start playing
@@ -165,7 +173,20 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
     public void seek(long timeInMS) {
         super.seek(timeInMS);
         if (playerReady) {
-            player.seekTo(timeInMS);
+            if (dataSource instanceof ExoPullDataSource) {
+                if (player != null) {
+                    player.seekTo(timeInMS);
+                } else {
+                    log.debug("Seek Resume(Player is Null) {}", timeInMS);
+                }
+            } else {
+                if (dataSource != null) {
+                    ((ExoPushBufferDataSource) dataSource).flush();
+                }
+            }
+        } else {
+            log.debug("Seek Resume {}", timeInMS);
+            resumePos = timeInMS;
         }
     }
 
@@ -183,9 +204,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
     @Override
     public long getLastFileReadPos() {
         if (dataSource == null) return 0;
-        log.error("getLastFileReadPos() is being called, why?", new Exception("** Track Last File Read Pos **"));
-        return 0;
-        //return ((sagex.miniclient.httpbridge.DataSource)dataSource).getBytesRead();
+        return player.getCurrentPosition();
     }
 
     @Override
