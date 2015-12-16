@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
+import sagex.miniclient.IBus;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.prefs.PrefStore;
@@ -39,6 +40,26 @@ public class SageTVHttpMediaServerBridgeTest {
         @Override
         public File getCacheDir() {
             return new File(".");
+        }
+
+        @Override
+        public IBus getBus() {
+            return new IBus() {
+                @Override
+                public void register(Object object) {
+
+                }
+
+                @Override
+                public void unregister(Object object) {
+
+                }
+
+                @Override
+                public void post(Object event) {
+
+                }
+            };
         }
     };
 
