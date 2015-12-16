@@ -110,5 +110,10 @@ public interface PrefStore {
          * SageTV GetProperty Keys
          */
         java.lang.String GFX_SURFACES = "GFX_SURFACES";
+
+        /**
+         * Boolean: True when ExoPlayer is used
+         */
+        String use_exoplayer = "use_exoplayer";
     }
 }

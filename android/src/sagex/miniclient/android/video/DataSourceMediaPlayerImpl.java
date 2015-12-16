@@ -14,6 +14,7 @@ import java.io.IOException;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.android.video.exoplayer.ExoPushBufferDataSource;
 import sagex.miniclient.httpbridge.DataSource;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
 import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
@@ -102,6 +103,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
         while (!playerReady) {
             try {
                 Thread.sleep(50);
+                log.debug("wait for player...");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -159,8 +161,8 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     }
 
     @Override
-    public void seek(long maxValue) {
-        log.debug("SEEK: {}", maxValue);
+    public void seek(long timeInMS) {
+        log.debug("SEEK: {}", timeInMS);
     }
 
     @Override
@@ -173,6 +175,8 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
         DataSource dataSource = getDataSource();
         if (dataSource instanceof PushBufferDataSource) {
             return ((PushBufferDataSource) dataSource).getBytesRead();
+        } else if (dataSource instanceof ExoPushBufferDataSource) {
+            return ((ExoPushBufferDataSource) dataSource).getBytesRead();
         } else {
             // return (long)player.getPosition();
             return 0;

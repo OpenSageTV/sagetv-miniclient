@@ -18,6 +18,12 @@
             android:summary="@string/summary_list_streaming_mode_preference"
             android:title="@string/title_list_streaming_mode_preference" />
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="use_exoplayer"
+            android:summary="@string/use_exoplayer_preference"
+            android:title="@string/use_exoplayer_preference_title" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/application_settings">

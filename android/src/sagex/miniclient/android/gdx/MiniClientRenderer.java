@@ -34,7 +34,9 @@ import java.util.List;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.video.ExoMediaPlayerImpl;
 import sagex.miniclient.android.video.IJKMediaPlayerImpl;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
@@ -705,8 +707,13 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             player.free();
         }
 
-        player = new IJKMediaPlayerImpl(activity);
-        //player = new ExoMediaPlayerImpl(activity);
+        if (client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false)) {
+            log.debug("Using ExoPlayer");
+            player = new ExoMediaPlayerImpl(activity);
+        } else {
+            log.debug("Using iJKPlayer");
+            player = new IJKMediaPlayerImpl(activity);
+        }
         return player;
     }
 

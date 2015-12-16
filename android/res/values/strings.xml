@@ -41,4 +41,6 @@
     <string name="application_settings">Application Settings</string>
     <string name="long_press_select_for_osd_preference">Long Press Select for OSD</string>
     <string name="long_press_select_for_osd_preference_summary">If enabled, then long pressing the SELECT button will bring up the built-in Navigation.  Otherwise, it should bring up the SageTV Options.</string>
+    <string name="use_exoplayer_preference">If enabled, then ExoPlayer will be used for video playback</string>
+    <string name="use_exoplayer_preference_title">Use ExoPlayer</string>
 </resources>

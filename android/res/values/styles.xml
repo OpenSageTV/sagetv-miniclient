@@ -21,8 +21,12 @@
         <item name="android:padding">5dp</item>
         <item name="android:background">?android:attr/selectableItemBackground</item>
         <item name="android:clickable">true</item>
-        <item name="android:focusable">false</item>
+        <item name="android:focusable">true</item>
         <!--<item name="android:focusableInTouchMode">true</item>-->
+    </style>
+
+    <style name="NavIconButtonAlt" parent="NavIconButton">
+        <item name="iiv_color">@color/iconbutton_alt</item>
     </style>
 
     <style name="NavIconSpacer">
@@ -33,4 +37,5 @@
     <style name="NavButtonContainer">
         <item name="android:background">#22000000</item>
     </style>
+
 </resources>
