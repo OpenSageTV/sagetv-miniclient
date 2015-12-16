@@ -101,7 +101,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
         log.debug("Setting up the media player: {}", uri);
 
         if (pushMode) {
-            this.dataSource = new ExoPushBufferDataSource();
+            dataSource = new ExoPushBufferDataSource();
         } else {
             dataSource = new ExoPullDataSource();
         }
@@ -178,6 +178,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
                     player.seekTo(timeInMS);
                 } else {
                     log.debug("Seek Resume(Player is Null) {}", timeInMS);
+                    resumePos = timeInMS;
                 }
             } else {
                 if (dataSource != null) {
