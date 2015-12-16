@@ -41,7 +41,7 @@ public class ExoPushBufferDataSource implements DataSource {
     @Override
     public int read(byte[] buffer, int offset, int readLength) throws IOException {
         if (pushSource == null) return 0;
-        if (log.isDebugEnabled()) log.debug("read() offset:{} len:{}", offset, readLength);
+        // if (log.isDebugEnabled()) log.debug("read() offset:{} len:{}", offset, readLength);
         return pushSource.read(0, buffer, offset, readLength);
     }
 

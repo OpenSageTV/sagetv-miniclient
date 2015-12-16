@@ -128,6 +128,7 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> 
                     playerReady = true;
                     player.start();
                     if (!pushMode && preSeekPos != -1) {
+                        log.debug("Resuming At Position: {}", preSeekPos);
                         player.seekTo(preSeekPos);
                         preSeekPos = -1;
                     }

@@ -39,8 +39,8 @@ public class ExoPullDataSource implements DataSource {
     @Override
     public int read(byte[] buffer, int offset, int readLength) throws IOException {
         if (dataSource == null) return 0;
-        if (log.isDebugEnabled())
-            log.debug("read: start:{}, offset:{}, len:{}", startPos, offset, readLength);
+//        if (log.isDebugEnabled())
+//            log.debug("read: start:{}, offset:{}, len:{}", startPos, offset, readLength);
         return dataSource.read(startPos, buffer, offset, readLength);
     }
 }
