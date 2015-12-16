@@ -21,7 +21,8 @@ public class PushBufferDataSourceTest {
 
         // read back the first bit of data
         byte buffer[] = new byte[segment.length()];
-        pbds.read(0, buffer, 0, buffer.length);
+        int read = pbds.read(0, buffer, 0, buffer.length);
+        assertEquals(buffer.length, read);
         String s = new String(buffer);
         assertEquals(segment, s);
 
@@ -37,7 +38,7 @@ public class PushBufferDataSourceTest {
 
         // now read a buch of single byte reads and fill the buffer
         for (int i = 0; i < buffer.length; i++) {
-            pbds.read(0, buffer, i, 1);
+            assertEquals(1, pbds.read(0, buffer, i, 1));
         }
         // we should now have a full segment
         s = new String(buffer);
