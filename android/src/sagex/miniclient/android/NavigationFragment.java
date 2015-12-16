@@ -22,6 +22,7 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.CloseAppEvent;
+import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.uibridge.EventRouter;
 
@@ -92,7 +93,7 @@ public class NavigationFragment extends DialogFragment {
         }
     }
 
-    @OnClick({R.id.nav_keyboard, R.id.nav_close})
+    @OnClick({R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide})
     public void buttonClickInternal(View v) {
         String tag = v.getTag().toString().toLowerCase();
         if ("_keyboard".equalsIgnoreCase(tag)) {
@@ -100,6 +101,8 @@ public class NavigationFragment extends DialogFragment {
             client.eventbus().post(ShowKeyboardEvent.INSTANCE);
         } else if ("_close".equalsIgnoreCase(tag)) {
             client.eventbus().post(CloseAppEvent.INSTANCE);
+        } else if ("_hide".equalsIgnoreCase(tag)) {
+            client.eventbus().post(HideNavigationEvent.INSTANCE);
         } else {
             log.warn("Nothing Handled Internal Event: {}", tag);
         }

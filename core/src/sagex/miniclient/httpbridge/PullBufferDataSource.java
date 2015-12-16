@@ -19,6 +19,8 @@ public class PullBufferDataSource implements DataSource {
     private static final Logger log = LoggerFactory.getLogger(PullBufferDataSource.class);
 
     private static final int MAX_BUFFER = 32768;
+    private static final int PIPE_SIZE = 1024 * 1024; // 1mb buffer
+
     private final int session;
     Socket remoteServer;
     byte buffer[] = new byte[MAX_BUFFER + 1];
@@ -75,7 +77,7 @@ public class PullBufferDataSource implements DataSource {
             bytesPos = 0;
             bytesAvailable = 0;
 
-            circularByteBuffer = new CircularByteBuffer(PushBufferDataSource.PIPE_SIZE);
+            circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
             in = circularByteBuffer.getInputStream();
             out = circularByteBuffer.getOutputStream();
 

@@ -142,14 +142,14 @@ public class IJKMediaPlayerImpl extends DataSourceMediaPlayerImpl<IMediaPlayer> 
     }
 
     @Override
-    public void seek(long maxValue) {
-        log.debug("SEEK: {}", maxValue);
+    public void seek(long timeInMS) {
+        log.debug("SEEK: {}", timeInMS);
         if (player == null) {
-            preSeekPos = maxValue;
+            preSeekPos = timeInMS;
             return;
         }
         if (getDataSource() instanceof PullBufferDataSource) {
-            player.seekTo(maxValue);
+            player.seekTo(timeInMS);
         } else {
             getDataSource().flush();
         }

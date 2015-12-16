@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        mavenLocal();
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         jcenter()
@@ -35,6 +36,7 @@ allprojects {
     }
 
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
@@ -65,7 +67,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
         // video player
-        compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.2', ext: 'aar')
+        compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.3-SNAPSHOT', ext: 'aar')
 
         // vlc video player
 //        compile "de.mrmaffen:vlc-android-sdk:1.+"
@@ -92,10 +94,6 @@ project(":android") {
         // logging
         compile "com.github.tony19:logback-android-core:1.1.1-4"
         compile "com.github.tony19:logback-android-classic:1.1.1-4"
-
-        compile('com.mikepenz:materialdrawer:4.4.3@aar') {
-            transitive = true
-        }
 
         compile "org.l6n:sendlog-library:2.0@aar"
         compile 'com.github.rahatarmanahmed:circularprogressview:2.4.0'

@@ -40,8 +40,8 @@ public class AutoConnectDialog extends DialogFragment {
     ServerInfo serverInfo;
 
     public AutoConnectDialog() {
-        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.MaterialBaseTheme_Light_Dialog);
-        setStyle(DialogFragment.STYLE_NO_FRAME, R.style.MaterialBaseTheme_Light_Dialog);
+        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.Base_Theme_AppCompat_Dialog);
+        setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Base_Theme_AppCompat_Dialog);
     }
 
     @Nullable

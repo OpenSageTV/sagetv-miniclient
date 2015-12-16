@@ -352,6 +352,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         try {
             log.debug("MiniClient built-in Naviation is hidden");
             showHideSoftRemote(false);
+            hideSystemUI(this);
         } catch (Throwable t) {
             log.debug("Failed to hide navigation");
         }
