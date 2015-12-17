@@ -67,6 +67,16 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
         player = null;
 
         super.releasePlayer();
+
+        if (dataSource != null) {
+            try {
+                if (dataSource instanceof ExoNativePushBufferDataSource) {
+                    log.debug("Release Push DataSource");
+                    ((ExoNativePushBufferDataSource) dataSource).release();
+                }
+            } catch (Throwable t) {
+            }
+        }
     }
 
     @Override
@@ -137,6 +147,7 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
 
         log.debug("Video Player is online");
         playerReady = true;
+        state = LOADED_STATE;
     }
 
     @Override
@@ -198,14 +209,19 @@ public class ExoMediaPlayerImpl extends DataSourceMediaPlayerImpl<DemoPlayer> {
         }
 
         if (playerReady) {
-            player.seekTo(Long.MAX_VALUE);
+            log.debug("Using Player.seek() to force a flush of the player");
+            player.seekTo(-1);
         }
     }
 
     @Override
     public long getLastFileReadPos() {
-        if (dataSource == null) return 0;
-        return player.getCurrentPosition();
+        if (dataSource instanceof ExoNativePushBufferDataSource) {
+            return ((ExoNativePushBufferDataSource) dataSource).getBytesRead();
+        } else {
+            return player.getCurrentPosition();
+        }
+
     }
 
     @Override

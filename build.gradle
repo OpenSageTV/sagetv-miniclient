@@ -67,7 +67,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
         // video player
-        compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.3-SNAPSHOT', ext: 'aar')
+        compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.4-SNAPSHOT', ext: 'aar')
 
         // vlc video player
 //        compile "de.mrmaffen:vlc-android-sdk:1.+"

@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import sagex.miniclient.util.DataCollector;
+
 /**
  * Created by seans on 08/12/15.
  */
@@ -23,19 +25,43 @@ public class ExoNativePushBufferDataSource implements DataSource {
     InputStream is;
     OutputStream os;
     int read = 0;
+    boolean closed = false;
+
+    DataCollector dataCollector = null;
+
+    public ExoNativePushBufferDataSource() {
+        log.debug("ExoNative datasource being created.", new Exception("** DATASOURCE CREATED **"));
+    }
 
     @Override
     public long open(DataSpec dataSpec) throws IOException {
+        if (bb != null) {
+            log.debug("Open Called Again on Push DataSource, ignoring.  {}, {}", dataSpec.uri, dataSpec.position);
+            return C.LENGTH_UNBOUNDED;
+        }
         read = 0;
         bb = new CircularByteBuffer(BUFFER_SIZE);
-        log.debug("Opening ExoPushDataSource {}", dataSpec.uri);
+        log.debug("Opening ExoPushDataSource {}, offset: {}", dataSpec.uri, dataSpec.position);
         is = bb.getInputStream();
         os = bb.getOutputStream();
+        boolean dataCollectorEnabled = true;
+        if (dataCollectorEnabled) {
+            dataCollector = new DataCollector("Exo");
+            dataCollector.open();
+        }
+
         return C.LENGTH_UNBOUNDED;
     }
 
     @Override
     public void close() throws IOException {
+        // do nothing in this implementation of the close, since, we'll close it int he player
+        log.debug("DataSource is being closed, but we'll ignore it, for now and wait for the release()");
+    }
+
+    public void release() {
+        log.debug("Data Source is being closed", new Exception("DataSource is being closed"));
+        closed = true;
         bb.clear();
         try {
             is.close();
@@ -45,13 +71,20 @@ public class ExoNativePushBufferDataSource implements DataSource {
             os.close();
         } catch (Throwable t) {
         }
-
+        bb = null;
+        os = null;
+        is = null;
+        if (dataCollector != null) {
+            dataCollector.close();
+        }
     }
 
     @Override
     public int read(byte[] buffer, int offset, int readLength) throws IOException {
         read += readLength;
-        log.debug("read: offset:{}, len:{}, total:{}", offset, readLength, readLength);
+//        if ((read/(1024*1024) % 5) == 0) {
+//            log.debug("read tick (every 5mb): offset:{}, len:{}, total:{}", offset, readLength, readLength);
+//        }
         return is.read(buffer, offset, readLength);
     }
 
@@ -60,19 +93,25 @@ public class ExoNativePushBufferDataSource implements DataSource {
     }
 
     public void pushBytes(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException {
-        while (os == null) {
+        while (os == null && !closed) {
             try {
-                Thread.sleep(50);
+                Thread.sleep(200);
+                log.debug("Waiting for datasource...");
             } catch (InterruptedException e) {
-
+                return;
             }
         }
-        log.debug("push: offset:{}, len:{}", bufDataOffset, buffSize);
+        if (closed) return;
+//        log.debug("push: offset:{}, len:{}", bufDataOffset, buffSize);
         os.write(cmddata, bufDataOffset, buffSize);
+        if (dataCollector != null) {
+            dataCollector.write(cmddata, bufDataOffset, buffSize);
+        }
     }
 
     public void flush() {
         if (bb == null) return;
+        log.debug("FLUSH: is called on the DataSource");
         bb.clear();
     }
 

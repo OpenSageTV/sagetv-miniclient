@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import sagex.miniclient.util.DataCollector;
+
 /**
  * used push:// is used, this is the media data source that feeds the video player
  */
@@ -28,11 +30,19 @@ public class PushBufferDataSource implements DataSource {
     private boolean verboseLogging = false;
     private DataSourceListener listener;
 
+    private DataCollector dataCollector = null;
+
+
     public PushBufferDataSource(int session) {
         this.session = session;
         circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
         in = circularByteBuffer.getInputStream();
         out = circularByteBuffer.getOutputStream();
+        boolean dataCollectorEnabled = true;
+        if (dataCollectorEnabled) {
+            log.warn("DataCollector is enabled");
+            dataCollector = new DataCollector();
+        }
     }
 
     @Override
@@ -47,6 +57,9 @@ public class PushBufferDataSource implements DataSource {
             listener.onOpen(this);
         }
         opened = true;
+        if (dataCollector != null) {
+            dataCollector.open();
+        }
         return -1;
     }
 
@@ -71,6 +84,9 @@ public class PushBufferDataSource implements DataSource {
 
         if (listener != null) {
             listener.onClose(this);
+        }
+        if (dataCollector != null) {
+            dataCollector.close();
         }
     }
 
@@ -131,6 +147,9 @@ public class PushBufferDataSource implements DataSource {
         }
 
         out.write(bytes, offset, len);
+        if (dataCollector != null) {
+            dataCollector.write(bytes, offset, len);
+        }
     }
 
     @Override

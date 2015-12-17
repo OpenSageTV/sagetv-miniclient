@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import sagex.miniclient.util.DataCollector;
+
 /**
  * Created by seans on 03/10/15.
  */
@@ -40,6 +42,8 @@ public class PullBufferDataSource implements DataSource {
 
     private DataSourceListener listener = null;
 
+    private DataCollector dataCollector = null;
+
     public PullBufferDataSource(int session) {
         this.session = session;
     }
@@ -48,6 +52,10 @@ public class PullBufferDataSource implements DataSource {
     public DataSourceListener setDataSourceListener(DataSourceListener listener) {
         DataSourceListener l = this.listener;
         this.listener = listener;
+        boolean dataCollectorEnabled = false;
+        if (dataCollectorEnabled) {
+            dataCollector = new DataCollector();
+        }
         return l;
     }
 
@@ -100,6 +108,10 @@ public class PullBufferDataSource implements DataSource {
             opened = true;
             if (listener != null) {
                 listener.onOpen(this);
+            }
+
+            if (dataCollector != null) {
+                dataCollector.open();
             }
         } catch (Throwable t) {
             log.error("[{}]:Unable to open: {}", session, uri, t);
@@ -163,6 +175,10 @@ public class PullBufferDataSource implements DataSource {
         // MiniClient.get().getHttpBridge().removeSession(session);
 
         opened = false;
+
+        if (dataCollector != null) {
+            dataCollector.close();
+        }
     }
 
     @Override
@@ -231,6 +247,9 @@ public class PullBufferDataSource implements DataSource {
         bytesPos += bytes;
         bytesAvailable += bytes; // add these bytes to queue
         out.write(buffer, 0, bytes);
+        if (dataCollector != null) {
+            dataCollector.write(buffer, 0, bytes);
+        }
         return bytes;
     }
 

@@ -14,7 +14,6 @@ import java.io.IOException;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
-import sagex.miniclient.android.video.exoplayer.ExoPushBufferDataSource;
 import sagex.miniclient.httpbridge.DataSource;
 import sagex.miniclient.httpbridge.PushBufferDataSource;
 import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
@@ -47,6 +46,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
     boolean waitForPlayer = true;
 
     SageTVHttpMediaServerBridge httpBridge = null;
+    protected int state;
 
     public DataSourceMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
@@ -54,6 +54,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
         this.createPlayerOnUI = createPlayerOnUI;
         this.waitForPlayer = waitForPlayer;
         httpBridge = MiniclientApplication.get().getClient().getHttpBridge();
+        state = this.NO_STATE;
     }
 
     public Player getPlayer() {
@@ -117,7 +118,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public int getState() {
-        return 0;
+        return state;
     }
 
     @Override
@@ -127,6 +128,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public void stop() {
+        state = STOPPED_STATE;
     }
 
     protected void clearSurface() {
@@ -149,12 +151,14 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public void pause() {
+        state = PAUSE_STATE;
         log.debug("pause()");
         if (createPlayerOnUI) waitForPlayer();
     }
 
     @Override
     public void play() {
+        state = PLAY_STATE;
         log.debug("play()");
         if (createPlayerOnUI) waitForPlayer();
         waitForPlayer();
@@ -167,7 +171,7 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
 
     @Override
     public void inactiveFile() {
-
+        log.debug("INACTIVEFILE Called??");
     }
 
     @Override
@@ -175,8 +179,6 @@ public abstract class DataSourceMediaPlayerImpl<Player> implements MiniPlayerPlu
         DataSource dataSource = getDataSource();
         if (dataSource instanceof PushBufferDataSource) {
             return ((PushBufferDataSource) dataSource).getBytesRead();
-        } else if (dataSource instanceof ExoPushBufferDataSource) {
-            return ((ExoPushBufferDataSource) dataSource).getBytesRead();
         } else {
             // return (long)player.getPosition();
             return 0;
