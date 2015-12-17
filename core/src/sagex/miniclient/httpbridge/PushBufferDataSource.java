@@ -38,7 +38,7 @@ public class PushBufferDataSource implements DataSource {
         circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
         in = circularByteBuffer.getInputStream();
         out = circularByteBuffer.getOutputStream();
-        boolean dataCollectorEnabled = true;
+        boolean dataCollectorEnabled = false;
         if (dataCollectorEnabled) {
             log.warn("DataCollector is enabled");
             dataCollector = new DataCollector();

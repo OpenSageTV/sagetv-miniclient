@@ -44,7 +44,7 @@ public class ExoNativePushBufferDataSource implements DataSource {
         log.debug("Opening ExoPushDataSource {}, offset: {}", dataSpec.uri, dataSpec.position);
         is = bb.getInputStream();
         os = bb.getOutputStream();
-        boolean dataCollectorEnabled = true;
+        boolean dataCollectorEnabled = false;
         if (dataCollectorEnabled) {
             dataCollector = new DataCollector("Exo");
             dataCollector.open();
