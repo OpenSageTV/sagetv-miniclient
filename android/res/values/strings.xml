@@ -43,4 +43,6 @@
     <string name="long_press_select_for_osd_preference_summary">If enabled, then long pressing the SELECT button will bring up the built-in Navigation.  Otherwise, it should bring up the SageTV Options.</string>
     <string name="use_exoplayer_preference">If enabled, then ExoPlayer will be used for video playback</string>
     <string name="use_exoplayer_preference_title">Use ExoPlayer</string>
+    <string name="title_use_http_proxy_preference">Use HTTP Proxy</string>
+    <string name="summary_use_http_proxy_preference">Some players cannot access SageTV streams and require an http proxy.</string>
 </resources>

@@ -30,9 +30,11 @@ allprojects {
     version = '1.0'
     ext {
         appName = "SageTVMiniclient"
-        gdxVersion = "1.6.5"
-
         baseVersion = "0.7-ALPHA"
+
+        gdxVersion = "1.6.5"
+        ijkVersion = "0.4.4.1";
+        ijkVersionDev = "0.4.4.2-SNAPSHOT";
     }
 
     repositories {
@@ -56,9 +58,6 @@ project(":android") {
         compile 'com.android.support:appcompat-v7:22.2.0'
         compile 'com.jakewharton:butterknife:7.0.1'
 
-        // vlc from aarlibs dir
-        // compile('sagetv.libvlc:libvlc-armv7a:3.0.0@aar')
-
         // gdx
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
@@ -69,27 +68,21 @@ project(":android") {
         // video player
         compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.4-SNAPSHOT', ext: 'aar')
 
-        // vlc video player
-//        compile "de.mrmaffen:vlc-android-sdk:1.+"
-
         // ijkplayer
-//        compile 'tv.danmaku.ijk.media:ijkplayer-java:0.4.3.5'
-//        compile 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.4.3.5'
-//        compile 'tv.danmaku.ijk.media:ijkplayer-x86:0.4.3.5'
-//        compile 'tv.danmaku.ijk.media:ijkplayer-exo:0.4.3.5'
+//        compile "tv.danmaku.ijk.media:ijkplayer-java:${ijkVersion}"
+//        compile "tv.danmaku.ijk.media:ijkplayer-armv7a:${ijkVersion}"
+//        compile "tv.danmaku.ijk.media:ijkplayer-x86:${ijkVersion}"
+        // requires API level 21
+        // compile "tv.danmaku.ijk.media:ijkplayer-arm64:${ijkVersion}"
+        // compile "tv.danmaku.ijk.media:ijkplayer-exo:${ijkVersion}"
 
         // If you are rebuilding your own ijkplaer, then comment the lines above and
         // then uncomment these.
-        compile 'sagetv.ijkplayer:ijkplayer-java:0.4.3.5@aar'
-        compile 'sagetv.ijkplayer:ijkplayer-armv7a:0.4.3.5@aar'
-        compile 'sagetv.ijkplayer:ijkplayer-x86:0.4.3.5@aar'
-        compile 'sagetv.ijkplayer:ijkplayer-exo:0.4.3.5@aar'
+        compile "sagetv.ijkplayer:ijkplayer-java:${ijkVersionDev}@aar"
+        compile "sagetv.ijkplayer:ijkplayer-armv7a:${ijkVersionDev}@aar"
+        compile "sagetv.ijkplayer:ijkplayer-x86:${ijkVersionDev}@aar"
+        compile "sagetv.ijkplayer:ijkplayer-exo:${ijkVersionDev}@aar"
 
-
-//        # optional
-//        compile 'tv.danmaku.ijk.media:ijkplayer-armv5:0.4.1'
-//        compile 'tv.danmaku.ijk.media:ijkplayer-arm64:0.4.1'
-//        compile 'tv.danmaku.ijk.media:ijkplayer-x86:0.4.1'
 
         // logging
         compile "com.github.tony19:logback-android-core:1.1.1-4"

@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import sagex.miniclient.util.DataCollector;
+import sagex.miniclient.util.VerboseLogging;
 
 /**
  * used push:// is used, this is the media data source that feeds the video player
@@ -27,7 +28,6 @@ public class PushBufferDataSource implements DataSource {
     private long bytesRead = 0;
     private boolean opened = false;
 
-    private boolean verboseLogging = false;
     private DataSourceListener listener;
 
     private DataCollector dataCollector = null;
@@ -38,8 +38,7 @@ public class PushBufferDataSource implements DataSource {
         circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
         in = circularByteBuffer.getInputStream();
         out = circularByteBuffer.getOutputStream();
-        boolean dataCollectorEnabled = false;
-        if (dataCollectorEnabled) {
+        if (VerboseLogging.LOG_DATASOURCE_BYTES_TO_FILE) {
             log.warn("DataCollector is enabled");
             dataCollector = new DataCollector();
         }
@@ -130,7 +129,8 @@ public class PushBufferDataSource implements DataSource {
         }
         if (in == null) return 0;
         // streamOffset is not used for push
-        if (verboseLogging && log.isDebugEnabled()) log.debug("[{}]:READ: {}", session, len);
+        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
+            log.debug("[{}]:READ: {}", session, len);
 
         int read = in.read(bytes, offset, len);
         if (read >= 0) {
@@ -140,7 +140,8 @@ public class PushBufferDataSource implements DataSource {
     }
 
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
-        if (verboseLogging && log.isDebugEnabled()) log.debug("[{}]:PUSH: {}", session, len);
+        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
+            log.debug("[{}]:PUSH: {}", session, len);
         if (out == null) {
             log.warn("PUSH: We are missing this PUSH because our DataSource is closed.");
             return;

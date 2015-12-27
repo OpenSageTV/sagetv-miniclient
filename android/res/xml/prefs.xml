@@ -3,12 +3,6 @@
 
     <PreferenceCategory android:title="@string/media_player_preferences">
 
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="use_hardware_acceleration"
-            android:summary="@string/summary_use_hardware_acceleration_preference"
-            android:title="@string/title_use_hardware_acceleration_preference" />
-
         <ListPreference
             android:defaultValue="dynamic"
             android:dialogTitle="@string/dialog_title_list_streaming_mode_preference"
@@ -23,6 +17,12 @@
             android:key="use_exoplayer"
             android:summary="@string/use_exoplayer_preference"
             android:title="@string/use_exoplayer_preference_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="use_http_proxy"
+            android:summary="@string/summary_use_http_proxy_preference"
+            android:title="@string/title_use_http_proxy_preference" />
 
     </PreferenceCategory>
 
