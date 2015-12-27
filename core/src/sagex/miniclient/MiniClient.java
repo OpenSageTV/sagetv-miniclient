@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import sagex.miniclient.httpbridge.SageTVHttpMediaServerBridge;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -35,7 +34,6 @@ public class MiniClient {
     ServerDiscovery serverDiscovery;
     Servers servers;
     Thread connectionThread = null;
-    SageTVHttpMediaServerBridge httpBridge = null;
     private String MACAddress;
     private MiniClientConnection currentConnection;
     private sagex.miniclient.uibridge.UIRenderer<?> UIRenderer;
@@ -60,19 +58,6 @@ public class MiniClient {
 
     public boolean isUsingHttpBridge() {
         return usingHttpBridge;
-    }
-
-    public SageTVHttpMediaServerBridge getHttpBridge() {
-        if (!isUsingHttpBridge()) return null;
-        if (httpBridge == null) {
-            httpBridge = new SageTVHttpMediaServerBridge(this, 9991);
-            try {
-                httpBridge.start(1000, true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return httpBridge;
     }
 
     public ServerDiscovery getServerDiscovery() {
@@ -164,10 +149,6 @@ public class MiniClient {
     }
 
     public void shutdown() {
-        if (isUsingHttpBridge() && httpBridge != null) {
-            httpBridge.stop();
-            this.httpBridge = null;
-        }
         if (currentConnection != null) {
             closeConnection();
         }

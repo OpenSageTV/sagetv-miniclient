@@ -8,11 +8,8 @@ import com.google.android.exoplayer.demo.player.DemoPlayer;
 import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.util.VerboseLogUtil;
 
-import java.io.IOException;
-
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
-import sagex.miniclient.net.HasPushBuffer;
 
 /**
  * Created by seans on 27/09/15.
@@ -57,22 +54,6 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         player = null;
 
         super.releasePlayer();
-    }
-
-    @Override
-    protected void releaseDataSource() {
-        if (dataSource != null) {
-            try {
-                if (dataSource instanceof HasPushBuffer) {
-                    ((HasPushBuffer) dataSource).release();
-                } else {
-                    dataSource.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        dataSource = null;
     }
 
     /**

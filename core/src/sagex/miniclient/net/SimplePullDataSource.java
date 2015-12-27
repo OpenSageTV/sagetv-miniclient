@@ -15,7 +15,7 @@ import sagex.miniclient.util.VerboseLogging;
  * Created by seans on 20/12/15.
  */
 public class SimplePullDataSource implements ISageTVDataSource {
-    private static final Logger log = LoggerFactory.getLogger(SimplePullDataSource.class);
+    static final Logger log = LoggerFactory.getLogger(SimplePullDataSource.class);
 
     Socket remoteServer;
     String uri;
@@ -129,6 +129,14 @@ public class SimplePullDataSource implements ISageTVDataSource {
 
     @Override
     public int read(long position, byte[] buffer, int offset, int len) throws IOException {
+        if (!opened) {
+            throw new IOException("read() called on DataSource that is not opened: " + uri);
+        }
+
+        return fetch(position, buffer, offset, len);
+    }
+
+    public int fetch(long position, byte[] buffer, int offset, int len) throws IOException {
         if (!opened) {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }

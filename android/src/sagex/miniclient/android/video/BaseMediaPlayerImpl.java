@@ -13,8 +13,8 @@ import java.io.IOException;
 
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
-import sagex.miniclient.httpbridge.PushBufferDataSource;
 import sagex.miniclient.net.HasPushBuffer;
+import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
@@ -283,5 +283,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         dataSource = null;
     }
 
-    protected abstract void releaseDataSource();
+    protected void releaseDataSource() {
+        if (dataSource instanceof HasPushBuffer) {
+            ((HasPushBuffer) dataSource).release();
+        }
+    }
 }

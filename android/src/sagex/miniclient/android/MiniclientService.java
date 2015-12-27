@@ -8,8 +8,6 @@ import android.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sagex.miniclient.MiniClient;
-
 /**
  * Created by seans on 12/10/15.
  */
@@ -24,11 +22,7 @@ public class MiniclientService extends Service {
         super.onCreate();
         log.debug("Starting MiniClient Service");
         try {
-            MiniClient client = MiniclientApplication.get(this).getClient();
-            if (client.isUsingHttpBridge()) {
-                // start the http bridge
-                client.getHttpBridge().setMediaCommandHandler(new AndroidMediaCommandHandler(this));
-            }
+            MiniclientApplication.get(this).getClient();
         } catch (Throwable t) {
             log.error("Failed to start miniclient service", t);
         }

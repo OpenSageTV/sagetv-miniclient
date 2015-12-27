@@ -2,12 +2,9 @@ package sagex.miniclient.android.video.ijkplayer;
 
 import android.widget.Toast;
 
-import java.io.IOException;
-
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
-import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.uibridge.EventRouter;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
@@ -173,20 +170,5 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         player = null;
 
         super.releasePlayer();
-    }
-
-    @Override
-    protected void releaseDataSource() {
-        if (dataSource != null) {
-            try {
-                if (dataSource instanceof HasPushBuffer) {
-                    ((HasPushBuffer) dataSource).release();
-                } else {
-                    dataSource.close();
-                }
-            } catch (IOException e) {
-            }
-        }
-        dataSource = null;
     }
 }

@@ -8,21 +8,19 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import sagex.miniclient.httpbridge.PullBufferDataSource;
+import sagex.miniclient.net.BufferedPullDataSource;
 
 /**
  * Created by seans on 10/12/15.
  */
 public class ExoPullDataSource implements DataSource {
     static final Logger log = LoggerFactory.getLogger(ExoPullDataSource.class);
-    static int sessions = 0;
-    PullBufferDataSource dataSource = null;
+    BufferedPullDataSource dataSource = null;
     private long startPos;
 
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        dataSource = new PullBufferDataSource(sessions++);
-        dataSource.setUri(dataSpec.uri.toString());
+        dataSource = new BufferedPullDataSource();
         long size = dataSource.open(dataSpec.uri.toString());
         this.startPos = dataSpec.position;
         log.debug("Open: {}, Offset: {}", dataSource.getUri(), startPos);
@@ -39,8 +37,9 @@ public class ExoPullDataSource implements DataSource {
     @Override
     public int read(byte[] buffer, int offset, int readLength) throws IOException {
         if (dataSource == null) return 0;
-//        if (log.isDebugEnabled())
-//            log.debug("read: start:{}, offset:{}, len:{}", startPos, offset, readLength);
-        return dataSource.read(startPos, buffer, offset, readLength);
+        int bytes = dataSource.read(startPos, buffer, offset, readLength);
+        if (bytes == -1) return -1;
+        startPos += bytes;
+        return bytes;
     }
 }

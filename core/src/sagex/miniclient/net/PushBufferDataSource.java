@@ -16,6 +16,7 @@ import sagex.miniclient.util.VerboseLogging;
  * used push:// is used, this is the media data source that feeds the video player
  */
 public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
+    public enum State {Idle, Opened, Closed}
     public static final int PIPE_SIZE = 16 * 1024 * 1024;
     private static final Logger log = LoggerFactory.getLogger(PushBufferDataSource.class);
 
@@ -25,7 +26,8 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     OutputStream out = null;
     private String uri;
     private long bytesRead = 0;
-    private boolean opened = false;
+
+    State state = State.Idle;
 
     private DataCollector dataCollector = null;
 
@@ -37,10 +39,11 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
         // push:f=MPEG2-TS;dur=1851466;br=2500000;
         // [bf=vid;f=H.264;index=0;main=yes;tag=1011;fps=59.94006;fpsn=60000;fpsd=1001;ar=1.777778;arn=16;ard=9;w=1280;h=720;]
         // [bf=aud;f=AAC;index=1;main=yes;tag=1100;sr=48000;ch=2;at=ADTS-MPEG2;]
-        if (opened) {
+        if (state == State.Opened) {
             log.warn("opened called on an already opened push buffer, will ignore");
             return -1;
         }
+        state = State.Idle;
 
         this.uri = uri;
         log.debug("Open Called: {}", uri);
@@ -56,7 +59,7 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
             log.warn("DataCollector is enabled");
             dataCollector = new DataCollector();
         }
-        opened = true;
+        state = State.Opened;
         if (dataCollector != null) {
             dataCollector.open();
         }
@@ -83,7 +86,7 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
 
         in = null;
         out = null;
-        opened = false;
+        state = State.Closed;
         circularByteBuffer = null;
 
         if (dataCollector != null) {
@@ -110,12 +113,12 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     }
 
     public boolean isOpen() {
-        return opened;
+        return state == State.Opened;
     }
 
     @Override
     public int read(long readOffset, byte[] bytes, int offset, int len) throws IOException {
-        if (!opened) {
+        if (state != State.Opened) {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }
         if (in == null) return 0;
@@ -132,9 +135,14 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     @Override
     public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
         if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled()) log.debug("PUSH: {}", len);
-        if (out == null) {
-            log.warn("PUSH: We are missing this PUSH because our DataSource is closed.");
-            return;
+        while (out == null) {
+            if (state == State.Closed) return;
+            log.warn("PUSH: We are waiting this PUSH because our DataSource is not yet opened.");
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         out.write(bytes, offset, len);
