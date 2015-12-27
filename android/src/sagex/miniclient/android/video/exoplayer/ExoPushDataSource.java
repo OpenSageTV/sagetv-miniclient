@@ -1,5 +1,6 @@
 package sagex.miniclient.android.video.exoplayer;
 
+import com.google.android.exoplayer.C;
 import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.upstream.DataSpec;
 
@@ -18,12 +19,13 @@ public class ExoPushDataSource extends PushBufferDataSource implements DataSourc
     private static final Logger log = LoggerFactory.getLogger(ExoPushDataSource.class);
 
     public ExoPushDataSource() {
-        log.debug("ExoNative datasource being created.", new Exception("** DATASOURCE CREATED **"));
+        log.debug("ExoNative datasource being created.");
     }
 
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        return open(dataSpec.uri.toString());
+        open(dataSpec.uri.toString());
+        return C.LENGTH_UNBOUNDED;
     }
 
     @Override
