@@ -94,8 +94,6 @@ public interface PrefStore {
          */
         String long_press_select_for_osd = "long_press_select_for_osd";
 
-        String use_hardware_acceleration = "use_hardware_acceleration";
-
         /**
          * Debug Settings
          */
@@ -115,5 +113,10 @@ public interface PrefStore {
          * Boolean: True when ExoPlayer is used
          */
         String use_exoplayer = "use_exoplayer";
+
+        /**
+         * Boolean: if enabled then the http media bridge is used
+         */
+        String use_http_proxy = "use_http_proxy";
     }
 }

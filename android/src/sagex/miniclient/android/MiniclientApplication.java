@@ -5,6 +5,8 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.os.Build;
 
 import org.slf4j.Logger;
@@ -71,6 +73,18 @@ public class MiniclientApplication extends Application {
         log.info("------ Begin CPU INFO -----");
         log.info(getInfo());
         log.info("------- End CPU INFO ------");
+
+        // log the media codec information
+        int count = MediaCodecList.getCodecCount();
+        log.debug("--------- DUMPING HARDWARE CODECS -----------");
+        for (int i = 0; i < count; i++) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (!info.isEncoder()) {
+                log.debug("[{}] {}; supported: {}; encoder:{}", i, info.getName(), info.getSupportedTypes(), info.isEncoder());
+            }
+        }
+        log.debug("--------- END DUMPING HARDWARE CODECS -----------");
+
         try {
             Intent i = new Intent(getBaseContext(), MiniclientService.class);
             startService(i);

@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 import sagex.miniclient.util.DataCollector;
+import sagex.miniclient.util.VerboseLogging;
 
 /**
  * Created by seans on 03/10/15.
@@ -32,7 +33,6 @@ public class PullBufferDataSource implements DataSource {
     OutputStream out = null;
     boolean opened = false;
     long size = -1;
-    boolean verboseLogging = false;
     private String uri;
     private DataInputStream remoteReader;
     private OutputStream remoteWriter;
@@ -52,8 +52,7 @@ public class PullBufferDataSource implements DataSource {
     public DataSourceListener setDataSourceListener(DataSourceListener listener) {
         DataSourceListener l = this.listener;
         this.listener = listener;
-        boolean dataCollectorEnabled = false;
-        if (dataCollectorEnabled) {
+        if (VerboseLogging.LOG_DATASOURCE_BYTES_TO_FILE) {
             dataCollector = new DataCollector();
         }
         return l;
@@ -153,8 +152,10 @@ public class PullBufferDataSource implements DataSource {
         remoteWriter = null;
 
         try {
-            circularByteBuffer.clear();
-            if (in != null) in.close();
+            if (circularByteBuffer != null) {
+                circularByteBuffer.clear();
+                if (in != null) in.close();
+            }
         } catch (IOException e) {
             //e.printStackTrace();
         }
@@ -187,7 +188,6 @@ public class PullBufferDataSource implements DataSource {
         if (circularByteBuffer != null) {
             circularByteBuffer.clear();
         }
-        size = 0;
         bytesPos = 0;
         bytesRead = 0;
         bytesAvailable = 0;
@@ -223,9 +223,14 @@ public class PullBufferDataSource implements DataSource {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }
 
-        if (verboseLogging && log.isDebugEnabled()) log.debug("[{}]:READ: len: {}", session, len);
-        if (bytesAvailable < len) {
-            fillBuffer(readOffset, MAX_BUFFER);
+        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
+            log.debug("[{}]:READ: len: {}", session, len);
+        int thisRead = 0;
+        while (bytesAvailable < len) {
+            thisRead = fillBuffer(readOffset, MAX_BUFFER);
+            if (thisRead < 0) {
+                return -1;
+            }
         }
         // reduce out buffer count
         bytesAvailable -= len;
@@ -236,13 +241,14 @@ public class PullBufferDataSource implements DataSource {
 
     private int fillBuffer(long readOffset, int len) throws IOException {
         String cmd = ("READ " + String.valueOf(readOffset + bytesPos) + " " + String.valueOf(len));
-        if (verboseLogging && log.isDebugEnabled())
-            log.debug("[{}]:fillBuffer(): {}", session, cmd);
+        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
+            log.debug("[{}]:fillBuffer(): {} (readOffset: {}, bytePos: {}, len: {})", session, cmd, readOffset, bytesPos, len);
         remoteWriter.write((cmd + "\r\n").getBytes());
         remoteWriter.flush();
         int bytes = readBuffer(len);
         if (bytes == -1) {
-            throw new IOException("EOF for " + uri);
+            log.warn("EOF for {}", uri);
+            return -1;
         }
         bytesPos += bytes;
         bytesAvailable += bytes; // add these bytes to queue
@@ -257,7 +263,7 @@ public class PullBufferDataSource implements DataSource {
         int total = 0;
         int read = 0;
         while (total < len) {
-            if (verboseLogging && log.isDebugEnabled())
+            if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
                 log.debug("total: {}, len: {}, delta: {}", total, len, (len - total));
             read = remoteReader.read(buffer, total, len - total);
             if (read == -1) {
@@ -273,17 +279,6 @@ public class PullBufferDataSource implements DataSource {
         //log.debug("Filled buffer with {} bytes", total);
         return total;
     }
-
-//    private void sendStringCommand(String cmd) throws IOException {
-//        remoteWriter.write((cmd + "\r\n").getBytes());
-//        remoteWriter.flush();
-//        int read = readBuffer(4);
-//        String val = null;
-//        if (read > 0) {
-//            val = new String(buffer, 0, read);
-//        }
-//        log.debug("Send Command: {}, Got Bytes {} Back with data[{}]", cmd, read, val);
-//    }
 
     private String sendStringCommandWithReply(String cmd) throws IOException {
         remoteWriter.write((cmd + "\r\n").getBytes());
