@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.support.v7.app.AlertDialog;
+import android.text.Html;
 
 import sagex.miniclient.Version;
 import sagex.miniclient.prefs.PrefStore;
@@ -70,6 +72,15 @@ public class SettingsFragment extends PreferenceFragment {
             final Preference clientid = findPreference("clientid");
             clientid.setSummary(AppUtil.getMACAddress(this.getActivity()));
 
+            final Preference decoders = findPreference("decoders");
+            decoders.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    showHardwareDecoderInfo();
+                    return true;
+                }
+
+            });
 
 
         } catch (Throwable t) {
@@ -77,6 +88,22 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
+    private void showHardwareDecoderInfo() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.hardware_decoders);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<B>").append("Video Decoders").append("</B><br/>\n");
+        for (String mi : AppUtil.getVideoDecoders()) {
+            sb.append(mi).append("<br/>\n");
+        }
+        sb.append("\n<br/><B>").append("Audio Decoders").append("</B><br/>\n");
+        for (String mi : AppUtil.getAudioDecoders()) {
+            sb.append(mi).append("<br/>\n");
+        }
+        builder.setMessage(Html.fromHtml(sb.toString()));
+        builder.setCancelable(true);
+        builder.show();
+    }
     private void updateSummary(Preference pref, int resId, Object value) {
         //pref.setSummary(getResources().getString(resId, value));
     }

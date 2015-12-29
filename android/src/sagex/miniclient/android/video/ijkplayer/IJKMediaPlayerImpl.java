@@ -47,6 +47,15 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
     }
 
+    @Override
+    public void flush() {
+        super.flush();
+        if (player != null) {
+            log.debug("Flush Will force a seek to clear buffers");
+            player.seekTo(-1);
+        }
+    }
+
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
         releasePlayer();
