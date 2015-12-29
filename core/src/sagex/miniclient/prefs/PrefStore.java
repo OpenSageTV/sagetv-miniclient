@@ -113,10 +113,5 @@ public interface PrefStore {
          * Boolean: True when ExoPlayer is used
          */
         String use_exoplayer = "use_exoplayer";
-
-        /**
-         * Boolean: if enabled then the http media bridge is used
-         */
-        String use_http_proxy = "use_http_proxy";
     }
 }

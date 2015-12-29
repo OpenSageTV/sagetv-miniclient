@@ -45,4 +45,5 @@
     <string name="use_exoplayer_preference_title">Use ExoPlayer</string>
     <string name="title_use_http_proxy_preference">Use HTTP Proxy</string>
     <string name="summary_use_http_proxy_preference">Some players cannot access SageTV streams and require an http proxy.</string>
+    <string name="hardware_decoders">Hardware Decoders</string>
 </resources>

@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
@@ -15,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Set;
+import java.util.TreeSet;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
@@ -160,5 +164,41 @@ public class AppUtil {
         } catch (Throwable t) {
             Log.e(TAG, "Invalid Log Level '" + logLevel + "'");
         }
+    }
+
+    public static Set<String> getVideoDecoders() {
+        Set<String> all = new TreeSet<>();
+        int count = MediaCodecList.getCodecCount();
+        for (int i = 0; i < count; i++) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (!info.isEncoder()) {
+                if (info.getSupportedTypes() != null) {
+                    for (String s : info.getSupportedTypes()) {
+                        if (s.toLowerCase().contains("video")) {
+                            all.add(info.getName());
+                        }
+                    }
+                }
+            }
+        }
+        return all;
+    }
+
+    public static Set<String> getAudioDecoders() {
+        Set<String> all = new TreeSet<>();
+        int count = MediaCodecList.getCodecCount();
+        for (int i = 0; i < count; i++) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (!info.isEncoder()) {
+                if (info.getSupportedTypes() != null) {
+                    for (String s : info.getSupportedTypes()) {
+                        if (s.toLowerCase().contains("audio")) {
+                            all.add(info.getName());
+                        }
+                    }
+                }
+            }
+        }
+        return all;
     }
 }

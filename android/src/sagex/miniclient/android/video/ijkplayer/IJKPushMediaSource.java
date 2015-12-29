@@ -40,6 +40,12 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer {
     public int readAt(long position, byte[] bytes, int offset, int size) throws IOException {
         if (VerboseLogging.DATASOURCE_LOGGING)
             log.debug("readAt(): pos: {}, offset:{}, size: {}", position, offset, size);
+
+        // ijkmediasource does a zero len read on a seek to see if it was successful
+        // we'll return 0 (ok) so that the player buffers get cleaned up, and the the player
+        // can start reading from the new location.
+        if (size == 0) return 0;
+
         try {
             if (dataSource == null) _open();
             return dataSource.read(position, bytes, offset, size);

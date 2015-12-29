@@ -18,12 +18,6 @@
             android:summary="@string/use_exoplayer_preference"
             android:title="@string/use_exoplayer_preference_title" />
 
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="use_http_proxy"
-            android:summary="@string/summary_use_http_proxy_preference"
-            android:title="@string/title_use_http_proxy_preference" />
-
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/application_settings">
@@ -73,12 +67,6 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
-            android:key="use_bitmap_images"
-            android:summary="@string/use_bitmap_images_summary"
-            android:title="@string/use_bitmap_images_title" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
             android:key="GFX_SURFACES"
             android:summary="@string/GFX_SURFACES_summary"
             android:title="@string/GFX_SURFACES_title" />
@@ -117,6 +105,11 @@
             android:key="clientid"
             android:summary=""
             android:title="Cliend ID" />
+
+        <Preference
+            android:key="decoders"
+            android:summary=""
+            android:title="@string/hardware_decoders" />
     </PreferenceCategory>
 
 
