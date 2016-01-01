@@ -85,7 +85,7 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         SageTVPlayer.RendererBuilder rendererBuilder = new SageTVExtractorRendererBuilder(context, dataSource, Uri.parse(sageTVurl));
         //SageTVPlayer.RendererBuilder rendererBuilder = new DataSourceExtractorRendererBuilder(context, "sagetv", Uri.parse("http://192.168.1.176:8000/The%20Walking%20Dead%20S05E14%20Spend.mp4"));
         // ExtractorRendererBuilder rendererBuilder = new ExtractorRendererBuilder(context, "sagetv", Uri.parse(file.toURI().toString()));
-        player = new DemoPlayer(rendererBuilder);
+        player = new SageTVPlayer(rendererBuilder);
         EventLogger eventLogger = new EventLogger();
         player.setInternalErrorListener(eventLogger);
         player.setInfoListener(eventLogger);
@@ -114,12 +114,13 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
     public long getMediaTimeMillis() {
         long time = player.getCurrentPosition();
         log.debug("getMediaTimeMillis(): {}", time);
+        //if (pushMode) return -1l;
         return time;
     }
 
     @Override
     public void stop() {
-        log.debug("stop()");
+        super.stop();
         if (playerReady) {
             player.setPlayWhenReady(false);
         }
@@ -157,5 +158,11 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
             log.debug("Seek Resume {}", timeInMS);
             resumePos = timeInMS;
         }
+    }
+
+    @Override
+    public void flush() {
+        super.flush();
+        ((SageTVPlayer) player).flush();
     }
 }

@@ -40,8 +40,6 @@ public class MiniClient {
     private SageLocatorService locatorService;
     private String cryptoFormats;
     private boolean initialized = false;
-    private boolean usingHttpBridge = true;
-    private boolean videoIsPlaying;
     private IBus eventBus;
 
     public MiniClient(MiniClientOptions options) {
@@ -54,10 +52,6 @@ public class MiniClient {
         this.serverDiscovery = new ServerDiscovery();
         this.servers = new Servers(this);
         init();
-    }
-
-    public boolean isUsingHttpBridge() {
-        return usingHttpBridge;
     }
 
     public ServerDiscovery getServerDiscovery() {
@@ -158,11 +152,17 @@ public class MiniClient {
         }
     }
 
-    public void setVideoIsPlaying(boolean videoIsPlaying) {
-        this.videoIsPlaying = videoIsPlaying;
+    public boolean isVideoPlaying() {
+        return isVideoVisible() && currentConnection.getMediaCmd().getPlaya().getState() == MiniPlayerPlugin.PLAY_STATE;
     }
 
-    public boolean isVideoPlaying() {
-        return videoIsPlaying;
+    public boolean isVideoPaused() {
+        return isVideoVisible() && currentConnection.getMediaCmd().getPlaya().getState() == MiniPlayerPlugin.PAUSE_STATE;
+    }
+
+    public boolean isVideoVisible() {
+        return currentConnection != null
+                && currentConnection.getMediaCmd() != null
+                && currentConnection.getMediaCmd().getPlaya() != null;
     }
 }

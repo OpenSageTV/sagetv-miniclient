@@ -140,13 +140,13 @@
                 android:id="@+id/nav_media_pause"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-pause-circle"
-                android:tag="pause" />
+                android:tag="play_pause" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_play"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-play-circle"
-                android:tag="play" />
+                android:tag="_play" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_skip_forward"

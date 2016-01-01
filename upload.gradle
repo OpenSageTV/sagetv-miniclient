@@ -9,7 +9,8 @@ repositories {
 
 ext {
     appName = "SageTVMiniclient"
-    baseVersion = "0.17-ALPHA"
+    versionText = new File('core/src/sagex/miniclient/Version.java').text
+    baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
 }
 
 task(copyFiles) << {
