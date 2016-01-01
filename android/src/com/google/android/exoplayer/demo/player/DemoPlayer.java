@@ -62,6 +62,8 @@ public class DemoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventLi
         StreamingDrmSessionManager.EventListener, DashChunkSource.EventListener, TextRenderer,
         MetadataRenderer<Map<String, Object>>, DebugTextViewHelper.Provider {
 
+    protected TrackRenderer[] renderers;
+
     /**
      * Builds renderers for the player.
      */
@@ -330,6 +332,7 @@ public class DemoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventLi
                 ? ((MediaCodecTrackRenderer) renderers[TYPE_AUDIO]).codecCounters : null;
         this.bandwidthMeter = bandwidthMeter;
         pushSurface(false);
+        this.renderers = renderers;
         player.prepare(renderers);
         rendererBuildingState = RENDERER_BUILDING_STATE_BUILT;
     }

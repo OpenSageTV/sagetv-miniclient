@@ -1,8 +1,5 @@
 package sagex.miniclient.uibridge;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.UserEvent;
 
@@ -29,6 +26,8 @@ public class EventRouter {
     public static final UserEvent DELETE = new UserEvent(UserEvent.DELETE);
     public static final UserEvent SELECT = ENTER;
     public static final UserEvent BACK = new UserEvent(UserEvent.BACK);
+    public static final UserEvent FORWORAD = new UserEvent(UserEvent.FORWARD);
+    public static final UserEvent BACKSPACE = new UserEvent(-1, -1, -1, Keys.VK_BACK_SPACE, 0, '\b');
 
     public static final UserEvent WATCHED = new UserEvent(UserEvent.WATCHED);
     public static final UserEvent GUIDE = new UserEvent(UserEvent.GUIDE);
@@ -38,11 +37,6 @@ public class EventRouter {
     public static final UserEvent PAGE_UP = new UserEvent(UserEvent.PAGE_UP);
     public static final UserEvent PAGE_DOWN = new UserEvent(UserEvent.PAGE_DOWN);
     public static final UserEvent OPTIONS = new UserEvent(UserEvent.OPTIONS);
-
-    // these are NATIVE key to SageTV key maps.  Initally Empty, so, each Native
-    // client needs to set these on startup
-    public static final Map<Object, UserEvent> NATIVE_UI_KEYMAP = new HashMap<Object, UserEvent>();
-    public static final Map<Object, UserEvent> NATIVE_UI_LONGPRESS_KEYMAP = new HashMap<Object, UserEvent>();
 
     /**
      * Post the UserEvent event to the server using the given MiniClient connection

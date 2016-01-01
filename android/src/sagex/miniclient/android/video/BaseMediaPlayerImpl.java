@@ -74,6 +74,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 @Override
                 public void run() {
                     releasePlayer();
+                    state = LOADED_STATE;
                     setupPlayer(urlString);
                     if (dataSource == null)
                         throw new RuntimeException("setupPlayer must create a datasource");
@@ -81,6 +82,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             });
         } else {
             releasePlayer();
+            state = LOADED_STATE;
             setupPlayer(urlString);
             if (dataSource == null)
                 throw new RuntimeException("setupPlayer must create a datasource");
@@ -155,7 +157,6 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     public void play() {
         state = PLAY_STATE;
         log.debug("play()");
-        if (createPlayerOnUI) waitForPlayer();
         waitForPlayer();
     }
 
@@ -281,6 +282,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         mVideoHeight = 0;
         releaseDataSource();
         dataSource = null;
+        state = NO_STATE;
     }
 
     protected void releaseDataSource() {

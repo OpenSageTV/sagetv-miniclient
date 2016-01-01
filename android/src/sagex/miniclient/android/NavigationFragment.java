@@ -23,6 +23,7 @@ import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
+import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.uibridge.EventRouter;
 
@@ -82,6 +83,12 @@ public class NavigationFragment extends DialogFragment {
             }
             if (hide) dismiss();
 
+            // unique case... if the video is paused, and this pause/play button is clicked,
+            // the hide the navigation.
+            if ("play_pause".equalsIgnoreCase(key) && client.isVideoPaused()) {
+                dismiss();
+            }
+
             int sageCommand = UserEvent.getEvtCodeForName(key);
             if (sageCommand == 0) {
                 log.warn("Invalid SageTV Command '{}'", key);
@@ -91,6 +98,12 @@ public class NavigationFragment extends DialogFragment {
         } catch (Throwable t) {
             log.error("Button Not Implemented for {} with ID {}", v.getTag(), v.getId(), t);
         }
+    }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        client.eventbus().post(HideSystemUIEvent.INSTANCE);
     }
 
     @OnClick({R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide})

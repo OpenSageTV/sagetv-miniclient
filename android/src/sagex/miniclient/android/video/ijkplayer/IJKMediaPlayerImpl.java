@@ -8,6 +8,7 @@ import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.uibridge.EventRouter;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+import tv.danmaku.ijk.media.player.MediaInfo;
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 
 /**
@@ -23,17 +24,19 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public long getMediaTimeMillis() {
         if (player == null) return 0;
+        player.getCurrentPosition();
         return player.getCurrentPosition();
     }
 
     @Override
     public void stop() {
+        super.stop();
         player.stop();
     }
 
     @Override
     public void pause() {
-        log.debug("pause()");
+        super.pause();
         if (player != null && player.isPlaying()) {
             player.pause();
         }
@@ -41,7 +44,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     @Override
     public void play() {
-        log.debug("play()");
+        super.play();
         if (player != null && !player.isPlaying()) {
             player.start();
         }
@@ -52,7 +55,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         super.flush();
         if (player != null) {
             log.debug("Flush Will force a seek to clear buffers");
-            player.seekTo(-1);
+            player.seekTo(Long.MAX_VALUE);
         }
     }
 
@@ -76,7 +79,13 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
             //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
 
-
+//            ((IjkMediaPlayer) player).setOnMediaCodecSelectListener(new IjkMediaPlayer.OnMediaCodecSelectListener() {
+//                @Override
+//                public String onMediaCodecSelect(IMediaPlayer iMediaPlayer, String s, int i, int i1) {
+//                    log.info("Media Codec Selected is {}, {}, {}", s, i, i1);
+//                    return s;
+//                }
+//            });
 
             player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
                 @Override
@@ -117,6 +126,11 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                         player.seekTo(preSeekPos);
                         preSeekPos = -1;
                     }
+
+                    MediaInfo mi = player.getMediaInfo();
+                    if (mi != null) {
+                        log.info("MEDIAINFO: video: {},{}", mi.mVideoDecoder, mi.mVideoDecoderImpl);
+                    }
                 }
             });
             player.prepareAsync();
@@ -129,7 +143,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     @Override
     public void seek(long timeInMS) {
-        log.debug("SEEK: {}", timeInMS);
+        super.seek(timeInMS);
         if (player == null) {
             preSeekPos = timeInMS;
             return;

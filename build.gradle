@@ -30,8 +30,9 @@ allprojects {
     version = '1.0'
     ext {
         appName = "SageTVMiniclient"
-        baseVersion = "0.7-ALPHA"
-
+        versionText = new File('core/src/sagex/miniclient/Version.java').text
+        baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
+        //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.7.2"
         ijkVersion = "0.4.4.1";
         ijkVersionDev = "0.4.4.2-SNAPSHOT";
@@ -66,7 +67,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
         // video player
-        compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.4-SNAPSHOT', ext: 'aar')
+        compile(group: 'com.google.android.exoplayer', name: 'exoplayer', version: 'r1.5.4-SNAPSHOT2', ext: 'aar')
 
         // ijkplayer
 //        compile "tv.danmaku.ijk.media:ijkplayer-java:${ijkVersion}"
