@@ -60,7 +60,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     protected void setupPlayer(String sageTVurl) {
-        // create player
         log.debug("Creating Player");
         releasePlayer();
         try {
