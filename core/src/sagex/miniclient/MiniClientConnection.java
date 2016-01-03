@@ -18,6 +18,12 @@ package sagex.miniclient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
@@ -68,31 +74,10 @@ public class MiniClientConnection implements SageTVInputCallback {
     // content
     public static final String VP6F = "VP6F";
 
-
-    public static final String MPLAYER_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG";
-    public static final String MPLAYER_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3";
-    public static final String MPLAYER_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
-    public static final String MPLAYER_PUSH_FORMATS = "MPEG2-PS,MPEG2-TS,MPEG1-PS";
-    //public static final String MPLAYER_PUSH_FORMATS = "MPEG2-TS";
-
-//    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS;
-//    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
-//            + "," + FLASH_VIDEO + "," + MP2 + "," + MP3 + "," + MPEG1 + "," + OGG + "," + QUICKTIME + "," + VORBIS + "," + WAV + ","
-//            + MATROSKA;
-//
-//    public static final String MPLAYER_AUDIO_CODECS = AAC + "," + FLAC + "," +
-//            MP2 + "," + MP3 + "," + WAV + "," +
-//            VORBIS + "," + WMA7 + "," + WMA8 + "," +
-//            AC3;
-//    public static final String MPLAYER_VIDEO_CODECS = FLASH_VIDEO + "," + H264 + "," +
-//            MPEG1_VIDEO + "," + MPEG2_VIDEO + "," + MPEG4_VIDEO + "," +
-//            WMV7 + "," + WMV8 + "," + WMV9 + "," + VP6F;
-
-//    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS + "," + MPEG2_TS;
-//    public static final String MPLAYER_PULL_FORMATS = MPEG4_VIDEO + "," + QUICKTIME;
-//
-//    public static final String MPLAYER_AUDIO_CODECS = MP3 + "," + AAC;
-//    public static final String MPLAYER_VIDEO_CODECS = H264 + "," + MPEG4_VIDEO;
+    public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG";
+    public static final String DEFAULT_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3";
+    public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
+    public static final String DEFAULT_PUSH_FORMATS = "MPEG2-PS,MPEG2-TS,MPEG1-PS";
 
     public static final int DRAWING_CMD_TYPE = 16;
     public static final int GET_PROPERTY_CMD_TYPE = 0;
@@ -219,6 +204,11 @@ public class MiniClientConnection implements SageTVInputCallback {
     private boolean reconnectAllowed;
     private boolean firstFrameStarted;
     private boolean performingReconnect;
+
+    private List<String> videoCodecs = new ArrayList<String>();
+    private List<String> audioCodecs = new ArrayList<String>();
+    private List<String> pushFormats = new ArrayList<String>();
+    private List<String> pullFormats = new ArrayList<String>();
 
     public MiniClientConnection(MiniClient client, String serverName, String myID, ServerInfo msi) {
         this.client = client;
@@ -352,6 +342,8 @@ public class MiniClientConnection implements SageTVInputCallback {
     }
 
     public void connect() throws java.io.IOException {
+        discoverCodecSupport();
+        
         if (client.getCurrentConnection() != null) {
             // TODO: We should check if the connection is the same as this one, if so, then just use this connection.
             if (client.getCurrentConnection() != this) {
@@ -411,6 +403,47 @@ public class MiniClientConnection implements SageTVInputCallback {
             fsSecurity = MED_SECURITY_FS;
         else
             fsSecurity = HIGH_SECURITY_FS;
+    }
+
+    private void discoverCodecSupport() {
+        String profile = null;
+        if (client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false)) {
+            profile="exoplayer.profile";
+        } else {
+            profile="ijkplayer.profile";
+        }
+        InputStream is = MiniClientConnection.class.getClassLoader().getResourceAsStream(profile);
+        if (is==null) {
+            log.warn("Didn't Resolve Profile Name for {}", profile);
+            throw new RuntimeException("Missing Codec Profiles");
+        }
+        Properties prop = new Properties();
+        try {
+            prop.load(is);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String acodec = prop.getProperty("AUDIO_CODECS", DEFAULT_AUDIO_CODECS);
+        String vcodec = prop.getProperty("VIDEO_CODECS", DEFAULT_VIDEO_CODECS);
+        String pushf = prop.getProperty("PUSH_FORMATS", DEFAULT_PUSH_FORMATS);
+        String pullf = prop.getProperty("PULL_FORMATS", DEFAULT_PULL_FORMATS);
+
+        audioCodecs = stringToList(acodec);
+        videoCodecs = stringToList(vcodec);
+        pullFormats = stringToList(pullf);
+        pushFormats = stringToList(pushf);
+
+        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats);
+    }
+
+    private List<String> stringToList(String str) {
+        ArrayList<String> list = new ArrayList<String>();
+        if (str==null) return list;
+        for (String s: str.split("\\s*,\\s*")) {
+            list.add(s.trim());
+        }
+        return list;
     }
 
     public boolean isConnected() {
@@ -779,12 +812,12 @@ public class MiniClientConnection implements SageTVInputCallback {
                         propVal = "TRUE";
                     else if ("VIDEO_CODECS".equals(propName)) {
                         String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_video_codecs, null);
-                        propVal = MPLAYER_VIDEO_CODECS;
+                        propVal = toStringList(videoCodecs);
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
                     } else if ("AUDIO_CODECS".equals(propName)) {
                         String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_audio_codecs, null);
-                        propVal = MPLAYER_AUDIO_CODECS;
+                        propVal = toStringList(audioCodecs);
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
                     } else if ("PUSH_AV_CONTAINERS".equals(propName)) {
@@ -795,7 +828,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             propVal = "";
                         else
-                            propVal = MPLAYER_PUSH_FORMATS;
+                            propVal = toStringList(pushFormats);
                     } else if ("PULL_AV_CONTAINERS".equals(propName)) {
                         // If we're forced into fixed mode then we don't support
                         // pulling
@@ -805,9 +838,9 @@ public class MiniClientConnection implements SageTVInputCallback {
                         else {
                             // if we are being forced into PULL mode, then add the push containers to our PULL containers
                             if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))) {
-                                propVal = MPLAYER_PUSH_FORMATS + "," + MPLAYER_PULL_FORMATS;
+                                propVal = toStringList(pushFormats) + "," + toStringList(pullFormats);
                             } else {
-                                propVal = MPLAYER_PULL_FORMATS;
+                                propVal = toStringList(pullFormats);
                             }
                         }
                     } else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName)) {
@@ -1101,6 +1134,17 @@ public class MiniClientConnection implements SageTVInputCallback {
             if (alive)
                 connectionError();
         }
+    }
+
+    private String toStringList(List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        for (String s: list) {
+            if (sb.length()>0) {
+                sb.append(",");
+            }
+            sb.append(s);
+        }
+        return sb.toString();
     }
 
     public void recvCommand(int sageCommandID) {
