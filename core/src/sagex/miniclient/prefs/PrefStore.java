@@ -85,6 +85,11 @@ public interface PrefStore {
         String use_log_to_sdcard = "use_log_to_sdcard";
 
         /**
+         * Use remote buttons change depending on the state of the player
+         */
+        String use_stateful_remote = "use_stateful_remote";
+
+        /**
          * values: debug, info, warn, error
          */
         String log_level = "log_level";
