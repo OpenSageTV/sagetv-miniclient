@@ -18,7 +18,6 @@ package sagex.miniclient.android.video.exoplayer;
 
 import com.google.android.exoplayer.ExoPlayer;
 import com.google.android.exoplayer.demo.player.DemoPlayer;
-import com.google.android.exoplayer.extractor.SageTVExtractorSampleSource;
 
 /**
  * A wrapper around {@link ExoPlayer} that provides a higher level interface. It can be prepared
@@ -33,8 +32,9 @@ public class SageTVPlayer extends DemoPlayer {
     public void flush() {
         /**
          * Hack to get Exo to flush it's buffers
+         * NOTE, requires our own Extractor
          */
-        SageTVExtractorSampleSource.FORCE_DISCONTINUITY_READ = true;
+        // SageTVExtractorSampleSource.FORCE_DISCONTINUITY_READ = true;
         seekTo(Long.MAX_VALUE);
     }
 }

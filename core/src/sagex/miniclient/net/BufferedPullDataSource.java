@@ -45,8 +45,9 @@ public class BufferedPullDataSource extends SimplePullDataSource {
             if (read == 0) break;
             total += read;
             if (total >= len) break;
-            if (sanity++ > 10) {
-                throw new IOException("Invalid buffer fill request: len: " + len + "; total: " + total);
+            if (sanity++ > 500) {
+                log.warn("Invalid buffer fill request: len: " + len + "; total: " + total + "; reached sanity");
+                break;
             }
         }
         return total;

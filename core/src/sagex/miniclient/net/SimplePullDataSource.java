@@ -15,7 +15,7 @@ import sagex.miniclient.util.VerboseLogging;
  * Created by seans on 20/12/15.
  */
 public class SimplePullDataSource implements ISageTVDataSource {
-    static final Logger log = LoggerFactory.getLogger(SimplePullDataSource.class);
+    final Logger log = LoggerFactory.getLogger(getClass());
 
     Socket remoteServer;
     String uri;
