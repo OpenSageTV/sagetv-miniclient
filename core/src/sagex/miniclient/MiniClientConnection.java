@@ -73,6 +73,7 @@ public class MiniClientConnection implements SageTVInputCallback {
     public static final String MPLAYER_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3";
     public static final String MPLAYER_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
     public static final String MPLAYER_PUSH_FORMATS = "MPEG2-PS,MPEG2-TS,MPEG1-PS";
+    //public static final String MPLAYER_PUSH_FORMATS = "MPEG2-TS";
 
 //    public static final String MPLAYER_PUSH_FORMATS = MPEG2_PS;
 //    public static final String MPLAYER_PULL_FORMATS = MPEG2_PS + "," + AAC + "," + MPEG2_TS + "," + ASF + "," + AVI + "," + FLAC
