@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 if [ "$ANDROID_SDK" = "" ] ; then
-    echo "Set ANDROID_SDK to be the location of your Sdk"
-    exit 1
+    echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
+    export ANDROID_SDK=/home/sls/Android/Sdk/
+
 fi
 
 if [ ! -d Ndk ] ; then
@@ -11,7 +12,8 @@ if [ ! -d Ndk ] ; then
 fi
 
 export ANDROID_NDK=`pwd`/Ndk/android-ndk-r10e
-#export ANDROID_SDK=/home/sls/Android/Sdk/
+
+
 
 cd ijkplayer
 cd config
@@ -22,6 +24,7 @@ cd android/contrib/
 ./compile-ffmpeg.sh clean
 ./compile-ffmpeg.sh all
 cd ..
+./compile-ijk.sh clean
 ./compile-ijk.sh all
 cd ..
 

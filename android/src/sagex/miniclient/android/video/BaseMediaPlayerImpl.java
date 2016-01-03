@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +13,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
 
 //import org.videolan.libvlc.LibVLC;
@@ -94,18 +98,42 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     /**
      * Waits until the player has been contructed
      */
-    void waitForPlayer() {
-        if (!waitForPlayer) return;
+//    void waitForPlayer() {
+//        if (!waitForPlayer) return;
+//
+//        log.debug("wait for player");
+//        while (!playerReady) {
+//            try {
+//                Thread.sleep(50);
+//                log.debug("wait for player...");
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
-        log.debug("wait for player");
-        while (!playerReady) {
-            try {
-                Thread.sleep(50);
-                log.debug("wait for player...");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+    public void message(final String msg) {
+        if (context==null) {
+            log.error("MESSAGE: {}", msg);
+            return;
         }
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+                } catch (Throwable t) {
+                    log.error("MESSAGE: {}", msg);
+                }
+            }
+        });
+    }
+
+    protected void playerFailed() {
+        stop();
+        releasePlayer();
+        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
+        message(context.getString(R.string.msg_player_failed));
     }
 
     @Override
@@ -150,14 +178,14 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     public void pause() {
         state = PAUSE_STATE;
         log.debug("pause()");
-        if (createPlayerOnUI) waitForPlayer();
+        //if (createPlayerOnUI) waitForPlayer();
     }
 
     @Override
     public void play() {
         state = PLAY_STATE;
         log.debug("play()");
-        waitForPlayer();
+        //waitForPlayer();
     }
 
     @Override
