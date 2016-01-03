@@ -34,7 +34,8 @@ public class SageTVPlayer extends DemoPlayer {
         /**
          * Hack to get Exo to flush it's buffers
          */
-        SageTVExtractorSampleSource.FORCE_DISCONTINUITY_READ = true;
-        seekTo(Long.MAX_VALUE);
+        //SageTVExtractorSampleSource.FORCE_DISCONTINUITY_READ = true;
+        //seekTo(Long.MAX_VALUE);
+        seekTo(Long.MIN_VALUE);
     }
 }
