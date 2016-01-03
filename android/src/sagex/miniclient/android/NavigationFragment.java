@@ -60,12 +60,11 @@ public class NavigationFragment extends DialogFragment {
 
         ButterKnife.bind(this, navView);
 
-        if (client.isVideoPlaying()) {
+        if (client.isVideoPlaying() || client.isVideoPaused()) {
             navPause.requestFocus();
         } else {
             navOptions.requestFocus();
         }
-
 
         return navView;
     }
