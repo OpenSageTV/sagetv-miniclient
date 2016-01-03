@@ -18,7 +18,6 @@ package sagex.miniclient.android.video.exoplayer;
 
 import com.google.android.exoplayer.ExoPlayer;
 import com.google.android.exoplayer.demo.player.DemoPlayer;
-import com.google.android.exoplayer.extractor.SageTVExtractorSampleSource;
 
 /**
  * A wrapper around {@link ExoPlayer} that provides a higher level interface. It can be prepared
