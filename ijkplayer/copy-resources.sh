@@ -1,12 +1,12 @@
 #!/bin/sh
 
-VERSION=0.4.4.2-SNAPSHOT
+VERSION=0.4.4.4-SNAPSHOT
 OUTPUT=release
 ARCHES="arm64 armv7a x86 java exo"
 
-if [ "$ANDROID_SDK" == "" ] ; then
-   echo "ANDROID_SDK needs to be set"
-   exit 1
+if [ "$ANDROID_SDK" = "" ] ; then
+    echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
+    export ANDROID_SDK=/home/sls/Android/Sdk/
 fi
 
 

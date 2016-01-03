@@ -31,6 +31,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public void stop() {
         super.stop();
+        if (player==null) return;
         player.stop();
     }
 
@@ -91,9 +92,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 @Override
                 public boolean onError(IMediaPlayer mp, int what, int extra) {
                     log.error("IjkPlayer ERROR: {}, {}", what, extra);
-                    stop();
-                    releasePlayer();
-                    EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
+                    playerFailed();
                     return false;
                 }
             });
@@ -137,7 +136,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             log.debug("mediaplayer has our URL");
         } catch (Exception e) {
             log.error("Failed to create player", e);
-            Toast.makeText(context, "Error creating player!", Toast.LENGTH_LONG).show();
+            playerFailed();
         }
     }
 

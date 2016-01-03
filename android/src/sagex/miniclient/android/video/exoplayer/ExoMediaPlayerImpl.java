@@ -90,6 +90,22 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         player.setInternalErrorListener(eventLogger);
         player.setInfoListener(eventLogger);
         player.addListener(eventLogger);
+        player.addListener(new DemoPlayer.Listener() {
+            @Override
+            public void onStateChanged(boolean playWhenReady, int playbackState) {
+
+            }
+
+            @Override
+            public void onError(Exception e) {
+                playerFailed();
+            }
+
+            @Override
+            public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
+
+            }
+        });
 
         player.setBackgrounded(false);
         if (resumePos >= 0) {

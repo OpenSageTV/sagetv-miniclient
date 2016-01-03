@@ -35,7 +35,7 @@ allprojects {
         //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.7.2"
         ijkVersion = "0.4.4.1";
-        ijkVersionDev = "0.4.4.2-SNAPSHOT";
+        ijkVersionDev = "0.4.4.4-SNAPSHOT";
     }
 
     repositories {
