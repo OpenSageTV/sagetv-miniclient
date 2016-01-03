@@ -20,14 +20,17 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
     }
 
     boolean ExoIsPlaying() {
+        if (player==null) return false;
         return player.getPlayWhenReady();
     }
 
     void ExoPause() {
+        if (player==null) return;
         player.setPlayWhenReady(false);
     }
 
     void ExoStart() {
+        if (player==null) return;
         player.setPlayWhenReady(true);
     }
 
@@ -128,6 +131,7 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
 
     @Override
     public long getMediaTimeMillis() {
+        if (player==null) return 0;
         long time = player.getCurrentPosition();
         log.debug("getMediaTimeMillis(): {}", time);
         //if (pushMode) return -1l;
@@ -138,6 +142,7 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
     public void stop() {
         super.stop();
         if (playerReady) {
+            if (player==null) return;
             player.setPlayWhenReady(false);
         }
     }
@@ -179,6 +184,7 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
     @Override
     public void flush() {
         super.flush();
+        if (player==null) return;
         ((SageTVPlayer) player).flush();
     }
 }

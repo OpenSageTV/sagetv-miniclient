@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 
 import sagex.miniclient.prefs.PrefStore;
 
@@ -164,5 +165,9 @@ public class MiniClient {
         return currentConnection != null
                 && currentConnection.getMediaCmd() != null
                 && currentConnection.getMediaCmd().getPlaya() != null;
+    }
+
+    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats) {
+        options.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats);
     }
 }
