@@ -93,7 +93,6 @@ public class BufferedPullDataSource extends SimplePullDataSource {
     }
 
     public void flush() {
-        log.debug("Flushing()");
         lastBufferStartPos = 0;
         bytesRead = 0;
         bufPos = 0;
