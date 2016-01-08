@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# used only to rebuild ijk part, assuming ffmpeg has been built already
+
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
     export ANDROID_SDK=/home/sls/Android/Sdk/
@@ -21,10 +23,10 @@ ln -sf module-default.sh module.sh
 cd ..
 ./init-android.sh
 cd android/contrib/
-./compile-ffmpeg.sh clean
-./compile-ffmpeg.sh all
+#./compile-ffmpeg.sh clean
+#./compile-ffmpeg.sh all
 cd ..
-./compile-ijk.sh clean
+#./compile-ijk.sh clean
 ./compile-ijk.sh all
 cd ..
 

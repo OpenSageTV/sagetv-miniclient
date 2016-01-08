@@ -5,5 +5,5 @@ package sagex.miniclient.util;
  */
 public class VerboseLogging {
     public static boolean DATASOURCE_LOGGING = false;
-    public static boolean LOG_DATASOURCE_BYTES_TO_FILE = false;
+    public static boolean LOG_DATASOURCE_BYTES_TO_FILE = true;
 }

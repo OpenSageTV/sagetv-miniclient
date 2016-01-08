@@ -195,6 +195,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void inactiveFile() {
+        state=STOPPED_STATE;
         log.debug("INACTIVEFILE Called??");
     }
 
