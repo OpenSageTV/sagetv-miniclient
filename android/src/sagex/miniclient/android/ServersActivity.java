@@ -4,16 +4,28 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.mikepenz.iconics.IconicsDrawable;
+import com.mikepenz.iconics.view.IconicsImageView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
@@ -22,10 +34,21 @@ import sagex.miniclient.prefs.PrefStore;
 /**
  * Created by seans on 20/09/15.
  */
-public class ServersActivity extends Activity implements AdapterView.OnItemClickListener, AddServerFragment.OnAddServerListener, AdapterView.OnItemLongClickListener {
+public class ServersActivity extends Activity implements AddServerFragment.OnAddServerListener {
     private static final Logger log = LoggerFactory.getLogger(ServersActivity.class);
 
-    ListView list = null;
+    @Bind(R.id.list)
+    RecyclerView list;
+
+    @Bind(R.id.header)
+    View header;
+
+    @Bind(R.id.btn_add_server)
+    IconicsImageView addServerButton;
+
+    @Bind(R.id.btn_settings)
+    IconicsImageView settingsButton;
+
     ServersAdapter adapter = null;
     boolean paused = true;
 
@@ -34,26 +57,46 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        AppUtil.hideSystemUIOnTV(this);
+
         super.onCreate(savedInstanceState);
 
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-        );
 
         setContentView(R.layout.servers_layout);
+
+        ButterKnife.bind(this);
 
         // now show the server selector dialog
         adapter = new ServersAdapter(this);
 
-        list = (ListView) findViewById(R.id.list);
-        list.setOnItemClickListener(this);
-        list.setOnItemLongClickListener(this);
-        list.setFocusable(true);
-        list.requestFocus();
+        //list.setFocusable(true);
+        //list.requestFocus();
+        list.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        list.setHasFixedSize(true);
         list.setAdapter(adapter);
 
         paused = false;
+
+        header.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+
+            }
+        });
+
+
+//        Drawable addIcon = new IconicsDrawable(this)
+//                .icon(GoogleMaterial.Icon.gmd_collection_add)
+//                .color(Color.RED)
+//                .sizeDp(24);
+//        addServerButton.setImageDrawable(addIcon);
+//
+//        Drawable settingsIcon = new IconicsDrawable(this)
+//                .icon(GoogleMaterial.Icon.gmd_settings)
+//                .color(Color.RED)
+//                .sizeDp(24);
+//        settingsButton.setImageDrawable(settingsIcon);
+
 
         if (MiniclientApplication.get(this).getClient().properties().getBoolean(PrefStore.Keys.auto_connect_to_last_server, false)) {
             ServerInfo si = MiniclientApplication.get(this).getClient().getServers().getLastConnectedServer();
@@ -70,6 +113,7 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         super.onResume();
         paused = false;
         refreshServers();
+        AppUtil.hideSystemUIOnTV(this);
     }
 
     @Override
@@ -118,29 +162,22 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         }
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        ServerInfo si = adapter.getCastedItem(position);
-        if (ServersAdapter.NEW_SERVER_ID.equals(si.name)) {
-            // add new server
-            AddServerFragment f = AddServerFragment.newInstance("My Server", "");
-            f.setRetainInstance(true);
-            f.show(getFragmentManager(), "addserver");
-        } else if (ServersAdapter.PREFERENCES_ID.equals(si.name)) {
-            Intent i = new Intent(getBaseContext(), SettingsActivity.class);
-            startActivity(i);
-        } else {
-            connect(this, si);
-        }
+    @OnClick(R.id.btn_settings)
+    public void gotoSettingsAction() {
+        Intent i = new Intent(getBaseContext(), SettingsActivity.class);
+        startActivity(i);
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-        if (ServersAdapter.NEW_SERVER_ID.equals(adapter.getCastedItem(position).name)) {
-            // can't delete the "New Server" item
-            return true;
-        }
+    @OnClick(R.id.btn_add_server)
+    public void addServerAction() {
+        // add new server
+        AddServerFragment f = AddServerFragment.newInstance("My Server", "");
 
+        f.setRetainInstance(true);
+        f.show(getFragmentManager(), "addserver");
+    }
+
+    public void deleteServer(final ServerInfo serverInfo) {
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(this, R.style.Theme_AppCompat_Dialog);
         builder.setTitle("Remove Server");
@@ -148,14 +185,13 @@ public class ServersActivity extends Activity implements AdapterView.OnItemClick
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(adapter.getCastedItem(position).name);
-                adapter.items.remove(position);
+                MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(serverInfo.name);
+                adapter.items.remove(serverInfo);
                 adapter.notifyDataSetChanged();
             }
         });
         builder.setNegativeButton("Cancel", null);
         builder.show();
-        return true;
     }
 
     @Override

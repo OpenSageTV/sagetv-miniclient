@@ -3,6 +3,7 @@ package sagex.miniclient.android;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -110,5 +111,4 @@ public class AddServerFragment extends DialogFragment {
     public interface OnAddServerListener {
         void onAddServer(String name, String addr);
     }
-
 }
