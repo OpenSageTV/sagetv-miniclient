@@ -121,7 +121,7 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         player.prepare();
 
         // start playing
-        player.setSurface(mSurface.getHolder().getSurface());
+        player.setSurface(context.getVideoView().getHolder().getSurface());
         player.setPlayWhenReady(true);
 
         log.debug("Video Player is online");

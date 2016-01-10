@@ -39,6 +39,7 @@ import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
+import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIRenderer;
 
@@ -47,7 +48,7 @@ import sagex.miniclient.uibridge.UIRenderer;
  */
 public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTexture> {
     private static final Logger log = LoggerFactory.getLogger(MiniClientRenderer.class);
-    
+
     private final MiniClientGDXActivity activity;
     private final MiniClient client;
 
@@ -65,6 +66,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     // the scale of the uiSize to the screenSize
     Scale scale = new Scale(1, 1);
 
+    // UI states, just MENU (default) and VIDEO.
+    int state = STATE_MENU;
 
     // GDX stuff
     Stage stage;
@@ -107,6 +110,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public static int readInt(int pos, byte[] cmddata) {
         pos += 4; // for the 4 bytes for the header
         return ((cmddata[pos] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF);
+    }
+
+    @Override
+    public int getState() {
+        return state;
     }
 
     @Override
@@ -232,12 +240,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 Thread.interrupted();
             }
         }
+
         // one last attempt to setup our screen
         notifySageTVAboutScreenSize();
     }
 
     @Override
     public void GFXCMD_DEINIT() {
+        activity.removeVideoFrame();
         activity.finish();
     }
 
@@ -326,10 +336,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void clearRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        // clear rect is only used when showing video
+        state = STATE_VIDEO;
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                log.debug("*** CLEAR RECT ** {},{}", width, height);
+                log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
                 batch.end();
 
                 camera.update();
@@ -434,6 +446,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void drawTexture(final int x, final int y, final int width, final int height, int handle, final ImageHolder<GdxTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
+        state = STATE_MENU;
         invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -626,6 +639,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         frameOps = 0;
         totalTextureTime = 0;
         longestTextureTime = 0;
+        state = STATE_MENU;
     }
 
     @Override
@@ -718,7 +732,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void setVideoBounds(Object o, Object o1) {
-        log.debug("Set Video Bounds:" + o + " - " + o1);
+    public void setVideoBounds(Rectangle o, Rectangle o1) {
+        log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
+        state = STATE_VIDEO;
     }
 }

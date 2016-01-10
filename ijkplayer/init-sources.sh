@@ -2,12 +2,13 @@
 
 if [ ! -d ijkplayer ] ; then
     echo "Fetching IJKPlayer Sources"
-    git clone https://github.com/Bilibili/ijkplayer.git
-    #cd ijkplayer
-    #git remote add upstream https://github.com/Bilibili/ijkplayer.git
-    #git fetch upstream
-    #git rebase upstream/master
-    #cd ..
+    git clone git@github.com:OpenSageTV/ijkplayer.git
+    echo ""
+    cd ijkplayer
+    git remote add upstream https://github.com/Bilibili/ijkplayer.git
+    git fetch upstream
+    git rebase upstream/master
+    cd ..
 fi
 
 if [ ! -d Ndk ] ; then

@@ -171,6 +171,9 @@ public class GFXCMD2 {
         hasret[0] = 0; // Nothing to return by default
 
 //        if (cmd != GFXCMD_DRAWTEXTURED) {
+//            if (cmd == GFXCMD_STARTFRAME
+//                    || cmd == GFXCMD_FLIPBUFFER
+//                    || cmd == GFXCMD_CLEARRECT)
 //            System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
 //        }
 
@@ -1084,7 +1087,7 @@ public class GFXCMD2 {
         return windowManager;
     }
 
-    public void setVideoBounds(Object o, Object o1) {
+    public void setVideoBounds(Rectangle o, Rectangle o1) {
         windowManager.setVideoBounds(o, o1);
     }
 }

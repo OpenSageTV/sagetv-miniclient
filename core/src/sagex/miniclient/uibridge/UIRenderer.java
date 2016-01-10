@@ -8,6 +8,23 @@ import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 
 public interface UIRenderer<Image> {
+    /**
+     * Determining States
+     * START,CLEAR,FLIP == VIDEO ONLY
+     * START,FLIP (no clear) == MENU
+     * START,CLEAR,DRAW,FLIP == VIDEO TIMEBAR
+     *
+     * if if there is a CLEAR we are in a video
+     */
+
+    /**
+     * SageTV is in a Menu or Dialog waiting for input, or we are in a video.
+     */
+    static int STATE_MENU = 1;
+    static int STATE_VIDEO = 2;
+
+    int getState();
+
     void GFXCMD_INIT();
 
     void GFXCMD_DEINIT();
@@ -78,12 +95,11 @@ public interface UIRenderer<Image> {
 
     Scale getScale();
 
-    // video playback
+    // video playback; NOT USED currently in Android
     boolean createVideo(int width, int height, int format);
-
     boolean updateVideo(int frametype, ByteBuffer buf);
 
     MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection);
 
-    void setVideoBounds(Object o, Object o1);
+    void setVideoBounds(Rectangle o, Rectangle o1);
 }
