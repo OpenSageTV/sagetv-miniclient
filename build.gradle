@@ -36,6 +36,8 @@ allprojects {
         gdxVersion = "1.7.2"
         ijkVersion = "0.4.4.1";
         ijkVersionDev = "0.4.4.5-SNAPSHOT";
+
+        androidExtrasVer = "22.2.0";
     }
 
     repositories {
@@ -55,8 +57,10 @@ project(":android") {
 
     dependencies {
         compile project(":core")
-        compile "com.android.support:support-v4:22.2.0"
-        compile 'com.android.support:appcompat-v7:22.2.0'
+        compile "com.android.support:support-v4:${androidExtrasVer}"
+        compile "com.android.support:appcompat-v7:${androidExtrasVer}"
+        compile "com.android.support:cardview-v7:${androidExtrasVer}"
+        compile "com.android.support:recyclerview-v7:${androidExtrasVer}"
         compile 'com.jakewharton:butterknife:7.0.1'
 
         // gdx

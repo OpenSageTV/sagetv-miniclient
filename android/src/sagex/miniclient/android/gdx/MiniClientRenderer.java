@@ -451,6 +451,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             @Override
             public void run() {
                 if (img == null) return;
+                if (img.get() == null) return;
 
                 // we only want to set blending for Non Framebuffer textures
 //                if (!img.get().isFrameBuffer) {
@@ -467,7 +468,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 int w = Math.abs(width);
                 int h = Math.abs(height);
                 Texture t = img.get().texture();
-                batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
+                if (t != null) {
+                    batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
+                } else {
+                    log.warn("We got a null texture for {}", img);
+                }
 //                if (!img.get().isFrameBuffer) {
                     batch.setColor(batchColor);
                     Gdx.gl20.glDisable(GL20.GL_BLEND);
