@@ -118,5 +118,10 @@ public interface PrefStore {
          * Boolean: True when ExoPlayer is used
          */
         String use_exoplayer = "use_exoplayer";
+
+        /**
+         * Boolean: Announce when Software decoder is being used
+         */
+        String announce_software_decoder = "announce_software_decoder";
     }
 }

@@ -46,7 +46,11 @@
     <string name="title_use_http_proxy_preference">Use HTTP Proxy</string>
     <string name="summary_use_http_proxy_preference">Some players cannot access SageTV streams and require an http proxy.</string>
     <string name="hardware_decoders">Hardware Decoders</string>
-    <string name="msg_player_failed">Failed to play the selected media file</string>
+    <string name="msg_player_failed">Failed to play the selected media file (URL: %s)</string>
     <string name="use_stateful_remote_title">Use Stateful Remote</string>
     <string name="use_stateful_remote_summary">If enabled, then the Select will be Pause/Play if the Video UI is visible</string>
+    <string name="summary_announce_software_decoder_preference">If enabled, a message will appear when using software decoding</string>
+    <string name="title_announce_software_decoder_preference">Show message when using Software Decoders</string>
+    <string name="main_label_settings">Settings</string>
+    <string name="sage_title">SageTV MiniClient</string>
 </resources>

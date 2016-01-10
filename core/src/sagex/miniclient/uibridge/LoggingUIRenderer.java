@@ -29,6 +29,12 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
     }
 
 
+    @Override
+    public int getState() {
+        log("getState()");
+        return delegate.getState();
+    }
+
     public void GFXCMD_INIT() {
         log("GFXCMD_INIT");
         delegate.GFXCMD_INIT();
@@ -222,7 +228,7 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
     }
 
     @Override
-    public void setVideoBounds(Object o, Object o1) {
+    public void setVideoBounds(Rectangle o, Rectangle o1) {
         log("setVideoBounds");
         delegate.setVideoBounds(o, o1);
     }

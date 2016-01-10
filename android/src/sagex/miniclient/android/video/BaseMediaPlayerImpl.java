@@ -37,7 +37,6 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected Player player;
     protected DataSource dataSource;
-    protected SurfaceView mSurface;
 
     // media player
     protected int mVideoWidth;
@@ -48,9 +47,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected int state;
 
+    protected String lastUri;
+
     public BaseMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
-        this.mSurface = activity.getVideoView();
+        //this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
         this.waitForPlayer = waitForPlayer;
         state = this.NO_STATE;
@@ -73,12 +74,16 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void load(byte b, byte b1, String s, final String urlString, Object o, boolean b2, int i) {
+        lastUri = urlString;
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     releasePlayer();
                     state = LOADED_STATE;
+
+                    context.setupVideoFrame();
+
                     setupPlayer(urlString);
                     if (dataSource == null)
                         throw new RuntimeException("setupPlayer must create a datasource");
@@ -133,7 +138,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         stop();
         releasePlayer();
         EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
-        message(context.getString(R.string.msg_player_failed));
+        message(context.getString(R.string.msg_player_failed, lastUri));
     }
 
     @Override
@@ -154,24 +159,25 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void stop() {
         state = STOPPED_STATE;
+        context.removeVideoFrame();
     }
 
     protected void clearSurface() {
-        if (mSurface != null) {
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        log.debug("Clearing Canvas");
-                        Canvas canvas = mSurface.getHolder().lockCanvas(null);
-                        canvas.drawColor(Color.BLACK);
-                        mSurface.getHolder().unlockCanvasAndPost(canvas);
-                    } catch (Throwable t) {
-                        log.debug("Failed to clear canvas");
-                    }
-                }
-            });
-        }
+//        if (mSurface != null) {
+//            context.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        log.debug("Clearing Canvas");
+//                        Canvas canvas = mSurface.getHolder().lockCanvas(null);
+//                        canvas.drawColor(Color.BLACK);
+//                        mSurface.getHolder().unlockCanvasAndPost(canvas);
+//                    } catch (Throwable t) {
+//                        log.debug("Failed to clear canvas");
+//                    }
+//                }
+//            });
+//        }
     }
 
     @Override
@@ -221,7 +227,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean b) {
-
+        log.debug("setVideoRectangles(): SRC: {}, DEST: {}", srcRect, destRect);
     }
 
     @Override
@@ -292,14 +298,14 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                     w = (int) (h * videoAR);
 
                 // force surface buffer size
-                mSurface.getHolder().setFixedSize(mVideoWidth, mVideoHeight);
+                context.getVideoView().getHolder().setFixedSize(mVideoWidth, mVideoHeight);
 
                 // set display size
-                ViewGroup.LayoutParams lp = mSurface.getLayoutParams();
+                ViewGroup.LayoutParams lp = context.getVideoView().getLayoutParams();
                 lp.width = w;
                 lp.height = h;
-                mSurface.setLayoutParams(lp);
-                mSurface.invalidate();
+                context.getVideoView().setLayoutParams(lp);
+                context.getVideoView().invalidate();
             }
         });
     }
@@ -312,6 +318,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         releaseDataSource();
         dataSource = null;
         state = NO_STATE;
+        context.removeVideoFrame();
     }
 
     protected void releaseDataSource() {

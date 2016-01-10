@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=0.4.4.4-SNAPSHOT
+VERSION=0.4.4.5-SNAPSHOT
 OUTPUT=release
 ARCHES="arm64 armv7a x86 java exo"
 
@@ -21,6 +21,8 @@ echo "PACKAGING..."
 cd ijkplayer/android/ijkplayer/
 cp build.gradle build.gradle.orig
 cat build.gradle.orig | sed 's/23.0.0/23.0.1/g' > build.gradle
+cp build.gradle build.gradle.orig
+cat build.gradle.orig | sed "s/.*versionName.*/    versionName = \"${VERSION}\"/g" > build.gradle
 ./gradlew assemble
 cd -
 

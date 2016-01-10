@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -59,6 +60,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Bind(R.id.video_surface)
     SurfaceView videoHolder;
+
+//    @Bind(R.id.video_surface_frame)
+//    FrameLayout videoHolderFrame;
 
     @Bind(R.id.waitforit)
     View pleaseWait = null;
@@ -204,7 +208,13 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             startMiniClient(si);
         } catch (Throwable t) {
             log.error("Failed to start/create the Main Activity for the MiniClient UI", t);
-            throw new RuntimeException("Unable to start Activity", t);
+            MiniClientGDXActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MiniClientGDXActivity.this, "MiniClient failed to initialize", Toast.LENGTH_LONG).show();
+                }
+            });
+            finish();
         }
     }
 
@@ -216,10 +226,11 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                     // cannot make network connections on the main thread
                     client.connect(si, MiniClientGDXActivity.this);
                 } catch (final IOException e) {
-                    MiniClientGDXActivity.this.runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(MiniClientGDXActivity.this, "Unable to connect to server: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            finish();
                         }
                     });
                 }
@@ -257,16 +268,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         });
     }
 
-    public Surface getVideoSurface() {
-        return videoHolder.getHolder().getSurface();
-    }
-
     @Override
     public String getMACAddress() {
         return AppUtil.getMACAddress(this);
     }
 
     public SurfaceView getVideoView() {
+        if (videoHolder == null) {
+            setupVideoFrame();
+        }
         return videoHolder;
     }
 
@@ -414,5 +424,40 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Subscribe
     public void onDeadEvent(DeadEvent event) {
         log.debug("Unhandled Event: {}", event);
+    }
+
+    public void setupVideoFrame() {
+        log.debug("Setting up the Video Frame");
+        videoHolder.setVisibility(View.VISIBLE);
+//        videoHolderFrame.removeAllViews();
+//        SurfaceView view = new SurfaceView(this);
+//        view.setBackground(null);
+//
+//        // force surface buffer size
+//        //view.getHolder().setFixedSize(videoHolderFrame.getWidth(), videoHolderFrame.getHeight());
+//
+//        // set display size
+//        ViewGroup.LayoutParams lp = view.getLayoutParams();
+//        if (lp==null) {
+//            lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+//        }
+//        lp.width = videoHolderFrame.getWidth();
+//        lp.height = videoHolderFrame.getHeight();
+//        view.setLayoutParams(lp);
+//        videoHolderFrame.addView(view, lp);
+//        //view.invalidate();
+//        log.debug("Surface View is created with dimensions: {}x{}", lp.width, lp.height);
+//        videoHolder = view;
+    }
+
+    public void removeVideoFrame() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                log.debug("Removing Video View");
+                //videoHolderFrame.removeAllViews();
+                videoHolder.setVisibility(View.GONE);
+            }
+        });
     }
 }
