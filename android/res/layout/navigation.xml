@@ -131,9 +131,15 @@
             <View style="@style/NavIconSpacer" />
 
             <com.mikepenz.iconics.view.IconicsImageView
-                android:id="@+id/nav_media_skip_back"
+                android:id="@+id/nav_media_skip_back_2"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-skip-previous"
+                android:tag="rew_2" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_skip_back"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-fast-rewind"
                 android:tag="rew" />
 
             <com.mikepenz.iconics.view.IconicsImageView
@@ -151,8 +157,14 @@
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_skip_forward"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-skip-next"
+                app:iiv_icon="gmd-fast-forward"
                 android:tag="ff" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_media_skip_forward_2"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-skip-next"
+                android:tag="ff_2" />
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_stop"
