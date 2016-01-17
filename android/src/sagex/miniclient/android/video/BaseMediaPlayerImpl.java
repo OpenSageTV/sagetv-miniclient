@@ -201,10 +201,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void inactiveFile() {
-        state=STOPPED_STATE;
-        stop();
-        releasePlayer();
-        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
+        // Jeff says don't do this
+//        state=STOPPED_STATE;
+//        stop();
+//        releasePlayer();
+//        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
         log.debug("INACTIVEFILE Called??");
     }
 
