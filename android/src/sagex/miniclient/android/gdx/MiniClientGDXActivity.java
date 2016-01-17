@@ -4,6 +4,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -45,6 +46,7 @@ import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
+import sagex.miniclient.uibridge.Rectangle;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
@@ -280,6 +282,12 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         return videoHolder;
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration config) {
+        super.onConfigurationChanged(config);
+        log.debug("Configuration Change: Keyboard: {}, KeyboardHidden: {}, OBJECT: {}", config.keyboard, config.keyboardHidden, config);
+    }
+
     public void showHideKeyboard(final boolean visible) {
 
         miniClientView.postDelayed(new Runnable() {
@@ -429,25 +437,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     public void setupVideoFrame() {
         log.debug("Setting up the Video Frame");
         videoHolder.setVisibility(View.VISIBLE);
-//        videoHolderFrame.removeAllViews();
-//        SurfaceView view = new SurfaceView(this);
-//        view.setBackground(null);
-//
-//        // force surface buffer size
-//        //view.getHolder().setFixedSize(videoHolderFrame.getWidth(), videoHolderFrame.getHeight());
-//
-//        // set display size
-//        ViewGroup.LayoutParams lp = view.getLayoutParams();
-//        if (lp==null) {
-//            lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-//        }
-//        lp.width = videoHolderFrame.getWidth();
-//        lp.height = videoHolderFrame.getHeight();
-//        view.setLayoutParams(lp);
-//        videoHolderFrame.addView(view, lp);
-//        //view.invalidate();
-//        log.debug("Surface View is created with dimensions: {}x{}", lp.width, lp.height);
-//        videoHolder = view;
     }
 
     public void removeVideoFrame() {
@@ -459,5 +448,16 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                 videoHolder.setVisibility(View.GONE);
             }
         });
+    }
+
+    public void updateVideoUI(Rectangle destRect) {
+        log.debug("Updating Video UI size {}", destRect);
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) videoHolder.getLayoutParams();
+        lp.topMargin = destRect.y;
+        lp.leftMargin = destRect.x;
+        lp.width = destRect.width;
+        lp.height = destRect.height;
+        videoHolder.setLayoutParams(lp);
+        videoHolder.requestLayout();
     }
 }
