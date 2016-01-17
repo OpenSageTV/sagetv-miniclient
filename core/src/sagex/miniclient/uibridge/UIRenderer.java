@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 
@@ -102,4 +103,6 @@ public interface UIRenderer<Image> {
     MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection);
 
     void setVideoBounds(Rectangle o, Rectangle o1);
+
+    void onMenuHint(MenuHint hint);
 }

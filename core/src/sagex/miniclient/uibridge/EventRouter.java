@@ -17,6 +17,10 @@ public class EventRouter {
     public static final UserEvent MEDIA_FF = new UserEvent(UserEvent.FF);
     public static final UserEvent MEDIA_REW = new UserEvent(UserEvent.REW);
 
+    public static final UserEvent VOLUME_UP = new UserEvent(UserEvent.VOLUME_UP);
+    public static final UserEvent VOLUME_DOWN = new UserEvent(UserEvent.VOLUME_DOWN);
+    public static final UserEvent VOLUME_MUTE = new UserEvent(UserEvent.MUTE);
+
     // navigation keys
     public static final UserEvent UP = new UserEvent(UserEvent.UP);
     public static final UserEvent DOWN = new UserEvent(UserEvent.DOWN);
