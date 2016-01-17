@@ -411,17 +411,11 @@ public class MiniClientConnection implements SageTVInputCallback {
             fsSecurity = HIGH_SECURITY_FS;
     }
 
-    private void discoverCodecSupport() {
-        String profile = null;
-        if (client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false)) {
-            profile="exoplayer.profile";
-        } else {
-            profile="ijkplayer.profile";
-        }
-        InputStream is = MiniClientConnection.class.getClassLoader().getResourceAsStream(profile);
+    Properties loadProperties(String resourceName) {
+        InputStream is = MiniClientConnection.class.getClassLoader().getResourceAsStream(resourceName);
         if (is==null) {
-            log.warn("Didn't Resolve Profile Name for {}", profile);
-            throw new RuntimeException("Missing Codec Profiles");
+            log.warn("Didn't Resolve Profile Name for {}", resourceName);
+            throw new RuntimeException("Missing resource " + resourceName);
         }
         Properties prop = new Properties();
         try {
@@ -429,6 +423,17 @@ public class MiniClientConnection implements SageTVInputCallback {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return prop;
+    }
+
+    private void discoverCodecSupport() {
+        String profile = null;
+        if (client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false)) {
+            profile = "exoplayer.profile";
+        } else {
+            profile = "ijkplayer.profile";
+        }
+        Properties prop = loadProperties(profile);
 
         String acodec = prop.getProperty("AUDIO_CODECS", DEFAULT_AUDIO_CODECS);
         String vcodec = prop.getProperty("VIDEO_CODECS", DEFAULT_VIDEO_CODECS);
@@ -440,7 +445,9 @@ public class MiniClientConnection implements SageTVInputCallback {
         pullFormats = stringToList(pullf);
         pushFormats = stringToList(pushf);
 
-        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats);
+        Properties codecs = loadProperties("codecs.properties");
+
+        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
     }
 
     private List<String> stringToList(String str) {

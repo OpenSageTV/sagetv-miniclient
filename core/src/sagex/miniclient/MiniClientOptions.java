@@ -2,6 +2,7 @@ package sagex.miniclient;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import sagex.miniclient.prefs.PrefStore;
 
@@ -19,11 +20,11 @@ public interface MiniClientOptions {
 
     /**
      * Allows the Hardware device to add/remove codec support based on the hardware supported codecs/containers
-     *
-     * @param videoCodecs
+     *  @param videoCodecs
      * @param audioCodecs
      * @param pushFormats
      * @param pullFormats
+     * @param codecs Map of Mime Types to SageTV Media Formats (ie, video/avc=H264)
      */
-    void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats);
+    void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs);
 }
