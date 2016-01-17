@@ -210,6 +210,8 @@ public class MiniClientConnection implements SageTVInputCallback {
     private List<String> pushFormats = new ArrayList<String>();
     private List<String> pullFormats = new ArrayList<String>();
 
+    private MenuHint menuHint = new MenuHint();
+
     public MiniClientConnection(MiniClient client, String serverName, String myID, ServerInfo msi) {
         this.client = client;
         currentCrypto = client.getCryptoFormats();
@@ -240,6 +242,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         } else
             cacheDir = null;
         usesAdvancedImageCaching = false;
+    }
+
+    public MenuHint getMenuHint() {
+        return menuHint;
     }
 
     // Needed for local video images...
@@ -775,7 +781,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
-                        propVal = "IR,KEYBOARD"; // ,MOUSE,KEYBOARD
+                        propVal = "IR,KEYBOARD,TOUCH"; // MOUSE,KEYBOARD,TOUCH,IR (mouse implies desktop)
                     } else if ("DISPLAY_OVERSCAN".equals(propName)) {
                         propVal = "0;0;1.0;1.0";
                     } else if ("FIRMWARE_VERSION".equals(propName)) {
@@ -1060,6 +1066,14 @@ public class MiniClientConnection implements SageTVInputCallback {
                         } else if ("SUBTITLES_CALLBACKS".equals(propName)) {
                             subSupport = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
                             propVal = String.valueOf(subSupport);
+                            retval = 0;
+                        } else if ("MENU_HINT".equals(propName)) {
+                            propVal = new String(cmdbuffer, 4 + nameLen, valLen);
+                            menuHint.update(propVal);
+                            log.debug("Setting MENU_HINT: {}", menuHint);
+                            if (getUiRenderer() != null) {
+                                getUiRenderer().onMenuHint(menuHint);
+                            }
                             retval = 0;
                         } else if ("SET_CACHED_AUTH".equals(propName)) {
                             // Save this authentication block in the properties

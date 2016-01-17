@@ -77,6 +77,13 @@ public class BaseKeyListener implements View.OnKeyListener {
 
         KEYMAP.put(KeyEvent.KEYCODE_DEL, EventRouter.BACKSPACE);
 
+        // map search to OPTIONs, since we don't do SEARCH, yet
+        KEYMAP.put(KeyEvent.KEYCODE_SEARCH, EventRouter.OPTIONS);
+
+        KEYMAP.put(KeyEvent.KEYCODE_VOLUME_UP, EventRouter.VOLUME_UP);
+        KEYMAP.put(KeyEvent.KEYCODE_VOLUME_DOWN, EventRouter.VOLUME_DOWN);
+        KEYMAP.put(KeyEvent.KEYCODE_VOLUME_MUTE, EventRouter.VOLUME_MUTE);
+
         // UI Long Presses
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.OPTIONS);

@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 
@@ -231,6 +232,12 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
     public void setVideoBounds(Rectangle o, Rectangle o1) {
         log("setVideoBounds");
         delegate.setVideoBounds(o, o1);
+    }
+
+    @Override
+    public void onMenuHint(MenuHint hint) {
+        log("onMenuHint");
+        delegate.onMenuHint(hint);
     }
 
 }

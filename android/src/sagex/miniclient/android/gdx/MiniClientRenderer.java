@@ -31,6 +31,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
@@ -455,14 +456,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
                 // we only want to set blending for Non Framebuffer textures
 //                if (!img.get().isFrameBuffer) {
-                    Gdx.gl20.glEnable(GL20.GL_BLEND);
-                    Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
-                    if (height < 0) {
-                        Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
-                    }
+                Gdx.gl20.glEnable(GL20.GL_BLEND);
+                Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                if (height < 0) {
+                    Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
+                }
 
-                    batchColor = batch.getColor();
-                    batch.setColor(getColor(blend));
+                batchColor = batch.getColor();
+                batch.setColor(getColor(blend));
 //                }
 
                 int w = Math.abs(width);
@@ -474,8 +475,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                     log.warn("We got a null texture for {}", img);
                 }
 //                if (!img.get().isFrameBuffer) {
-                    batch.setColor(batchColor);
-                    Gdx.gl20.glDisable(GL20.GL_BLEND);
+                batch.setColor(batchColor);
+                Gdx.gl20.glDisable(GL20.GL_BLEND);
 //                }
             }
         });
@@ -740,5 +741,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public void setVideoBounds(Rectangle o, Rectangle o1) {
         log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
         state = STATE_VIDEO;
+    }
+
+    @Override
+    public void onMenuHint(MenuHint hint) {
+        activity.showHideKeyboard(hint.hasTextInput);
     }
 }

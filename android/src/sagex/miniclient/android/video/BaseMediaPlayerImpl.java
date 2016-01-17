@@ -202,6 +202,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void inactiveFile() {
         state=STOPPED_STATE;
+        stop();
+        releasePlayer();
+        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
         log.debug("INACTIVEFILE Called??");
     }
 
@@ -225,9 +228,22 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         return 0;
     }
 
+    Rectangle lastVideoPositionUpdate = null;
     @Override
-    public void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean b) {
+    public void setVideoRectangles(Rectangle srcRect, final Rectangle destRect, boolean b) {
         log.debug("setVideoRectangles(): SRC: {}, DEST: {}", srcRect, destRect);
+        if (lastVideoPositionUpdate == null || !lastVideoPositionUpdate.equals(destRect)) {
+            // we need an update
+            lastVideoPositionUpdate = destRect;
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    log.debug("Updating Video UI Size and Location {}", destRect);
+                    // TODO: Eventually when we are screen scaling we'll need to adjust these pixels
+                    context.updateVideoUI(destRect);
+                }
+            });
+        }
     }
 
     @Override

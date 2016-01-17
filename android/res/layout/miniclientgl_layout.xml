@@ -4,19 +4,13 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true">
 
-        <FrameLayout
-            android:id="@+id/video_surface_frame"
+    <SurfaceView
+        android:id="@+id/video_surface"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <SurfaceView
-                android:id="@+id/video_surface"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:background="@null"
-                android:visibility="visible" />
-        </FrameLayout>
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@null"
+        android:visibility="visible" />
 
         <FrameLayout
             android:id="@+id/surface"
