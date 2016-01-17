@@ -17,9 +17,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import sagex.miniclient.IBus;
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
@@ -63,137 +65,73 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         return bus;
     }
 
-    static Map<String,String> ANDROID_TO_SAGETV_AUDIO_CODEC_MAP = new HashMap<>();
-    static Map<String,String> ANDROID_TO_SAGETV_VIDEO_CODEC_MAP = new HashMap<>();
-    static {
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("3gpp", "");
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("amr-wb", "");
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("mp4a-latm", MiniClientConnection.AAC);
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("g711-alaw", "");
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("g711-mlaw", "");
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("vorbis", MiniClientConnection.VORBIS);
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("opus", "");
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("raw", "");
-        ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.put("gsm", "");
-
-        ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.put("avc", MiniClientConnection.MPEG4_VIDEO);
-        ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.put("mp4v-es", MiniClientConnection.MPEG4_VIDEO);
-        ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.put("3gpp", "");
-        ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.put("x-vnd.on2.vp8", "");
-        ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.put("x-vnd.on2.vp9", "");
-        ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.put("hevc", "");
-    }
-
     @Override
-    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats) {
-//        OMX.google.aac.decoder; supported: [audio/mp4a-latm]
-//        OMX.google.amrnb.decoder; supported: [audio/3gpp]
-//        OMX.google.amrwb.decoder; supported: [audio/amr-wb]
-//        OMX.google.g711.alaw.decoder; supported: [audio/g711-alaw]
-//        OMX.google.g711.mlaw.decoder; supported: [audio/g711-mlaw]
-//        OMX.google.gsm.decoder; supported: [audio/gsm]
-//        OMX.google.mp3.decoder; supported: [audio/mpeg]
-//        OMX.google.opus.decoder; supported: [audio/opus]
-//        OMX.google.raw.decoder; supported: [audio/raw]
-//        OMX.google.vorbis.decoder; supported: [audio/vorbis]
-//        OMX.Nvidia.eaacp.decoder; supported: [audio/mp4a-latm]
-//        OMX.Nvidia.mjpeg.decoder; supported: [video/mjpeg]
-//        OMX.Nvidia.mp2.decoder; supported: [audio/mpeg-L2]
-//        OMX.Nvidia.mp3.decoder; supported: [audio/mpeg]
-//        OMX.Nvidia.wma.decoder; supported: [audio/x-ms-wma]
-//
-//        OMX.google.h263.decoder; supported: [video/3gpp]
-//        OMX.google.h264.decoder; supported: [video/avc]
-//        OMX.google.hevc.decoder; supported: [video/hevc]
-//        OMX.google.mpeg4.decoder; supported: [video/mp4v-es]
-//        OMX.google.vp8.decoder; supported: [video/x-vnd.on2.vp8]
-//        OMX.google.vp9.decoder; supported: [video/x-vnd.on2.vp9]
-//        OMX.google.vp9.decoder; supported: [video/x-vnd.on2.vp9]
-//        OMX.Nvidia.h263.decode; supported: [video/3gpp]
-//        OMX.Nvidia.h264.decode; supported: [video/avc]
-//        OMX.Nvidia.h265.decode; supported: [video/hevc]
-//        OMX.Nvidia.mp4.decode; supported: [video/mp4v-es]
-//        OMX.Nvidia.mpeg2v.decode; supported: [video/mpeg2]
-//        OMX.Nvidia.vc1.decode; supported: [video/wvc1, video/x-ms-wmv]
-//        OMX.Nvidia.vp8.decode; supported: [video/x-vnd.on2.vp8]
-//        OMX.Nvidia.vp9.decode; supported: [video/x-vnd.on2.vp9]
-//        OMX.qcom.video.decoder.avc; supported: [video/avc]
-//        OMX.qcom.video.decoder.h263; supported: [video/3gpp
-//        OMX.qcom.video.decoder.mpeg4; supported: [video/mp4v-es]
-//        OMX.qcom.video.decoder.vp8; supported: [video/x-vnd.on2.vp8]
-
+    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs) {
         // log the media codec information
         int count = MediaCodecList.getCodecCount();
         log.debug("--------- DUMPING HARDWARE CODECS -----------");
-        ArrayList<String> acodecs = new ArrayList<>();
-        ArrayList<String> vcodecs = new ArrayList<>();
+        Set<String> acodecs = new TreeSet<>();
+        Set<String> vcodecs = new TreeSet<>();
         for (int i = 0; i < count; i++) {
             MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
             if (!info.isEncoder()) {
                 log.debug("[{}] {}; supported: {}", i, info.getName(), info.getSupportedTypes());
                 for (String s: getAudioCodecs(info)) {
-                    if (ANDROID_TO_SAGETV_AUDIO_CODEC_MAP.containsKey(s)) {
-                        acodecs.add(s);
-                    } else {
-                        log.warn("Unmapped Hardware Audio Codec: [{}] for {}", s, info.getName());
-                    }
+                    acodecs.add(s);
                 }
                 for (String s: getVideoCodecs(info)) {
-                    if (ANDROID_TO_SAGETV_VIDEO_CODEC_MAP.containsKey(s)) {
-                        vcodecs.add(s);
-                    } else {
-                        log.warn("Unmapped Hardware Video Codec: [{}] for {}", s, info.getName());
-                    }
+                    vcodecs.add(s);
                 }
             }
         }
         log.debug("--------- END DUMPING HARDWARE CODECS -----------");
 
-        // TODO: We now need to update the codec support list
+        // update the supported hardware codecs for SageTV
+        // SageTV is crashing when we are enabling formats, so we are doing something wrong
+        // could be that we need to send MPEG2-VIDEO@HL to tell sagetv that we are a
+        // media extender
 
-        if (getPrefs().getBoolean(PrefStore.Keys.use_exoplayer)) {
-            // no hardware support for mpeg2
-//            if (!vcodecs.contains("mpeg2")) {
-//                log.warn("Removing MPEG2 support");
-//                videoCodecs.remove(MiniClientConnection.MPEG2_VIDEO);
-//                videoCodecs.remove("MPEG2-VIDEO");
-//                videoCodecs.remove("MPEG2-VIDEO@HL");
+//        if (getPrefs().getBoolean(PrefStore.Keys.use_exoplayer)) {
+//            videoCodecs.clear();
+//            for (String s: vcodecs) {
+//                if (codecs.getProperty(s)!=null) {
+//                    videoCodecs.add(codecs.getProperty(s));
+//                }
 //            }
-        }
-
+//
+//            audioCodecs.clear();
+//            for (String s: acodecs) {
+//                if (codecs.getProperty(s)!=null) {
+//                    audioCodecs.add(codecs.getProperty(s));
+//                }
+//            }
+//
+//            // exoplayer supports passthrough
+//            audioCodecs.add("AC3");
+//        }
     }
 
-    private List<String> getAudioCodecs(MediaCodecInfo info) {
-        if (info==null||info.getSupportedTypes()==null||info.getSupportedTypes().length==0) return Collections.emptyList();
+    private Set<String> getAudioCodecs(MediaCodecInfo info) {
+        if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
+            return Collections.emptySet();
 
-        List<String> list = new ArrayList<>();
-        String parts[]=null;
+        Set<String> list = new TreeSet<>();
         for (String s: info.getSupportedTypes()) {
             if (s.startsWith("audio/")) {
-                parts=s.split("/");
-                for (String p: parts) {
-                    if (!list.contains(p.trim())) {
-                        list.add(p.trim());
-                    }
-                }
+                list.add(s.trim());
             }
         }
         return list;
     }
 
-    private List<String> getVideoCodecs(MediaCodecInfo info) {
-        if (info==null||info.getSupportedTypes()==null||info.getSupportedTypes().length==0) return Collections.emptyList();
+    private Set<String> getVideoCodecs(MediaCodecInfo info) {
+        if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
+            return Collections.emptySet();
 
-        List<String> list = new ArrayList<>();
-        String parts[]=null;
+        Set<String> list = new TreeSet<>();
         for (String s: info.getSupportedTypes()) {
             if (s.startsWith("video/")) {
-                parts=s.split("/");
-                for (String p: parts) {
-                    if (!list.contains(p.trim())) {
-                        list.add(p.trim());
-                    }
-                }
+                list.add(s.trim());
             }
         }
         return list;
