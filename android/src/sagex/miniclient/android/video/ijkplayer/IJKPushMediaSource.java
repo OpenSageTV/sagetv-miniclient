@@ -85,6 +85,13 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer {
     }
 
     @Override
+    public void setEOS() {
+        if (dataSource != null) {
+            dataSource.setEOS();
+        }
+    }
+
+    @Override
     public int bufferAvailable() {
         if (dataSource != null) {
             dataSource.bufferAvailable();

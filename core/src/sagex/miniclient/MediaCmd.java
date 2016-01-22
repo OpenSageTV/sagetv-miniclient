@@ -266,9 +266,10 @@ public class MediaCmd {
                     if (playa != null) {
                         prebufferTime = serverMuxTime - playa.getMediaTimeMillis();
                     }
-                    log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
+                    // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
                 // sometimes pushbuffer is called to just get bandwidth so don't pass that along to the player
+                //boolean noMoreData = flags == 0x80 && playa != null;
                 if (playa != null) {
                     if (buffSize > 0) {
                         bufferFilePushedBytes += buffSize;
@@ -280,8 +281,9 @@ public class MediaCmd {
                             client.closeConnection();
                         }
                     }
+
                     if (flags == 0x80 && playa != null) {
-                        playa.inactiveFile();
+                        playa.setServerEOS();
                     }
                 }
 
@@ -296,6 +298,11 @@ public class MediaCmd {
                     rv = playa.getBufferLeft();
                     // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "; Last Read: " + playa.getLastFileReadPos());
                 }
+
+                if (rv < 0) {
+                    log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}");
+                }
+
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
@@ -305,8 +312,9 @@ public class MediaCmd {
                         writeInt(0, retbuf, 4);
                         retbuf[8] = 0;
                     }
-                    if (flags == 0x80 && (playa == null || pushDataLeftBeforeInit > 0)) {
-                        retbuf[8] = (byte) (MiniPlayerPlugin.EOS_STATE & 0xFF);
+
+                    if (playa != null) {
+                        retbuf[8] = (byte) (playa.getState() & 0xFF);
                     }
                     return 9;
                 } else

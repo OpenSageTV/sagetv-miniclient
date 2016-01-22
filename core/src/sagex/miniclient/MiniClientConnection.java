@@ -797,9 +797,9 @@ public class MiniClientConnection implements SageTVInputCallback {
                         // sage.Version.MICRO_VERSION;
                         propVal = "9.0.0";
                     } else if ("DETAILED_BUFFER_STATS".equals(propName)) {
-                        //propVal = "TRUE";
-                        //detailedBufferStats = true;
-                        propVal = "FALSE";
+                        propVal = "TRUE";
+                        detailedBufferStats = true;
+                        //propVal = "FALSE";
                     } else if ("PUSH_BUFFER_SEEKING".equals(propName))
                         propVal = "TRUE";
                     else if ("GFX_SUBTITLES".equals(propName))

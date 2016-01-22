@@ -15,4 +15,10 @@ public interface HasPushBuffer {
     long getBytesRead();
 
     void release();
+
+    /**
+     * When NO more data is coming EOS is set, and the buffer can drain any remaining bytes, but
+     * once those bytes are gone, the read command will return -1
+     */
+    void setEOS();
 }

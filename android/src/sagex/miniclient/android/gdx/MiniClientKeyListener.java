@@ -39,7 +39,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
             }
 
             // if we are playing a video, then check pause/play
-            if (client.getCurrentConnection().getMenuHint().isOSDMenu()) {
+            if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
                 log.debug("Using Stateful Key Listener");
                 if (client.isVideoPaused()) {
                     log.debug("Using Paused Key Listener");
@@ -48,6 +48,11 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                     log.debug("Using Playback Key Listener");
                     return videoPlaybackKeyListener.onKey(v, keyCode, event);
                 }
+            }
+            if (client.isVideoVisible()) {
+                log.debug("Using Default Normal Key Listener. MenuPlayerState: {}, Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMediaCmd().getPlaya().getState(), client.getCurrentConnection().getMenuHint(), event);
+            } else {
+                log.debug("Using Default Normal Key Listener. (No Player Visible). Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
             }
         }
 
