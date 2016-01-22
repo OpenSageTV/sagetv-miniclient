@@ -1,9 +1,6 @@
 package sagex.miniclient.android.video;
 
 import android.content.res.Configuration;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
@@ -21,6 +18,7 @@ import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.util.VerboseLogging;
 
 //import org.videolan.libvlc.LibVLC;
 
@@ -49,12 +47,14 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected String lastUri;
 
+    protected long lastMediaTime = 0;
+
     public BaseMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
         //this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
         this.waitForPlayer = waitForPlayer;
-        state = this.NO_STATE;
+        state = NO_STATE;
     }
 
     public Player getPlayer() {
@@ -63,7 +63,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void free() {
-        log.info("Freeing Media Player");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.info("Freeing Media Player");
         releasePlayer();
     }
 
@@ -75,6 +75,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void load(byte b, byte b1, String s, final String urlString, Object o, boolean b2, int i) {
         lastUri = urlString;
+        lastMediaTime = 0;
+        log.debug("load(): url: {}", urlString);
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
                 @Override
@@ -100,26 +102,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected abstract void setupPlayer(String sageTVurl);
 
-    /**
-     * Waits until the player has been contructed
-     */
-//    void waitForPlayer() {
-//        if (!waitForPlayer) return;
-//
-//        log.debug("wait for player");
-//        while (!playerReady) {
-//            try {
-//                Thread.sleep(50);
-//                log.debug("wait for player...");
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
     public void message(final String msg) {
         if (context==null) {
-            log.error("MESSAGE: {}", msg);
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.error("MESSAGE: {}", msg);
             return;
         }
         context.runOnUiThread(new Runnable() {
@@ -137,13 +122,26 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected void playerFailed() {
         stop();
         releasePlayer();
-        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
+        state = EOS_STATE;
+        notifySageTVStop();
         message(context.getString(R.string.msg_player_failed, lastUri));
     }
 
+    protected void notifySageTVStop() {
+        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
+    }
+
+    protected abstract long getPlayerMediaTimeMillis();
+
     @Override
     public long getMediaTimeMillis() {
-        return 0;
+        if (state == EOS_STATE) return lastMediaTime;
+        long mt = getPlayerMediaTimeMillis();
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+            //log.debug("getMediaTime(): current: {}, last time: {}", mt, lastMediaTime);
+        }
+        lastMediaTime = mt;
+        return mt;
     }
 
     @Override
@@ -183,30 +181,31 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void pause() {
         state = PAUSE_STATE;
-        log.debug("pause()");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("pause()");
         //if (createPlayerOnUI) waitForPlayer();
     }
 
     @Override
     public void play() {
         state = PLAY_STATE;
-        log.debug("play()");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("play()");
         //waitForPlayer();
     }
 
     @Override
     public void seek(long timeInMS) {
-        log.debug("SEEK: {}", timeInMS);
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("SEEK: {}", timeInMS);
     }
 
     @Override
-    public void inactiveFile() {
+    public void setServerEOS() {
         // Jeff says don't do this
-//        state=STOPPED_STATE;
-//        stop();
-//        releasePlayer();
-//        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
-        log.debug("INACTIVEFILE Called??");
+        // tell the datasource that we have all the data
+        if (dataSource != null && dataSource instanceof HasPushBuffer) {
+            ((HasPushBuffer) dataSource).setEOS();
+        }
+
+        log.debug("Server sent us EOS");
     }
 
     @Override
@@ -232,14 +231,16 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     Rectangle lastVideoPositionUpdate = null;
     @Override
     public void setVideoRectangles(Rectangle srcRect, final Rectangle destRect, boolean b) {
-        log.debug("setVideoRectangles(): SRC: {}, DEST: {}", srcRect, destRect);
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            log.debug("setVideoRectangles(): SRC: {}, DEST: {}", srcRect, destRect);
         if (lastVideoPositionUpdate == null || !lastVideoPositionUpdate.equals(destRect)) {
             // we need an update
             lastVideoPositionUpdate = destRect;
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    log.debug("Updating Video UI Size and Location {}", destRect);
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                        log.debug("Updating Video UI Size and Location {}", destRect);
                     // TODO: Eventually when we are screen scaling we'll need to adjust these pixels
                     context.updateVideoUI(destRect);
                 }
@@ -262,7 +263,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void flush() {
-        log.debug("flush()");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("flush()");
         if (dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).flush();
         }
@@ -271,6 +272,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public int getBufferLeft() {
         if (dataSource instanceof HasPushBuffer) {
+            if (state == EOS_STATE) return -1;
             return ((HasPushBuffer) dataSource).bufferAvailable();
         } else {
             return PushBufferDataSource.PIPE_SIZE;
@@ -283,11 +285,13 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     protected void setSize(final int width, final int height) {
-        log.info("Set Size Called: {}x{}", width, height);
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            log.info("Set Size Called: {}x{}", width, height);
         context.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                log.info("Set Size Called On UI Thread: {}x{}", width, height);
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.info("Set Size Called On UI Thread: {}x{}", width, height);
                 mVideoWidth = width;
                 mVideoHeight = height;
                 if (mVideoWidth * mVideoHeight <= 1)
@@ -334,7 +338,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         mVideoHeight = 0;
         releaseDataSource();
         dataSource = null;
-        state = NO_STATE;
+        state = EOS_STATE;
         context.removeVideoFrame();
     }
 

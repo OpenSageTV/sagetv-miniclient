@@ -85,7 +85,11 @@ public interface MiniPlayerPlugin extends Runnable {
 
     void seek(long maxValue);
 
-    void inactiveFile();
+    /**
+     * Servers is telling us that there is no more data.  We can still play any buffered data
+     * but no more data is coming.  This is only used during PUSH mode.
+     */
+    void setServerEOS();
 
     long getLastFileReadPos();
 

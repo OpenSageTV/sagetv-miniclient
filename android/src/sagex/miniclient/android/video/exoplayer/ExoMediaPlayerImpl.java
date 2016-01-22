@@ -3,6 +3,7 @@ package sagex.miniclient.android.video.exoplayer;
 
 import android.net.Uri;
 
+import com.google.android.exoplayer.ExoPlayer;
 import com.google.android.exoplayer.demo.EventLogger;
 import com.google.android.exoplayer.demo.player.DemoPlayer;
 import com.google.android.exoplayer.upstream.DataSource;
@@ -10,6 +11,7 @@ import com.google.android.exoplayer.util.VerboseLogUtil;
 
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.util.VerboseLogging;
 
 /**
  * Created by seans on 27/09/15.
@@ -39,13 +41,14 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
     protected void releasePlayer() {
         if (player == null)
             return;
-        log.debug("Releasing Player");
+
         try {
             if (ExoIsPlaying()) {
                 ExoPause();
             }
             //player.reset();
-            log.debug("Player Is Stopped");
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("Player Is Stopped");
         } catch (Throwable t) {
 
         }
@@ -71,7 +74,8 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
 
         VerboseLogUtil.setEnableAllTags(true);
 
-        log.debug("Setting up the media player: {}", sageTVurl);
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            log.debug("Setting up the media player: {}", sageTVurl);
 
         if (pushMode) {
             dataSource = new ExoPushDataSource();
@@ -96,7 +100,13 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         player.addListener(new DemoPlayer.Listener() {
             @Override
             public void onStateChanged(boolean playWhenReady, int playbackState) {
-
+                if (playbackState == ExoPlayer.STATE_ENDED) {
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                        log.debug("Player Has Ended, set EOS");
+                    stop();
+                    notifySageTVStop();
+                    ExoMediaPlayerImpl.this.state = ExoMediaPlayerImpl.EOS_STATE;
+                }
             }
 
             @Override
@@ -106,13 +116,15 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
 
             @Override
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, ratio: {}", width, height, pixelWidthHeightRatio);
             }
         });
 
         player.setBackgrounded(false);
         if (resumePos >= 0) {
-            log.debug("Resume Seek Postion: {}", resumePos);
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("Resume Seek Postion: {}", resumePos);
             player.seekTo(resumePos);
             resumePos = -1;
         } else {
@@ -124,16 +136,16 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         player.setSurface(context.getVideoView().getHolder().getSurface());
         player.setPlayWhenReady(true);
 
-        log.debug("Video Player is online");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("Video Player is online");
         playerReady = true;
-        state = LOADED_STATE;
+        state = PLAY_STATE;
     }
 
     @Override
-    public long getMediaTimeMillis() {
+    public long getPlayerMediaTimeMillis() {
         if (player==null) return 0;
         long time = player.getCurrentPosition();
-        log.debug("getMediaTimeMillis(): {}", time);
+        //log.debug("getMediaTimeMillis(): {} - duration: {}", time, player.getDuration());
         //if (pushMode) return -1l;
         return time;
     }
@@ -171,12 +183,13 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
                 if (player != null) {
                     player.seekTo(timeInMS);
                 } else {
-                    log.debug("Seek Resume(Player is Null) {}", timeInMS);
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                        log.debug("Seek Resume(Player is Null) {}", timeInMS);
                     resumePos = timeInMS;
                 }
             }
         } else {
-            log.debug("Seek Resume {}", timeInMS);
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("Seek Resume {}", timeInMS);
             resumePos = timeInMS;
         }
     }

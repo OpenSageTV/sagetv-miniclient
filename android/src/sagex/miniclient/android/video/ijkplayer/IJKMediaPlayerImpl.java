@@ -24,9 +24,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
-    public long getMediaTimeMillis() {
+    public long getPlayerMediaTimeMillis() {
         if (player == null) return 0;
-        player.getCurrentPosition();
         return player.getCurrentPosition();
     }
 
@@ -125,6 +124,16 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 player.setDataSource(dataSource);
             }
 
+            player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(IMediaPlayer iMediaPlayer) {
+                    log.debug("MEDIA COMPLETE");
+                    stop();
+                    notifySageTVStop();
+                    state = EOS_STATE;
+                }
+            });
+
             player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(IMediaPlayer mp) {
@@ -147,6 +156,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                             }
                         }
                     }
+                    state = PLAY_STATE;
                 }
             });
             player.prepareAsync();

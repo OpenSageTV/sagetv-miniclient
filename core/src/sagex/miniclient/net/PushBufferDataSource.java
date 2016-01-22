@@ -24,12 +24,13 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
 
     InputStream in = null;
     OutputStream out = null;
-    private String uri;
-    private long bytesRead = 0;
+    String uri;
+    long bytesRead = 0;
+    boolean eos = false;
 
     State state = State.Idle;
 
-    private DataCollector dataCollector = null;
+    DataCollector dataCollector = null;
 
     public PushBufferDataSource() {
     }
@@ -44,6 +45,7 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
             return -1;
         }
         state = State.Idle;
+        eos = false;
 
         this.uri = uri;
         log.debug("Open Called: {}", uri);
@@ -88,9 +90,30 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
         out = null;
         state = State.Closed;
         circularByteBuffer = null;
-
+        eos = true;
         if (dataCollector != null) {
             dataCollector.close();
+        }
+    }
+
+    @Override
+    public void setEOS() {
+        eos = true;
+        if (in != null) {
+            try {
+                if (in.available() == 0) {
+                    log.debug("setEOS() called and there is no data, so closing the stream");
+                    in.close();
+                } else {
+                    log.debug("setEOS() called and we still have {} bytes of data", in.available());
+                }
+            } catch (Throwable t) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -124,8 +147,8 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
         if (in == null) return 0;
         // streamOffset is not used for push
         if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled()) log.debug("READ: {}", len);
-
-        int read = in.read(bytes, offset, len);
+        if (eos && in.available() <= 0) return -1; // EOS - no data left
+        int read = in.read(bytes, offset, Math.min(len, in.available())); // never read more than what we have
         if (read >= 0) {
             bytesRead += read;
         }
@@ -144,10 +167,15 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
                 e.printStackTrace();
             }
         }
-
-        out.write(bytes, offset, len);
-        if (dataCollector != null) {
-            dataCollector.write(bytes, offset, len);
+        if (len > 0) {
+            if (eos) {
+                log.warn("We are getting data, even after EOS has been set");
+                return;
+            }
+            out.write(bytes, offset, len);
+            if (dataCollector != null) {
+                dataCollector.write(bytes, offset, len);
+            }
         }
     }
 
