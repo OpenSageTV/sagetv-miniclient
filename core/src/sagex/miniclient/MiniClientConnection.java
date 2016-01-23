@@ -197,7 +197,6 @@ public class MiniClientConnection implements SageTVInputCallback {
     // We need this for being able to store the auth block in the properties
     // file correctly
     private ServerInfo msi;
-    private Dimension reportedScrSize;
     private boolean zipMode;
     private java.util.Map lruImageMap = new java.util.HashMap();
     private boolean usesAdvancedImageCaching;
@@ -509,11 +508,6 @@ public class MiniClientConnection implements SageTVInputCallback {
         } catch (Exception e) {
             log.warn("Failed pull mode media test....only use push mode for server {}", serverName);
         }
-
-        reportedScrSize = uiRenderer.getMaxScreenSize();
-        if (reportedScrSize.width == 0 || reportedScrSize.height == 0)
-            reportedScrSize = uiRenderer.getScreenSize();
-        log.info("Max screen size={}", reportedScrSize);
 
         final java.util.Vector gfxSyncVector = new java.util.Vector();
 
@@ -940,8 +934,9 @@ public class MiniClientConnection implements SageTVInputCallback {
                         }
                         propValBytes = encryptedSecretKeyBytes;
                     } else if ("GFX_SUPPORTED_RESOLUTIONS".equals(propName)) {
-                        propVal = Integer.toString(reportedScrSize.width) + "x" + Integer.toString(reportedScrSize.height)
-                                + ";windowed";
+                        Dimension winny = myGfx.getScreenSize();
+                        if (winny != null)
+                            propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height) + ";windowed";
                     } else if ("GFX_RESOLUTION".equals(propName)) {
                         Dimension winny = myGfx.getScreenSize();
                         if (winny != null)
@@ -2023,10 +2018,6 @@ public class MiniClientConnection implements SageTVInputCallback {
             return "SageTV";
         else
             return "SageTV Placeshifter";
-    }
-
-    public Dimension getReportedScrSize() {
-        return reportedScrSize;
     }
 
     public java.io.File getCachedImageFile(String resourceID) {

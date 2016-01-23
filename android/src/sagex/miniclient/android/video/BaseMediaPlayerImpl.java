@@ -229,8 +229,10 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 public void run() {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                         log.debug("Updating Video UI Size and Location {}", destRect);
+
                     // TODO: Eventually when we are screen scaling we'll need to adjust these pixels
-                    context.updateVideoUI(destRect);
+                    // TODO: Disabled until we scale it correctly
+                    // context.updateVideoUI(destRect);
                 }
             });
         }

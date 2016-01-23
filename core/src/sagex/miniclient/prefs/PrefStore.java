@@ -123,5 +123,11 @@ public interface PrefStore {
          * Boolean: Announce when Software decoder is being used
          */
         String announce_software_decoder = "announce_software_decoder";
+
+        /**
+         * Boolean: default is true.  When enabled uses full screen resolution, when
+         * disabled, it will report its screen size to be half native.
+         */
+        String use_native_resolution = "use_native_resolution";
     }
 }

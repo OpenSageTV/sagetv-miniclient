@@ -55,11 +55,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     // Screen and UI resolutions
     // Total available screan pixels that we have
-    Dimension fullScreenSize = null;
+    Dimension fullScreenSize = new Dimension(0, 0);
 
     // UI size is the size of the UI that is built, will be scaled up to the screenSize
     // this is the size of the UI that sagetv will build and send to us
-    Dimension uiSize = new Dimension(1280, 720);
+    Dimension uiSize = new Dimension(0, 0);
 
     // if true, the uiSize is set to the Native resolution
     boolean useNativeResolution = true;
@@ -100,7 +100,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     private MiniPlayerPlugin player;
 
-    boolean resizeHappened = false;
+    private Dimension lastResize = new Dimension(0, 0);
+    private Dimension lastScreenSize = new Dimension(0, 0);
+    private boolean firstResize = true; // true until after do the first resize
 
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;
@@ -120,8 +122,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void create() {
-        fullScreenSize = getMaxScreenSize();
-        uiSize = getScreenSize();
+        useNativeResolution = client.properties().getBoolean(PrefStore.Keys.use_native_resolution, true);
+
+        fullScreenSize.updateFrom(getMaxScreenSize());
+        lastResize.updateFrom(fullScreenSize);
+
+        uiSize.updateFrom(getScreenSize());
+        lastScreenSize.updateFrom(uiSize);
+
         scale.setScale(uiSize, fullScreenSize);
 
         log.debug("CREATE: UI SIZE: {}, SCREEN SIZE: {}", uiSize, fullScreenSize);
@@ -135,37 +143,41 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void resize(int width, int height) {
-        if (resizeHappened) {
+        if (!firstResize && lastResize.equals(width, height) && lastScreenSize.equals(getScreenSize())) {
             log.debug("Resize Already Happened, Ignoring this: {}x{}", width, height);
             return;
         }
 
-        fullScreenSize.width = width;
-        fullScreenSize.height = height;
+        fullScreenSize.update(width, height);
+        lastResize.update(width, height);
+
+        uiSize = getScreenSize();
+        lastScreenSize.updateFrom(uiSize);
 
         this.scale.setScale(uiSize, fullScreenSize);
 
         stage.getViewport().setWorldSize(uiSize.width, uiSize.height);
-        stage.getViewport().update(width, height, true);
-        log.debug("SIZE: width: " + width + "; height: " + height);
+        stage.getViewport().update(fullScreenSize.width, fullScreenSize.height, true);
+        log.debug("RESIZE SCREEN: width: " + fullScreenSize.width + "; height: " + fullScreenSize.height);
         log.debug("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
         log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
         log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
         log.debug("SCALE: " + scale);
 
         ready = true;
-        if (client == null || client.getCurrentConnection() == null) {
-            return;
-        }
-
         notifySageTVAboutScreenSize();
     }
 
     public void notifySageTVAboutScreenSize() {
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
         try {
+            while (client == null || client.getCurrentConnection() == null) {
+                log.warn("Client and/or Client Connection is not ready.  Can't send a resize.");
+                Thread.currentThread().wait(100);
+            }
+
+            firstResize = false;
             client.getCurrentConnection().postResizeEvent(uiSize);
-            resizeHappened = true;
         } catch (Throwable t) {
             log.info("Error sending Resize Event", t);
         }
@@ -669,32 +681,32 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public Dimension getMaxScreenSize() {
-        if (fullScreenSize == null) {
-            WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            this.fullScreenSize = new Dimension(size.x, size.y);
-        }
-        return fullScreenSize;
+        WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return new Dimension(size.x, size.y);
     }
 
     @Override
     public Dimension getScreenSize() {
-        if (useNativeResolution) {
-            uiSize = getMaxScreenSize();
+        if (!useNativeResolution) {
+            Dimension real = getMaxScreenSize();
+            return new Dimension(real.width / 2, real.height / 2);
+        } else {
+            Dimension newSize = new Dimension(getMaxScreenSize());
+            return newSize;
         }
-        return uiSize;
     }
 
     @Override
     public void setFullScreen(boolean b) {
-
+        log.warn("Set FullScreen was called but we did nothing with {}", b);
     }
 
     @Override
     public void setSize(int w, int h) {
-
+        log.warn("Set Size was called but we did nothing with {} x {}", w, h);
     }
 
     @Override
