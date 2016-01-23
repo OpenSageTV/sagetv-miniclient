@@ -10,6 +10,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
+import sagex.miniclient.android.events.MessageEvent;
+import sagex.miniclient.util.VerboseLogging;
 
 /**
  * Created by seans on 27/09/15.
@@ -216,5 +219,9 @@ public class AppUtil {
             }
         }
         return all;
+    }
+
+    public static void message(final String msg) {
+        MiniclientApplication.get().getClient().eventbus().post(new MessageEvent(msg));
     }
 }

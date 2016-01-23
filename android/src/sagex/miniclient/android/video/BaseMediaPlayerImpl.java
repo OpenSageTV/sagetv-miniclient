@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
@@ -73,7 +74,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     @Override
-    public void load(byte b, byte b1, String s, final String urlString, Object o, boolean b2, int i) {
+    public void load(byte majorHint, byte minorHint, String encodingHint, final String urlString, String hostname, boolean timeshifted, long buffersize) {
         lastUri = urlString;
         lastMediaTime = 0;
         log.debug("load(): url: {}", urlString);
@@ -103,20 +104,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected abstract void setupPlayer(String sageTVurl);
 
     public void message(final String msg) {
-        if (context==null) {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.error("MESSAGE: {}", msg);
-            return;
-        }
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
-                } catch (Throwable t) {
-                    log.error("MESSAGE: {}", msg);
-                }
-            }
-        });
+        AppUtil.message(msg);
     }
 
     protected void playerFailed() {
