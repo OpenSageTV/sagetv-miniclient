@@ -60,4 +60,6 @@
     <string name="yes_once">Yes, One Time Only</string>
     <string name="msg_player_changed">Player has changed to %s</string>
     <string name="msg_player_changed_one_time">Player has changed to %1$s, but will revert to %2$s after the next video play.</string>
+    <string name="use_native_resolution_title">Use Native Resolution</string>
+    <string name="use_native_resolution_summary">If disabled, then the resolution reported to sagetv will be half of the native resolution, and the screen will be scaled on the client to the native resolution.  You might do this when placeshifting, or on a slow WIFI network, or if your screen size is excessively large.</string>
 </resources>
