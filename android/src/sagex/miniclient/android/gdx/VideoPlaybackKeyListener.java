@@ -22,5 +22,9 @@ public class VideoPlaybackKeyListener extends BaseKeyListener {
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.MEDIA_PLAY_PAUSE);
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.MEDIA_REW);
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.MEDIA_FF);
+
+        // since we are remapping left and right, then, remap long presses to send left/right
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.LEFT);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.RIGHT);
     }
 }
