@@ -7,7 +7,9 @@ import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.EventRouter;
+import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 import tv.danmaku.ijk.media.player.MediaInfo;
@@ -61,6 +63,16 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
     }
 
+    @Override
+    public Dimension getVideoDimensions() {
+        if (player != null) {
+            Dimension d = new Dimension(player.getVideoWidth(), player.getVideoHeight());
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("getVideoSize(): {}", d);
+            return d;
+        }
+        return null;
+    }
+
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
         releasePlayer();
@@ -96,6 +108,14 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 //                    return s;
 //                }
 //            });
+
+            player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
+                @Override
+                public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int width, int height, int i2, int i3) {
+                    log.debug("IJKPlayer.onVideoSizeChanged: {}x{}, {},{}", width, height, i2, i3);
+                    setVideoSize(width, height);
+                }
+            });
 
             player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
                 @Override

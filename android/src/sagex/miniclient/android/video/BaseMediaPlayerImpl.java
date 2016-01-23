@@ -38,8 +38,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected DataSource dataSource;
 
     // media player
-    protected int mVideoWidth;
-    protected int mVideoHeight;
+    protected Dimension videoSize = new Dimension(0, 0);
 
     protected boolean createPlayerOnUI = true;
     protected boolean waitForPlayer = true;
@@ -221,9 +220,10 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     public void setVideoRectangles(Rectangle srcRect, final Rectangle destRect, boolean b) {
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
             log.debug("setVideoRectangles(): SRC: {}, DEST: {}", srcRect, destRect);
-        if (lastVideoPositionUpdate == null || !lastVideoPositionUpdate.equals(destRect)) {
+        if (lastVideoPositionUpdate == null || !lastVideoPositionUpdate.equals(destRect) || !videoSize.equals(srcRect.width, srcRect.height)) {
             // we need an update
             lastVideoPositionUpdate = destRect;
+            videoSize.update(srcRect.width, srcRect.height);
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -233,6 +233,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                     // TODO: Eventually when we are screen scaling we'll need to adjust these pixels
                     // TODO: Disabled until we scale it correctly
                     // context.updateVideoUI(destRect);
+                    //setSize(videoSize.width, videoSize.height);
                 }
             });
         }
@@ -274,58 +275,15 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     }
 
-    protected void setSize(final int width, final int height) {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-            log.info("Set Size Called: {}x{}", width, height);
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                    log.info("Set Size Called On UI Thread: {}x{}", width, height);
-                mVideoWidth = width;
-                mVideoHeight = height;
-                if (mVideoWidth * mVideoHeight <= 1)
-                    return;
-
-                // get screen size
-                int w = context.getWindow().getDecorView().getWidth();
-                int h = context.getWindow().getDecorView().getHeight();
-
-                // getWindow().getDecorView() doesn't always take orientation into
-                // account, we have to correct the values
-                boolean isPortrait = context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-                if (w > h && isPortrait || w < h && !isPortrait) {
-                    int i = w;
-                    w = h;
-                    h = i;
-                }
-
-                float videoAR = (float) mVideoWidth / (float) mVideoHeight;
-                float screenAR = (float) w / (float) h;
-
-                if (screenAR < videoAR)
-                    h = (int) (w / videoAR);
-                else
-                    w = (int) (h * videoAR);
-
-                // force surface buffer size
-                context.getVideoView().getHolder().setFixedSize(mVideoWidth, mVideoHeight);
-
-                // set display size
-                ViewGroup.LayoutParams lp = context.getVideoView().getLayoutParams();
-                lp.width = w;
-                lp.height = h;
-                context.getVideoView().setLayoutParams(lp);
-                context.getVideoView().invalidate();
-            }
-        });
+    protected void setVideoSize(int width, int height) {
+        context.getVideoView().setVideoSize(width, height);
+        context.getVideoView().requestLayout();
     }
 
     protected void releasePlayer() {
         log.debug("Releasing Player");
         player = null;
-        mVideoWidth = 0;
-        mVideoHeight = 0;
+        videoSize.update(0, 0);
         releaseDataSource();
         dataSource = null;
         state = EOS_STATE;
