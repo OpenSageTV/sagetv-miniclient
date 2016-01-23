@@ -727,7 +727,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             player.free();
         }
 
-        if (client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false)) {
+        boolean useExoPlayer = client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
+        if (activity.isSwitchingPlayerOneTime()) {
+            useExoPlayer = !useExoPlayer;
+        }
+
+        if (useExoPlayer) {
             log.debug("Using ExoPlayer");
             player = new ExoMediaPlayerImpl(activity);
         } else {

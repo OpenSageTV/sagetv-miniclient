@@ -57,15 +57,8 @@ public interface MiniPlayerPlugin extends Runnable {
 
     /**
      * Should check pushMode to determine if PUSH or PULL is being used
-     * @param b
-     * @param b1
-     * @param s
-     * @param urlString
-     * @param o
-     * @param b2
-     * @param i
      */
-    void load(byte b, byte b1, String s, String urlString, Object o, boolean b2, int i);
+    void load(byte majorTypeHint, byte minorTypeHint, String encodingHint, String urlString, String hostname, boolean timeshifted, long bufferSize);
 
     long getMediaTimeMillis();
 
@@ -83,7 +76,7 @@ public interface MiniPlayerPlugin extends Runnable {
 
     void play();
 
-    void seek(long maxValue);
+    void seek(long timeMS);
 
     /**
      * Servers is telling us that there is no more data.  We can still play any buffered data

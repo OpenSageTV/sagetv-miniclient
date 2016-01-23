@@ -1,5 +1,6 @@
 package sagex.miniclient.android;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -12,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,10 +24,12 @@ import butterknife.OnClick;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
+import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 
 /**
@@ -98,6 +103,50 @@ public class NavigationFragment extends DialogFragment {
         } catch (Throwable t) {
             log.error("Button Not Implemented for {} with ID {}", v.getTag(), v.getId(), t);
         }
+    }
+
+    @OnClick(R.id.nav_switch_player)
+    public void onSwitchPlayer() {
+        dismiss();
+
+        new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.title_switch_player)
+                .setMessage(getResources().getString(R.string.msg_switch_player, getPlayerName(), getOtherPlayerName()))
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dismiss();
+                    }
+                })
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        client.properties().setBoolean(PrefStore.Keys.use_exoplayer, !isExoPlayer());
+                        AppUtil.message(MiniclientApplication.get().getString(R.string.msg_player_changed, getPlayerName()));
+                        dismiss();
+                    }
+                })
+                .setNeutralButton(R.string.yes_once, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        client.eventbus().post(new ChangePlayerOneTime());
+                        AppUtil.message(MiniclientApplication.get().getString(R.string.msg_player_changed_one_time, getOtherPlayerName(), getPlayerName()));
+                        dismiss();
+                    }
+                }).show();
+
+    }
+
+    private boolean isExoPlayer() {
+        return client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
+    }
+
+    private String getPlayerName() {
+        return (isExoPlayer() ? "ExoPlayer" : "IJKPlayer");
+    }
+
+    private String getOtherPlayerName() {
+        return (isExoPlayer() ? "IJKPlayer" : "ExoPlayer");
     }
 
     @Override

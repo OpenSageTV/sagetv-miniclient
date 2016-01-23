@@ -38,15 +38,18 @@ import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.NavigationFragment;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.events.BackPressedEvent;
+import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideKeyboardEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
+import sagex.miniclient.android.events.MessageEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.util.VerboseLogging;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
@@ -76,6 +79,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     MiniClientRenderer mgr;
 
     private View miniClientView;
+
+    private ChangePlayerOneTime changePlayerOneTime = null;
 
     public MiniClientGDXActivity() {
     }
@@ -459,5 +464,36 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         lp.height = destRect.height;
         videoHolder.setLayoutParams(lp);
         videoHolder.requestLayout();
+    }
+
+    @Subscribe
+    public void onChangePlayerOneTime(ChangePlayerOneTime changePlayerOneTime) {
+        this.changePlayerOneTime = changePlayerOneTime;
+    }
+
+    /**
+     * This is a one time read.  It will return true if we need to switch the player, one time,
+     * but it will reset itself AFTER this read, so, only call it once.
+     *
+     * @return
+     */
+    public boolean isSwitchingPlayerOneTime() {
+        boolean change = changePlayerOneTime != null;
+        changePlayerOneTime = null;
+        return change;
+    }
+
+    @Subscribe
+    public void onMessage(final MessageEvent event) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Toast.makeText(MiniClientGDXActivity.this, event.getMessage(), Toast.LENGTH_LONG).show();
+                } catch (Throwable t) {
+                    log.error("MESSAGE: {}", event.getMessage());
+                }
+            }
+        });
     }
 }

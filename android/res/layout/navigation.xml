@@ -173,6 +173,12 @@
                 android:tag="_stop" />
 
             <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_switch_player"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-videocam-switch"
+                android:tag="_switch_video" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_hide"
                 style="@style/NavIconButtonAlt"
                 app:iiv_icon="gmd-eye-off"
