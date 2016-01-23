@@ -467,15 +467,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 if (img.get() == null) return;
 
                 Texture t = img.get().texture();
-                if (img.get().isFrameBuffer) {
-                    log.debug("Render FrameBuffer");
-                }
                 batch.enableBlending();
                 //Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D);
 
                 batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                 if (height < 0) {
-                    log.debug("blend GL_ZERO");
                     batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ZERO);
                 }
 

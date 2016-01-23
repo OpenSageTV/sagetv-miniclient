@@ -4,6 +4,7 @@ package sagex.miniclient.android.video.exoplayer;
 import android.net.Uri;
 
 import com.google.android.exoplayer.ExoPlayer;
+import com.google.android.exoplayer.MediaCodecTrackRenderer;
 import com.google.android.exoplayer.demo.EventLogger;
 import com.google.android.exoplayer.demo.player.DemoPlayer;
 import com.google.android.exoplayer.upstream.DataSource;
@@ -11,6 +12,7 @@ import com.google.android.exoplayer.util.VerboseLogUtil;
 
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 
 /**
@@ -60,6 +62,23 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         player = null;
 
         super.releasePlayer();
+    }
+
+    @Override
+    public Dimension getVideoDimensions() {
+        log.debug("getVideoDimensions");
+        if (player != null) {
+            if (player.getFormat() != null) {
+                Dimension d = new Dimension(player.getFormat().width, player.getFormat().height);
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("getVideoSize(): {}", d);
+                return d;
+            } else {
+                log.debug("getVideoDimensions: player.getFormat is null");
+            }
+        } else {
+            log.debug("getVideoDimensions: player is null");
+        }
+        return null;
     }
 
     /**
@@ -118,6 +137,7 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                     log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, ratio: {}", width, height, pixelWidthHeightRatio);
+                setVideoSize(width, height);
             }
         });
 

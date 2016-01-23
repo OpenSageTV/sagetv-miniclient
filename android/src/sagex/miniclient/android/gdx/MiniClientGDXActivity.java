@@ -46,6 +46,7 @@ import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.MessageEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
+import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
@@ -64,7 +65,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     FrameLayout uiFrameHolder;
 
     @Bind(R.id.video_surface)
-    SurfaceView videoHolder;
+    PlayerSurfaceView videoHolder;
 
 //    @Bind(R.id.video_surface_frame)
 //    FrameLayout videoHolderFrame;
@@ -280,7 +281,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         return AppUtil.getMACAddress(this);
     }
 
-    public SurfaceView getVideoView() {
+    public PlayerSurfaceView getVideoView() {
         if (videoHolder == null) {
             setupVideoFrame();
         }

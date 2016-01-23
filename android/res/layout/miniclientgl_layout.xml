@@ -2,9 +2,10 @@
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:keepScreenOn="true">
+    android:keepScreenOn="true"
+    android:background="@android:color/black">
 
-    <SurfaceView
+    <sagex.miniclient.android.video.PlayerSurfaceView
         android:id="@+id/video_surface"
             android:layout_width="match_parent"
         android:layout_height="match_parent"
