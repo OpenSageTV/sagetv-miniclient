@@ -332,15 +332,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 batch.end();
 
                 camera.update();
-                Gdx.gl20.glEnable(GL20.GL_BLEND);
-                Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                batch.enableBlending();
+                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
                 shapeRenderer.end();
 
-                Gdx.gl20.glDisable(GL20.GL_BLEND);
+                batch.disableBlending();
 
                 batch.begin();
             }
@@ -466,30 +466,33 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 if (img == null) return;
                 if (img.get() == null) return;
 
-                // we only want to set blending for Non Framebuffer textures
-//                if (!img.get().isFrameBuffer) {
-                Gdx.gl20.glEnable(GL20.GL_BLEND);
-                Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                Texture t = img.get().texture();
+                if (img.get().isFrameBuffer) {
+                    log.debug("Render FrameBuffer");
+                }
+                batch.enableBlending();
+                //Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D);
+
+                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                 if (height < 0) {
-                    Gdx.gl20.glBlendFunc(GL20.GL_ONE, GL20.GL_ZERO);
+                    log.debug("blend GL_ZERO");
+                    batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ZERO);
                 }
 
                 batchColor = batch.getColor();
                 batch.setColor(getColor(blend));
-//                }
 
                 int w = Math.abs(width);
                 int h = Math.abs(height);
-                Texture t = img.get().texture();
+
                 if (t != null) {
                     batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
                 } else {
                     log.warn("We got a null texture for {}", img);
                 }
-//                if (!img.get().isFrameBuffer) {
+
                 batch.setColor(batchColor);
-                Gdx.gl20.glDisable(GL20.GL_BLEND);
-//                }
+                batch.disableBlending();
             }
         });
     }
