@@ -733,10 +733,10 @@ public class MiniClientConnection implements SageTVInputCallback {
                         // else
                         // propVal = "REMOTEFONTS";
                     } else if ("GFX_BLENDMODE".equals(propName)) {
-                        //propVal = "PREMULTIPLY";
-                        propVal = "POSTMULTIPLY";
+                        propVal = "PREMULTIPLY"; // opengl using PRE
+                        //propVal = "POSTMULTIPLY";
                     } else if ("GFX_SCALING".equals(propName)) {
-                        propVal = "HARDWARE";
+                        propVal = "HARDWARE"; // opengl uses hardware scaling
                     } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
                         if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true))
                             propVal = "TRUE";
@@ -754,7 +754,8 @@ public class MiniClientConnection implements SageTVInputCallback {
                             propVal = "PNG,JPG,GIF,BMP";
                         //propVal="";
                     } else if ("GFX_COMPOSITE".equals(propName)) {
-                        propVal = "COLORKEY";
+                        propVal = "BLEND"; // opengl uses blend
+                        //propVal = "COLORKEY";
                     } else if ("GFX_SURFACES".equals(propName)) {
                         if (client.properties().getBoolean(PrefStore.Keys.GFX_SURFACES, true)) {
                             propVal = "TRUE";
