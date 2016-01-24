@@ -2,6 +2,7 @@ package sagex.miniclient.android.video;
 
 import android.content.res.Configuration;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.util.VerboseLogging;
 
 //import org.videolan.libvlc.LibVLC;
@@ -124,6 +126,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     public long getMediaTimeMillis() {
         if (state == EOS_STATE) return lastMediaTime;
         long mt = getPlayerMediaTimeMillis();
+        if (mt == 0 && state == PAUSE_STATE) return lastMediaTime;
         if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
             //log.debug("getMediaTime(): current: {}, last time: {}", mt, lastMediaTime);
         }
@@ -219,7 +222,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void setVideoRectangles(Rectangle srcRect, final Rectangle destRect, boolean b) {
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-            log.debug("setVideoRectangles(): SRC: {}, DEST: {}", srcRect, destRect);
+            log.debug("setVideoRectangles: SRC: {}, DEST: {}", srcRect, destRect);
         if (lastVideoPositionUpdate == null || !lastVideoPositionUpdate.equals(destRect) || !videoSize.equals(srcRect.width, srcRect.height)) {
             // we need an update
             lastVideoPositionUpdate = destRect;
@@ -228,12 +231,26 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 @Override
                 public void run() {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                        log.debug("Updating Video UI Size and Location {}", destRect);
+                        log.debug("setVideoRectangles: Updating Video Location {}", destRect);
 
-                    // TODO: Eventually when we are screen scaling we'll need to adjust these pixels
-                    // TODO: Disabled until we scale it correctly
-                    // context.updateVideoUI(destRect);
-                    //setSize(videoSize.width, videoSize.height);
+//                    // need to convert destRect based on scale
+//                    Scale scale = context.getClient().getUIRenderer().getScale();
+//                    Rectangle pos = destRect.copy();
+//                    pos.width=(int)scale.xCanvasToScreen(pos.width);
+//                    pos.height=(int)scale.xCanvasToScreen(pos.height);
+//                    pos.x=(int)scale.xCanvasToScreen(pos.x);
+//                    pos.y=(int)scale.xCanvasToScreen(pos.y)-pos.width;
+//
+//                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+//                        log.debug("setVideoRectangles: Updating Video Location based on scale {}", pos);
+//
+//                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) context.getVideoViewParent().getLayoutParams();
+//                    lp.width = pos.width;
+//                    lp.height = pos.height;
+//                    lp.topMargin = pos.y;
+//                    lp.leftMargin = pos.x;
+//                    context.getVideoViewParent().setLayoutParams(lp);
+//                    context.getVideoViewParent().requestLayout();
                 }
             });
         }
