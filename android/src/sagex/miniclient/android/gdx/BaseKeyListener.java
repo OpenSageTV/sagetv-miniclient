@@ -30,7 +30,7 @@ public class BaseKeyListener implements View.OnKeyListener {
      */
 
     protected Logger log = LoggerFactory.getLogger(this.getClass());
-    protected static String PUNCTUATION = "`~!@#$%^&*()_+{}|:\"<>?-=[];'./\\,";
+    protected static String PUNCTUATION = "`~!@#$%^&*()_+{}|:\" <>?-=[];'./\\,";
     protected static AndroidKeyEventMapper keyEventMapper = new AndroidKeyEventMapper();
 
     protected final MiniClient client;
@@ -135,6 +135,8 @@ public class BaseKeyListener implements View.OnKeyListener {
             // send a-z 0-9 and PUNCTUATION as is
             if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
                     || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
+                    || keyCode == KeyEvent.KEYCODE_SPACE
+                    || keyCode == KeyEvent.KEYCODE_TAB
                     || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
                 //log.debug("KEYPRESS: {}; {}; {}", (char) event.getUnicodeChar(), (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON), event.getUnicodeChar());
                 char toSend = (char) event.getUnicodeChar();
