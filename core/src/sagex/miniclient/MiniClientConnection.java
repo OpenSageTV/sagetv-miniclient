@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
@@ -586,6 +587,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 } catch (Exception e1) {
                                     log.error("Failure in reconnecting to server...abort the client", e1);
                                     performingReconnect = false;
+                                    client.eventbus().post(new ConnectionLost(performingReconnect));
                                     synchronized (gfxSyncVector) {
                                         gfxSyncVector.add(e);
                                         return;

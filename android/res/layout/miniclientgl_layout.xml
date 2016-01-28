@@ -5,13 +5,20 @@
     android:keepScreenOn="true"
     android:background="@android:color/black">
 
-    <sagex.miniclient.android.video.PlayerSurfaceView
-        android:id="@+id/video_surface"
-            android:layout_width="match_parent"
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
         android:background="@null"
-        android:visibility="visible" />
+        android:id="@+id/video_surface_parent">
+
+        <sagex.miniclient.android.video.PlayerSurfaceView
+            android:id="@+id/video_surface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@null"
+            android:visibility="visible" />
+    </FrameLayout>
 
         <FrameLayout
             android:id="@+id/surface"

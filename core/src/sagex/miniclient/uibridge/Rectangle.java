@@ -13,6 +13,10 @@ public class Rectangle {
         this.width = width;
     }
 
+    public Rectangle copy() {
+        return new Rectangle(x, y, width, height);
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Rectangle{");

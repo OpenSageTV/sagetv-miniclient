@@ -23,6 +23,7 @@ import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.UIRenderer;
+import sagex.miniclient.util.VerboseLogging;
 
 public class GFXCMD2 {
     public static final boolean ENABLE_MOUSE_MOTION_EVENTS = true;
@@ -170,12 +171,15 @@ public class GFXCMD2 {
         len -= 4; // for the 4 byte header
         hasret[0] = 0; // Nothing to return by default
 
-//        if (cmd != GFXCMD_DRAWTEXTURED) {
-//            if (cmd == GFXCMD_STARTFRAME
-//                    || cmd == GFXCMD_FLIPBUFFER
-//                    || cmd == GFXCMD_CLEARRECT)
-//            System.out.println("GFXCMD=" + ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
-//        }
+        if (VerboseLogging.DETAILED_GFX) {
+            if (cmd == GFXCMD_SETVIDEOPROP) {
+                log.debug("GFXCMD=GFXCMD_SETVIDEOPROP");
+            } else {
+                if (VerboseLogging.DETAILED_GFX_TEXTURES || cmd != GFXCMD_DRAWTEXTURED) {
+                    log.debug("GFXCMD={}", ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+                }
+            }
+        }
 
         if (!windowManager.hasGraphicsCanvas()) {
             switch (cmd) {
@@ -951,6 +955,7 @@ public class GFXCMD2 {
                 }
                 break;
             default:
+                log.error("GFXCMD Unhandled Command: {}", cmd);
                 return -1;
         }
         return 0;
