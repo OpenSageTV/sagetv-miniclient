@@ -25,6 +25,7 @@ import java.util.Map;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.util.VerboseLogging;
 
 /**
  * @author Narflex
@@ -142,12 +143,12 @@ public class MediaCmd {
     }
 
     public int ExecuteMediaCommand(int cmd, int len, byte[] cmddata, byte[] retbuf) {
-        // TODO verify sizes...
-        if (cmd != MEDIACMD_PUSHBUFFER)
-            log.debug("Execute media command '{}[{}]'", cmd, CMDMAP.get(cmd));
+        if (VerboseLogging.DETAILED_MEDIA_COMMAND) {
+            if (VerboseLogging.DETAILED_MEDIA_COMMAND_PUSHBUFFER || cmd != MEDIACMD_PUSHBUFFER)
+                log.debug("MEDIACMD='{}[{}]'", cmd, CMDMAP.get(cmd));
+        }
         switch (cmd) {
             case MEDIACMD_INIT:
-                log.info("MEDIACMD_INIT");
                 try {
                     DESIRED_VIDEO_PREBUFFER_SIZE = client.properties().getInt(PrefStore.Keys.video_buffer_size, (4 * 1024 * 1024));
                     DESIRED_AUDIO_PREBUFFER_SIZE = client.properties().getInt(PrefStore.Keys.audio_buffer_size, (2 * 1024 * 1024));
@@ -360,6 +361,7 @@ public class MediaCmd {
                 writeInt(0, retbuf, 0);
                 return 4;
             default:
+                log.error("MEDIACMD Unhandled Media Command: {}", cmd);
                 return -1;
         }
     }

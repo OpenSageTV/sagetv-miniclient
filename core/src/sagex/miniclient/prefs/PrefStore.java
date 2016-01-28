@@ -129,5 +129,12 @@ public interface PrefStore {
          * disabled, it will report its screen size to be half native.
          */
         String use_native_resolution = "use_native_resolution";
+
+        /**
+         * Boolean: default is true.  When true, then when the SageTV exits, you go back to the
+         * Android Launcher
+         */
+        String exit_to_home_screen = "exit_to_home_screen";
+
     }
 }

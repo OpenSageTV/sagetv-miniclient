@@ -356,15 +356,16 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             public void run() {
                 log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
                 batch.end();
-
+//                batch.enableBlending();
+//                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                 camera.update();
 
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                //shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
                 shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
-                // clear rect full screen calls are taking long time... so clear full screen always
-                // shapeRenderer.rect(0, Y(0, fullScreenSize.height), fullScreenSize.width, fullScreenSize.height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
                 shapeRenderer.end();
+//                batch.disableBlending();
                 batch.begin();
             }
         });

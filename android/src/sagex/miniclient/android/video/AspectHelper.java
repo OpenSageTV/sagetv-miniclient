@@ -51,6 +51,17 @@ public final class AspectHelper {
     public void setVideoSize(int videoWidth, int videoHeight) {
         mVideoWidth = videoWidth;
         mVideoHeight = videoHeight;
+        if (ar(videoWidth, videoHeight) == ar(4, 3)) {
+            // stretch
+            mCurrentAspectRatio = AR_MATCH_PARENT;
+        } else {
+            // fit
+            mCurrentAspectRatio = AR_ASPECT_FIT_PARENT;
+        }
+    }
+
+    private int ar(int videoWidth, int videoHeight) {
+        return (int) ((((float) videoWidth) / ((float) videoHeight)) * 1000);
     }
 
     public void setVideoSampleAspectRatio(int videoSarNum, int videoSarDen) {

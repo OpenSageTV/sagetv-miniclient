@@ -47,6 +47,7 @@ import sagex.miniclient.android.events.MessageEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.video.PlayerSurfaceView;
+import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
@@ -54,6 +55,7 @@ import sagex.miniclient.util.VerboseLogging;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
+import static sagex.miniclient.android.AppUtil.message;
 
 /**
  * Created by seans on 20/09/15.
@@ -67,14 +69,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Bind(R.id.video_surface)
     PlayerSurfaceView videoHolder;
 
-//    @Bind(R.id.video_surface_frame)
-//    FrameLayout videoHolderFrame;
+    @Bind(R.id.video_surface_parent)
+    ViewGroup videoHolderParent;
 
     @Bind(R.id.waitforit)
     View pleaseWait = null;
 
     @Bind(R.id.pleaseWaitText)
     TextView plaseWaitText = null;
+
 
     MiniClient client;
     MiniClientRenderer mgr;
@@ -84,6 +87,10 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     private ChangePlayerOneTime changePlayerOneTime = null;
 
     public MiniClientGDXActivity() {
+    }
+
+    public MiniClient getClient() {
+        return client;
     }
 
     @Override
@@ -391,6 +398,16 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         });
     }
 
+    @Subscribe
+    public void handleOnConnectionLost(ConnectionLost event) {
+        if (event.reconnecting) {
+            message("SageTV Connection Closed.  Reconnecting...");
+        } else {
+            message("SageTV Connection Closed.");
+            finish();
+        }
+    }
+
     boolean hideNavigationDialog() {
         log.debug("Hiding Navigation");
         // remove nav OSD
@@ -496,5 +513,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                 }
             }
         });
+    }
+
+    public ViewGroup getVideoViewParent() {
+        return videoHolderParent;
     }
 }

@@ -148,14 +148,21 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
 
     public static void connect(Context ctx, ServerInfo si) {
         try {
-            // connect to server
-            Intent i = new Intent(ctx, MiniClientGDXActivity.class);
-            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
-            ctx.startActivity(i);
-
             si.lastConnectTime = System.currentTimeMillis();
             si.save(MiniclientApplication.get().getClient().properties());
             MiniclientApplication.get().getClient().getServers().setLastConnectedServer(si);
+
+            // connect to server
+            Intent i = new Intent(ctx, MiniClientGDXActivity.class);
+            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
+
+            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
+                log.debug("Starting SageTV with Exit TO Home Screen option");
+                i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            }
+
+            ctx.startActivity(i);
+
         } catch (Throwable t) {
             log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
             Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();

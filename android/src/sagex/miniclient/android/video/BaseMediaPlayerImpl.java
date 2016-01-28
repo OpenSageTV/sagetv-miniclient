@@ -124,11 +124,12 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public long getMediaTimeMillis() {
-        if (state == EOS_STATE) return lastMediaTime;
+        if (!playerReady) return 0;
+        if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) return lastMediaTime;
         long mt = getPlayerMediaTimeMillis();
         if (mt == 0 && state == PAUSE_STATE) return lastMediaTime;
         if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-            //log.debug("getMediaTime(): current: {}, last time: {}", mt, lastMediaTime);
+            log.debug("getMediaTime(): current: {}, last time: {}", mt, lastMediaTime);
         }
         lastMediaTime = mt;
         return mt;
