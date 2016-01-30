@@ -4,9 +4,9 @@ package sagex.miniclient.android.video.exoplayer;
 import android.net.Uri;
 
 import com.google.android.exoplayer.ExoPlayer;
-import com.google.android.exoplayer.MediaCodecTrackRenderer;
 import com.google.android.exoplayer.demo.EventLogger;
 import com.google.android.exoplayer.demo.player.DemoPlayer;
+import com.google.android.exoplayer.demo.player.SageTVPlayer;
 import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.util.VerboseLogUtil;
 
