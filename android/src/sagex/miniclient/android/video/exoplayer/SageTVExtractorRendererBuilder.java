@@ -27,6 +27,7 @@ import com.google.android.exoplayer.MediaCodecVideoTrackRenderer;
 import com.google.android.exoplayer.TrackRenderer;
 import com.google.android.exoplayer.audio.AudioCapabilities;
 import com.google.android.exoplayer.demo.player.DemoPlayer;
+import com.google.android.exoplayer.demo.player.SageTVPlayer;
 import com.google.android.exoplayer.extractor.Extractor;
 import com.google.android.exoplayer.extractor.ExtractorSampleSource;
 import com.google.android.exoplayer.text.TextTrackRenderer;
@@ -54,13 +55,14 @@ public class SageTVExtractorRendererBuilder implements DemoPlayer.RendererBuilde
     }
 
     @Override
-    public void buildRenderers(DemoPlayer player) {
+    public void buildRenderers(DemoPlayer demoPlayer) {
+        SageTVPlayer player = (SageTVPlayer) demoPlayer;
         Allocator allocator = new DefaultAllocator(BUFFER_SEGMENT_SIZE);
 
         // Build the video and audio renderers.
         DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter(player.getMainHandler(),
                 null);
-        ExtractorSampleSource sampleSource = new ExtractorSampleSource(uri, dataSource, allocator,
+        ExtractorSampleSource sampleSource = Extractors.newExtractorSampleSource(uri, dataSource, allocator,
                 BUFFER_SEGMENT_COUNT * BUFFER_SEGMENT_SIZE);
 
         MediaCodecVideoTrackRenderer videoRenderer = new MediaCodecVideoTrackRenderer(context,

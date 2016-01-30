@@ -504,6 +504,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public ImageHolder<GdxTexture> loadImage(int width, int height) {
+        log.debug("load image {}x{}", width, height);
         Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bm.setHasAlpha(true);
         bm.prepareToDraw();
@@ -513,7 +514,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public void unloadImage(int handle, ImageHolder<GdxTexture> bi) {
-        if (bi != null) {
+        if (bi != null && bi.get() != null) {
+            log.debug("Unloading Image: {}", bi);
             bi.get().dispose();
         }
     }

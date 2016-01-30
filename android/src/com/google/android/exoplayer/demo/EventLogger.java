@@ -178,10 +178,8 @@ public class EventLogger implements DemoPlayer.Listener, DemoPlayer.InfoListener
     }
 
     @Override
-    public void onAvailableRangeChanged(TimeRange availableRange) {
-        availableRangeValuesUs = availableRange.getCurrentBoundsUs(availableRangeValuesUs);
-        Log.d(TAG, "availableRange [" + availableRange.isStatic() + ", " + availableRangeValuesUs[0]
-                + ", " + availableRangeValuesUs[1] + "]");
+    public void onAvailableRangeChanged(int sourceId, TimeRange availableRange) {
+        Log.d(TAG, "onAvailableRangeChanged [" + sourceId + ", " + availableRange + "]");
     }
 
     private void printInternalError(String type, Exception e) {
