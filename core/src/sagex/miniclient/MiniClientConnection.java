@@ -1304,6 +1304,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         }
     }
 
+    public boolean hasEventChannel() {
+        return eventChannel != null;
+    }
+
     public void postResizeEvent(Dimension size) {
         if (performingReconnect)
             return;
