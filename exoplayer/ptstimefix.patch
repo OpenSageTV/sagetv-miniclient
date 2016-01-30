@@ -1,0 +1,16 @@
+diff --git library/src/main/java/com/google/android/exoplayer/extractor/ts/PtsTimestampAdjuster.java library/src/main/java/com/google/android/exoplayer/extractor/ts/PtsTimestampAdjuster.java
+index 25a92e2..abfea77 100644
+--- library/src/main/java/com/google/android/exoplayer/extractor/ts/PtsTimestampAdjuster.java
++++ library/src/main/java/com/google/android/exoplayer/extractor/ts/PtsTimestampAdjuster.java
+@@ -80,7 +80,10 @@ public final class PtsTimestampAdjuster {
+     }
+     // Record the adjusted PTS to adjust for wraparound next time.
+     lastPts = pts;
+-    return timeUs + timestampOffsetUs;
++
++    // SEAN:
++    //return timeUs + timestampOffsetUs;
++    return timeUs;
+   }
+ 
+   /**
