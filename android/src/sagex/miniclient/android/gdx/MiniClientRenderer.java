@@ -151,7 +151,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         fullScreenSize.update(width, height);
         lastResize.update(width, height);
 
-        uiSize = getScreenSize();
+        uiSize.updateFrom(getScreenSize());
+
         lastScreenSize.updateFrom(uiSize);
 
         this.scale.setScale(uiSize, fullScreenSize);
@@ -171,13 +172,13 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public void notifySageTVAboutScreenSize() {
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
         try {
-            while (client == null || client.getCurrentConnection() == null) {
+            while (!(client != null && client.getCurrentConnection() != null && client.getCurrentConnection().hasEventChannel())) {
                 log.warn("Client and/or Client Connection is not ready.  Can't send a resize.");
                 Thread.currentThread().wait(100);
             }
 
-            firstResize = false;
             client.getCurrentConnection().postResizeEvent(uiSize);
+            firstResize = false;
         } catch (Throwable t) {
             log.info("Error sending Resize Event", t);
         }
