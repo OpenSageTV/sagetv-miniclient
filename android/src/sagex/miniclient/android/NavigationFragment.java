@@ -1,8 +1,11 @@
 package sagex.miniclient.android;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -29,6 +32,7 @@ import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
+import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 
@@ -47,8 +51,8 @@ public class NavigationFragment extends DialogFragment {
     @Bind(R.id.nav_media_pause)
     View navPause = null;
 
-    public NavigationFragment(MiniClient client) {
-        this.client = client;
+    public NavigationFragment() {
+        this.client = MiniclientApplication.get().getClient();
     }
 
     @Override
@@ -137,6 +141,12 @@ public class NavigationFragment extends DialogFragment {
 
     }
 
+    @OnClick(R.id.nav_help)
+    public void onHelp() {
+        dismiss();
+        HelpDialogFragment.showDialog(getActivity());
+    }
+
     private boolean isExoPlayer() {
         return client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
     }
@@ -190,5 +200,24 @@ public class NavigationFragment extends DialogFragment {
             }
         });
         return dialog;
+    }
+
+    public static void showDialog(Activity activity) {
+        log.debug("Showing Navigation");
+        // DialogFragment.show() will take care of adding the fragment
+        // in a transaction.  We also want to remove any currently showing
+        // dialog, so make our own transaction and take care of that here.
+        FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
+        Fragment prev = activity.getFragmentManager().findFragmentByTag("nav");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // Create and show the dialog.
+        DialogFragment newFragment = new NavigationFragment();
+
+        newFragment.show(ft, "nav");
+
     }
 }

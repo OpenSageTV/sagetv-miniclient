@@ -1,5 +1,7 @@
 package sagex.miniclient.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,5 +39,11 @@ public class IOUtil {
         fastChannelCopy(inputChannel, outputChannel);
         inputChannel.close();
         outputChannel.close();
+    }
+
+    public static String toString(InputStream is) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        fastCopy(is, os);
+        return os.toString("UTF-8");
     }
 }
