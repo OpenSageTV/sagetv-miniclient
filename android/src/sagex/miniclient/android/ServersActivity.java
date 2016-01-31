@@ -175,6 +175,11 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
         startActivity(i);
     }
 
+    @OnClick(R.id.btn_help)
+    public void onhelp() {
+        HelpDialogFragment.showDialog(this);
+    }
+
     @OnClick(R.id.btn_add_server)
     public void addServerAction() {
         // add new server

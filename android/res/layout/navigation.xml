@@ -16,6 +16,12 @@
         android:orientation="vertical">
 
         <com.mikepenz.iconics.view.IconicsImageView
+            android:id="@+id/nav_help"
+            style="@style/NavIconButton"
+            app:iiv_icon="gmd-help"
+            android:tag="_help" />
+
+        <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_close"
             style="@style/NavIconButton"
             app:iiv_icon="gmd-close"
