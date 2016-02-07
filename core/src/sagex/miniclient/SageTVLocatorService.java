@@ -1,7 +1,6 @@
 package sagex.miniclient;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 public class SageTVLocatorService {
     public static final int LOCATOR_PORT = 8018;

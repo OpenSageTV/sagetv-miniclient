@@ -11,7 +11,6 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import sagex.miniclient.android.events.MessageEvent;
-import sagex.miniclient.util.VerboseLogging;
 
 /**
  * Created by seans on 27/09/15.

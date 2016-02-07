@@ -1,10 +1,5 @@
 package sagex.miniclient.android.video;
 
-import android.content.res.Configuration;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.Toast;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +15,6 @@ import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
-import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.util.VerboseLogging;
 
 //import org.videolan.libvlc.LibVLC;

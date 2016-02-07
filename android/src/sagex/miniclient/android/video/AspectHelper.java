@@ -20,8 +20,6 @@ package sagex.miniclient.android.video;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import java.lang.ref.WeakReference;
-
 import sagex.miniclient.android.AppUtil;
 
 

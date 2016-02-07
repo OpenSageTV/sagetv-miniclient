@@ -2,9 +2,7 @@ package com.google.android.exoplayer.demo.player;
 
 import android.os.Handler;
 
-import com.google.android.exoplayer.ExoPlayer;
 import com.google.android.exoplayer.TrackRenderer;
-import com.google.android.exoplayer.demo.player.DemoPlayer;
 import com.google.android.exoplayer.upstream.BandwidthMeter;
 
 /**
