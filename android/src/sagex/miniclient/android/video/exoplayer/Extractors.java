@@ -8,7 +8,6 @@ import com.google.android.exoplayer.extractor.flv.FlvExtractor;
 import com.google.android.exoplayer.extractor.mp3.Mp3Extractor;
 import com.google.android.exoplayer.extractor.mp4.FragmentedMp4Extractor;
 import com.google.android.exoplayer.extractor.mp4.Mp4Extractor;
-import com.google.android.exoplayer.extractor.ogg.OggVorbisExtractor;
 import com.google.android.exoplayer.extractor.ts.AdtsExtractor;
 import com.google.android.exoplayer.extractor.ts.PsExtractor;
 import com.google.android.exoplayer.extractor.ts.TsExtractor;
@@ -53,7 +52,6 @@ public class Extractors {
                 new TsExtractor(),
                 new PsExtractor(),
                 new AdtsExtractor(),
-                new OggVorbisExtractor(),
                 new Mp3Extractor()
         };
     }

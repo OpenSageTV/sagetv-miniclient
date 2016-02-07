@@ -10,6 +10,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import org.slf4j.Logger;
@@ -73,22 +74,51 @@ public class AppUtil {
         }
     }
 
-    public static void confirmExit(final Activity act, final View.OnClickListener onOK) {
+    public static void confirmExit(final Context act, final View.OnClickListener onOK) {
+        confirmAction(act, "Closing MiniClient", "Are you sure you want to close the SageTV MiniClient?", onOK);
+    }
+
+    public static void confirmAction(final Context act, String title, String question, final View.OnClickListener onOK) {
+        confirmAction(act, title, question, act.getString(R.string.yes), act.getString(R.string.no), onOK);
+    }
+
+    public static void confirmAction(final Context act, String title, String question, String yes, String no, final View.OnClickListener onOK) {
         new AlertDialog.Builder(act)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Closing MiniClient")
-                .setMessage("Are you sure you want to close the SageTV MiniClient?")
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle(title)
+                .setMessage(question)
+                .setPositiveButton(yes == null ? act.getString(R.string.yes) : "Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        act.finish();
                         if (onOK != null) {
                             onOK.onClick(null);
                         }
                     }
-
                 })
-                .setNegativeButton("No", null)
+                .setNegativeButton(no == null ? act.getString(R.string.no) : "No", null)
+                .show();
+    }
+
+    public interface OnValueChangeListener {
+        public void onValueChanged(String oldValue, String newValue);
+    }
+
+    public static void prompt(final Context act, String title, String message, final String defValue, final OnValueChangeListener listener) {
+        final EditText text = new EditText(act);
+        text.setText(defValue);
+        new AlertDialog.Builder(act)
+                .setTitle(title)
+                .setMessage(message)
+                .setView(text)
+                .setPositiveButton(act.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String txt = text.getText().toString();
+                        if (!txt.equals(defValue)) {
+                            listener.onValueChanged(defValue, txt);
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

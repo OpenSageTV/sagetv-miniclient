@@ -114,11 +114,13 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
         paused = false;
         refreshServers();
         AppUtil.hideSystemUIOnTV(this);
+        MiniclientApplication.get(this).getClient().eventbus().register(this);
     }
 
     @Override
     protected void onPause() {
         paused = true;
+        MiniclientApplication.get(this).getClient().eventbus().unregister(this);
         MiniclientApplication.get(this).getClient().getServerDiscovery().close();
         super.onPause();
     }
@@ -158,7 +160,7 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
 
             if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
                 log.debug("Starting SageTV with Exit TO Home Screen option");
-                i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
 
             ctx.startActivity(i);
@@ -189,21 +191,21 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
         f.show(getFragmentManager(), "addserver");
     }
 
-    public void deleteServer(final ServerInfo serverInfo) {
-        AlertDialog.Builder builder =
-                new AlertDialog.Builder(this, R.style.Theme_AppCompat_Dialog);
-        builder.setTitle("Remove Server");
-        builder.setMessage("Click OK to remove server");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(serverInfo.name);
-                adapter.items.remove(serverInfo);
-                adapter.notifyDataSetChanged();
-            }
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
+    public void deleteServer(final ServerInfo serverInfo, boolean prompt) {
+        if (prompt) {
+            AppUtil.confirmAction(this, getString(R.string.title_remove_server), getString(R.string.msg_remove_server), new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(serverInfo.name);
+                    adapter.items.remove(serverInfo);
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        } else {
+            MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(serverInfo.name);
+            adapter.items.remove(serverInfo);
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override

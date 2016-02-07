@@ -4,12 +4,13 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Interpolator;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
 import com.squareup.otto.DeadEvent;
 import com.squareup.otto.Subscribe;
 
@@ -30,6 +33,7 @@ import java.io.IOException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import sagex.miniclient.MACAddressResolver;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
@@ -37,6 +41,7 @@ import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.NavigationFragment;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.ServersActivity;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
@@ -51,7 +56,6 @@ import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
-import sagex.miniclient.util.VerboseLogging;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
@@ -78,6 +82,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Bind(R.id.pleaseWaitText)
     TextView plaseWaitText = null;
 
+    // error stuff
+    @Bind((R.id.errorMessage))
+    TextView errorMessage;
+
+    @Bind((R.id.errorCause))
+    TextView errorCause;
+
+    @Bind((R.id.errorContainer))
+    ViewGroup errorContainer;
 
     MiniClient client;
     MiniClientRenderer mgr;
@@ -110,8 +123,10 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         }
 
         try {
-            log.debug("Telling SageTV to repaint {}x{}", mgr.uiSize.getWidth(), mgr.uiSize.getHeight());
-            client.getCurrentConnection().postRepaintEvent(0, 0, mgr.uiSize.getWidth(), mgr.uiSize.getHeight());
+            if (client.getUIRenderer() != null && client.getUIRenderer().isFirstFrameRendered() && mgr.uiSize.width > 0 && mgr.uiSize.height > 0) {
+                log.debug("Telling SageTV to repaint {}x{}", mgr.uiSize.getWidth(), mgr.uiSize.getHeight());
+                client.getCurrentConnection().postRepaintEvent(0, 0, mgr.uiSize.getWidth(), mgr.uiSize.getHeight());
+            }
         } catch (Throwable t) {
             log.warn("Failed to do a repaint event on refresh");
         }
@@ -219,17 +234,17 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
             plaseWaitText.setText("Connecting to " + si.address + "...");
             setConnectingIsVisible(true);
+            YoYo.with(Techniques.BounceInUp).duration(700).playOn(plaseWaitText);
 
             startMiniClient(si);
         } catch (Throwable t) {
             log.error("Failed to start/create the Main Activity for the MiniClient UI", t);
-            MiniClientGDXActivity.this.runOnUiThread(new Runnable() {
+            runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(MiniClientGDXActivity.this, "MiniClient failed to initialize", Toast.LENGTH_LONG).show();
+                    setErrorView(null, "MiniClient failed to initialize", null);
                 }
             });
-            finish();
         }
     }
 
@@ -244,14 +259,23 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(MiniClientGDXActivity.this, "Unable to connect to server: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            finish();
+                            setErrorView(si, "Unable to connect", e.getMessage());
+//                            Toast.makeText(MiniClientGDXActivity.this, "Unable to connect to server: " + e.getMessage(), Toast.LENGTH_LONG).show();
+//                            finish();
                         }
                     });
                 }
             }
         };
         t.start();
+    }
+
+    private void setErrorView(ServerInfo si, String message, String cause) {
+        plaseWaitText.setVisibility(View.GONE);
+        errorMessage.setText(message);
+        errorCause.setText(cause);
+        errorContainer.setVisibility(View.VISIBLE);
+        YoYo.with(Techniques.RubberBand).duration(700).playOn(errorContainer);
     }
 
     @Override
@@ -278,7 +302,13 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                pleaseWait.setVisibility((connectingIsVisible) ? View.VISIBLE : View.GONE);
+                if (connectingIsVisible) {
+                    errorContainer.setVisibility(connectingIsVisible ? View.GONE : View.VISIBLE);
+                    pleaseWait.setVisibility((connectingIsVisible) ? View.VISIBLE : View.GONE);
+                } else {
+                    // hiding connecting is visible
+                    YoYo.with(Techniques.FadeOutLeft).duration(700).playOn(pleaseWait);
+                }
             }
         });
     }
@@ -380,6 +410,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         confirmExit(this, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                finish();
             }
         });
     }
@@ -503,5 +534,13 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     public ViewGroup getVideoViewParent() {
         return videoHolderParent;
+    }
+
+    @OnClick(R.id.errorClose)
+    public void onCloseClicked() {
+        // connect to server
+        Intent i = new Intent(this, ServersActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
     }
 }

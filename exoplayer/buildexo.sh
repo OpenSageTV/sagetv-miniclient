@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-VERSION='r1.5.4-SNAPSHOT4'
-#EXO_REPO="https://github.com/google/ExoPlayer.git"
-EXO_REPO="https://github.com/Narflex/ExoPlayer.git"
-EXO_BRANCH="ps-extractor2"
+VERSION='r1.5.5-SNAPSHOT'
+EXO_REPO="https://github.com/google/ExoPlayer.git"
+#EXO_REPO="https://github.com/Narflex/ExoPlayer.git"
+#EXO_BRANCH="ps-extractor2"
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
