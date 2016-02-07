@@ -146,11 +146,10 @@ public class MiniClient {
     }
 
     public void connect(ServerInfo si, MACAddressResolver macAddressResolver) throws IOException {
-        if (si.isLocatorOnly()) {
+        if (si.isLocatorOnly() || si.forceLocator) {
             log.debug("Resolving Server Address from GUID {}", si);
             String address = SageTVLocatorService.lookupIPForGuid(si.locatorID);
             si = si.clone();
-            si.locatorID = null;
             si.address = address;
             log.debug("Server Address Lookup complete {}", si);
         }

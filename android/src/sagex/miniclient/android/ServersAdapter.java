@@ -1,7 +1,9 @@
 package sagex.miniclient.android;
 
 import android.content.Context;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,9 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -99,8 +100,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                 case R.id.menu_connect_locator:
                     if (!Utils.isEmpty(serverInfo.locatorID)) {
                         ServerInfo newSI = serverInfo.clone();
-                        // clear the address to force a locator connection
-                        newSI.address = null;
+                        newSI.forceLocator = true;
                         ServersActivity.connect(context, newSI);
                     } else {
                         Toast.makeText(context, context.getString(R.string.msg_no_locator), Toast.LENGTH_LONG).show();
@@ -131,17 +131,51 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
     private final Context context;
     private final LayoutInflater layoutInflater;
-    List<ServerInfo> items = new ArrayList<>();
+    // List<ServerInfo> items = new ArrayList<>();
+
+    SortedList<ServerInfo> items;
 
     public ServersAdapter(Context ctx) {
         this.context = ctx;
         this.layoutInflater = LayoutInflater.from(context);
 
         // get the saved servers, and add them
-        items.addAll(MiniclientApplication.get(ctx.getApplicationContext()).getClient().getServers().getSavedServers());
-        for (ServerInfo si : items) {
-            log.debug("SAVED SERVER: {}", si);
+        items = new SortedList<ServerInfo>(ServerInfo.class, new SortedListAdapterCallback<ServerInfo>(this) {
+            @Override
+            public int compare(ServerInfo o1, ServerInfo o2) {
+                // sort by date accessed and then name
+                int compare = 0;
+                if (o1.lastConnectTime < o2.lastConnectTime) compare = 1;
+                if (o1.lastConnectTime > o2.lastConnectTime) compare = -1;
+                if (compare == 0) {
+                    return o1.name.compareTo(o2.name);
+                }
+                return compare;
+            }
+
+            @Override
+            public boolean areContentsTheSame(ServerInfo oldItem, ServerInfo newItem) {
+                return oldItem.equals(newItem);
+            }
+
+            @Override
+            public boolean areItemsTheSame(ServerInfo item1, ServerInfo item2) {
+                return item1.equals(item2);
+            }
+        });
+
+        log.debug("Begin Adding Saved Servers");
+        addAll(MiniclientApplication.get(ctx.getApplicationContext()).getClient().getServers().getSavedServers());
+        log.debug("End Adding Saved Servers");
+    }
+
+    public void addAll(Collection<ServerInfo> newItems) {
+        items.beginBatchedUpdates();
+        for (ServerInfo item : newItems) {
+            items.add(item);
+            log.debug("ADDED SERVER: {}", item);
         }
+        items.endBatchedUpdates();
     }
 
     // Create new views (invoked by the layout manager)
@@ -206,10 +240,14 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     }
 
     public void addServer(ServerInfo si) {
-        if (!items.contains(si)) {
-            log.debug("Adding Server to List, since it does not exist: {}", si);
-            items.add(si);
+        int size = items.size();
+        for (int i = 0; i < size; i++) {
+            if (si.equals(items.get(i))) {
+                log.debug("Skipping Server, since we already have it: {}", si);
+                return;
+            }
         }
-        notifyDataSetChanged();
+        log.debug("Adding Server to List, since it does not exist: {}", si);
+        items.add(si);
     }
 }

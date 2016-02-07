@@ -20,6 +20,7 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
     public int serverType;
     public long lastConnectTime;
     public String authBlock;
+    public boolean forceLocator = false;
 
     public ServerInfo() {
     }
@@ -42,10 +43,18 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
 
         ServerInfo that = (ServerInfo) o;
 
-        if (port != that.port) return false;
-        if (address != null ? !address.equals(that.address) : that.address != null) return false;
-        return !(locatorID != null ? !locatorID.equals(that.locatorID) : that.locatorID != null);
+        // 2 servers with same locator is same server
+        if (locatorID != null) {
+            return locatorID.equals(that.locatorID);
+        }
 
+        // 2 servers with same host and port
+        if (port != that.port) return false;
+        if (address != null) {
+            return address.equals(that.address);
+        }
+
+        return false;
     }
 
     @Override
@@ -58,17 +67,19 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
 
     @Override
     public int compareTo(ServerInfo o) {
-        if (isLocatorOnly()) {
-            if (locatorID == null && o.locatorID == null) return 0;
-            if (o.locatorID == null) return -1;
-            if (locatorID == null) return 1;
+        if (locatorID != null) {
             return locatorID.compareTo(o.locatorID);
-        } else {
-            if (address == null && o.address == null) return 0;
-            if (o.address == null) return -1;
-            if (address == null) return 1;
-            return address.compareTo(o.address);
         }
+
+        if (address == null && o.address == null) return 0;
+        if (o.address == null) return -1;
+        if (address == null) return 1;
+        int compare = address.compareTo(o.address);
+        if (compare == 0) {
+            if (port < o.port) return -1;
+            if (port > o.port) return 1;
+        }
+        return compare;
     }
 
     public void setAuthBlock(String authBlock) {
