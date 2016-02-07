@@ -230,8 +230,13 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             }
 
             //setupNavigationDrawer();
-
-            plaseWaitText.setText("Connecting to " + si.address + "...");
+            String connect = null;
+            if (si.isLocatorOnly() || si.forceLocator) {
+                connect = getString(R.string.msg_connecting_locator, si.name);
+            } else {
+                connect = getString(R.string.msg_connecting, si.name);
+            }
+            plaseWaitText.setText(connect);
             setConnectingIsVisible(true);
             YoYo.with(Techniques.BounceInUp).duration(700).playOn(plaseWaitText);
 

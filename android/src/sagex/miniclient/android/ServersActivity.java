@@ -123,6 +123,9 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
     }
 
     public void refreshServers() {
+        // refresh the data in case last connected changed, etc
+        adapter.notifyDataSetChanged();
+
         log.debug("Looking for Servers...");
         MiniclientApplication.get(this).getClient().getServerDiscovery().discoverServersAsync(10000, new ServerDiscovery.ServerDiscoverCallback() {
             @Override

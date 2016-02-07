@@ -68,4 +68,6 @@
     <string name="msg_no_locator">Item does not have a locator id</string>
     <string name="msg_remove_server">Are you sure you want to remove this server?</string>
     <string name="title_remove_server">Remove Server?</string>
+    <string name="msg_connecting_locator">Connecting to %s using Locator Service…</string>
+    <string name="msg_connecting">Connecting to %s…</string>
 </resources>

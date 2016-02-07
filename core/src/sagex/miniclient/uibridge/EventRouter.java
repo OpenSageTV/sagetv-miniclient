@@ -49,6 +49,8 @@ public class EventRouter {
      * @param event
      */
     public static void post(MiniClient client, UserEvent event) {
+        if (client == null || client.getCurrentConnection() == null || event == null) return;
+
         if (event.isKB()) {
             client.getCurrentConnection().postKeyEvent(event.getKeyCode(), event.getKeyModifiers(), event.getKeyChar());
         } else if (event.isIR()) {
