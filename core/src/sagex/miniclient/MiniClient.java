@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import sagex.miniclient.prefs.PrefStore;
 
@@ -39,10 +41,11 @@ public class MiniClient {
     private String MACAddress;
     private MiniClientConnection currentConnection;
     private sagex.miniclient.uibridge.UIRenderer<?> UIRenderer;
-    private SageLocatorService locatorService;
+    private SageTVLocatorService locatorService;
     private String cryptoFormats;
     private boolean initialized = false;
     private IBus eventBus;
+    private ExecutorService backgroundService = null;
 
     public MiniClient(MiniClientOptions options) {
         this.options = options;
@@ -51,9 +54,19 @@ public class MiniClient {
             log.warn("Using a DeadBus for the event bus, since a bus was not provided in the MiniClientOptions");
             eventBus = DeadBus.INSTANCE;
         }
+        this.backgroundService = Executors.newFixedThreadPool(5);
         this.serverDiscovery = new ServerDiscovery();
         this.servers = new Servers(this);
         init();
+    }
+
+    /**
+     * Returns the Executor Service used for submitting background tasks
+     *
+     * @return
+     */
+    public ExecutorService getBackgroundService() {
+        return backgroundService;
     }
 
     public ServerDiscovery getServerDiscovery() {
@@ -133,7 +146,15 @@ public class MiniClient {
     }
 
     public void connect(ServerInfo si, MACAddressResolver macAddressResolver) throws IOException {
-        MiniClientConnection connection = new MiniClientConnection(this, si.address, macAddressResolver.getMACAddress(), si);
+        if (si.isLocatorOnly()) {
+            log.debug("Resolving Server Address from GUID {}", si);
+            String address = SageTVLocatorService.lookupIPForGuid(si.locatorID);
+            si = si.clone();
+            si.locatorID = null;
+            si.address = address;
+            log.debug("Server Address Lookup complete {}", si);
+        }
+        MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si);
         connection.connect();
     }
 
@@ -145,6 +166,9 @@ public class MiniClient {
     }
 
     public void shutdown() {
+        if (backgroundService != null) {
+            backgroundService.shutdownNow();
+        }
         if (currentConnection != null) {
             closeConnection();
         }

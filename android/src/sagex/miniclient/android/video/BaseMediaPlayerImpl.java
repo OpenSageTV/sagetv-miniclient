@@ -51,6 +51,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected long lastMediaTime = 0;
 
+    protected boolean flushed = false;
+
     public BaseMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
         //this.mSurface = activity.getVideoView();
@@ -128,9 +130,16 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) return lastMediaTime;
         long mt = getPlayerMediaTimeMillis();
         if (mt == 0 && state == PAUSE_STATE) return lastMediaTime;
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-            log.debug("getMediaTime(): current: {}, last time: {}", mt, lastMediaTime);
+        if (flushed && mt <= 0) {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                log.debug("getMediaTimeMillis() is {} after a flush.  Using lastMediaTime: {}, until data shows up.", mt, lastMediaTime);
+            }
+            return lastMediaTime;
         }
+        if (flushed) {
+            log.debug("getMediaTimeMillis(): current: {}, last time: {}", mt, lastMediaTime);
+        }
+        flushed = false;
         lastMediaTime = mt;
         return mt;
     }
@@ -276,6 +285,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         if (dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).flush();
         }
+        flushed = true;
     }
 
     @Override

@@ -172,9 +172,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public void notifySageTVAboutScreenSize() {
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
         try {
-            while (!(client != null && client.getCurrentConnection() != null && client.getCurrentConnection().hasEventChannel())) {
+            if (!(client != null && client.getCurrentConnection() != null && client.getCurrentConnection().hasEventChannel())) {
                 log.warn("Client and/or Client Connection is not ready.  Can't send a resize.");
-                Thread.currentThread().wait(100);
+                return;
             }
 
             client.getCurrentConnection().postResizeEvent(uiSize);
@@ -766,5 +766,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     @Override
     public void onMenuHint(MenuHint hint) {
         activity.showHideKeyboard(hint.hasTextInput);
+    }
+
+    @Override
+    public boolean isFirstFrameRendered() {
+        // we set firstFrame=false after first frame is rendered, so isFirstFrameRendered is !firstFrame
+        return !firstFrame;
     }
 }

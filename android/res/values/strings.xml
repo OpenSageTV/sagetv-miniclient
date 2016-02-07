@@ -64,4 +64,8 @@
     <string name="use_native_resolution_summary">If disabled, then the resolution reported to sagetv will be half of the native resolution, and the screen will be scaled on the client to the native resolution.  You might do this on older hardware.</string>
     <string name="exit_to_home_screen_title">Exit to Home Screen</string>
     <string name="exit_to_home_screen_summary">If true, then when SageTV exits, it will exit back to the Home Screen and not to the Server Selector</string>
+    <string name="button_close">Close</string>
+    <string name="msg_no_locator">Item does not have a locator id</string>
+    <string name="msg_remove_server">Are you sure you want to remove this server?</string>
+    <string name="title_remove_server">Remove Server?</string>
 </resources>

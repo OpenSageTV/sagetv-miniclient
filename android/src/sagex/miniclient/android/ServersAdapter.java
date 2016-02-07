@@ -1,20 +1,33 @@
 package sagex.miniclient.android;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.mikepenz.google_material_typeface_library.GoogleMaterial;
+import com.mikepenz.iconics.view.IconicsImageView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.util.Utils;
 
 /**
  * Created by seans on 20/09/15.
@@ -22,18 +35,30 @@ import sagex.miniclient.ServerInfo;
 public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHolder> {
     private static final Logger log = LoggerFactory.getLogger(ServersAdapter.class);
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener, PopupMenu.OnMenuItemClickListener {
         // each data item is just a string in this case
         public View item;
+        @Bind(R.id.server_name)
         public TextView serverName;
+        @Bind(R.id.server_address)
         public TextView serverAddress;
+        @Bind(R.id.server_locator_id)
+        public TextView serverLocator;
+        @Bind(R.id.icon)
+        public IconicsImageView icon;
+        @Bind(R.id.server_last_connect)
+        public TextView serverLastConnected;
+
         public ServerInfo serverInfo;
+
+        DateFormat dateFormat = DateFormat.getDateTimeInstance();
+
+        PopupMenu menu = null;
 
         public ViewHolder(View v) {
             super(v);
             this.item = v;
-            serverName = (TextView) v.findViewById(android.R.id.text1);
-            serverAddress = (TextView) v.findViewById(android.R.id.text2);
+            ButterKnife.bind(this, v);
             v.setFocusable(true);
             v.setClickable(true);
             v.setLongClickable(true);
@@ -49,8 +74,60 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
         @Override
         public boolean onLongClick(View v) {
-            ((ServersActivity) context).deleteServer(serverInfo);
+            if (menu == null) {
+                menu = new PopupMenu(context, item);
+                Menu m = menu.getMenu();
+                menu.inflate(R.menu.server_actions);
+                menu.setOnMenuItemClickListener(this);
+            }
+
+            menu.show();
+
             return true;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.menu_remove:
+                    ((ServersActivity) context).deleteServer(serverInfo, true);
+                    break;
+                case R.id.menu_change_name:
+                    onChangeName();
+                    break;
+                case R.id.menu_connect:
+                    ServersActivity.connect(context, serverInfo);
+                    break;
+                case R.id.menu_connect_locator:
+                    if (!Utils.isEmpty(serverInfo.locatorID)) {
+                        ServerInfo newSI = serverInfo.clone();
+                        // clear the address to force a locator connection
+                        newSI.address = null;
+                        ServersActivity.connect(context, newSI);
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.msg_no_locator), Toast.LENGTH_LONG).show();
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        private void onChangeName() {
+            AppUtil.prompt(context, "Change Server Name", "Enter new Server Name", serverInfo.name, new AppUtil.OnValueChangeListener() {
+                @Override
+                public void onValueChanged(String oldValue, String newValue) {
+                    ServerInfo newSI = serverInfo.clone();
+                    newSI.name = newValue;
+
+                    // remove the old server
+                    ((ServersActivity) context).deleteServer(serverInfo, false);
+
+                    // save the new server
+                    newSI.save(MiniclientApplication.get().getClient().properties());
+
+                    addServer(newSI);
+                }
+            });
         }
     }
 
@@ -64,6 +141,9 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
         // get the saved servers, and add them
         items.addAll(MiniclientApplication.get(ctx.getApplicationContext()).getClient().getServers().getSavedServers());
+        for (ServerInfo si : items) {
+            log.debug("SAVED SERVER: {}", si);
+        }
     }
 
     // Create new views (invoked by the layout manager)
@@ -72,7 +152,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
                                          int viewType) {
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(android.R.layout.simple_list_item_2, parent, false);
+                .inflate(R.layout.servers_item, parent, false);
         // set the view's size, margins, paddings and layout parameters
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -84,8 +164,31 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         ServerInfo si = getCastedItem(position);
-        holder.serverAddress.setText(si.address);
         holder.serverName.setText(si.name);
+        if (!Utils.isEmpty(si.address)) {
+            holder.serverAddress.setVisibility(View.VISIBLE);
+            holder.serverAddress.setText(si.address);
+        } else {
+            holder.serverAddress.setVisibility(View.GONE);
+        }
+
+        if (!Utils.isEmpty(si.locatorID)) {
+            holder.serverLocator.setVisibility(View.VISIBLE);
+            holder.serverLocator.setText(si.locatorID);
+        } else {
+            holder.serverLocator.setVisibility(View.GONE);
+        }
+
+        if (si.lastConnectTime > 0) {
+            holder.serverLastConnected.setText(holder.dateFormat.format(new Date(si.lastConnectTime)));
+        } else {
+            holder.serverLastConnected.setText("");
+        }
+        if (si.isLocatorOnly()) {
+            holder.icon.setIcon(GoogleMaterial.Icon.gmd_link);
+        } else {
+            holder.icon.setIcon(GoogleMaterial.Icon.gmd_live_tv);
+        }
         holder.serverInfo = si;
     }
 

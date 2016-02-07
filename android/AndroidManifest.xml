@@ -42,6 +42,7 @@
         <activity
             android:name=".ServersActivity"
             android:label="@string/app_name"
+            android:launchMode="singleInstance"
             android:theme="@style/Theme.MyTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -58,7 +59,7 @@
             android:name=".gdx.MiniClientGDXActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:finishOnTaskLaunch="true"
-            android:launchMode="singleInstance"
+            android:launchMode="standard"
             android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
@@ -74,6 +75,7 @@
             <!-- </intent-filter> -->
         </activity>
         <activity
+            android:launchMode="singleInstance"
             android:name=".SettingsActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyTheme">

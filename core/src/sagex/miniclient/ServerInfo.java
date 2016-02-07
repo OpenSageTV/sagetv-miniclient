@@ -3,11 +3,12 @@ package sagex.miniclient;
 import java.io.Serializable;
 
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.util.Utils;
 
 /**
  * Created by seans on 20/09/15.
  */
-public class ServerInfo implements Serializable, Comparable<ServerInfo> {
+public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneable {
     public static final int LOCAL_SERVER = 1;
     public static final int DIRECT_CONNECT_SERVER = 2;
     public static final int LOCATABLE_SERVER = 3;
@@ -41,22 +42,33 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
 
         ServerInfo that = (ServerInfo) o;
 
-        return address.equals(that.address);
+        if (port != that.port) return false;
+        if (address != null ? !address.equals(that.address) : that.address != null) return false;
+        return !(locatorID != null ? !locatorID.equals(that.locatorID) : that.locatorID != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = address.hashCode();
+        int result = address != null ? address.hashCode() : 0;
         result = 31 * result + port;
+        result = 31 * result + (locatorID != null ? locatorID.hashCode() : 0);
         return result;
     }
 
     @Override
     public int compareTo(ServerInfo o) {
-        if (address == null && o.address == null) return 0;
-        if (o.address == null && address != null) return -1;
-        return address.compareTo(o.address);
+        if (isLocatorOnly()) {
+            if (locatorID == null && o.locatorID == null) return 0;
+            if (o.locatorID == null) return -1;
+            if (locatorID == null) return 1;
+            return locatorID.compareTo(o.locatorID);
+        } else {
+            if (address == null && o.address == null) return 0;
+            if (o.address == null) return -1;
+            if (address == null) return 1;
+            return address.compareTo(o.address);
+        }
     }
 
     public void setAuthBlock(String authBlock) {
@@ -68,6 +80,10 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
             System.out.println("Can't save ServerInfo without a name: " + this);
         }
         store.setLong("servers/" + name + "/type", serverType);
+        if (Utils.isGUID(address)) {
+            locatorID = address;
+            address = null;
+        }
         if (address != null)
             store.setString("servers/" + name + "/address", address);
         if (locatorID != null)
@@ -86,4 +102,18 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo> {
         authBlock = store.getString("servers/" + name + "/auth_block", "");
     }
 
+    public boolean isLocatorOnly() {
+        return (!Utils.isEmpty(locatorID) && Utils.isEmpty(address))
+                || (Utils.isEmpty(locatorID) && !Utils.isEmpty(address) && Utils.isGUID(address));
+
+    }
+
+    @Override
+    public ServerInfo clone() {
+        try {
+            return (ServerInfo) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

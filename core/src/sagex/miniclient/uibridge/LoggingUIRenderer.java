@@ -240,4 +240,9 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
         delegate.onMenuHint(hint);
     }
 
+    @Override
+    public boolean isFirstFrameRendered() {
+        return delegate.isFirstFrameRendered();
+    }
+
 }

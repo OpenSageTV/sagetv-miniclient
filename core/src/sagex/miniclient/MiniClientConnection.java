@@ -29,6 +29,7 @@ import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
+import sagex.miniclient.util.Utils;
 
 public class MiniClientConnection implements SageTVInputCallback {
     public static final String QUICKTIME = "Quicktime";
@@ -165,8 +166,8 @@ public class MiniClientConnection implements SageTVInputCallback {
     private MediaCmd myMedia;
     private java.net.Socket gfxSocket;
     private java.net.Socket mediaSocket;
-    private String serverName;
-    private int port;
+    //    private String serverName;
+//    private int port;
     private String myID;
     private java.io.DataInputStream gfxIs;
     // This is the secret symmetric key encrypted with the public key
@@ -212,7 +213,7 @@ public class MiniClientConnection implements SageTVInputCallback {
 
     private MenuHint menuHint = new MenuHint();
 
-    public MiniClientConnection(MiniClient client, String serverName, String myID, ServerInfo msi) {
+    public MiniClientConnection(MiniClient client, String myID, ServerInfo msi) {
         this.client = client;
         currentCrypto = client.getCryptoFormats();
 
@@ -221,17 +222,21 @@ public class MiniClientConnection implements SageTVInputCallback {
             throw new RuntimeException("client.setUIRenderer() needs to be set before creating the connection");
         }
 
-        if (serverName.indexOf(":") == -1) {
-            this.serverName = serverName;
-            this.port = 31099;
-        } else {
-            this.serverName = serverName.substring(0, serverName.indexOf(":"));
-            this.port = 31099;
-            try {
-                this.port = Integer.parseInt(serverName.substring(serverName.indexOf(":") + 1));
-            } catch (NumberFormatException e) {
+        if (msi.port <= 0) {
+            msi.port = 31099;
+        }
+
+        if (!Utils.isEmpty(msi.address)) {
+            if (msi.address.indexOf(":") != -1) {
+                msi.address = msi.address.substring(0, msi.address.indexOf(":"));
+                msi.port = 31099;
+                try {
+                    msi.port = Integer.parseInt(msi.address.substring(msi.address.indexOf(":") + 1));
+                } catch (NumberFormatException e) {
+                }
             }
         }
+
         this.myID = myID;
 
         this.msi = msi;
@@ -296,9 +301,9 @@ public class MiniClientConnection implements SageTVInputCallback {
         java.io.InputStream inStream = null;
         java.io.OutputStream outStream = null;
         try {
-            log.info("Establishing Server Connection {}:{} for Connection Type: {}", serverName, port, connType);
+            log.info("Establishing Server Connection {} for Connection Type: {}", msi, connType);
             sake = new java.net.Socket();
-            sake.connect(new java.net.InetSocketAddress(serverName, port), 30000);
+            sake.connect(new java.net.InetSocketAddress(msi.address, msi.port), 30000);
             sake.setSoTimeout(30000);
             sake.setTcpNoDelay(true);
             sake.setKeepAlive(true);
@@ -326,7 +331,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                 sake.close();
                 return null;
             }
-            log.info("Connection accepted by server: {}", serverName);
+            log.info("Connection accepted by server: {}", msi);
             sake.setSoTimeout(0);
             return sake;
         } catch (java.io.IOException e) {
@@ -349,7 +354,7 @@ public class MiniClientConnection implements SageTVInputCallback {
 
     public void connect() throws java.io.IOException {
         discoverCodecSupport();
-        
+
         if (client.getCurrentConnection() != null) {
             // TODO: We should check if the connection is the same as this one, if so, then just use this connection.
             if (client.getCurrentConnection() != this) {
@@ -358,7 +363,7 @@ public class MiniClientConnection implements SageTVInputCallback {
             }
         }
 
-        log.info("Connecting to media server at {}:{}", serverName, port);
+        log.info("Connecting to media server at {}", msi);
         while (mediaSocket == null) {
             mediaSocket = EstablishServerConnection(1);
             if (mediaSocket == null) {
@@ -368,9 +373,9 @@ public class MiniClientConnection implements SageTVInputCallback {
                 throw new java.net.ConnectException();
             }
         }
-        log.info("Connected to media server {}", serverName);
+        log.info("Connected to media server {}", msi);
 
-        log.info("Connecting to ui server at {}:{}", serverName, port);
+        log.info("Connecting to ui server at {}", msi);
         while (gfxSocket == null) {
             gfxSocket = EstablishServerConnection(0);
             if (gfxSocket == null) {
@@ -380,12 +385,12 @@ public class MiniClientConnection implements SageTVInputCallback {
                 throw new java.net.ConnectException();
             }
         }
-        log.info("Connected to gfx server {}", serverName);
+        log.info("Connected to gfx server {}", msi);
 
         client.setCurrentConnection(this);
 
         alive = true;
-        Thread t = new Thread("Media-" + serverName) {
+        Thread t = new Thread("Media-" + msi.address) {
             public void run() {
                 MediaThread();
             }
@@ -395,7 +400,7 @@ public class MiniClientConnection implements SageTVInputCallback {
             Thread.sleep(100);
         } catch (Exception e) {
         }
-        t = new Thread("GFX-" + serverName) {
+        t = new Thread("GFX-" + msi.address) {
             public void run() {
                 GFXThread();
             }
@@ -500,14 +505,14 @@ public class MiniClientConnection implements SageTVInputCallback {
         // pull-mode streaming.
         boolean canDoPullStreaming = false;
         try {
-            log.info("Testing to see if server can do a pull mode streaming connection at {}:{}...", serverName, 7818);
+            log.info("Testing to see if server can do a pull mode streaming connection at {}:{}...", msi.address, 7818);
             java.net.Socket mediaTest = new java.net.Socket();
-            mediaTest.connect(new java.net.InetSocketAddress(serverName, 7818), 2000);
+            mediaTest.connect(new java.net.InetSocketAddress(msi.address, 7818), 2000);
             mediaTest.close();
             canDoPullStreaming = true;
-            log.info("Server can do a pull-mode streaming connection at {}:{}", serverName, 7818);
+            log.info("Server can do a pull-mode streaming connection at {}:{}", msi.address, 7818);
         } catch (Exception e) {
-            log.warn("Failed pull mode media test....only use push mode for server {}", serverName);
+            log.warn("Failed pull mode media test....only use push mode for server {}", msi.address);
         }
 
         final java.util.Vector gfxSyncVector = new java.util.Vector();
@@ -1993,7 +1998,7 @@ public class MiniClientConnection implements SageTVInputCallback {
     }
 
     public String getServerName() {
-        return serverName;
+        return msi.address;
     }
 
     public void addTimerTask(java.util.TimerTask addMe, long delay, long period) {
@@ -2017,7 +2022,7 @@ public class MiniClientConnection implements SageTVInputCallback {
     }
 
     public boolean isLocahostConnection() {
-        return ("127.0.0.1".equals(serverName) || "localhost".equals(serverName));
+        return ("127.0.0.1".equals(msi.address) || "localhost".equals(msi.address));
     }
 
     public String getWindowTitle() {

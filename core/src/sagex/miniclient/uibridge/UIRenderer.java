@@ -105,4 +105,11 @@ public interface UIRenderer<Image> {
     void setVideoBounds(Rectangle o, Rectangle o1);
 
     void onMenuHint(MenuHint hint);
+
+    /**
+     * Returns true if the first frame has been rendered.
+     *
+     * @return
+     */
+    boolean isFirstFrameRendered();
 }
