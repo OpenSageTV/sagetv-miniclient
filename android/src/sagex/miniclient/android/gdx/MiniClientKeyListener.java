@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.prefs.PrefStore;
-import sagex.miniclient.uibridge.UIRenderer;
 
 /**
  * Created by seans on 26/09/15.

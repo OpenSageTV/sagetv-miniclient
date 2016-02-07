@@ -16,8 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.mikepenz.google_material_typeface_library.GoogleMaterial;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +30,6 @@ import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
-import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 

@@ -1,14 +1,10 @@
 package sagex.miniclient.android.video.ijkplayer;
 
-import android.widget.Toast;
-
-import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
-import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;

@@ -12,17 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 import sagex.miniclient.IBus;
-import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
 import sagex.miniclient.prefs.PrefStore;
