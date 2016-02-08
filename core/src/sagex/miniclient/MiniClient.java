@@ -96,6 +96,7 @@ public class MiniClient {
             cryptoFormats = "DH,DES";
         }
         log.info("Detecting cryptography support.  Formats {}", cryptoFormats);
+
         initialized = true;
     }
 

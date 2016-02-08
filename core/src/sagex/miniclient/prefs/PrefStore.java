@@ -136,5 +136,16 @@ public interface PrefStore {
          */
         String exit_to_home_screen = "exit_to_home_screen";
 
+        /**
+         * Boolean: default is true.  When true, detailed buffer stats is collected by the server
+         */
+        String detailed_buffer_stats = "detailed_buffer_stats";
+
+        /**
+         * Boolean: default is false.  When true, enables the seek hack that helps some
+         * .ts files to seek better in ijk and exoplayer
+         */
+        String pts_seek_hack = "pts_seek_hack";
+
     }
 }

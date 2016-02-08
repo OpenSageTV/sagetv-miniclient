@@ -94,7 +94,7 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer {
     @Override
     public int bufferAvailable() {
         if (dataSource != null) {
-            dataSource.bufferAvailable();
+            return dataSource.bufferAvailable();
         }
         return PushBufferDataSource.PIPE_SIZE;
     }

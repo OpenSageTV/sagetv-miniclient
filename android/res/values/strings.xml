@@ -70,4 +70,6 @@
     <string name="title_remove_server">Remove Server?</string>
     <string name="msg_connecting_locator">Connecting to %s using Locator Service…</string>
     <string name="msg_connecting">Connecting to %s…</string>
+    <string name="title_detailed_buffer_stats">Detailed Push Buffer Stats</string>
+    <string name="summary_detailed_buffer_stats">Send detailed push buffer statistics to the server</string>
 </resources>

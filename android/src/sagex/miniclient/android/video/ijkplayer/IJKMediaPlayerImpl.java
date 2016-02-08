@@ -4,6 +4,7 @@ import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -88,7 +89,10 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             if (pushMode) {
                 // in push mode, ijk will reset timestamps on media to 0, so we need to use return
                 // unadjusted time.
-                ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "no-time-adjust", 1);
+                if (MiniclientApplication.get().getClient().properties().getBoolean(Keys.pts_seek_hack, false)) {
+                    log.debug("pts seek hack enabled");
+                    ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "no-time-adjust", 1);
+                }
             }
 
             //player.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
