@@ -17,7 +17,8 @@ import sagex.miniclient.util.VerboseLogging;
  */
 public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     public enum State {Idle, Opened, Closed}
-    public static final int PIPE_SIZE = 16 * 1024 * 1024;
+
+    public static final int PIPE_SIZE = 4 * 1024 * 1024;
     private static final Logger log = LoggerFactory.getLogger(PushBufferDataSource.class);
 
     CircularByteBuffer circularByteBuffer = null;
@@ -171,6 +172,11 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
             if (eos) {
                 log.warn("We are getting data, even after EOS has been set");
                 return;
+            }
+            if (VerboseLogging.DATASOURCE_LOGGING) {
+                if (bufferAvailable() < len) {
+                    log.warn("BLOCKING: We have more data than we can store {}, need {}", bufferAvailable(), len);
+                }
             }
             out.write(bytes, offset, len);
             if (dataCollector != null) {

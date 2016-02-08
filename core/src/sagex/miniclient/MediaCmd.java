@@ -255,6 +255,7 @@ public class MediaCmd {
                 }
                 return 4;
             case MEDIACMD_PUSHBUFFER:
+                long playerTime = 0;
                 int buffSize = readInt(0, cmddata);
                 int flags = readInt(4, cmddata);
                 int bufDataOffset = 8;
@@ -265,7 +266,8 @@ public class MediaCmd {
                     statsTargetBWKbps = readShort(12, cmddata);
                     serverMuxTime = readInt(14, cmddata);
                     if (playa != null) {
-                        prebufferTime = serverMuxTime - playa.getMediaTimeMillis();
+                        playerTime = playa.getMediaTimeMillis();
+                        prebufferTime = serverMuxTime - playerTime;
                     }
                     // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
@@ -297,7 +299,7 @@ public class MediaCmd {
                 else {
                     //rv = (int)(PushBufferDataSource.PIPE_SIZE - (bufferFilePushedBytes - playa.getLastFileReadPos()));
                     rv = playa.getBufferLeft();
-                    // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv + " totalPushed=" + bufferFilePushedBytes + "; Last Read: " + playa.getLastFileReadPos());
+                    // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv);
                 }
 
                 if (rv < 0) {
@@ -307,7 +309,7 @@ public class MediaCmd {
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
-                        writeInt((int) playa.getMediaTimeMillis(), retbuf, 4);
+                        writeInt((int) playerTime, retbuf, 4);
                         retbuf[8] = (byte) (playa.getState() & 0xFF);
                     } else {
                         writeInt(0, retbuf, 4);
@@ -318,8 +320,9 @@ public class MediaCmd {
                         retbuf[8] = (byte) (playa.getState() & 0xFF);
                     }
                     return 9;
-                } else
+                } else {
                     return 4;
+                }
             case MEDIACMD_GETVOLUME:
                 if (playa == null)
                     writeInt(65535, retbuf, 0);

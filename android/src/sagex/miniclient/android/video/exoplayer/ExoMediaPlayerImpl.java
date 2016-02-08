@@ -12,6 +12,7 @@ import com.google.android.exoplayer.util.VerboseLogUtil;
 
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 
@@ -100,6 +101,13 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
             dataSource = new ExoPushDataSource();
         } else {
             dataSource = new ExoPullDataSource();
+        }
+        if (pushMode && context.getClient().properties().getBoolean(Keys.pts_seek_hack, false)) {
+            // note required adjustments to ExoPlayer
+            log.debug("pts seek hack enabled");
+            System.setProperty(Keys.pts_seek_hack, "true");
+        } else {
+            System.setProperty(Keys.pts_seek_hack, "false");
         }
 
         // mp4 and mkv will play (but not aac audio)

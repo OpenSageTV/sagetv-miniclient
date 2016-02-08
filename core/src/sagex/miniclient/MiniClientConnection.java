@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
@@ -799,9 +800,13 @@ public class MiniClientConnection implements SageTVInputCallback {
                         // sage.Version.MICRO_VERSION;
                         propVal = "9.0.0";
                     } else if ("DETAILED_BUFFER_STATS".equals(propName)) {
-                        propVal = "TRUE";
-                        detailedBufferStats = true;
-                        //propVal = "FALSE";
+                        if (client.properties().getBoolean(Keys.detailed_buffer_stats, true)) {
+                            propVal = "TRUE";
+                            detailedBufferStats = true;
+                        } else {
+                            propVal = "FALSE";
+                            detailedBufferStats = false;
+                        }
                     } else if ("PUSH_BUFFER_SEEKING".equals(propName))
                         propVal = "TRUE";
                     else if ("GFX_SUBTITLES".equals(propName))
@@ -1245,6 +1250,7 @@ public class MiniClientConnection implements SageTVInputCallback {
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
+        log.debug("Begin Sending SageTV Command {}", sageCommand);
         synchronized (eventChannel) {
             try {
                 eventChannel.write(136); // SageTV Command event code

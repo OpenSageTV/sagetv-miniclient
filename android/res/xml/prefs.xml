@@ -94,6 +94,18 @@
             android:summary="@string/GFX_SURFACES_summary"
             android:title="@string/GFX_SURFACES_title" />
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="detailed_buffer_stats"
+            android:summary="@string/summary_detailed_buffer_stats"
+            android:title="@string/title_detailed_buffer_stats" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pts_seek_hack"
+            android:summary="pts_seek_hack"
+            android:title="pts_seek_hack" />
+
     </PreferenceCategory>
 
 
