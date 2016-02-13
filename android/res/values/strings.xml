@@ -72,4 +72,5 @@
     <string name="msg_connecting">Connecting to %s…</string>
     <string name="title_detailed_buffer_stats">Detailed Push Buffer Stats</string>
     <string name="summary_detailed_buffer_stats">Send detailed push buffer statistics to the server</string>
+    <string name="msg_change_aspect_ratio">Aspect Ratio: %s</string>
 </resources>
