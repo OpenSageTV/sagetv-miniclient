@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=0.4.4.5-SNAPSHOT
+VERSION=0.4.4.5-SNAPSHOT2
 OUTPUT=release
 ARCHES="arm64 armv7a x86 java exo"
 

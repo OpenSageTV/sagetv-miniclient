@@ -120,10 +120,19 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public long getMediaTimeMillis() {
-        if (!playerReady) return 0;
-        if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) return lastMediaTime;
+        if (!playerReady) {
+            log.debug("getMediaTimeMillis(): Player not ready, returning 0");
+            return 0;
+        }
+        if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) {
+            log.debug("getMediaTimeMillis(): Player State Not Ready {} returning last time {}", state, lastMediaTime);
+            return lastMediaTime;
+        }
         long mt = getPlayerMediaTimeMillis();
-        if (mt == 0 && state == PAUSE_STATE) return lastMediaTime;
+        if (mt == 0 && state == PAUSE_STATE) {
+            log.debug("getMediaTimeMillis(): Player is paused returingin last time: {}", lastMediaTime);
+            return lastMediaTime;
+        }
         if (flushed && mt <= 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                 log.debug("getMediaTimeMillis() is {} after a flush.  Using lastMediaTime: {}, until data shows up.", mt, lastMediaTime);
@@ -135,6 +144,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         }
         flushed = false;
         lastMediaTime = mt;
+        // log.debug("getMediaTimeMillis(): current: {}, last time: {}", mt, lastMediaTime);
         return mt;
     }
 
