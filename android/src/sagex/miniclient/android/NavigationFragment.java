@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import com.mikepenz.iconics.view.IconicsImageView;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,7 @@ import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
 
 /**
@@ -47,6 +50,9 @@ public class NavigationFragment extends DialogFragment {
 
     @Bind(R.id.nav_media_pause)
     View navPause = null;
+
+    @Bind(R.id.nav_remote_mode)
+    IconicsImageView navSmartRemote;
 
     public NavigationFragment() {
         this.client = MiniclientApplication.get().getClient();
@@ -71,6 +77,8 @@ public class NavigationFragment extends DialogFragment {
         } else {
             navOptions.requestFocus();
         }
+
+        updateSmartRemoteToggle();
 
         return navView;
     }
@@ -137,6 +145,29 @@ public class NavigationFragment extends DialogFragment {
                 }).show();
 
     }
+
+    @OnClick(R.id.nav_remote_mode)
+    public void onToggleSmartRemote() {
+        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
+            client.getCurrentConnection().getMenuHint().popupName = null;
+            client.getCurrentConnection().getMenuHint().menuName = null;
+        } else {
+            client.getCurrentConnection().getMenuHint().popupName = null;
+            client.getCurrentConnection().getMenuHint().menuName = "OSD";
+        }
+        updateSmartRemoteToggle();
+    }
+
+    private void updateSmartRemoteToggle() {
+        navSmartRemote.setVisibility(client.properties().getBoolean(Keys.use_stateful_remote, true) ? View.VISIBLE : View.GONE);
+        // Icon.gmd_remote_control
+        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
+            navSmartRemote.setColorRes(R.color.iconbutton_on);
+        } else {
+            navSmartRemote.setColorRes(R.color.iconbutton_normal);
+        }
+    }
+
 
     @OnClick(R.id.nav_help)
     public void onHelp() {
