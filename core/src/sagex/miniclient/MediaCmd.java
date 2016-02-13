@@ -255,7 +255,6 @@ public class MediaCmd {
                 }
                 return 4;
             case MEDIACMD_PUSHBUFFER:
-                long playerTime = 0;
                 int buffSize = readInt(0, cmddata);
                 int flags = readInt(4, cmddata);
                 int bufDataOffset = 8;
@@ -266,8 +265,7 @@ public class MediaCmd {
                     statsTargetBWKbps = readShort(12, cmddata);
                     serverMuxTime = readInt(14, cmddata);
                     if (playa != null) {
-                        playerTime = playa.getMediaTimeMillis();
-                        prebufferTime = serverMuxTime - playerTime;
+                        prebufferTime = serverMuxTime - playa.getMediaTimeMillis();
                     }
                     // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
@@ -309,7 +307,7 @@ public class MediaCmd {
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
-                        writeInt((int) playerTime, retbuf, 4);
+                        writeInt((int) playa.getMediaTimeMillis(), retbuf, 4);
                         retbuf[8] = (byte) (playa.getState() & 0xFF);
                     } else {
                         writeInt(0, retbuf, 4);

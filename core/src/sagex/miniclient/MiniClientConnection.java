@@ -807,6 +807,12 @@ public class MiniClientConnection implements SageTVInputCallback {
                             propVal = "FALSE";
                             detailedBufferStats = false;
                         }
+                    } else if ("PTS_RESETS_ON_MPEG_SEEK".equals(propName)) {
+                        if (client.properties().getBoolean(Keys.pts_seek_hack, false)) {
+                            propVal = "FALSE";
+                        } else {
+                            propVal = "TRUE";
+                        }
                     } else if ("PUSH_BUFFER_SEEKING".equals(propName))
                         propVal = "TRUE";
                     else if ("GFX_SUBTITLES".equals(propName))
