@@ -29,8 +29,6 @@
 
         <View style="@style/NavIconSpacer" />
 
-        <View style="@style/NavIconSpacer" />
-
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_home"
             style="@style/NavIconButton"
@@ -183,6 +181,12 @@
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-videocam-switch"
                 android:tag="_switch_video" />
+
+            <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_remote_mode"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-remote-control"
+                android:tag="_switch_video"/>
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_hide"
