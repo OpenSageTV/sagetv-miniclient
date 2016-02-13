@@ -24,12 +24,14 @@ import sagex.miniclient.android.AppUtil;
 
 
 public final class AspectHelper {
-    static final int AR_ASPECT_FIT_PARENT = 0; // without clip
-    static final int AR_ASPECT_FILL_PARENT = 1; // may clip
-    static final int AR_ASPECT_WRAP_CONTENT = 2;
-    static final int AR_MATCH_PARENT = 3;
-    static final int AR_16_9_FIT_PARENT = 4;
-    static final int AR_4_3_FIT_PARENT = 5;
+    static final int AR_FIRST = 0;
+    static final int AR_ASPECT_FIT_PARENT = AR_FIRST; // without clip
+    static final int AR_ASPECT_FILL_PARENT = AR_FIRST + 1; // may clip
+    static final int AR_ASPECT_WRAP_CONTENT = AR_FIRST + 2;
+    static final int AR_MATCH_PARENT = AR_FIRST + 3;
+    static final int AR_16_9_FIT_PARENT = AR_FIRST + 4;
+    static final int AR_4_3_FIT_PARENT = AR_FIRST + 5;
+    static final int AR_LAST = 5;
 
     private int mVideoWidth;
     private int mVideoHeight;
@@ -43,19 +45,28 @@ public final class AspectHelper {
 
     private int mCurrentAspectRatio = AR_ASPECT_FIT_PARENT;
 
+    // 640x480=1333 == 4x3
+    // 720x480=1500
+    // 16x10=1600
+    // 16x9=1777
+
+
     public AspectHelper() {
     }
 
-    public void setVideoSize(int videoWidth, int videoHeight) {
+    public int setVideoSize(int videoWidth, int videoHeight) {
         mVideoWidth = videoWidth;
         mVideoHeight = videoHeight;
-        if (ar(videoWidth, videoHeight) == ar(4, 3)) {
+        int ar = ar(videoWidth, videoHeight);
+        if (ar < 1550) {
             // stretch
             mCurrentAspectRatio = AR_MATCH_PARENT;
         } else {
             // fit
             mCurrentAspectRatio = AR_ASPECT_FIT_PARENT;
         }
+        AppUtil.log.debug("AspectHelper.setVideoSize({},{}): AR: {}, METHOD: {}", mVideoWidth, mVideoHeight, ar(videoWidth, videoHeight), mCurrentAspectRatio);
+        return mCurrentAspectRatio;
     }
 
     private int ar(int videoWidth, int videoHeight) {
@@ -222,6 +233,7 @@ public final class AspectHelper {
     }
 
     public void setAspectRatio(int aspectRatio) {
+        AppUtil.log.debug("AspectHelper.setAspectRatio({})", aspectRatio);
         mCurrentAspectRatio = aspectRatio;
     }
 
@@ -252,6 +264,14 @@ public final class AspectHelper {
                 break;
         }
         return text;
+    }
+
+    public static int nextAspectRatio(int currentAR) {
+        return (currentAR + 1) % (AR_LAST + 1);
+    }
+
+    public int getCurrentAspectRatio() {
+        return mCurrentAspectRatio;
     }
 
     public int getVideoWidth() {

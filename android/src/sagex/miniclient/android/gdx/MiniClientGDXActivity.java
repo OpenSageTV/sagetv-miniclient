@@ -48,6 +48,7 @@ import sagex.miniclient.android.events.HideKeyboardEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.MessageEvent;
+import sagex.miniclient.android.events.SetAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.video.PlayerSurfaceView;
@@ -508,6 +509,22 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Subscribe
     public void onChangePlayerOneTime(ChangePlayerOneTime changePlayerOneTime) {
         this.changePlayerOneTime = changePlayerOneTime;
+    }
+
+    @Subscribe
+    public void onChangeAspectRatio(SetAspectRatioEvent ar) {
+        int newAR = ar.getAspectRatio();
+        if (ar.isToggleNext()) {
+            newAR = getVideoView().toggleAspectRatio();
+        } else {
+            getVideoView().setAspectRatioMethod(ar.getAspectRatio());
+        }
+
+        // force an invalidate of the video view to redrawe with new aspect ratio
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) videoHolder.getLayoutParams();
+        videoHolder.setLayoutParams(lp);
+        videoHolder.requestLayout();
+        // Toast.makeText(this,getString(R.string.msg_change_aspect_ratio, AspectHelper.getAspectRatioText(newAR)), Toast.LENGTH_SHORT ).show();
     }
 
     /**

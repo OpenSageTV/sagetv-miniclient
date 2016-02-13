@@ -32,14 +32,19 @@ public class PlayerSurfaceView extends SurfaceView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         aspectHelper.doMeasure(widthMeasureSpec, heightMeasureSpec);
         setMeasuredDimension(aspectHelper.getMeasuredWidth(), aspectHelper.getMeasuredHeight());
-        AppUtil.log.debug("PlayerSurfaceView.onMeasure({},{}): Video Size:{}x{}, Measure: {}x{}", widthMeasureSpec, heightMeasureSpec, aspectHelper.getVideoWidth(), aspectHelper.getVideoHeight(), aspectHelper.getMeasuredWidth(), aspectHelper.getMeasuredHeight());
+        AppUtil.log.debug("PlayerSurfaceView.onMeasure({},{}): Video Size:{}x{}, Measure: {}x{}, AspectMode: {}", widthMeasureSpec, heightMeasureSpec, aspectHelper.getVideoWidth(), aspectHelper.getVideoHeight(), aspectHelper.getMeasuredWidth(), aspectHelper.getMeasuredHeight(), aspectHelper.getCurrentAspectRatio());
     }
 
-    public void setVideoSize(int width, int height) {
-        aspectHelper.setVideoSize(width, height);
+    public int setVideoSize(int width, int height) {
+        return aspectHelper.setVideoSize(width, height);
     }
 
     public void setAspectRatioMethod(int method) {
         aspectHelper.setAspectRatio(method);
+    }
+
+    public int toggleAspectRatio() {
+        aspectHelper.setAspectRatio(AspectHelper.nextAspectRatio(aspectHelper.getCurrentAspectRatio()));
+        return aspectHelper.getCurrentAspectRatio();
     }
 }

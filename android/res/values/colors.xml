@@ -2,4 +2,5 @@
 <resources>
     <color name="iconbutton_normal">#FAFAFA</color>
     <color name="iconbutton_alt">#81C784</color>
+    <color name="iconbutton_on">#00ff00</color>
 </resources>

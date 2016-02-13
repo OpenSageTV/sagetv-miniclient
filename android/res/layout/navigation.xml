@@ -177,6 +177,12 @@
                 android:tag="_stop" />
 
             <com.mikepenz.iconics.view.IconicsImageView
+                android:id="@+id/nav_toggle_ar"
+                style="@style/NavIconButton"
+                app:iiv_icon="gmd-aspect-ratio"
+                android:tag="aspect_ratio"/>
+
+            <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_switch_player"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-videocam-switch"
@@ -186,7 +192,7 @@
                 android:id="@+id/nav_remote_mode"
                 style="@style/NavIconButton"
                 app:iiv_icon="gmd-remote-control"
-                android:tag="_switch_video"/>
+                android:tag="toggle_smart_remote"/>
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_hide"

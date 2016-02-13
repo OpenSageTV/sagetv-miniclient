@@ -31,6 +31,7 @@ import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
+import sagex.miniclient.android.events.SetAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
@@ -146,6 +147,11 @@ public class NavigationFragment extends DialogFragment {
 
     }
 
+    @OnClick(R.id.nav_toggle_ar)
+    public void onToggleAspectRatio() {
+        client.eventbus().post(SetAspectRatioEvent.NEXT_ASPECT_RATIO);
+    }
+
     @OnClick(R.id.nav_remote_mode)
     public void onToggleSmartRemote() {
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
@@ -160,7 +166,7 @@ public class NavigationFragment extends DialogFragment {
 
     private void updateSmartRemoteToggle() {
         navSmartRemote.setVisibility(client.properties().getBoolean(Keys.use_stateful_remote, true) ? View.VISIBLE : View.GONE);
-        // Icon.gmd_remote_control
+        // GoogleMaterial.Icon.gmd_a
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
             navSmartRemote.setColorRes(R.color.iconbutton_on);
         } else {
