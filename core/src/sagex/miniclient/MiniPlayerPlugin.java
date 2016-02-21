@@ -60,7 +60,15 @@ public interface MiniPlayerPlugin extends Runnable {
      */
     void load(byte majorTypeHint, byte minorTypeHint, String encodingHint, String urlString, String hostname, boolean timeshifted, long bufferSize);
 
-    long getMediaTimeMillis();
+    /**
+     * Return the current play time on the MediaPlayer.  lastServerTime will be passed when PUSH is used to indicate the
+     * last media time after a PUSH happened.  In the case where the player's time reset's to 0, then this can be used
+     * by the player to append the lastServerTime+playerTime to get the "real" playback time.
+     *
+     * @param lastServerTime
+     * @return
+     */
+    long getMediaTimeMillis(long lastServerTime);
 
     /**
      * Appears to be used only during detailed buffered stats

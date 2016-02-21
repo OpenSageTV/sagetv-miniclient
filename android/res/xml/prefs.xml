@@ -100,11 +100,6 @@
             android:summary="@string/summary_detailed_buffer_stats"
             android:title="@string/title_detailed_buffer_stats" />
 
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pts_seek_hack"
-            android:summary="TS/PS Seek/Resume Hack"
-            android:title="If enabled, it might help with SEEK/RESUME for TS/PS files, but may have other side effects."/>
     </PreferenceCategory>
 
 

@@ -101,6 +101,7 @@ public class MediaCmd {
     private int statsTargetBWKbps;
     private long serverMuxTime;
     private long prebufferTime;
+    private long lastServerTime = 0;
 
     /**
      * Creates a new instance of MediaCmd
@@ -211,7 +212,7 @@ public class MediaCmd {
             case MEDIACMD_GETMEDIATIME:
                 if (playa == null)
                     return 0;
-                long theTime = playa.getMediaTimeMillis();
+                long theTime = getMediaTimeMillis();
                 writeInt((int) theTime, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
@@ -248,10 +249,10 @@ public class MediaCmd {
                 return 4;
             case MEDIACMD_FLUSH:
                 writeInt(1, retbuf, 0);
-                // TODO
                 if (playa != null && pushMode && numPushedBuffers > 0) {
                     numPushedBuffers = 0;
                     playa.flush();
+                    lastServerTime = 0;
                 }
                 return 4;
             case MEDIACMD_PUSHBUFFER:
@@ -264,8 +265,14 @@ public class MediaCmd {
                     statsStreamBWKbps = readShort(10, cmddata);
                     statsTargetBWKbps = readShort(12, cmddata);
                     serverMuxTime = readInt(14, cmddata);
+
+                    if (lastServerTime == 0) {
+                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                            log.debug("PushBuffer: Setting ServerMUXTime: {}", serverMuxTime);
+                        lastServerTime = serverMuxTime;
+                    }
                     if (playa != null) {
-                        prebufferTime = serverMuxTime - playa.getMediaTimeMillis();
+                        prebufferTime = serverMuxTime - getMediaTimeMillis();
                     }
                     // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
@@ -300,14 +307,16 @@ public class MediaCmd {
                     // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv);
                 }
 
-                if (rv < 0) {
-                    log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}");
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    if (rv < 0) {
+                        log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}");
+                    }
                 }
 
                 writeInt(rv, retbuf, 0);
                 if (MiniClientConnection.detailedBufferStats) {
                     if (playa != null) {
-                        writeInt((int) playa.getMediaTimeMillis(), retbuf, 4);
+                        writeInt((int) getMediaTimeMillis(), retbuf, 4);
                         retbuf[8] = (byte) (playa.getState() & 0xFF);
                     } else {
                         writeInt(0, retbuf, 4);
@@ -365,5 +374,12 @@ public class MediaCmd {
                 log.error("MEDIACMD Unhandled Media Command: {}", cmd);
                 return -1;
         }
+    }
+
+    private long getMediaTimeMillis() {
+        if (playa != null) {
+            return playa.getMediaTimeMillis(lastServerTime);
+        }
+        return lastServerTime;
     }
 }

@@ -4,7 +4,6 @@ import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
-import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
@@ -16,16 +15,92 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
  * Created by seans on 06/10/15.
  */
 public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource> {
+    private static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
+    private static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
     long preSeekPos = -1;
+    long playerGetTimeOffset = -1;
+    long lastTime = 0;
+    boolean resumeMode = false;
+    long lastGetTime = 0;
 
     public IJKMediaPlayerImpl(MiniClientGDXActivity activity) {
         super(activity, true, true);
     }
 
+    /**
+     * IJK's getMediaTime() is a little quirky for PS/TS streams.  Basically, when you start
+     * from 0, then seeking works fine.  But, when you resume from some other time, the
+     * players internal clock is reset to 0.  So, the stream plays at the right position, but
+     * the timescale is reset to 0.  For that reason, when pushMode is enabled, you can follow
+     * the logic to see what has to happen to ensure the correct media time.
+     *
+     * @param serverStartTime
+     * @return
+     */
     @Override
-    public long getPlayerMediaTimeMillis() {
+    public long getPlayerMediaTimeMillis(long serverStartTime) {
         if (player == null) return 0;
-        return player.getCurrentPosition();
+
+        long time = player.getCurrentPosition();
+
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+            if (System.currentTimeMillis() - lastGetTime > 1000) {
+                lastGetTime = System.currentTimeMillis();
+                if (time + playerGetTimeOffset > PTS_ROLLOVER) {
+                    log.debug("IJK: getMediaTime(): Tick Rollver; serverStart: {}, time: {}, real: {}", serverStartTime, time, time + playerGetTimeOffset - PTS_ROLLOVER);
+                } else {
+                    log.debug("IJK: getMediaTime(): Tick; serverStart: {}, time: {}", serverStartTime, time);
+                }
+            }
+        }
+
+        if (pushMode) {
+            if (playerGetTimeOffset < 0) {
+                // initial start/resume time that IJK will use as it's time base
+                log.debug("IJK: getMediaTime(): Setting initial player offset {}", serverStartTime);
+                playerGetTimeOffset = serverStartTime;
+                if (serverStartTime < 500) {
+                    // this is start from beginning
+                    resumeMode = false;
+                    playerGetTimeOffset = 0;
+                } else {
+                    log.debug("IJK: getMediaTime(): RESUME from {}", serverStartTime);
+                    resumeMode = true;
+                }
+            }
+
+            if (time < 0) {
+                // push mode seeking, we are adjusting
+                // log.debug("IJK: getMediaTime(): seeking/adjusting... {}, serverTime: {}", time, serverStartTime);
+                lastTime = time;
+                return time;
+            }
+
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                // if the last time <0 and we now have a time, then the seek adjusted
+                if (time >= 0 && lastTime < 0) {
+                    log.debug("IJK: getMediaTime(): After Seek;  off:{}, time: {}, startStart: {}", playerGetTimeOffset, time, serverStartTime);
+                }
+            }
+
+            // when in resume mode, you go back before the start of the resume, player time
+            // seems to do a PTS rollover of sorts
+            if (resumeMode && time + playerGetTimeOffset > PTS_ROLLOVER) {
+                // need to adjust the time
+                time = time - PTS_ROLLOVER; // ofset will be added at the end
+            }
+
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                // this is just to capture when something possible goes wrong and we
+                if (Math.abs(lastTime - time) > TWENTY_HOURS) {
+                    log.debug("IJK: big jump getMediaTime(): off:{}, time:{}, serverStartTime: {}, lastTime: {}", playerGetTimeOffset, time, serverStartTime, lastTime);
+                }
+            }
+            lastTime = time;
+        }
+
+        // return the time adjusted by the player's time offset
+        return time + ((pushMode) ? playerGetTimeOffset : 0);
     }
 
     @Override
@@ -55,7 +130,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     public void flush() {
         super.flush();
         if (player != null) {
-            log.debug("Flush Will force a seek to clear buffers");
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("Flush Will force a seek to clear buffers");
             player.seekTo(Long.MAX_VALUE);
         }
     }
@@ -72,6 +148,9 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
+        playerGetTimeOffset = -1;
+        preSeekPos = -1;
+        resumeMode = false;
         releasePlayer();
         try {
             if (player == null) {
@@ -87,15 +166,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-mpeg2", 1); // enable hardware acceleration
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
 
-            if (pushMode) {
-                // in push mode, ijk will reset timestamps on media to 0, so we need to use return
-                // unadjusted time.
-                if (MiniclientApplication.get().getClient().properties().getBoolean(Keys.pts_seek_hack, false)) {
-                    log.debug("pts seek hack enabled");
-                    ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "no-time-adjust", 1);
-                }
-            }
-
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
 
             // setting this to 0 removes the pixelization for mpeg2 videos
@@ -109,7 +179,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
                 @Override
                 public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int width, int height, int i2, int i3) {
-                    log.debug("IJKPlayer.onVideoSizeChanged: {}x{}, {},{}", width, height, i2, i3);
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                        log.debug("IJKPlayer.onVideoSizeChanged: {}x{}, {},{}", width, height, i2, i3);
                     setVideoSize(width, height);
                 }
             });
@@ -144,7 +215,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(IMediaPlayer iMediaPlayer) {
-                    log.debug("MEDIA COMPLETE");
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("MEDIA COMPLETE");
                     stop();
                     notifySageTVStop();
                     state = EOS_STATE;
@@ -157,19 +228,22 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                     playerReady = true;
                     player.start();
                     if (!pushMode && preSeekPos != -1) {
-                        log.debug("Resuming At Position: {}", preSeekPos);
+                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                            log.debug("Resuming At Position: {}", preSeekPos);
                         player.seekTo(preSeekPos);
                         preSeekPos = -1;
                     }
 
-                    MediaInfo mi = player.getMediaInfo();
-                    if (mi != null) {
-                        log.info("MEDIAINFO: video: {},{}", mi.mVideoDecoder, mi.mVideoDecoderImpl);
-                        if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.announce_software_decoder, false)) {
-                            if (!"mediacodec".equalsIgnoreCase(mi.mVideoDecoder)) {
-                                message("Using Software Decoder (" + (pushMode ? "PUSH MODE" : "PULL MODE") + ")");
-                            } else {
-                                //message("Using Hardware Decoder");
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                        MediaInfo mi = player.getMediaInfo();
+                        if (mi != null) {
+                            log.info("MEDIAINFO: video: {},{}", mi.mVideoDecoder, mi.mVideoDecoderImpl);
+                            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.announce_software_decoder, false)) {
+                                if (!"mediacodec".equalsIgnoreCase(mi.mVideoDecoder)) {
+                                    message("Using Software Decoder (" + (pushMode ? "PUSH MODE" : "PULL MODE") + ")");
+                                } else {
+                                    //message("Using Hardware Decoder");
+                                }
                             }
                         }
                     }
