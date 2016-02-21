@@ -110,11 +110,6 @@ public interface PrefStore {
         String app_destroy_on_pause = "app_destroy_on_pause";
 
         /**
-         * SageTV GetProperty Keys
-         */
-        java.lang.String GFX_SURFACES = "GFX_SURFACES";
-
-        /**
          * Boolean: True when ExoPlayer is used
          */
         String use_exoplayer = "use_exoplayer";
@@ -135,10 +130,5 @@ public interface PrefStore {
          * Android Launcher
          */
         String exit_to_home_screen = "exit_to_home_screen";
-
-        /**
-         * Boolean: default is true.  When true, detailed buffer stats is collected by the server
-         */
-        String detailed_buffer_stats = "detailed_buffer_stats";
     }
 }
