@@ -88,18 +88,6 @@
             android:summary="@string/summary_announce_software_decoder_preference"
             android:title="@string/title_announce_software_decoder_preference" />
 
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="GFX_SURFACES"
-            android:summary="@string/GFX_SURFACES_summary"
-            android:title="@string/GFX_SURFACES_title" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="detailed_buffer_stats"
-            android:summary="@string/summary_detailed_buffer_stats"
-            android:title="@string/title_detailed_buffer_stats" />
-
     </PreferenceCategory>
 
 
