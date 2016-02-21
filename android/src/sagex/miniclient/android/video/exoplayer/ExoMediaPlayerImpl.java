@@ -12,7 +12,6 @@ import com.google.android.exoplayer.util.VerboseLogUtil;
 
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
-import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 
@@ -67,17 +66,19 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
 
     @Override
     public Dimension getVideoDimensions() {
-        log.debug("getVideoDimensions");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("getVideoDimensions");
         if (player != null) {
             if (player.getFormat() != null) {
                 Dimension d = new Dimension(player.getFormat().width, player.getFormat().height);
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("getVideoSize(): {}", d);
                 return d;
             } else {
-                log.debug("getVideoDimensions: player.getFormat is null");
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.debug("getVideoDimensions: player.getFormat is null");
             }
         } else {
-            log.debug("getVideoDimensions: player is null");
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("getVideoDimensions: player is null");
         }
         return null;
     }
@@ -102,14 +103,6 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
         } else {
             dataSource = new ExoPullDataSource();
         }
-        if (pushMode && context.getClient().properties().getBoolean(Keys.pts_seek_hack, false)) {
-            // note required adjustments to ExoPlayer
-            log.debug("pts seek hack enabled");
-            System.setProperty(Keys.pts_seek_hack, "true");
-        } else {
-            System.setProperty(Keys.pts_seek_hack, "false");
-        }
-
         // mp4 and mkv will play (but not aac audio)
         // File file = new File("/sdcard/Movies/sample-mkv.mkv");
         // File file = new File("/sdcard/Movies/sample-mp4.mp4");
@@ -170,11 +163,15 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
     }
 
     @Override
-    public long getPlayerMediaTimeMillis() {
+    public long getPlayerMediaTimeMillis(long lastServerTime) {
         if (player==null) return 0;
         long time = player.getCurrentPosition();
-        //log.debug("getMediaTimeMillis(): {} - duration: {}", time, player.getDuration());
-        //if (pushMode) return -1l;
+        // NOTE: exoplayer will lose it's time after a seek/resume, so this ensures that it
+        // will send back the last known server start time plus the player time
+        if (pushMode) {
+            // log.debug("Exo: getMediaTime(): {}, {}, {}", lastServerTime, time, lastServerTime+time);
+            return lastServerTime + time;
+        }
         return time;
     }
 
