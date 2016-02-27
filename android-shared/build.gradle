@@ -1,4 +1,5 @@
-apply plugin: "com.android.application"
+// apply plugin: 'com.android.library'
+apply plugin: 'com.android.application'
 
 android {
     buildToolsVersion "22.0.1"
@@ -29,7 +30,8 @@ dependencies {
     compile "com.android.support:appcompat-v7:${androidExtrasVer}"
     compile "com.android.support:cardview-v7:${androidExtrasVer}"
     compile "com.android.support:recyclerview-v7:${androidExtrasVer}"
-    compile 'com.jakewharton:butterknife:7.0.1'
+    // doesn't work in library projects :(
+    // compile 'com.jakewharton:butterknife:7.0.1'
 
     // gdx
     compile "com.badlogicgames.gdx:gdx:$gdxVersion"
@@ -67,8 +69,8 @@ dependencies {
     compile 'com.squareup:otto:1.3.8'
 
     // icon fonts
-    compile 'com.mikepenz:iconics-core:2.5.5@aar'
-    compile 'com.mikepenz:google-material-typeface:+@aar'
+    compile 'com.mikepenz:iconics-core:2.5.8@aar'
+    compile 'com.mikepenz:google-material-typeface:2.2.0.1.original@aar'
 
     // animation library
     compile 'com.nineoldandroids:library:2.4.0'

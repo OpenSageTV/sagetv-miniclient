@@ -21,7 +21,7 @@
             style="@style/HeaderIconButton"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            app:iiv_icon="gmd-collection-add"/>
+            app:iiv_icon="gmd-add"/>
 
 
         <ImageView

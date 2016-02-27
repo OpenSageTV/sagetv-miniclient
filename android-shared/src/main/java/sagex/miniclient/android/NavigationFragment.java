@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
@@ -21,9 +22,6 @@ import com.mikepenz.iconics.view.IconicsImageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
@@ -46,13 +44,10 @@ public class NavigationFragment extends DialogFragment {
 
     private View navView;
 
-    @Bind(R.id.nav_options)
     View navOptions = null;
 
-    @Bind(R.id.nav_media_pause)
     View navPause = null;
 
-    @Bind(R.id.nav_remote_mode)
     IconicsImageView navSmartRemote;
 
     public NavigationFragment() {
@@ -71,7 +66,62 @@ public class NavigationFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         navView = inflater.inflate(R.layout.navigation, container, false);
 
-        ButterKnife.bind(this, navView);
+        navOptions = navView.findViewById(R.id.nav_options);
+        navPause = navView.findViewById(R.id.nav_media_pause);
+        navSmartRemote = (IconicsImageView) navView.findViewById(R.id.nav_remote_mode);
+
+        View.OnClickListener buttonClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                buttonClick(v);
+            }
+        };
+        for (int id : new int[]{R.id.nav_up, R.id.nav_down, R.id.nav_left, R.id.nav_right, R.id.nav_select, R.id.nav_pgdn, R.id.nav_pgup,
+                R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
+                R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
+                R.id.nav_media_stop, R.id.nav_back}) {
+            navView.findViewById(id).setOnClickListener(buttonClickListener);
+        }
+
+        navView.findViewById(R.id.nav_switch_player).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSwitchPlayer();
+            }
+        });
+
+        navView.findViewById(R.id.nav_toggle_ar).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                onToggleAspectRatio();
+            }
+        });
+
+        navView.findViewById(R.id.nav_remote_mode).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                onToggleSmartRemote();
+            }
+        });
+
+        navView.findViewById(R.id.nav_help).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                onHelp();
+            }
+        });
+
+        for (int id : new int[]{R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide}) {
+            navView.findViewById(id).setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    buttonClickInternal(v);
+                }
+            });
+        }
 
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup() && (client.isVideoPlaying() || client.isVideoPaused())) {
             navPause.requestFocus();
@@ -84,10 +134,10 @@ public class NavigationFragment extends DialogFragment {
         return navView;
     }
 
-    @OnClick({R.id.nav_up, R.id.nav_down, R.id.nav_left, R.id.nav_right, R.id.nav_select, R.id.nav_pgdn, R.id.nav_pgup,
-            R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
-            R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
-            R.id.nav_media_stop, R.id.nav_back})
+    //    @OnClick({R.id.nav_up, R.id.nav_down, R.id.nav_left, R.id.nav_right, R.id.nav_select, R.id.nav_pgdn, R.id.nav_pgup,
+//            R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
+//            R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
+//            R.id.nav_media_stop, R.id.nav_back})
     public void buttonClick(View v) {
         try {
             log.debug("Clicked: {}", v.getTag());
@@ -115,7 +165,7 @@ public class NavigationFragment extends DialogFragment {
         }
     }
 
-    @OnClick(R.id.nav_switch_player)
+    // @OnClick(R.id.nav_switch_player)
     public void onSwitchPlayer() {
         dismiss();
 
@@ -147,12 +197,12 @@ public class NavigationFragment extends DialogFragment {
 
     }
 
-    @OnClick(R.id.nav_toggle_ar)
+    // @OnClick(R.id.nav_toggle_ar)
     public void onToggleAspectRatio() {
         client.eventbus().post(SetAspectRatioEvent.NEXT_ASPECT_RATIO);
     }
 
-    @OnClick(R.id.nav_remote_mode)
+    // @OnClick(R.id.nav_remote_mode)
     public void onToggleSmartRemote() {
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
             client.getCurrentConnection().getMenuHint().popupName = null;
@@ -175,7 +225,7 @@ public class NavigationFragment extends DialogFragment {
     }
 
 
-    @OnClick(R.id.nav_help)
+    // @OnClick(R.id.nav_help)
     public void onHelp() {
         dismiss();
         HelpDialogFragment.showDialog(getActivity());
@@ -199,7 +249,7 @@ public class NavigationFragment extends DialogFragment {
         client.eventbus().post(HideSystemUIEvent.INSTANCE);
     }
 
-    @OnClick({R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide})
+    // @OnClick({R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide})
     public void buttonClickInternal(View v) {
         String tag = v.getTag().toString().toLowerCase();
         if ("_keyboard".equalsIgnoreCase(tag)) {

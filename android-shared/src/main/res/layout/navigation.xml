@@ -46,13 +46,13 @@
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_pgup"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-upload"
+            app:iiv_icon="gmd-vertical-align-top"
             android:tag="page_up"/>
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_pgdn"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-download"
+            app:iiv_icon="gmd-vertical-align-bottom"
             android:tag="page_down"/>
 
         <View style="@style/NavIconSpacer"/>
@@ -60,14 +60,14 @@
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_up"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-caret-up-circle"
+            app:iiv_icon="gmd-keyboard-arrow-up"
             android:tag="up"/>
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_down"
             style="@style/NavIconButton"
             android:tag="down"
-            app:iiv_icon="gmd-caret-down-circle"/>
+            app:iiv_icon="gmd-keyboard-arrow-down"/>
         <!--<Button-->
         <!--android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content"-->
@@ -95,19 +95,19 @@
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_select"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-dot-circle"
+            app:iiv_icon="gmd-fiber-manual-record"
             android:tag="select"/>
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_left"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-caret-left-circle"
+            app:iiv_icon="gmd-keyboard-arrow-left"
             android:tag="left"/>
 
         <com.mikepenz.iconics.view.IconicsImageView
             android:id="@+id/nav_right"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-caret-right-circle"
+            app:iiv_icon="gmd-keyboard-arrow-right"
             android:tag="right"/>
 
         <View style="@style/NavIconSpacer"/>
@@ -149,13 +149,13 @@
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_pause"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-pause-circle"
+                app:iiv_icon="gmd-pause"
                 android:tag="play_pause"/>
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_media_play"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-play-circle"
+                app:iiv_icon="gmd-play-arrow"
                 android:tag="_play"/>
 
             <com.mikepenz.iconics.view.IconicsImageView
@@ -185,19 +185,19 @@
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_switch_player"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-videocam-switch"
+                app:iiv_icon="gmd-switch-video"
                 android:tag="_switch_video"/>
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_remote_mode"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-remote-control"
+                app:iiv_icon="gmd-settings-remote"
                 android:tag="toggle_smart_remote"/>
 
             <com.mikepenz.iconics.view.IconicsImageView
                 android:id="@+id/nav_hide"
                 style="@style/NavIconButtonAlt"
-                app:iiv_icon="gmd-eye-off"
+                app:iiv_icon="gmd-visibility-off"
                 android:tag="_hide"/>
 
         </LinearLayout>
