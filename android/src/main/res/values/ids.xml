@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="pause_play" type="id"/>
+    <item name="stop" type="id"/>
+    <item name="media_ff" type="id"/>
+    <item name="media_rew" type="id"/>
+</resources>

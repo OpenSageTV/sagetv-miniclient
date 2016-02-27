@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?><!-- The main content view -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:keepScreenOn="true"
+             android:background="@android:color/black">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@null"
+        android:id="@+id/video_surface_parent">
+
+        <sagex.miniclient.android.video.PlayerSurfaceView
+            android:id="@+id/video_surface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@null"
+            android:visibility="visible"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/surface"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="@null"/>
+
+    <RelativeLayout
+        android:id="@+id/waitforit"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/background"/>
+
+        <TextView
+            android:id="@+id/pleaseWaitText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:padding="30dp"
+            android:textSize="24sp"/>
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/errorContainer"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/errorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"/>
+
+            <TextView
+                android:id="@+id/errorCause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"/>
+
+            <Button
+                android:id="@+id/errorClose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_close"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+</FrameLayout>

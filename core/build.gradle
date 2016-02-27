@@ -3,9 +3,9 @@ apply plugin: "java"
 sourceCompatibility = 1.6
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-sourceSets.main.java.srcDirs = [ "src/" ]
-sourceSets.main.resources.srcDirs = [ "resources/" ]
-sourceSets.test.java.srcDirs = ["test/"]
+//sourceSets.main.java.srcDirs = [ "src/" ]
+//sourceSets.main.resources.srcDirs = [ "resources/" ]
+//sourceSets.test.java.srcDirs = ["test/"]
 
 jar.baseName = "sagetv-miniclient-lib"
 
