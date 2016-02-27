@@ -6,6 +6,7 @@ import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -14,9 +15,6 @@ import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.prefs.PrefStore;
 
@@ -26,10 +24,7 @@ import sagex.miniclient.prefs.PrefStore;
 public class AutoConnectDialog extends DialogFragment {
     static final Logger log = LoggerFactory.getLogger(AutoConnectDialog.class);
 
-    @Bind(R.id.text)
     TextView connectText = null;
-
-    @Bind(R.id.progress_view)
     CircularProgressView progressView;
 
     int countdownSecs = 5;
@@ -48,7 +43,23 @@ public class AutoConnectDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.dialog_autoconnect, container, false);
-        ButterKnife.bind(this, v);
+
+        connectText = (TextView) v.findViewById(R.id.text);
+        progressView = (CircularProgressView) v.findViewById(R.id.progress_view);
+        v.findViewById(R.id.ok).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOK();
+            }
+        });
+
+        v.findViewById(R.id.cancel).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onCancel();
+            }
+        });
+
 
         return v;
     }
@@ -74,13 +85,13 @@ public class AutoConnectDialog extends DialogFragment {
         }
     }
 
-    @OnClick(R.id.ok)
+    // @OnClick(R.id.ok)
     public void onOK() {
         countDownTimer.cancel();
         connect();
     }
 
-    @OnClick(R.id.cancel)
+    // @OnClick(R.id.cancel)
     public void onCancel() {
         autoConnect = false;
         countDownTimer.cancel();

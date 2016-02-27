@@ -6,13 +6,9 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,9 +23,7 @@ public class AddServerFragment extends DialogFragment {
     private static final String ARG_SERVER_NAME = "servername";
     private static final String ARG_SERVER_ADDR = "serveraddr";
 
-    @Bind(R.id.server_name)
     EditText serverName;
-    @Bind(R.id.server_address)
     EditText serverAddr;
 
     private OnAddServerListener mListener;
@@ -64,7 +58,14 @@ public class AddServerFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_add_server, container, false);
-        ButterKnife.bind(this, v);
+        serverName = (EditText) v.findViewById(R.id.server_name);
+        serverAddr = (EditText) v.findViewById(R.id.server_address);
+        v.findViewById(R.id.button_ok).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onButtonPressed();
+            }
+        });
         if (getArguments() != null) {
             serverName.setText(getArguments().getString(ARG_SERVER_NAME));
             serverAddr.setText(getArguments().getString(ARG_SERVER_ADDR));
@@ -72,7 +73,7 @@ public class AddServerFragment extends DialogFragment {
         return v;
     }
 
-    @OnClick(R.id.button_ok)
+    // @OnClick(R.id.button_ok)
     public void onButtonPressed() {
         if (mListener != null) {
             mListener.onAddServer(serverName.getText().toString(), serverAddr.getText().toString());

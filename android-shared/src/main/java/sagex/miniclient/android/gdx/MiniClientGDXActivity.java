@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import sagex.miniclient.MACAddressResolver;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
@@ -67,29 +64,14 @@ import static sagex.miniclient.android.AppUtil.message;
 public class MiniClientGDXActivity extends AndroidApplication implements MACAddressResolver {
     public static final String ARG_SERVER_INFO = "server_info";
     private static final Logger log = LoggerFactory.getLogger(MiniClientGDXActivity.class);
-    @Bind(R.id.surface)
     FrameLayout uiFrameHolder;
-
-    @Bind(R.id.video_surface)
     PlayerSurfaceView videoHolder;
-
-    @Bind(R.id.video_surface_parent)
     ViewGroup videoHolderParent;
-
-    @Bind(R.id.waitforit)
     View pleaseWait = null;
-
-    @Bind(R.id.pleaseWaitText)
     TextView plaseWaitText = null;
-
     // error stuff
-    @Bind((R.id.errorMessage))
     TextView errorMessage;
-
-    @Bind((R.id.errorCause))
     TextView errorCause;
-
-    @Bind((R.id.errorContainer))
     ViewGroup errorContainer;
 
     MiniClient client;
@@ -184,7 +166,22 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             hideSystemUI(this);
 
             setContentView(R.layout.miniclientgl_layout);
-            ButterKnife.bind(this);
+
+            findViewById(R.id.errorClose).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onCloseClicked();
+                }
+            });
+
+            uiFrameHolder = (FrameLayout) findViewById(R.id.surface);
+            videoHolder = (PlayerSurfaceView) findViewById(R.id.video_surface);
+            videoHolderParent = (ViewGroup) findViewById(R.id.video_surface_parent);
+            pleaseWait = findViewById(R.id.waitforit);
+            plaseWaitText = (TextView) findViewById(R.id.pleaseWaitText);
+            errorMessage = (TextView) findViewById(R.id.errorMessage);
+            errorCause = (TextView) findViewById(R.id.errorCause);
+            errorContainer = (ViewGroup) findViewById(R.id.errorContainer);
 
             AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
             //cfg.useGL20 = false;
@@ -557,7 +554,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         return videoHolderParent;
     }
 
-    @OnClick(R.id.errorClose)
+    // @OnClick(R.id.errorClose)
     public void onCloseClicked() {
         // connect to server
         Intent i = new Intent(this, ServersActivity.class);

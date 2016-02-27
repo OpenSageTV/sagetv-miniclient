@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Toast;
 
 import com.mikepenz.iconics.view.IconicsImageView;
@@ -14,9 +15,6 @@ import com.mikepenz.iconics.view.IconicsImageView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
@@ -28,16 +26,9 @@ import sagex.miniclient.prefs.PrefStore;
 public class ServersActivity extends Activity implements AddServerFragment.OnAddServerListener {
     private static final Logger log = LoggerFactory.getLogger(ServersActivity.class);
 
-    @Bind(R.id.list)
     RecyclerView list;
-
-    @Bind(R.id.header)
     View header;
-
-    @Bind(R.id.btn_add_server)
     IconicsImageView addServerButton;
-
-    @Bind(R.id.btn_settings)
     IconicsImageView settingsButton;
 
     ServersAdapter adapter = null;
@@ -52,10 +43,34 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
 
         super.onCreate(savedInstanceState);
 
-
         setContentView(R.layout.servers_layout);
 
-        ButterKnife.bind(this);
+        list = (RecyclerView) findViewById(R.id.list);
+        header = findViewById(R.id.header);
+        addServerButton = (IconicsImageView) findViewById(R.id.btn_add_server);
+        settingsButton = (IconicsImageView) findViewById(R.id.btn_settings);
+
+        findViewById(R.id.btn_settings).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                gotoSettingsAction();
+            }
+        });
+
+        findViewById(R.id.btn_help).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onhelp();
+            }
+        });
+
+        findViewById(R.id.btn_add_server).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addServerAction();
+            }
+        });
 
         // now show the server selector dialog
         adapter = new ServersAdapter(this);
@@ -163,20 +178,21 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
             log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
             Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
         }
+
     }
 
-    @OnClick(R.id.btn_settings)
+    // @OnClick(R.id.btn_settings)
     public void gotoSettingsAction() {
         Intent i = new Intent(getBaseContext(), SettingsActivity.class);
         startActivity(i);
     }
 
-    @OnClick(R.id.btn_help)
+    // @OnClick(R.id.btn_help)
     public void onhelp() {
         HelpDialogFragment.showDialog(this);
     }
 
-    @OnClick(R.id.btn_add_server)
+    // @OnClick(R.id.btn_add_server)
     public void addServerAction() {
         // add new server
         AddServerFragment f = AddServerFragment.newInstance("My Server", "");

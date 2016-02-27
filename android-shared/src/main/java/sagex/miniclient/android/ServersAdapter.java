@@ -23,8 +23,6 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.util.Utils;
 
@@ -37,15 +35,10 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener, PopupMenu.OnMenuItemClickListener {
         // each data item is just a string in this case
         public View item;
-        @Bind(R.id.server_name)
         public TextView serverName;
-        @Bind(R.id.server_address)
         public TextView serverAddress;
-        @Bind(R.id.server_locator_id)
         public TextView serverLocator;
-        @Bind(R.id.icon)
         public IconicsImageView icon;
-        @Bind(R.id.server_last_connect)
         public TextView serverLastConnected;
 
         public ServerInfo serverInfo;
@@ -57,7 +50,13 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         public ViewHolder(View v) {
             super(v);
             this.item = v;
-            ButterKnife.bind(this, v);
+
+            serverName = (TextView) v.findViewById(R.id.server_name);
+            serverAddress = (TextView) v.findViewById(R.id.server_address);
+            serverLocator = (TextView) v.findViewById(R.id.server_locator_id);
+            icon = (IconicsImageView) v.findViewById(R.id.icon);
+            serverLastConnected = (TextView) v.findViewById(R.id.server_last_connect);
+
             v.setFocusable(true);
             v.setClickable(true);
             v.setLongClickable(true);
@@ -87,25 +86,20 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.menu_remove:
-                    ((ServersActivity) context).deleteServer(serverInfo, true);
-                    break;
-                case R.id.menu_change_name:
-                    onChangeName();
-                    break;
-                case R.id.menu_connect:
-                    ServersActivity.connect(context, serverInfo);
-                    break;
-                case R.id.menu_connect_locator:
-                    if (!Utils.isEmpty(serverInfo.locatorID)) {
-                        ServerInfo newSI = serverInfo.clone();
-                        newSI.forceLocator = true;
-                        ServersActivity.connect(context, newSI);
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.msg_no_locator), Toast.LENGTH_LONG).show();
-                    }
-                    break;
+            if (item.getItemId() == R.id.menu_remove) {
+                ((ServersActivity) context).deleteServer(serverInfo, true);
+            } else if (item.getItemId() == R.id.menu_change_name) {
+                onChangeName();
+            } else if (item.getItemId() == R.id.menu_connect) {
+                ServersActivity.connect(context, serverInfo);
+            } else if (item.getItemId() == R.id.menu_connect_locator) {
+                if (!Utils.isEmpty(serverInfo.locatorID)) {
+                    ServerInfo newSI = serverInfo.clone();
+                    newSI.forceLocator = true;
+                    ServersActivity.connect(context, newSI);
+                } else {
+                    Toast.makeText(context, context.getString(R.string.msg_no_locator), Toast.LENGTH_LONG).show();
+                }
             }
             return true;
         }

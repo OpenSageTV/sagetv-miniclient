@@ -15,8 +15,6 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.io.InputStream;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.util.IOUtil;
 
@@ -24,7 +22,6 @@ import sagex.miniclient.util.IOUtil;
  * Created by seans on 31/01/16.
  */
 public class HelpDialogFragment extends DialogFragment {
-    @Bind(R.id.help_text)
     TextView helpText;
 
     public HelpDialogFragment() {
@@ -34,7 +31,7 @@ public class HelpDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.dialog_help, container, false);
-        ButterKnife.bind(this, v);
+        helpText = (TextView) v.findViewById(R.id.help_text);
         try {
             updateText();
         } catch (IOException e) {

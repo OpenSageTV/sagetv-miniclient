@@ -1,1 +1,2 @@
-include 'android-shared', 'core'
+include 'core', 'android-shared'
+//, ':android-phone'
