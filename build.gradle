@@ -16,7 +16,7 @@ allprojects {
     version = '1.0'
     ext {
         appName = "SageTVMiniclient"
-        versionText = new File('core/src/sagex/miniclient/Version.java').text
+        versionText = new File('core/src/main/java/sagex/miniclient/Version.java').text
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.9.1"

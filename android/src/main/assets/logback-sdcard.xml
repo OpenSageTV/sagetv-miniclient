@@ -1,0 +1,25 @@
+<configuration>
+    <property name="LOG_DIR" value="/sdcard/"/>
+
+    <appender name="sdcard" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <lazy>true</lazy>
+
+        <file>${LOG_DIR}/sagetv-miniclient.txt</file>
+
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover period -->
+            <fileNamePattern>${LOG_DIR}/sagetv-miniclient.%d.txt</fileNamePattern>
+
+            <!-- keep 2 days' worth of history -->
+            <maxHistory>2</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="sdcard"/>
+    </root>
+</configuration>
