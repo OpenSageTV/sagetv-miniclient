@@ -7,6 +7,16 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = [ "resources/" ]
 sourceSets.test.java.srcDirs = ["test/"]
 
-eclipse.project {
-    name = appName + "-core"
+jar.baseName = "sagetv-miniclient-lib"
+
+dependencies {
+    compile 'com.jcraft:jzlib:1.1.3'
+    compile "org.slf4j:slf4j-api:1.7.6"
+    compile "org.nanohttpd:nanohttpd:2.2.0"
+
+    // circular buffer
+    compile 'org.ostermiller:utils:1.07.00'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-all:1.10.19'
 }

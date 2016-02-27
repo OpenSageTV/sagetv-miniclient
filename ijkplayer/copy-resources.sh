@@ -29,8 +29,8 @@ cd -
 echo "COPYING..."
 for ARCH in $ARCHES; do
    echo "COPY ARCH: $ARCH"
-   mkdir -p ../android/mavenlocal/sagetv/ijkplayer/ijkplayer-${ARCH}/${VERSION}/
-   cp -fv ijkplayer/android/ijkplayer/ijkplayer-${ARCH}/build/outputs/aar/ijkplayer-${ARCH}-${OUTPUT}.aar ../android/mavenlocal/sagetv/ijkplayer/ijkplayer-${ARCH}/${VERSION}/ijkplayer-${ARCH}-${VERSION}.aar
+   mkdir -p ../mavenlocal/sagetv/ijkplayer/ijkplayer-${ARCH}/${VERSION}/
+   cp -fv ijkplayer/android/ijkplayer/ijkplayer-${ARCH}/build/outputs/aar/ijkplayer-${ARCH}-${OUTPUT}.aar ../mavenlocal/sagetv/ijkplayer/ijkplayer-${ARCH}/${VERSION}/ijkplayer-${ARCH}-${VERSION}.aar
 done
 
 #echo "REMOVING CACHES..."
