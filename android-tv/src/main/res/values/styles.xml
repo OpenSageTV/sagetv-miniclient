@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.MyTheme" parent="@style/Theme.Leanback.SageTV">
+    </style>
+
+    <style name="NavIconButton">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:background">@drawable/iconbutton_background</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <!--<item name="android:focusableInTouchMode">true</item>-->
+    </style>
+
+    <style name="HeaderIconButton">
+        <item name="android:layout_width">34dp</item>
+        <item name="android:layout_height">34dp</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:background">@drawable/iconbutton_background</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <!--<item name="android:focusableInTouchMode">true</item>-->
+    </style>
+</resources>

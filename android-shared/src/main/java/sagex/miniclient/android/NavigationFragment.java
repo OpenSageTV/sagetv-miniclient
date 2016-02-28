@@ -16,8 +16,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-
-import com.mikepenz.iconics.view.IconicsImageView;
+import android.widget.ImageView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ public class NavigationFragment extends DialogFragment {
 
     View navPause = null;
 
-    IconicsImageView navSmartRemote;
+    ImageView navSmartRemote;
 
     public NavigationFragment() {
         this.client = MiniclientApplication.get().getClient();
@@ -68,7 +67,7 @@ public class NavigationFragment extends DialogFragment {
 
         navOptions = navView.findViewById(R.id.nav_options);
         navPause = navView.findViewById(R.id.nav_media_pause);
-        navSmartRemote = (IconicsImageView) navView.findViewById(R.id.nav_remote_mode);
+        navSmartRemote = (ImageView) navView.findViewById(R.id.nav_remote_mode);
 
         View.OnClickListener buttonClickListener = new View.OnClickListener() {
             @Override
@@ -218,9 +217,9 @@ public class NavigationFragment extends DialogFragment {
         navSmartRemote.setVisibility(client.properties().getBoolean(Keys.use_stateful_remote, true) ? View.VISIBLE : View.GONE);
         // GoogleMaterial.Icon.gmd_a
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
-            navSmartRemote.setColorRes(R.color.iconbutton_on);
+            navSmartRemote.setImageResource(R.drawable.ic_open_with_white_24dp);
         } else {
-            navSmartRemote.setColorRes(R.color.iconbutton_normal);
+            navSmartRemote.setImageResource(R.drawable.ic_open_with_red_24dp);
         }
     }
 
