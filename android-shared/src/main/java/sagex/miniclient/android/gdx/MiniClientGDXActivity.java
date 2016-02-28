@@ -557,8 +557,14 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     // @OnClick(R.id.errorClose)
     public void onCloseClicked() {
         // connect to server
-        Intent i = new Intent(this, ServersActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
+        if (getResources().getBoolean(R.bool.istv)) {
+            finish();
+        } else {
+            Intent i = null;
+            i = new Intent(this, ServersActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+        }
+
     }
 }

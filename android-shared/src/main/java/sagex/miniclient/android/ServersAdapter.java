@@ -9,12 +9,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.mikepenz.google_material_typeface_library.GoogleMaterial;
-import com.mikepenz.iconics.view.IconicsImageView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +36,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         public TextView serverName;
         public TextView serverAddress;
         public TextView serverLocator;
-        public IconicsImageView icon;
+        public ImageView icon;
         public TextView serverLastConnected;
 
         public ServerInfo serverInfo;
@@ -54,7 +52,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             serverName = (TextView) v.findViewById(R.id.server_name);
             serverAddress = (TextView) v.findViewById(R.id.server_address);
             serverLocator = (TextView) v.findViewById(R.id.server_locator_id);
-            icon = (IconicsImageView) v.findViewById(R.id.icon);
+            icon = (ImageView) v.findViewById(R.id.icon);
             serverLastConnected = (TextView) v.findViewById(R.id.server_last_connect);
 
             v.setFocusable(true);
@@ -211,9 +209,9 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
             holder.serverLastConnected.setText("");
         }
         if (si.isLocatorOnly()) {
-            holder.icon.setIcon(GoogleMaterial.Icon.gmd_link);
+            holder.icon.setImageResource(R.drawable.ic_add_to_queue_white_60dp);
         } else {
-            holder.icon.setIcon(GoogleMaterial.Icon.gmd_live_tv);
+            holder.icon.setImageResource(R.drawable.ic_tv_white_60dp);
         }
         holder.serverInfo = si;
     }

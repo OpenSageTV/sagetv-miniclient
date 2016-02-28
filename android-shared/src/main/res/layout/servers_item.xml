@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp">
 
@@ -15,12 +14,12 @@
         android:layout_height="100dp"
         android:background="#30000000">
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/icon"
             android:layout_centerInParent="true"
-            app:iiv_color="@color/iconbutton_normal"/>
+            />
     </RelativeLayout>
 
     <LinearLayout

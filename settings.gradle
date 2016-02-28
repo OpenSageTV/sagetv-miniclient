@@ -1,2 +1,2 @@
-include 'core', 'android-shared'
-//, ':android-phone'
+include ':android-tv'
+include 'core', 'android-shared', ':android-phone'

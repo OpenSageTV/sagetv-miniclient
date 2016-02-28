@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/secure_login_bg"
@@ -16,12 +15,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true">
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/btn_add_server"
             style="@style/HeaderIconButton"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            app:iiv_icon="gmd-add"/>
+            android:src="@drawable/ic_add_box_white_24dp"/>
 
 
         <ImageView
@@ -34,19 +33,19 @@
 
             android:src="@drawable/sage_logo_256"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/btn_settings"
             style="@style/HeaderIconButton"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            app:iiv_icon="gmd-settings"/>
+            android:src="@drawable/ic_settings_white_24dp"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/btn_help"
             style="@style/HeaderIconButton"
             android:layout_toLeftOf="@+id/btn_settings"
             android:layout_alignParentTop="true"
-            app:iiv_icon="gmd-help"/>
+            android:src="@drawable/ic_help_outline_white_24dp"/>
     </RelativeLayout>
 
     <RelativeLayout

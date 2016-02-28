@@ -8,9 +8,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.Toast;
-
-import com.mikepenz.iconics.view.IconicsImageView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +27,8 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
 
     RecyclerView list;
     View header;
-    IconicsImageView addServerButton;
-    IconicsImageView settingsButton;
+    ImageView addServerButton;
+    ImageView settingsButton;
 
     ServersAdapter adapter = null;
     boolean paused = true;
@@ -47,8 +46,8 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
 
         list = (RecyclerView) findViewById(R.id.list);
         header = findViewById(R.id.header);
-        addServerButton = (IconicsImageView) findViewById(R.id.btn_add_server);
-        settingsButton = (IconicsImageView) findViewById(R.id.btn_settings);
+        addServerButton = (ImageView) findViewById(R.id.btn_add_server);
+        settingsButton = (ImageView) findViewById(R.id.btn_settings);
 
         findViewById(R.id.btn_settings).setOnClickListener(new View.OnClickListener() {
 

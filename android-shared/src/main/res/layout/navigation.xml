@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
               android:layout_width="wrap_content"
               android:layout_height="match_parent"
@@ -15,75 +14,60 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_help"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-help"
+            android:src="@drawable/ic_help_outline_white_24dp"
             android:tag="_help"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_close"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-close"
+            android:src="@drawable/ic_close_white_24dp"
             android:tag="_close"/>
 
         <View style="@style/NavIconSpacer"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_home"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-home"
+            android:src="@drawable/ic_home_white_24dp"
             android:tag="_home"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_options"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-menu"
+            android:src="@drawable/ic_menu_white_24dp"
             android:tag="_options"/>
 
         <View style="@style/NavIconSpacer"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_pgup"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-vertical-align-top"
+            android:src="@drawable/ic_vertical_align_top_white_24dp"
             android:tag="page_up"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_pgdn"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-vertical-align-bottom"
+            android:src="@drawable/ic_vertical_align_bottom_white_24dp"
             android:tag="page_down"/>
 
         <View style="@style/NavIconSpacer"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_up"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-keyboard-arrow-up"
+            android:src="@drawable/ic_arrow_upward_white_24dp"
             android:tag="up"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_down"
             style="@style/NavIconButton"
             android:tag="down"
-            app:iiv_icon="gmd-keyboard-arrow-down"/>
-        <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Keyboard"-->
-        <!--/>-->
-        <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="UP"-->
-        <!--/>-->
-        <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="DOWN"-->
-        <!--/>-->
-
+            android:src="@drawable/ic_arrow_downward_white_24dp"
+            />
     </LinearLayout>
 
     <LinearLayout
@@ -92,38 +76,38 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_select"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-fiber-manual-record"
+            android:src="@drawable/ic_fiber_manual_record_white_24dp"
             android:tag="select"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_left"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-keyboard-arrow-left"
+            android:src="@drawable/ic_arrow_back_white_24dp"
             android:tag="left"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_right"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-keyboard-arrow-right"
+            android:src="@drawable/ic_arrow_forward_white_24dp"
             android:tag="right"/>
 
         <View style="@style/NavIconSpacer"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_back"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-arrow-back"
+            android:src="@drawable/ic_undo_white_24dp"
             android:tag="back"/>
 
         <View style="@style/NavIconSpacer"/>
 
-        <com.mikepenz.iconics.view.IconicsImageView
+        <ImageView
             android:id="@+id/nav_keyboard"
             style="@style/NavIconButton"
-            app:iiv_icon="gmd-keyboard"
+            android:src="@drawable/ic_keyboard_white_24dp"
             android:tag="_keyboard"/>
 
         <LinearLayout
@@ -134,70 +118,70 @@
 
             <View style="@style/NavIconSpacer"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_skip_back_2"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-skip-previous"
+                android:src="@drawable/ic_skip_previous_white_24dp"
                 android:tag="rew_2"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_skip_back"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-fast-rewind"
+                android:src="@drawable/ic_fast_rewind_white_24dp"
                 android:tag="rew"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_pause"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-pause"
+                android:src="@drawable/ic_pause_white_24dp"
                 android:tag="play_pause"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_play"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-play-arrow"
+                android:src="@drawable/ic_play_arrow_white_24dp"
                 android:tag="_play"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_skip_forward"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-fast-forward"
+                android:src="@drawable/ic_fast_forward_white_24dp"
                 android:tag="ff"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_skip_forward_2"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-skip-next"
+                android:src="@drawable/ic_skip_next_white_24dp"
                 android:tag="ff_2"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_media_stop"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-stop"
+                android:src="@drawable/ic_stop_white_24dp"
                 android:tag="_stop"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_toggle_ar"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-aspect-ratio"
+                android:src="@drawable/ic_aspect_ratio_white_24dp"
                 android:tag="aspect_ratio"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_switch_player"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-switch-video"
+                android:src="@drawable/ic_switch_video_white_24dp"
                 android:tag="_switch_video"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_remote_mode"
                 style="@style/NavIconButton"
-                app:iiv_icon="gmd-settings-remote"
+                android:src="@drawable/ic_open_with_white_24dp"
                 android:tag="toggle_smart_remote"/>
 
-            <com.mikepenz.iconics.view.IconicsImageView
+            <ImageView
                 android:id="@+id/nav_hide"
-                style="@style/NavIconButtonAlt"
-                app:iiv_icon="gmd-visibility-off"
+                style="@style/NavIconButton"
+                android:src="@drawable/ic_exit_to_app_green_24dp"
                 android:tag="_hide"/>
 
         </LinearLayout>
