@@ -1,4 +1,4 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.phone;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -15,12 +15,19 @@ import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.android.AddServerFragment;
+import sagex.miniclient.android.AddServerFragment.OnAddServerListener;
+import sagex.miniclient.android.AppUtil;
+import sagex.miniclient.android.AutoConnectDialog;
+import sagex.miniclient.android.HelpDialogFragment;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.SettingsActivity;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
  * Created by seans on 20/09/15.
  */
-public class ServersActivity extends Activity implements AddServerFragment.OnAddServerListener {
+public class ServersActivity extends Activity implements OnAddServerListener {
     private static final Logger log = LoggerFactory.getLogger(ServersActivity.class);
 
     RecyclerView list;

@@ -5,7 +5,7 @@ android {
     compileSdkVersion 23
 
     defaultConfig {
-        //applicationId "remote.miniclient.sagex.phone"
+        applicationId "sagex.miniclient.android.tv"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1

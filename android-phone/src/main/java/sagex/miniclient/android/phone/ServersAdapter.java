@@ -1,4 +1,4 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.phone;
 
 import android.content.Context;
 import android.support.v7.util.SortedList;
@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.util.ServerInfoUtil;
 import sagex.miniclient.android.util.ServerInfoUtil.OnAfterCommands;
 import sagex.miniclient.util.Utils;

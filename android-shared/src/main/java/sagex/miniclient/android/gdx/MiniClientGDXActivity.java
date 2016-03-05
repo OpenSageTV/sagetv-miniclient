@@ -4,7 +4,6 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -37,7 +36,6 @@ import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.NavigationFragment;
 import sagex.miniclient.android.R;
-import sagex.miniclient.android.ServersActivity;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
@@ -557,14 +555,14 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     // @OnClick(R.id.errorClose)
     public void onCloseClicked() {
         // connect to server
-        if (getResources().getBoolean(R.bool.istv)) {
+//        if (getResources().getBoolean(R.bool.istv)) {
             finish();
-        } else {
-            Intent i = null;
-            i = new Intent(this, ServersActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(i);
-        }
+//        } else {
+//            Intent i = null;
+//            i = new Intent(this, ServersActivity.class);
+//            i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            startActivity(i);
+//        }
 
     }
 }
