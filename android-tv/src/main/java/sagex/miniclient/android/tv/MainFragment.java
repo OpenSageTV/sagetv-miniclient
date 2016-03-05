@@ -42,7 +42,6 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Timer;
@@ -53,10 +52,11 @@ import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AddServerFragment;
 import sagex.miniclient.android.AddServerFragment.OnAddServerListener;
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.ServersActivity;
 import sagex.miniclient.android.SettingsActivity;
 import sagex.miniclient.android.tv.actions.Action;
 import sagex.miniclient.android.tv.actions.ActionPresenter;
+import sagex.miniclient.android.util.ServerInfoUtil;
+import sagex.miniclient.android.util.ServerInfoUtil.OnAfterCommands;
 
 public class MainFragment extends BrowseFragment implements OnAddServerListener {
     Logger log = LoggerFactory.getLogger(MainFragment.class);
@@ -70,10 +70,11 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
     private Drawable mDefaultBackground;
     private DisplayMetrics mMetrics;
     private Timer mBackgroundTimer;
-    private URI mBackgroundURI;
+    private Object mBackgroundURI;
+    private Object mDefaultBackgroundNoBackground = R.drawable.back_dark_knight;
     private BackgroundManager mBackgroundManager;
 
-    ArrayObjectAdapter serversAdapter;
+    ServersAdapter serversAdapter;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -104,7 +105,7 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
                         @Override
                         public void run() {
                             log.debug("Adding Server {}", si);
-                            serversAdapter.add(0, si);
+                            serversAdapter.addServer(si);
                         }
                     });
 
@@ -129,21 +130,35 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
         List<Movie> list = MovieList.setupMovies();
 
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
-        ServerItemPresenter serverPresenter = new ServerItemPresenter(getActivity().getApplicationContext());
+        ServerItemPresenter serverPresenter = new ServerItemPresenter(getActivity(), new OnAfterCommands() {
+            @Override
+            public void onAfterDelete(ServerInfo serverInfo) {
+                serversAdapter.remove(serverInfo);
+            }
+
+            @Override
+            public void onAfterAdd(ServerInfo serverInfo) {
+                serversAdapter.addServer(serverInfo);
+            }
+        });
 
         int i = 0;
 
         // add in Servers
         HeaderItem serversHeader = new HeaderItem(i++, getString(R.string.servers));
-        serversAdapter = new ArrayObjectAdapter(serverPresenter);
+        serversAdapter = new ServersAdapter(serverPresenter);
         addAll(MiniclientApplication.get(getActivity().getApplicationContext()).getClient().getServers().getSavedServers());
         mRowsAdapter.add(new ListRow(serversHeader, serversAdapter));
 
         HeaderItem actionsHeader = new HeaderItem(i, getString(R.string.configure));
         ActionPresenter actionPresenter = new ActionPresenter(getActivity());
         ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(actionPresenter);
-        gridRowAdapter.add(new Action(R.id.preferences, getString(R.string.preferences)));
-        gridRowAdapter.add(new Action(R.id.btn_add_server, getString(R.string.add_server)));
+        Action action = new Action(R.id.preferences, getString(R.string.preferences));
+        action.setBackground(R.drawable.back_tools);
+        gridRowAdapter.add(action);
+        action = new Action(R.id.btn_add_server, getString(R.string.add_server));
+        action.setBackground(R.drawable.back_film_roll);
+        gridRowAdapter.add(action);
         mRowsAdapter.add(new ListRow(actionsHeader, gridRowAdapter));
 
         setAdapter(mRowsAdapter);
@@ -167,8 +182,9 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
     }
 
     private void setupUIElements() {
-        // setBadgeDrawable(getActivity().getResources().getDrawable(
-        // R.drawable.videos_by_google_banner));
+        setBadgeDrawable(getActivity().getResources().getDrawable(
+                R.drawable.sage_logo_256));
+
         setTitle(getString(R.string.browse_title)); // Badge, when set, takes precedent
         // over title
         setHeadersState(HEADERS_ENABLED);
@@ -176,6 +192,7 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
 
         // set fastLane (or headers) background color
         setBrandColor(getResources().getColor(R.color.fastlane_background));
+
         // set search icon color
         setSearchAffordanceColor(getResources().getColor(R.color.search_opaque));
     }
@@ -194,21 +211,26 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
         setOnItemViewSelectedListener(new ItemViewSelectedListener());
     }
 
-    protected void updateBackground(String uri) {
+    private Object lastImage = null;
+
+    protected void updateBackground(Object image) {
+        if (lastImage != null && lastImage.equals(image)) return; // same image, do nothing
         int width = mMetrics.widthPixels;
         int height = mMetrics.heightPixels;
-        Glide.with(getActivity())
-                .load(uri)
-                .centerCrop()
-                .error(mDefaultBackground)
-                .into(new SimpleTarget<GlideDrawable>(width, height) {
-                    @Override
-                    public void onResourceReady(GlideDrawable resource,
-                                                GlideAnimation<? super GlideDrawable>
-                                                        glideAnimation) {
-                        mBackgroundManager.setDrawable(resource);
-                    }
-                });
+        if (image instanceof Integer) {
+            Glide.with(getActivity())
+                    .load((Integer) image)
+                    .centerCrop()
+                    .error(mDefaultBackground)
+                    .into(new SimpleTarget<GlideDrawable>(width, height) {
+                        @Override
+                        public void onResourceReady(GlideDrawable resource,
+                                                    GlideAnimation<? super GlideDrawable>
+                                                            glideAnimation) {
+                            mBackgroundManager.setDrawable(resource);
+                        }
+                    });
+        }
         mBackgroundTimer.cancel();
     }
 
@@ -238,7 +260,7 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
                                   RowPresenter.ViewHolder rowViewHolder, Row row) {
 
             if (item instanceof ServerInfo) {
-                ServersActivity.connect(getActivity(), (ServerInfo) item);
+                ServerInfoUtil.connect(getActivity(), (ServerInfo) item);
             } else if (item instanceof Action) {
                 Action action = (Action) item;
                 if (action.getActionId() == R.id.preferences) {
@@ -261,8 +283,20 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
         @Override
         public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
                                    RowPresenter.ViewHolder rowViewHolder, Row row) {
-            if (item instanceof Movie) {
-                mBackgroundURI = ((Movie) item).getBackgroundImageURI();
+            if (item instanceof Action) {
+                mBackgroundURI = ((Action) item).getBackground();
+                if (mBackgroundURI == null) mBackgroundURI = mDefaultBackgroundNoBackground;
+                startBackgroundTimer();
+            } else if (item instanceof ServerInfo) {
+                if (((ServerInfo) item).isLocatorOnly()) {
+                    mBackgroundURI = R.drawable.back_film_wall;
+                    startBackgroundTimer();
+                } else {
+                    mBackgroundURI = R.drawable.back_dark_knight;
+                    startBackgroundTimer();
+                }
+            } else {
+                mBackgroundURI = mDefaultBackgroundNoBackground;
                 startBackgroundTimer();
             }
 
@@ -277,7 +311,7 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
                 @Override
                 public void run() {
                     if (mBackgroundURI != null) {
-                        updateBackground(mBackgroundURI.toString());
+                        updateBackground(mBackgroundURI);
                     }
                 }
             });

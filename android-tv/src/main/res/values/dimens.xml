@@ -3,7 +3,7 @@
     <dimen name="server_card_width">200dp</dimen>
     <dimen name="server_card_height">200dp</dimen>
     <dimen name="action_card_width">200dp</dimen>
-    <dimen name="action_card_height">200dp</dimen>
+    <dimen name="action_card_height">100dp</dimen>
 
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">8dp</dimen>

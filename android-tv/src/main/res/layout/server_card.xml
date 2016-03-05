@@ -1,35 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="200dp"
-              android:layout_height="200dp"
-              android:focusable="true"
-              android:focusableInTouchMode="true"
-              android:background="@color/default_background"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="200dp"
+    android:layout_height="200dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:background="@color/default_background"
     >
 
-    <TextView
-        android:id="@+id/server_name"
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:textAppearanceLarge"/>
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+    >
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_tv_white_60dp"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:id="@+id/server_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Server Name"
+            android:textAppearance="?android:textAppearanceLarge"
+            tools:ignore="HardcodedText"/>
 
     <TextView
         android:id="@+id/server_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:textAppearanceMedium"/>
+        android:text="000.000.000.000"
+        android:textAppearance="?android:textAppearanceMedium"
+        tools:ignore="HardcodedText"/>
 
     <TextView
         android:id="@+id/server_locator_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:textAppearanceSmall"/>
+        android:text="FFFF-FFFF-FFFF-FFFF"
+        android:textAppearance="?android:textAppearanceSmall"
+        tools:ignore="HardcodedText"/>
 
     <TextView
         android:id="@+id/server_last_connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:textAppearanceSmall"/>
+        android:text="Jan 31, 2015 12:22 pm"
+        android:textAppearance="?android:textAppearanceSmall"
+        tools:ignore="HardcodedText"/>
 
 </LinearLayout>
+</RelativeLayout>

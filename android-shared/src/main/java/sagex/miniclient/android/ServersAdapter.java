@@ -5,14 +5,12 @@ import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +20,8 @@ import java.util.Collection;
 import java.util.Date;
 
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.android.util.ServerInfoUtil;
+import sagex.miniclient.android.util.ServerInfoUtil.OnAfterCommands;
 import sagex.miniclient.util.Utils;
 
 /**
@@ -45,6 +45,18 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
         PopupMenu menu = null;
 
+        OnAfterCommands afterDelete = new OnAfterCommands() {
+            @Override
+            public void onAfterDelete(ServerInfo serverInfo) {
+                ((ServersActivity) context).deleteServer(serverInfo);
+            }
+
+            @Override
+            public void onAfterAdd(ServerInfo serverInfo) {
+                addServer(serverInfo);
+            }
+        };
+
         public ViewHolder(View v) {
             super(v);
             this.item = v;
@@ -65,16 +77,13 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
         @Override
         public void onClick(View v) {
-            ServersActivity.connect(context, serverInfo);
+            ServerInfoUtil.connect(context, serverInfo);
         }
 
         @Override
         public boolean onLongClick(View v) {
             if (menu == null) {
-                menu = new PopupMenu(context, item);
-                Menu m = menu.getMenu();
-                menu.inflate(R.menu.server_actions);
-                menu.setOnMenuItemClickListener(this);
+                menu = ServerInfoUtil.createContextMenu(context, v, this);
             }
 
             menu.show();
@@ -84,40 +93,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            if (item.getItemId() == R.id.menu_remove) {
-                ((ServersActivity) context).deleteServer(serverInfo, true);
-            } else if (item.getItemId() == R.id.menu_change_name) {
-                onChangeName();
-            } else if (item.getItemId() == R.id.menu_connect) {
-                ServersActivity.connect(context, serverInfo);
-            } else if (item.getItemId() == R.id.menu_connect_locator) {
-                if (!Utils.isEmpty(serverInfo.locatorID)) {
-                    ServerInfo newSI = serverInfo.clone();
-                    newSI.forceLocator = true;
-                    ServersActivity.connect(context, newSI);
-                } else {
-                    Toast.makeText(context, context.getString(R.string.msg_no_locator), Toast.LENGTH_LONG).show();
-                }
-            }
-            return true;
-        }
-
-        private void onChangeName() {
-            AppUtil.prompt(context, "Change Server Name", "Enter new Server Name", serverInfo.name, new AppUtil.OnValueChangeListener() {
-                @Override
-                public void onValueChanged(String oldValue, String newValue) {
-                    ServerInfo newSI = serverInfo.clone();
-                    newSI.name = newValue;
-
-                    // remove the old server
-                    ((ServersActivity) context).deleteServer(serverInfo, false);
-
-                    // save the new server
-                    newSI.save(MiniclientApplication.get().getClient().properties());
-
-                    addServer(newSI);
-                }
-            });
+            return ServerInfoUtil.onMenuItemClick(context, item, serverInfo, afterDelete);
         }
     }
 

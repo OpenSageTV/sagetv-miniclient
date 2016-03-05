@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/action_card_width"
+    android:layout_height="@dimen/action_card_height"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:background="@color/default_background"
+    >
+
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Server Name"
+        android:textAppearance="?android:textAppearanceLarge"
+        tools:ignore="HardcodedText"
+        android:layout_centerInParent="true"
+        />
+
+</RelativeLayout>

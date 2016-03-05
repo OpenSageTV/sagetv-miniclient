@@ -1,7 +1,6 @@
 package sagex.miniclient.android;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.ServerDiscovery;
 import sagex.miniclient.ServerInfo;
-import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -156,30 +154,6 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
         });
     }
 
-    public static void connect(Context ctx, ServerInfo si) {
-        try {
-            si.lastConnectTime = System.currentTimeMillis();
-            si.save(MiniclientApplication.get().getClient().properties());
-            MiniclientApplication.get().getClient().getServers().setLastConnectedServer(si);
-
-            // connect to server
-            Intent i = new Intent(ctx, MiniClientGDXActivity.class);
-            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
-
-            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
-                log.debug("Starting SageTV with Exit TO Home Screen option");
-                i.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            }
-
-            ctx.startActivity(i);
-
-        } catch (Throwable t) {
-            log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
-            Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
-        }
-
-    }
-
     // @OnClick(R.id.btn_settings)
     public void gotoSettingsAction() {
         Intent i = new Intent(getBaseContext(), SettingsActivity.class);
@@ -200,21 +174,9 @@ public class ServersActivity extends Activity implements AddServerFragment.OnAdd
         f.show(getFragmentManager(), "addserver");
     }
 
-    public void deleteServer(final ServerInfo serverInfo, boolean prompt) {
-        if (prompt) {
-            AppUtil.confirmAction(this, getString(R.string.title_remove_server), getString(R.string.msg_remove_server), new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(serverInfo.name);
-                    adapter.items.remove(serverInfo);
-                    adapter.notifyDataSetChanged();
-                }
-            });
-        } else {
-            MiniclientApplication.get(ServersActivity.this).getClient().getServers().deleteServer(serverInfo.name);
-            adapter.items.remove(serverInfo);
-            adapter.notifyDataSetChanged();
-        }
+    public void deleteServer(final ServerInfo serverInfo) {
+        adapter.items.remove(serverInfo);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
