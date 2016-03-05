@@ -1,0 +1,65 @@
+plugins {
+    id "com.jfrog.bintray" version "1.6"
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+ext {
+    appName = "SageTVMiniclient"
+    versionText = new File('core/src/main/java/sagex/miniclient/Version.java').text
+    baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
+}
+
+task(copyFiles) << {
+
+    delete {
+        fileTree(dir: "build", include: "*.apk")
+    }
+
+    copy {
+        from "android-tv/build/outputs/apk/"
+        into "build"
+        include "*debug.apk"
+        rename('(.+)\\.(.+)', "\$1-tv-${baseVersion}.\$2")
+    }
+}
+
+bintrayUpload.dependsOn copyFiles
+
+// Upload tasks
+// use ./gradlew bintrayUpload
+// make sure your BINTRAY_API is set in the environment
+//
+bintray {
+    user = System.getenv("BINTRAY_USER")
+    key = System.getenv("BINTRAY_API");
+    filesSpec {
+        // from 'build/release'
+        from('build') {
+            include '*.apk'
+        }
+        into "AndroidMiniClient/${baseVersion}"
+    }
+    dryRun = false //Whether to run this as dry-run, without deploying
+    publish = true //If version should be auto published after an upload
+    pkg {
+        repo = 'sagetv'
+        name = 'AndroidMiniClient'
+        userOrg = 'opensagetv'
+        desc = "Android MiniClient Release"
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/google/sagetv'
+        labels = ['sagetv', 'miniclient', 'tv']
+        publicDownloadNumbers = true
+        version {
+            name = "$baseVersion"
+            released = new Date()
+            desc = "Android MiniClient ${baseVersion}"
+            //vcsTag = "V${version}"
+            //attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+        }
+    }
+}
