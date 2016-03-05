@@ -5,11 +5,11 @@
 
     <uses-feature
         android:name="android.hardware.touchscreen"
-        android:required="false"/>
+        android:required="true"/>
 
     <application>
         <activity
-            android:name="sagex.miniclient.android.ServersActivity"
+            android:name=".ServersActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.MyTheme">
