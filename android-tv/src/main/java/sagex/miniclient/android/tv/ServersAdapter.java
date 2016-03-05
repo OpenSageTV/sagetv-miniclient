@@ -1,22 +1,17 @@
 package sagex.miniclient.android.tv;
 
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.PresenterSelector;
+
+import sagex.miniclient.ServerInfo;
+import sagex.miniclient.android.tv.widgets.SortedObjectAdapter;
+import sagex.miniclient.android.util.ServerInfoComparator;
 
 /**
  * Created by seans on 28/02/16.
  */
-public class ServersAdapter extends ArrayObjectAdapter {
-    public ServersAdapter() {
-    }
-
+public class ServersAdapter extends SortedObjectAdapter {
     public ServersAdapter(Presenter presenter) {
-        super(presenter);
-    }
-
-    public ServersAdapter(PresenterSelector presenterSelector) {
-        super(presenterSelector);
+        super(ServerInfoComparator.INSTANCE, presenter);
     }
 
     @Override
@@ -27,5 +22,17 @@ public class ServersAdapter extends ArrayObjectAdapter {
     @Override
     public Object get(int index) {
         return super.get(index);
+    }
+
+    public void addServer(ServerInfo si) {
+        int size = size();
+        for (int i = 0; i < size; i++) {
+            if (si.equals(get(i))) {
+                //log.debug("Skipping Server, since we already have it: {}", si);
+                return;
+            }
+        }
+        //log.debug("Adding Server to List, since it does not exist: {}", si);
+        add(si);
     }
 }

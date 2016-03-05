@@ -1,10 +1,10 @@
 <resources>
     <color name="background_gradient_start">#000000</color>
     <color name="background_gradient_end">#DDDDDD</color>
-    <color name="fastlane_background">#006400</color>
-    <color name="search_opaque">#640000</color>
-    <color name="selected_background">#640000</color>
-    <color name="detail_background">#0096a6</color>
+    <color name="fastlane_background">#1B5E20</color>
+    <color name="search_opaque">#616161</color>
+    <color name="selected_background">#616161</color>
+    <color name="detail_background">#1B5E20</color>
     <color name="soft_opaque">#30000000</color>
     <color name="img_soft_opaque">#30FF0000</color>
     <color name="img_full_opaque">#00000000</color>

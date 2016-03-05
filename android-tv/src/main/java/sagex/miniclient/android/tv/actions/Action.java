@@ -11,6 +11,17 @@ public class Action {
     private final int actionId;
     private final String label;
     private final OnClick onClick;
+    private Object background;
+
+
+    public Object getBackground() {
+        return background;
+    }
+
+    public Action setBackground(Object background) {
+        this.background = background;
+        return this;
+    }
 
     public Action(int actionId, String label) {
         this.actionId = actionId;

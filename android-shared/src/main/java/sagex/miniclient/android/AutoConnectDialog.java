@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.ServerInfo;
+import sagex.miniclient.android.util.ServerInfoUtil;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -81,7 +82,7 @@ public class AutoConnectDialog extends DialogFragment {
         connected = true;
         dismiss();
         if (serverInfo != null) {
-            ServersActivity.connect(getActivity(), serverInfo);
+            ServerInfoUtil.connect(getActivity(), serverInfo);
         }
     }
 
