@@ -130,5 +130,11 @@ public interface PrefStore {
          * Android Launcher
          */
         String exit_to_home_screen = "exit_to_home_screen";
+
+
+        /**
+         * Client ID
+         */
+        String client_id = "clientid";
     }
 }

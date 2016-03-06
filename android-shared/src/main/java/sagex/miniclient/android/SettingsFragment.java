@@ -9,6 +9,8 @@ import android.text.Html;
 
 import sagex.miniclient.Version;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.prefs.PrefStore.Keys;
+import sagex.miniclient.util.ClientIDGenerator;
 
 
 /**
@@ -69,8 +71,12 @@ public class SettingsFragment extends PreferenceFragment {
 
             final Preference version = findPreference("version");
             version.setSummary(Version.VERSION);
-            final Preference clientid = findPreference("clientid");
-            clientid.setSummary(AppUtil.getMACAddress(this.getActivity()));
+            final Preference clientid = findPreference(Keys.client_id);
+            ClientIDGenerator gen = new ClientIDGenerator();
+            if (prefs.getString(Keys.client_id) == null) {
+                prefs.setString(Keys.client_id, gen.generateId());
+            }
+            clientid.setSummary(prefs.getString(Keys.client_id) + " (" + gen.id2string(prefs.getString(Keys.client_id)) + ")");
 
             final Preference decoders = findPreference("decoders");
             decoders.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

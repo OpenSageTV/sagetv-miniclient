@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="preferences" type="id"/>
+    <item name="btn_add_server" type="id"/>
 </resources>

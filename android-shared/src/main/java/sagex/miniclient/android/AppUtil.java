@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -34,17 +32,17 @@ public class AppUtil {
     private static final String TAG = "MINICLIENT";
     public static final Logger log = LoggerFactory.getLogger(TAG);
 
-    public static String getMACAddress(Context ctx) {
-        try {
-            WifiManager manager = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
-            WifiInfo info = manager.getConnectionInfo();
-            String mac = info.getMacAddress();
-            if (mac == null) throw new Exception("No WIFI, Will Try eth0");
-            return mac;
-        } catch (Throwable t) {
-            return getMacAddressForEth0();
-        }
-    }
+//    public static String getMACAddress(Context ctx) {
+//        try {
+//            WifiManager manager = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
+//            WifiInfo info = manager.getConnectionInfo();
+//            String mac = info.getMacAddress();
+//            if (mac == null) throw new Exception("No WIFI, Will Try eth0");
+//            return mac;
+//        } catch (Throwable t) {
+//            return getMacAddressForEth0();
+//        }
+//    }
 
     static String loadFileAsString(String filePath) throws IOException {
         StringBuffer fileData = new StringBuffer(1000);
