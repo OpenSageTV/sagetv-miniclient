@@ -32,7 +32,6 @@ import java.io.IOException;
 import sagex.miniclient.MACAddressResolver;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.ServerInfo;
-import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.NavigationFragment;
 import sagex.miniclient.android.R;
@@ -49,8 +48,10 @@ import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.util.ClientIDGenerator;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
@@ -315,7 +316,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Override
     public String getMACAddress() {
-        return AppUtil.getMACAddress(this);
+        // Android 6 generates the same MAC address, so let's outgenerate one
+        String id = client.properties().getString(Keys.client_id);
+        if (id == null) {
+            ClientIDGenerator gen = new ClientIDGenerator();
+            id = gen.generateId();
+            client.properties().setString(Keys.client_id, id);
+        }
+        return id;
+        //return AppUtil.getMACAddress(this);
     }
 
     public PlayerSurfaceView getVideoView() {

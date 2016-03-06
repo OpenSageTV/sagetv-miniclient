@@ -316,11 +316,15 @@ public class MiniClientConnection implements SageTVInputCallback {
                 myID = client.getMACAddress();
             }
 
+            log.info("Establishing Server Connection using Client ID '{}'", myID);
+
             if (myID != null) {
-                for (int i = 0; i < myID.length(); i += 3) {
+                int len = Math.min((msg.length - 1) * 3, myID.length());
+                for (int i = 0; i < len; i += 3) {
                     msg[1 + i / 3] = (byte) (Integer.parseInt(myID.substring(i, i + 2), 16) & 0xFF);
                 }
             }
+            log.info("Establishing Server Connection using Client ID '{}'", msg);
             outStream.write(msg);
             outStream.write(connType);
             int rez = inStream.read();
