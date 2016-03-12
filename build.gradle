@@ -24,7 +24,10 @@ allprojects {
         ijkVersionDev = "0.4.4.5-SNAPSHOT2";
         exoVersion = 'r1.5.5-SNAPSHOT';
 
-        androidExtrasVer = "23.0.1";
+        androidExtrasVer = "22.2.1";
+        androidBuildToolsVersion = "22.0.1";
+        androidCompileSdkVersion = 22;
+        androidTargetSdkVersion = 22;
 
         // tell every project where to find the local project maven files
         mavenInProject = file('../mavenlocal').absoluteFile.toURI()
