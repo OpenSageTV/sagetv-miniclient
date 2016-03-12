@@ -1,5 +1,6 @@
 package sagex.miniclient.android.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.Menu;
@@ -65,11 +66,18 @@ public class ServerInfoUtil {
 
             if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
                 log.debug("Starting SageTV with Exit TO Home Screen option");
-                i.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                //i.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                // http://stackoverflow.com/questions/3473168/clear-the-entire-history-stack-and-start-a-new-activity-on-android
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
 
             ctx.startActivity(i);
 
+            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
+                if (ctx instanceof Activity) {
+                    ((Activity) ctx).finish();
+                }
+            }
         } catch (Throwable t) {
             log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
             Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
