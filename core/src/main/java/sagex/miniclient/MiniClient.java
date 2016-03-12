@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -84,7 +85,7 @@ public class MiniClient {
         options.getCacheDir().mkdirs();
         options.getConfigDir().mkdirs();
 
-        log.info("MiniClient v{} starting", Version.VERSION);
+        log.info("MiniClient v{} starting on date/time {}", Version.VERSION, new Date());
         log.info("MiniClient cacheDir: {}", options.getCacheDir());
 
         try {
