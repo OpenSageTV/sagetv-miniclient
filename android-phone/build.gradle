@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    buildToolsVersion "22.0.1"
-    compileSdkVersion 23
+    buildToolsVersion androidBuildToolsVersion
+    compileSdkVersion androidCompileSdkVersion
 
     defaultConfig {
-        applicationId "sagex.miniclient.android.tv"
+        applicationId "sagex.miniclient.android.phone"
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion androidTargetSdkVersion
         versionCode 1
         versionName "1.0"
     }

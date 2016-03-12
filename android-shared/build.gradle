@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 //apply plugin: 'com.android.application'
 
 android {
-    buildToolsVersion "22.0.1"
-    compileSdkVersion 23
+    buildToolsVersion androidBuildToolsVersion
+    compileSdkVersion androidCompileSdkVersion
     sourceSets {
         main {
             //manifest.srcFile 'AndroidManifest.xml'
@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion androidTargetSdkVersion
         versionCode 1
         versionName "1.0"
     }
