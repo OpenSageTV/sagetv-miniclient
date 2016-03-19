@@ -9,8 +9,9 @@ android {
         applicationId "sagex.miniclient.android.tv"
         minSdkVersion 21
         targetSdkVersion androidTargetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
+        versionCode 2101004
+        versionName "1.0.1"
     }
     buildTypes {
         release {

@@ -54,7 +54,7 @@ public class ServersActivity extends Activity implements OnAddServerListener {
         addServerButton = (ImageView) findViewById(R.id.btn_add_server);
         settingsButton = (ImageView) findViewById(R.id.btn_settings);
 
-        findViewById(R.id.btn_settings).setOnClickListener(new View.OnClickListener() {
+        settingsButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -69,7 +69,7 @@ public class ServersActivity extends Activity implements OnAddServerListener {
             }
         });
 
-        findViewById(R.id.btn_add_server).setOnClickListener(new OnClickListener() {
+        addServerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 addServerAction();
