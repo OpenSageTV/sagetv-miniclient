@@ -5,6 +5,8 @@
 *.ear
 hs_err_pid*
 
+Donators.txt
+
 ## GWT
 war/
 html/war/gwt_bree/
