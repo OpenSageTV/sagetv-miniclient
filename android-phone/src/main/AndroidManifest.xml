@@ -12,7 +12,7 @@
             android:name=".ServersActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
-            android:theme="@style/Theme.MyTheme">
+            android:theme="@style/Theme.PhoneTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

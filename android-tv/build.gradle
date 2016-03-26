@@ -7,23 +7,45 @@ android {
 
     defaultConfig {
         applicationId "sagex.miniclient.android.tv"
-        minSdkVersion 21
+        minSdkVersion 17
         targetSdkVersion androidTargetSdkVersion
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
         versionCode 2101004
         versionName "1.0.1"
     }
+
+    signingConfigs {
+        release {
+            keyAlias = "sagetv-miniclient-tv"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
+
+    if (System.getenv("AEA_STORE_FILE") &&
+            System.getenv("AEA_STORE_PASSWORD") &&
+            System.getenv("AEA_KEY_PASSWORD")) {
+        signingConfigs.release.storeFile = file(System.getenv("AEA_STORE_FILE"))
+        signingConfigs.release.storePassword = System.getenv("AEA_STORE_PASSWORD")
+        signingConfigs.release.keyPassword = System.getenv("AEA_KEY_PASSWORD")
+    } else {
+        System.out.println("NEED TO SET AEA_STORE_FILE, AEA_STORE_PASSWORD, AEA_KEY_PASSWORD to sign app");
+        buildTypes.release.signingConfig = null
+    }
+
 
 //    dataBinding {
 //        enabled = true
 //    }
 }
+
+
 
 dependencies {
     compile project(":android-shared")

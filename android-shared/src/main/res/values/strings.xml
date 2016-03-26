@@ -73,4 +73,6 @@
     <string name="title_detailed_buffer_stats">Detailed Push Buffer Stats</string>
     <string name="summary_detailed_buffer_stats">Send detailed push buffer statistics to the server</string>
     <string name="msg_change_aspect_ratio">Aspect Ratio: %s</string>
+    <string name="use_tv_ui_on_tablet_summary">Use TV UI on Phone/Tablet</string>
+    <string name="use_tv_ui_on_tablet_title">If enabled, then the leanback launcher will be used on a Phone/Tablet</string>
 </resources>

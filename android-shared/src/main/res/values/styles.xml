@@ -1,6 +1,5 @@
 <resources>
-
-    <style name="Theme.MyTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.PhoneTheme" parent="Theme.AppCompat.NoActionBar">
     </style>
 
     <style name="Theme.Dialog.DoNotDim" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">

@@ -46,6 +46,13 @@
             android:summary="@string/exit_to_home_screen_summary"
             android:title="@string/exit_to_home_screen_title"/>
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="use_tv_ui_on_tablet"
+            android:summary="@string/use_tv_ui_on_tablet_summary"
+            android:title="@string/use_tv_ui_on_tablet_title"/>
+
+
     </PreferenceCategory>
 
 
@@ -118,10 +125,18 @@
             android:key="version"
             android:summary=""
             android:title="Version"/>
-        <Preference
+
+        <EditTextPreference
+
             android:key="clientid"
             android:summary=""
             android:title="Cliend ID"/>
+
+        <EditTextPreference
+
+            android:key="ipaddress"
+            android:summary=""
+            android:title="Device IP Address"/>
 
         <Preference
             android:key="decoders"

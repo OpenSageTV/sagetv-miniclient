@@ -39,10 +39,11 @@ public class SimplePullDataSource implements ISageTVDataSource {
         if (opened) {
             throw new IOException("Attempting to re-open an OPENED datasource for uri " + uri);
         }
-        log.debug("Open(): {}", uri);
         try {
             String host = getHost(uri);
             this.uri = uri;
+
+            log.debug("Open(): {} on host {}", uri, host);
 
             remoteServer = new Socket();
             remoteServer.connect(new java.net.InetSocketAddress(host, 7818), 2000);

@@ -131,6 +131,12 @@ public interface PrefStore {
          */
         String exit_to_home_screen = "exit_to_home_screen";
 
+        /**
+         * Boolean: default is false.  When true, then the Leanback Launcher will be used on a
+         * Phone/Tablet
+         */
+        String use_tv_ui_on_tablet = "use_tv_ui_on_tablet";
+
 
         /**
          * Client ID
