@@ -22,8 +22,8 @@ task(copyFiles) << {
     copy {
         from "android-tv/build/outputs/apk/"
         into "build"
-        include "*debug.apk"
-        rename('(.+)\\.(.+)', "\$1-tv-${baseVersion}.\$2")
+        include "*-release.apk"
+        rename('(.+)\\.(.+)', "sagetv-miniclient-${baseVersion}.\$2")
     }
 }
 

@@ -8,7 +8,7 @@
 
     <uses-feature
         android:name="android.software.leanback"
-        android:required="true"/>
+        android:required="false"/>
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -17,7 +17,6 @@
     <uses-feature
         android:name="android.hardware.wifi"
         android:required="false"/>
-
 
     <uses-feature
         android:name="com.google.android.tv"
@@ -39,6 +38,18 @@
         android:supportsRtl="true"
         android:banner="@drawable/sagetv_orig"
         >
+        <activity
+            android:name="sagex.miniclient.android.phone.ServersActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+
         <activity
             android:name=".MainActivity"
             android:banner="@drawable/sagetv_orig"
