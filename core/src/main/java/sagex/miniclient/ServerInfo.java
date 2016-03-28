@@ -95,8 +95,10 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
             locatorID = address;
             address = null;
         }
-        if (address != null)
+        if (address != null) {
             store.setString("servers/" + name + "/address", address);
+            store.setInt("servers/" + name + "/port", port);
+        }
         if (locatorID != null)
             store.setString("servers/" + name + "/locator_id", locatorID);
         store.setLong("servers/" + name + "/last_connect_time", lastConnectTime);
@@ -111,6 +113,7 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
         locatorID = store.getString("servers/" + name + "/locator_id", "");
         lastConnectTime = store.getLong("servers/" + name + "/last_connect_time", 0);
         authBlock = store.getString("servers/" + name + "/auth_block", "");
+        port = store.getInt("servers/" + name + "/port", 31099);
     }
 
     public boolean isLocatorOnly() {
