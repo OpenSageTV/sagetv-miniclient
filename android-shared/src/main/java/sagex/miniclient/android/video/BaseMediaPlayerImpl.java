@@ -113,7 +113,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     protected void notifySageTVStop() {
-        EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
+        // This causes queded up items to fail to play.. so we can't really do this.
+        // EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
     }
 
     /**

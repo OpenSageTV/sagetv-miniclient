@@ -466,13 +466,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
         if (!hideNavigationDialog()) {
             log.debug("Navigation wasn't visible so will process normal back");
-            if (client.isVideoPlaying()) {
-                log.debug("Sending Media Stop");
-                EventRouter.post(client, EventRouter.MEDIA_STOP);
-            } else {
-                log.debug("Sending Back");
-                EventRouter.post(client, EventRouter.BACK);
-            }
+            EventRouter.post(client, EventRouter.BACK);
         } else {
             log.debug("Just hiding navigation");
         }
