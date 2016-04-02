@@ -83,6 +83,12 @@
             android:tag="select"/>
 
         <ImageView
+            android:id="@+id/nav_info"
+            style="@style/NavIconButton"
+            android:src="@drawable/ic_info_white_24dp"
+            android:tag="_info" />
+
+        <ImageView
             android:id="@+id/nav_left"
             style="@style/NavIconButton"
             android:src="@drawable/ic_arrow_back_white_24dp"
