@@ -30,6 +30,9 @@
         android:name="android.hardware.microphone"
         android:required="false"/>
 
+    <uses-feature
+        android:name="android.hardware.gamepad"
+        android:required="false"/>
 
     <application
         android:allowBackup="true"
