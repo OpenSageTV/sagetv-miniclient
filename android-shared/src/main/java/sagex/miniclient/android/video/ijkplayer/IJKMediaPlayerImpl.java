@@ -149,7 +149,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
         playerGetTimeOffset = -1;
-        preSeekPos = -1;
         resumeMode = false;
         releasePlayer();
         try {
@@ -227,13 +226,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 public void onPrepared(IMediaPlayer mp) {
                     playerReady = true;
                     player.start();
-                    if (!pushMode && preSeekPos != -1) {
-                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                            log.debug("Resuming At Position: {}", preSeekPos);
-                        player.seekTo(preSeekPos);
-                        preSeekPos = -1;
-                    }
-
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                         MediaInfo mi = player.getMediaInfo();
                         if (mi != null) {
@@ -246,6 +238,16 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                                 }
                             }
                         }
+                    }
+
+                    if (!pushMode && preSeekPos != -1) {
+                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                            log.debug("Resuming At Position: {}", preSeekPos);
+                        player.seekTo(preSeekPos);
+                        preSeekPos = -1;
+                    } else {
+                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                            log.debug("No Resume");
                     }
                     state = PLAY_STATE;
                 }
@@ -261,13 +263,23 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public void seek(long timeInMS) {
         super.seek(timeInMS);
-        if (player == null) {
+        if (player == null || state == NO_STATE) {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                log.debug("Setting Pre-Seek {}", timeInMS);
+            }
             preSeekPos = timeInMS;
             return;
         }
 
         if (!pushMode) {
-            player.seekTo(timeInMS);
+            if (player.isPlaying() || state == PAUSE_STATE) {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    log.debug("Immediate Seek {}", timeInMS);
+                }
+                player.seekTo(timeInMS);
+            } else {
+                log.info("We Missed a Seek for {}", timeInMS);
+            }
         }
     }
 
