@@ -78,7 +78,7 @@ public class NavigationFragment extends DialogFragment {
         for (int id : new int[]{R.id.nav_up, R.id.nav_down, R.id.nav_left, R.id.nav_right, R.id.nav_select, R.id.nav_pgdn, R.id.nav_pgup,
                 R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
                 R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
-                R.id.nav_media_stop, R.id.nav_back}) {
+                R.id.nav_media_stop, R.id.nav_back, R.id.nav_info}) {
             navView.findViewById(id).setOnClickListener(buttonClickListener);
         }
 
