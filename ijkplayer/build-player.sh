@@ -4,7 +4,7 @@
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
-    export ANDROID_SDK=/home/sls/Android/Sdk/
+    export ANDROID_SDK=/home/seans/Android/Sdk/
 
 fi
 

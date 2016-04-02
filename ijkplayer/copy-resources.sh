@@ -1,12 +1,14 @@
 #!/bin/sh
 
-VERSION=0.4.4.5-SNAPSHOT2
+VERSION=0.4.5.1-SNAPSHOT
+BUILD_TOOLS_VERSION=23.0.3
+BUILD_VERSION=23
 OUTPUT=release
 ARCHES="arm64 armv7a x86 java exo"
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
-    export ANDROID_SDK=/home/sls/Android/Sdk/
+    export ANDROID_SDK=/home/seans/Android/Sdk/
 fi
 
 
@@ -19,8 +21,13 @@ export ANDROID_HOME=$ANDROID_SDK
 
 echo "PACKAGING..."
 cd ijkplayer/android/ijkplayer/
+#cat build.gradle.orig | sed 's/23.0.0/23.0.1/g' > build.gradle
 cp build.gradle build.gradle.orig
-cat build.gradle.orig | sed 's/23.0.0/23.0.1/g' > build.gradle
+cat build.gradle.orig | sed "s/.*buildToolsVersion.*/    buildToolsVersion = \"${BUILD_TOOLS_VERSION}\"/g" > build.gradle
+cp build.gradle build.gradle.orig
+cat build.gradle.orig | sed "s/.*compileSdkVersion.*/    compileSdkVersion = ${BUILD_VERSION}/g" > build.gradle
+cp build.gradle build.gradle.orig
+cat build.gradle.orig | sed "s/.*targetSdkVersion.*/    targetSdkVersion = ${BUILD_VERSION}/g" > build.gradle
 cp build.gradle build.gradle.orig
 cat build.gradle.orig | sed "s/.*versionName.*/    versionName = \"${VERSION}\"/g" > build.gradle
 ./gradlew assemble

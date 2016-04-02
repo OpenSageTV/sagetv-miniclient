@@ -20,8 +20,8 @@ allprojects {
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.9.1"
-        ijkVersion = "0.4.4.1";
-        ijkVersionDev = "0.4.4.5-SNAPSHOT2";
+        ijkVersion = "0.4.5.1";
+        ijkVersionDev = "0.4.5.1-SNAPSHOT";
         exoVersion = 'r1.5.6';
 
         androidExtrasVer = "22.2.1";
