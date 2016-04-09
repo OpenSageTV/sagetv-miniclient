@@ -8,6 +8,7 @@
 * ```Swipe in``` from the ```left``` edge will bring up the ```On Screen Navigation```
 * ```2 Finger Swipe Right``` will bring up the ```On Screen Navigation```
 * ```Swipe up``` from the ```bottom``` edge will bring up the ```Keyboard```
+* ```3 Finger Swipe Right/Left``` will go ```Right/Left```
 
 # Video Playback
 * ```Double Tap``` will bring up ```Video Options menu```
