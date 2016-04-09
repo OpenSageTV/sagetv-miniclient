@@ -33,12 +33,16 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     private final File configDir;
     private final File cacheDir;
     private final IBus bus;
+    private boolean isTV=false;
+    private boolean isTOUCH=false;
 
     AndroidMiniClientOptions(Application ctx) {
         this.prefs = new AndroidPrefStore(PreferenceManager.getDefaultSharedPreferences(ctx));
         this.configDir = ctx.getFilesDir();
         this.cacheDir = ctx.getCacheDir();
         this.bus = new OttoBusImpl(new Bus(ThreadEnforcer.ANY));
+        this.isTV = ctx.getResources().getBoolean(R.bool.istv);
+        this.isTOUCH = !isTV;
     }
 
     @Override
@@ -105,6 +109,21 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 //            // exoplayer supports passthrough
 //            audioCodecs.add("AC3");
 //        }
+    }
+
+    @Override
+    public boolean isTouchUI() {
+        return isTOUCH;
+    }
+
+    @Override
+    public boolean isTVUI() {
+        return isTV;
+    }
+
+    @Override
+    public boolean isDesktopUI() {
+        return false;
     }
 
     private Set<String> getAudioCodecs(MediaCodecInfo info) {

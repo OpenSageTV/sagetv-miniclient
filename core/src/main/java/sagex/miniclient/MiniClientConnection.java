@@ -790,7 +790,11 @@ public class MiniClientConnection implements SageTVInputCallback {
                     } else if ("STREAMING_PROTOCOLS".equals(propName)) {
                         propVal = "file,stv";
                     } else if ("INPUT_DEVICES".equals(propName)) {
-                        propVal = "IR,KEYBOARD,TOUCH"; // MOUSE,KEYBOARD,TOUCH,IR (mouse implies desktop)
+                        propVal="IR,KEYBOARD";
+                        if (client.options().isDesktopUI()) propVal+=",MOUSE";
+                        if (client.options().isTouchUI()) propVal+=",TOUCH";
+                        if (client.options().isTVUI()) propVal+=",TV";
+                        // propVal = "IR,KEYBOARD,TOUCH"; // MOUSE,KEYBOARD,TOUCH,IR (mouse implies desktop)
                     } else if ("DISPLAY_OVERSCAN".equals(propName)) {
                         propVal = "0;0;1.0;1.0";
                     } else if ("FIRMWARE_VERSION".equals(propName)) {

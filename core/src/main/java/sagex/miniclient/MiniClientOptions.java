@@ -27,4 +27,8 @@ public interface MiniClientOptions {
      * @param codecs Map of Mime Types to SageTV Media Formats (ie, video/avc=H264)
      */
     void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs);
+
+    public boolean isTouchUI();
+    public boolean isTVUI();
+    public boolean isDesktopUI();
 }

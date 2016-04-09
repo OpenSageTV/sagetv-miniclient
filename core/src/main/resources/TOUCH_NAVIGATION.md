@@ -1,15 +1,14 @@
 # Navigation
-* ```Swipe Up/Down/Left/Right``` moves the ```focus``` Up/Down/Left/Right
-* ```Single Tap``` will ```focus``` an item
-* ```Double Tap``` will ```click``` an item
+* ```Single Tap``` will ```Click```
+* ```Double Tap``` will bring up ```Options``` menu
+* ```Touch/Drag Up/Down``` will ```scroll``` Down/Up
+* ```Fling Up/Down``` will ```scroll``` Down/Up
+* ```Fling Right/Left``` will ```scroll``` Page Back/Forward
+* ```2 Finger Swipe Left``` will go ```Back```
 * ```Swipe in``` from the ```left``` edge will bring up the ```On Screen Navigation```
+* ```2 Finger Swipe Right``` will bring up the ```On Screen Navigation```
 * ```Swipe up``` from the ```bottom``` edge will bring up the ```Keyboard```
-* ```2 Finger Swipe Down``` will ```Page Down```
-* ```2 Finger Swipe Up``` will ```Page Up```
-* ```3 Finger Swipe Down``` will bring up ```Options``` menu
 
 # Video Playback
 * ```Double Tap``` will bring up ```Video Options menu```
-* ```3 Finger Swipe Left``` will ```Skip Left```
-* ```3 Finger Swipe Right``` will ```Skip Right```
-
+* Use On Screen Nav for other Video Controls

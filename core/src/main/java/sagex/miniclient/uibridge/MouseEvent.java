@@ -9,6 +9,12 @@ public class MouseEvent {
     public static final int MOUSE_DRAGGED = 500 + 6;
     public static final int MOUSE_WHEEL = 500 + 7;
 
+    public static final int NOBUTTON = 0;
+    public static final int BUTTON1 = 1;
+    public static final int BUTTON2 = 2;
+    public static final int BUTTON3 = 3;
+
+
     private int id;
     private Object source;
     private long when;
