@@ -86,7 +86,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
             // when touch enabled is not enabled, we'll treat touch as scroll events
             if (Math.abs(distanceY) > Math.abs(distanceX)) {
                 // scroll up/down
-                client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, (distanceY < 0) ? -1 : 1));
+                // client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, (distanceY < 0) ? -1 : 1));
             } else {
                 // scroll left/right
                 // this causes way to many scroll events to sent left/right
@@ -156,13 +156,13 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         if (FLING_UP==fling) {
             // scroll down
-            //client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, -1));
+            client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, 1));
             return true;
         }
 
         if (FLING_DOWN==fling) {
             // scroll up
-            //client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, -1));
+            client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, -1));
             return true;
         }
 

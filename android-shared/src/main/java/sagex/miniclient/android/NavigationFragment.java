@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
@@ -266,11 +267,18 @@ public class NavigationFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
-        WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
+        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        WindowManager.LayoutParams wmlp = new WindowManager.LayoutParams();
+        wmlp.copyFrom(dialog.getWindow().getAttributes());
 
         wmlp.gravity = Gravity.BOTTOM | Gravity.LEFT;
         wmlp.x = 0;   //x position
         wmlp.y = 0;   //y position
+        wmlp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        wmlp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(wmlp);
+//        d.show();
+//        d.getWindow().setAttributes(lp);
 
         dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
@@ -283,6 +291,17 @@ public class NavigationFragment extends DialogFragment {
             }
         });
         return dialog;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            //dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
     }
 
     public static void showDialog(Activity activity) {
@@ -299,7 +318,6 @@ public class NavigationFragment extends DialogFragment {
 
         // Create and show the dialog.
         DialogFragment newFragment = new NavigationFragment();
-
         newFragment.show(ft, "nav");
 
     }

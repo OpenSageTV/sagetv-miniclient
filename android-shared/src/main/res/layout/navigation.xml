@@ -4,15 +4,56 @@
                 android:layout_height="match_parent"
     >
 
-
-    <GridLayout
-        android:paddingLeft="50dp"
-        android:paddingBottom="20dp"
-        android:layout_centerInParent="true"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="5"
+        android:layout_centerInParent="true"
+        >
+        <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="13"
         android:rowCount="8">
+
+        <ImageView
+            android:id="@+id/nav_left"
+            style="@style/NavIconButton"
+            android:layout_column="3"
+            android:layout_row="2"
+            android:src="@drawable/ic_arrow_back_white_24dp"
+            android:tag="left"/>
+
+        <ImageView
+            android:id="@+id/nav_select"
+            style="@style/NavIconButton"
+            android:layout_column="4"
+            android:layout_row="2"
+            android:src="@drawable/ic_fiber_manual_record_white_24dp"
+            android:tag="select"/>
+
+        <ImageView
+            android:id="@+id/nav_right"
+            style="@style/NavIconButton"
+            android:layout_column="5"
+            android:layout_row="2"
+            android:src="@drawable/ic_arrow_forward_white_24dp"
+            android:tag="right"/>
+
+        <ImageView
+            android:id="@+id/nav_help"
+            style="@style/NavIconButton"
+            android:layout_column="12"
+            android:layout_row="2"
+            android:src="@drawable/ic_help_outline_white_24dp"
+            android:tag="_help"/>
+
+        <ImageView
+            android:id="@+id/nav_back"
+            style="@style/NavIconButton"
+            android:layout_column="1"
+            android:layout_row="3"
+            android:src="@drawable/ic_undo_white_24dp"
+            android:tag="back"/>
 
         <ImageView
             android:id="@+id/nav_home"
@@ -23,49 +64,9 @@
             android:tag="_home"/>
 
         <ImageView
-            android:id="@+id/nav_up"
-            style="@style/NavIconButton"
-            android:layout_column="2"
-            android:layout_row="1"
-            android:src="@drawable/ic_arrow_upward_white_24dp"
-            android:tag="up"/>
-
-        <ImageView
-            android:id="@+id/nav_right"
-            style="@style/NavIconButton"
-            android:layout_column="3"
-            android:layout_row="2"
-            android:src="@drawable/ic_arrow_forward_white_24dp"
-            android:tag="right"/>
-
-        <ImageView
-            android:id="@+id/nav_help"
-            style="@style/NavIconButton"
-            android:layout_column="4"
-            android:layout_row="2"
-            android:src="@drawable/ic_help_outline_white_24dp"
-            android:tag="_help"/>
-
-        <ImageView
-            android:id="@+id/nav_options"
-            style="@style/NavIconButton"
-            android:layout_column="1"
-            android:layout_row="3"
-            android:src="@drawable/ic_menu_white_24dp"
-            android:tag="_options"/>
-
-        <ImageView
-            android:id="@+id/nav_down"
-            style="@style/NavIconButton"
-            android:layout_column="2"
-            android:layout_row="3"
-            android:src="@drawable/ic_arrow_downward_white_24dp"
-            android:tag="down"/>
-
-        <ImageView
             android:id="@+id/nav_pgup"
             style="@style/NavIconButton"
-            android:layout_column="3"
+            android:layout_column="7"
             android:layout_row="1"
             android:src="@drawable/ic_vertical_align_top_white_24dp"
             android:tag="page_up"/>
@@ -73,31 +74,39 @@
         <ImageView
             android:id="@+id/nav_close"
             style="@style/NavIconButton"
-            android:layout_column="4"
+            android:layout_column="12"
             android:layout_row="1"
             android:src="@drawable/ic_close_white_24dp"
             android:tag="_close"/>
 
         <ImageView
-            android:id="@+id/nav_left"
+            android:id="@+id/nav_up"
+            style="@style/NavIconButton"
+            android:layout_column="4"
+            android:layout_row="1"
+            android:src="@drawable/ic_arrow_upward_white_24dp"
+            android:tag="up"/>
+
+        <ImageView
+            android:id="@+id/nav_options"
             style="@style/NavIconButton"
             android:layout_column="1"
             android:layout_row="2"
-            android:src="@drawable/ic_arrow_back_white_24dp"
-            android:tag="left"/>
+            android:src="@drawable/ic_menu_white_24dp"
+            android:tag="_options"/>
 
         <ImageView
-            android:id="@+id/nav_select"
+            android:id="@+id/nav_down"
             style="@style/NavIconButton"
-            android:layout_column="2"
-            android:layout_row="2"
-            android:src="@drawable/ic_fiber_manual_record_white_24dp"
-            android:tag="select"/>
+            android:layout_column="4"
+            android:layout_row="3"
+            android:src="@drawable/ic_arrow_downward_white_24dp"
+            android:tag="down"/>
 
         <ImageView
             android:id="@+id/nav_pgdn"
             style="@style/NavIconButton"
-            android:layout_column="3"
+            android:layout_column="7"
             android:layout_row="3"
             android:src="@drawable/ic_vertical_align_bottom_white_24dp"
             android:tag="page_down"/>
@@ -105,39 +114,15 @@
         <ImageView
             android:id="@+id/nav_hide"
             style="@style/NavIconButton"
-            android:layout_column="4"
+            android:layout_column="12"
             android:layout_row="3"
             android:src="@drawable/ic_exit_to_app_green_24dp"
             android:tag="_hide"/>
 
         <ImageView
-            android:id="@+id/nav_media_skip_back"
-            style="@style/NavIconButton"
-            android:layout_column="1"
-            android:layout_row="4"
-            android:src="@drawable/ic_fast_rewind_white_24dp"
-            android:tag="rew"/>
-
-        <ImageView
-            android:id="@+id/nav_media_pause"
-            style="@style/NavIconButton"
-            android:layout_column="2"
-            android:layout_row="4"
-            android:src="@drawable/ic_pause_white_24dp"
-            android:tag="play_pause"/>
-
-        <ImageView
-            android:id="@+id/nav_media_skip_forward"
-            style="@style/NavIconButton"
-            android:layout_column="3"
-            android:layout_row="4"
-            android:src="@drawable/ic_fast_forward_white_24dp"
-            android:tag="ff"/>
-
-        <ImageView
             android:id="@+id/nav_keyboard"
             style="@style/NavIconButton"
-            android:layout_column="4"
+            android:layout_column="12"
             android:layout_row="4"
             android:src="@drawable/ic_keyboard_white_24dp"
             android:tag="_keyboard"/>
@@ -146,54 +131,62 @@
             android:id="@+id/nav_media_skip_back_2"
             style="@style/NavIconButton"
             android:layout_column="1"
-            android:layout_row="5"
+            android:layout_row="6"
             android:src="@drawable/ic_skip_previous_white_24dp"
             android:tag="rew_2"/>
 
         <ImageView
-            android:id="@+id/nav_media_play"
+            android:id="@+id/nav_media_skip_back"
             style="@style/NavIconButton"
             android:layout_column="2"
-            android:layout_row="5"
-            android:src="@drawable/ic_play_arrow_white_24dp"
-            android:tag="_play"/>
-
-        <ImageView
-            android:id="@+id/nav_media_skip_forward_2"
-            style="@style/NavIconButton"
-            android:layout_column="3"
-            android:layout_row="5"
-            android:src="@drawable/ic_skip_next_white_24dp"
-            android:tag="ff_2"/>
-
-        <ImageView
-            android:id="@+id/nav_remote_mode"
-            style="@style/NavIconButton"
-            android:layout_column="4"
-            android:layout_row="5"
-            android:src="@drawable/ic_open_with_white_24dp"
-            android:tag="toggle_smart_remote"/>
-
-        <ImageView
-            android:id="@+id/nav_back"
-            style="@style/NavIconButton"
-            android:layout_column="1"
             android:layout_row="6"
-            android:src="@drawable/ic_undo_white_24dp"
-            android:tag="back"/>
+            android:src="@drawable/ic_fast_rewind_white_24dp"
+            android:tag="rew"/>
 
         <ImageView
             android:id="@+id/nav_media_stop"
             style="@style/NavIconButton"
-            android:layout_column="2"
+            android:layout_column="3"
             android:layout_row="6"
             android:src="@drawable/ic_stop_white_24dp"
             android:tag="_stop"/>
 
         <ImageView
+            android:id="@+id/nav_media_pause"
+            style="@style/NavIconButton"
+            android:layout_column="5"
+            android:layout_row="6"
+            android:src="@drawable/ic_pause_white_24dp"
+            android:tag="play_pause"/>
+
+        <ImageView
+            android:id="@+id/nav_media_play"
+            style="@style/NavIconButton"
+            android:layout_column="4"
+            android:layout_row="6"
+            android:src="@drawable/ic_play_arrow_white_24dp"
+            android:tag="_play"/>
+
+        <ImageView
+            android:id="@+id/nav_media_skip_forward"
+            style="@style/NavIconButton"
+            android:layout_column="6"
+            android:layout_row="6"
+            android:src="@drawable/ic_fast_forward_white_24dp"
+            android:tag="ff"/>
+
+        <ImageView
+            android:id="@+id/nav_media_skip_forward_2"
+            style="@style/NavIconButton"
+            android:layout_column="7"
+            android:layout_row="6"
+            android:src="@drawable/ic_skip_next_white_24dp"
+            android:tag="ff_2"/>
+
+        <ImageView
             android:id="@+id/nav_switch_player"
             style="@style/NavIconButton"
-            android:layout_column="3"
+            android:layout_column="8"
             android:layout_row="6"
             android:src="@drawable/ic_switch_video_white_24dp"
             android:tag="_switch_video"/>
@@ -201,10 +194,19 @@
         <ImageView
             android:id="@+id/nav_toggle_ar"
             style="@style/NavIconButton"
-            android:layout_column="4"
+            android:layout_column="9"
             android:layout_row="6"
             android:src="@drawable/ic_aspect_ratio_white_24dp"
             android:tag="aspect_ratio"/>
 
+        <ImageView
+            android:id="@+id/nav_remote_mode"
+            style="@style/NavIconButton"
+            android:layout_column="12"
+            android:layout_row="6"
+            android:src="@drawable/ic_open_with_white_24dp"
+            android:tag="toggle_smart_remote"/>
+
     </GridLayout>
+    </LinearLayout>
 </RelativeLayout>

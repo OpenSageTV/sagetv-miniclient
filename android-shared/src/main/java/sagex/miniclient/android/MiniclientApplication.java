@@ -91,6 +91,8 @@ public class MiniclientApplication extends Application {
         } catch (Throwable t) {
             log.error("Failed to start MiniClient service", t);
         }
+
+        log.debug("-------- LAYOUT: {} ---------", getResources().getString(R.string.layout));
     }
 
     @Override

@@ -15,20 +15,22 @@
     </style>
 
     <style name="NavIconButton">
-        <item name="android:layout_width">34dp</item>
-        <item name="android:layout_height">34dp</item>
+        <item name="android:layout_width">@dimen/nav_icon_size</item>
+        <item name="android:layout_height">@dimen/nav_icon_size</item>
         <!--<item name="iiv_color">@color/iconbutton_normal</item>-->
-        <item name="android:padding">5dp</item>
+        <item name="android:padding">@dimen/nav_icon_padding</item>
         <item name="android:background">@drawable/iconbutton_background</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:adjustViewBounds">true</item>
         <!--<item name="android:focusableInTouchMode">true</item>-->
     </style>
 
     <style name="HeaderIconButton">
-        <item name="android:layout_width">34dp</item>
-        <item name="android:layout_height">34dp</item>
-        <item name="android:padding">5dp</item>
+        <item name="android:layout_width">35dp</item>
+        <item name="android:layout_height">35dp</item>
+        <item name="android:padding">@dimen/nav_icon_padding</item>
         <item name="android:background">@drawable/iconbutton_background</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
@@ -36,8 +38,8 @@
     </style>
 
     <style name="NavIconSpacer">
-        <item name="android:layout_width">5dp</item>
-        <item name="android:layout_height">5dp</item>
+        <item name="android:layout_width">@dimen/nav_icon_spacer</item>
+        <item name="android:layout_height">@dimen/nav_icon_spacer</item>
     </style>
 
     <style name="NavButtonContainer">
