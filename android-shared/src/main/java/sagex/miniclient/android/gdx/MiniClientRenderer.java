@@ -356,6 +356,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             @Override
             public void run() {
                 log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
+
+                // kind of a hack, but if we are clearing the rectangle at 0,0 then assume full
+                // screen video, and the video mode
+//                if ((x == 0) && (y == 0) && !client.getCurrentConnection().getMenuHint().isOSDMenu()) {
+//                    // set the hint to having an OSD which will enable the smart remote
+//                    client.getCurrentConnection().getMenuHint().menuName = "FAKE OSD";
+//                }
+
                 batch.end();
 //                batch.enableBlending();
 //                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);

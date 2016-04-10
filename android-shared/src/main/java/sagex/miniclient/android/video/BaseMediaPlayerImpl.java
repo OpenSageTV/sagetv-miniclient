@@ -256,11 +256,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             // we need an update
             lastVideoPositionUpdate = destRect;
             videoSize.update(srcRect.width, srcRect.height);
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                        log.debug("setVideoRectangles: Updating Video Location {}", destRect);
+//            context.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+//                        log.debug("setVideoRectangles: Updating Video Location {}", destRect);
 
 //                    // need to convert destRect based on scale
 //                    Scale scale = context.getClient().getUIRenderer().getScale();
@@ -280,8 +280,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 //                    lp.leftMargin = pos.x;
 //                    context.getVideoViewParent().setLayoutParams(lp);
 //                    context.getVideoViewParent().requestLayout();
-                }
-            });
+//                }
+//            });
         }
     }
 

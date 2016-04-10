@@ -105,9 +105,11 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     @Override
     public void stop() {
-        super.stop();
         if (player == null) return;
-        player.stop();
+        if (player.isPlaying()) {
+            player.stop();
+        }
+        super.stop();
     }
 
     @Override
@@ -197,17 +199,13 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
             if (pushMode) {
                 log.info("Playing URL {} PUSH mode", sageTVurl);
-//            player.setDataSource(new File("/sdcard/Movies/sample-ts.ts").toURI().toString());
                 dataSource = new IJKPushMediaSource();
                 ((IJKPushMediaSource) dataSource).open(sageTVurl);
                 player.setDataSource(dataSource);
-                // player.setDataSource("/sdcard/Movies/twd1.mp4");
-                // player.setDataSource("http://192.168.1.176:8000/twd1.mp4");
             } else {
                 log.info("Playing URL Using DataSource: isPush:{}, sageTVUrl: {}", pushMode, sageTVurl);
                 dataSource = new IJKPullMediaSource();
                 ((IJKPullMediaSource) dataSource).open(sageTVurl);
-//            FileMediaSource dataSource = new FileMediaSource(new File("/sdcard/Movies/sagetv-sample-20151222_092326_684.ts"));
                 player.setDataSource(dataSource);
             }
 
@@ -216,7 +214,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 public void onCompletion(IMediaPlayer iMediaPlayer) {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("MEDIA COMPLETE");
                     stop();
-                    notifySageTVStop();
                     state = EOS_STATE;
                 }
             });
@@ -226,6 +223,19 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 public void onPrepared(IMediaPlayer mp) {
                     playerReady = true;
                     player.start();
+                    state = PLAY_STATE;
+                    if (!pushMode) {
+                        if (preSeekPos != -1) {
+                            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                                log.debug("Resuming At Position: {}", preSeekPos);
+                            player.seekTo(preSeekPos);
+                            preSeekPos = -1;
+                        } else {
+                            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                                log.debug("No Resume");
+                        }
+                    }
+
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                         MediaInfo mi = player.getMediaInfo();
                         if (mi != null) {
@@ -240,16 +250,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                         }
                     }
 
-                    if (!pushMode && preSeekPos != -1) {
-                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                            log.debug("Resuming At Position: {}", preSeekPos);
-                        player.seekTo(preSeekPos);
-                        preSeekPos = -1;
-                    } else {
-                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                            log.debug("No Resume");
-                    }
-                    state = PLAY_STATE;
                 }
             });
             player.prepareAsync();
@@ -263,7 +263,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public void seek(long timeInMS) {
         super.seek(timeInMS);
-        if (player == null || state == NO_STATE) {
+        if (player == null || state == NO_STATE || state == LOADED_STATE) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                 log.debug("Setting Pre-Seek {}", timeInMS);
             }
@@ -272,13 +272,13 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
 
         if (!pushMode) {
-            if (player.isPlaying() || state == PAUSE_STATE) {
+            if (player.isPlaying() || state == PAUSE_STATE || state == PLAY_STATE) {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     log.debug("Immediate Seek {}", timeInMS);
                 }
                 player.seekTo(timeInMS);
             } else {
-                log.info("We Missed a Seek for {}", timeInMS);
+                log.info("We Missed a Seek for {}: player.isPlaying {}; State: {}; playerReader: {}", timeInMS, player.isPlaying(), state, playerReady);
             }
         }
     }

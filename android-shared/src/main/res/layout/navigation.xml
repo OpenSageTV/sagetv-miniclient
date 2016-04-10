@@ -15,31 +15,40 @@
         android:columnCount="13"
         android:rowCount="8">
 
-        <ImageView
+            <ImageView
+                style="@style/NavIconButton"
+                android:id="@+id/nav_info"
+                android:layout_column="2"
+                android:layout_row="2"
+                android:src="@drawable/ic_info_outline_white_24dp"
+                android:tag="_info"
+                />
+
+            <ImageView
             android:id="@+id/nav_left"
             style="@style/NavIconButton"
-            android:layout_column="3"
+            android:layout_column="4"
             android:layout_row="2"
             android:src="@drawable/ic_arrow_back_white_24dp"
             android:tag="left"/>
 
-        <ImageView
-            android:id="@+id/nav_select"
-            style="@style/NavIconButton"
-            android:layout_column="4"
-            android:layout_row="2"
-            android:src="@drawable/ic_fiber_manual_record_white_24dp"
-            android:tag="select"/>
+            <ImageView
+                android:id="@+id/nav_select"
+                style="@style/NavIconButton"
+                android:layout_column="5"
+                android:layout_row="2"
+                android:src="@drawable/ic_fiber_manual_record_white_24dp"
+                android:tag="select"/>
 
-        <ImageView
-            android:id="@+id/nav_right"
-            style="@style/NavIconButton"
-            android:layout_column="5"
-            android:layout_row="2"
-            android:src="@drawable/ic_arrow_forward_white_24dp"
-            android:tag="right"/>
+            <ImageView
+                android:id="@+id/nav_right"
+                style="@style/NavIconButton"
+                android:layout_column="6"
+                android:layout_row="2"
+                android:src="@drawable/ic_arrow_forward_white_24dp"
+                android:tag="right"/>
 
-        <ImageView
+            <ImageView
             android:id="@+id/nav_help"
             style="@style/NavIconButton"
             android:layout_column="12"
@@ -63,7 +72,15 @@
             android:src="@drawable/ic_home_white_24dp"
             android:tag="_home"/>
 
-        <ImageView
+            <ImageView
+            android:id="@+id/nav_up"
+            style="@style/NavIconButton"
+            android:layout_column="5"
+            android:layout_row="1"
+            android:src="@drawable/ic_arrow_upward_white_24dp"
+            android:tag="up"/>
+
+            <ImageView
             android:id="@+id/nav_pgup"
             style="@style/NavIconButton"
             android:layout_column="7"
@@ -79,15 +96,7 @@
             android:src="@drawable/ic_close_white_24dp"
             android:tag="_close"/>
 
-        <ImageView
-            android:id="@+id/nav_up"
-            style="@style/NavIconButton"
-            android:layout_column="4"
-            android:layout_row="1"
-            android:src="@drawable/ic_arrow_upward_white_24dp"
-            android:tag="up"/>
-
-        <ImageView
+            <ImageView
             android:id="@+id/nav_options"
             style="@style/NavIconButton"
             android:layout_column="1"
@@ -95,15 +104,15 @@
             android:src="@drawable/ic_menu_white_24dp"
             android:tag="_options"/>
 
-        <ImageView
-            android:id="@+id/nav_down"
-            style="@style/NavIconButton"
-            android:layout_column="4"
-            android:layout_row="3"
-            android:src="@drawable/ic_arrow_downward_white_24dp"
-            android:tag="down"/>
+            <ImageView
+                android:id="@+id/nav_down"
+                style="@style/NavIconButton"
+                android:layout_column="5"
+                android:layout_row="3"
+                android:src="@drawable/ic_arrow_downward_white_24dp"
+                android:tag="down"/>
 
-        <ImageView
+            <ImageView
             android:id="@+id/nav_pgdn"
             style="@style/NavIconButton"
             android:layout_column="7"
@@ -186,7 +195,7 @@
         <ImageView
             android:id="@+id/nav_switch_player"
             style="@style/NavIconButton"
-            android:layout_column="8"
+            android:layout_column="12"
             android:layout_row="6"
             android:src="@drawable/ic_switch_video_white_24dp"
             android:tag="_switch_video"/>
@@ -205,7 +214,8 @@
             android:layout_column="12"
             android:layout_row="6"
             android:src="@drawable/ic_open_with_white_24dp"
-            android:tag="toggle_smart_remote"/>
+            android:tag="toggle_smart_remote"
+            android:visibility="gone" />
 
     </GridLayout>
     </LinearLayout>
