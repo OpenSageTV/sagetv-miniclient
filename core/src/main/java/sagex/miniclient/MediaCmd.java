@@ -309,7 +309,7 @@ public class MediaCmd {
 
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     if (rv < 0) {
-                        log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}");
+                        log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}", rv);
                     }
                 }
 
