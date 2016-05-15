@@ -9,11 +9,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 import sagex.miniclient.net.BufferedPullDataSource;
+import sagex.miniclient.net.HasClose;
 
 /**
  * Created by seans on 10/12/15.
  */
-public class ExoPullDataSource implements DataSource {
+public class ExoPullDataSource implements DataSource, HasClose {
     static final Logger log = LoggerFactory.getLogger(ExoPullDataSource.class);
     BufferedPullDataSource dataSource = null;
     private long startPos;

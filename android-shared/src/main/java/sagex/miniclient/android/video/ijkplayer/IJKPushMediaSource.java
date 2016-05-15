@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import sagex.miniclient.net.HasClose;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.util.VerboseLogging;
@@ -13,7 +14,7 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 /**
  * Created by seans on 20/12/15.
  */
-public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer {
+public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasClose {
     private static final Logger log = LoggerFactory.getLogger(IJKPushMediaSource.class);
 
     private PushBufferDataSource dataSource;
@@ -75,10 +76,12 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            dataSource.release();
-        } catch (Throwable t) {
-            t.printStackTrace();
+        if (dataSource!=null) {
+            try {
+                dataSource.release();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
         }
         released = true;
         dataSource = null;

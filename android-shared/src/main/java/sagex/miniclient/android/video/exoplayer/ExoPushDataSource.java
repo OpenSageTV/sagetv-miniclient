@@ -9,13 +9,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import sagex.miniclient.net.HasClose;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 
 /**
  * Created by seans on 08/12/15.
  */
-public class ExoPushDataSource extends PushBufferDataSource implements DataSource, HasPushBuffer {
+public class ExoPushDataSource extends PushBufferDataSource implements DataSource, HasPushBuffer, HasClose {
     private static final Logger log = LoggerFactory.getLogger(ExoPushDataSource.class);
 
     public ExoPushDataSource() {

@@ -252,6 +252,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
                 }
             });
+
             player.prepareAsync();
             log.debug("mediaplayer has our URL");
         } catch (Exception e) {

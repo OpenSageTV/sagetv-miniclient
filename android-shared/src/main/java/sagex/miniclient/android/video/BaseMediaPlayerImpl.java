@@ -10,6 +10,7 @@ import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.net.HasClose;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
@@ -40,6 +41,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected boolean waitForPlayer = true;
 
     protected int state;
+    protected boolean eos=false;
 
     protected String lastUri;
 
@@ -74,6 +76,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     public void load(byte majorHint, byte minorHint, String encodingHint, final String urlString, String hostname, boolean timeshifted, long buffersize) {
         lastUri = urlString;
         lastMediaTime = 0;
+        eos=false;
         log.debug("load(): url: {}", urlString);
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
@@ -108,6 +111,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         stop();
         releasePlayer();
         state = EOS_STATE;
+        eos=true;
         notifySageTVStop();
         message(context.getString(R.string.msg_player_failed, lastUri));
     }
@@ -164,6 +168,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public int getState() {
+        if (eos) return MiniPlayerPlugin.EOS_STATE;
         return state;
     }
 
@@ -217,12 +222,12 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void setServerEOS() {
-        // Jeff says don't do this
         // tell the datasource that we have all the data
         if (dataSource != null && dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).setEOS();
         }
-
+        eos=true;
+        state=EOS_STATE;
         log.debug("Server sent us EOS");
     }
 
@@ -310,7 +315,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public int getBufferLeft() {
         if (dataSource instanceof HasPushBuffer) {
-            if (state == EOS_STATE) return -1;
+            if (state == EOS_STATE || eos) return -1;
             return ((HasPushBuffer) dataSource).bufferAvailable();
         } else {
             return PushBufferDataSource.PIPE_SIZE;
@@ -334,6 +339,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         releaseDataSource();
         dataSource = null;
         state = EOS_STATE;
+        eos=true;
         context.removeVideoFrame();
     }
 

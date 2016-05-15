@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import sagex.miniclient.net.HasClose;
 import sagex.miniclient.net.ISageTVDataSource;
 import sagex.miniclient.net.SimplePullDataSource;
 import sagex.miniclient.util.VerboseLogging;
@@ -13,7 +14,7 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 /**
  * Created by seans on 20/12/15.
  */
-public class IJKPullMediaSource implements IMediaDataSource {
+public class IJKPullMediaSource implements IMediaDataSource, HasClose {
     private static final Logger log = LoggerFactory.getLogger(IJKPullMediaSource.class);
 
     private ISageTVDataSource dataSource;
