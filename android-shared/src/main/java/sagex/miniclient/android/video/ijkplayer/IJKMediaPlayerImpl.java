@@ -303,6 +303,14 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             } catch (Throwable t) {
             }
+
+            // now release the datasource
+            // https://github.com/OpenSageTV/sagetv-miniclient/issues/54
+            try {
+                releaseDataSource();
+            } catch (Throwable t) {
+            }
+
             try {
                 player.reset();
             } catch (Throwable t) {
@@ -310,6 +318,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             log.debug("Player Is Stopped");
         } catch (Throwable t) {
         }
+
 
         try {
             player.release();
