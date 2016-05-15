@@ -22,7 +22,7 @@ allprojects {
         gdxVersion = "1.9.1"
         ijkVersion = "0.4.5.1";
         ijkVersionDev = "0.4.5.1-SNAPSHOT";
-        exoVersion = 'r1.5.6';
+        exoVersion = 'r1.5.8';
 
         androidExtrasVer = "22.2.1";
         androidBuildToolsVersion = "22.0.1";
