@@ -103,8 +103,7 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
         if (in != null) {
             try {
                 if (in.available() == 0) {
-                    log.debug("setEOS() called and there is no data, so closing the stream");
-                    in.close();
+                    log.debug("setEOS() called and there is no data the stream");
                 } else {
                     log.debug("setEOS() called and we still have {} bytes of data", in.available());
                 }

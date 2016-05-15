@@ -215,6 +215,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("MEDIA COMPLETE");
                     stop();
                     state = EOS_STATE;
+                    eos=true;
                 }
             });
 

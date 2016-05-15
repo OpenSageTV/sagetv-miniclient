@@ -109,9 +109,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected void playerFailed() {
         stop();
-        releasePlayer();
         state = EOS_STATE;
         eos=true;
+        releasePlayer();
         notifySageTVStop();
         message(context.getString(R.string.msg_player_failed, lastUri));
     }
@@ -226,8 +226,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         if (dataSource != null && dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).setEOS();
         }
-        eos=true;
-        state=EOS_STATE;
+        // we don't set our EOS until AFTER the player stream has ended
+        //eos=true;
+        //state=EOS_STATE;
         log.debug("Server sent us EOS");
     }
 
