@@ -1,2 +1,1 @@
-include ':android-tv'
-include 'core', 'android-shared', ':android-phone'
+include 'core', ':android-shared', ':android-tv'

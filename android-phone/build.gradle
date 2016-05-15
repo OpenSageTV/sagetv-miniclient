@@ -9,8 +9,8 @@ android {
         minSdkVersion 16
         targetSdkVersion androidTargetSdkVersion
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        versionCode 1600001
-        versionName "1.0"
+        versionCode 1600002
+        versionName "1.0.4"
     }
     buildTypes {
         release {
