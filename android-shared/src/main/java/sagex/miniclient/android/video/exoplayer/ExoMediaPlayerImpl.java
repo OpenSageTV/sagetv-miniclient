@@ -123,8 +123,10 @@ public class ExoMediaPlayerImpl extends BaseMediaPlayerImpl<DemoPlayer, DataSour
                 if (playbackState == ExoPlayer.STATE_ENDED) {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                         log.debug("Player Has Ended, set EOS");
-                    stop();
-                    notifySageTVStop();
+                    if (playWhenReady)
+                       stop();
+                    //notifySageTVStop();
+                    eos = true;
                     ExoMediaPlayerImpl.this.state = ExoMediaPlayerImpl.EOS_STATE;
                 }
             }

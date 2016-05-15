@@ -71,6 +71,7 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
 
     public void close() {
         log.debug("close() for a push is ignored, until the release() is called.");
+        //log.error("close() stacktrace", new Exception("PushBuffer.close()"));
     }
 
     @Override
