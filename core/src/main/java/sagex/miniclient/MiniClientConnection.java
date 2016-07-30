@@ -23,6 +23,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.RunnableFuture;
 
 import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
@@ -179,6 +182,7 @@ public class MiniClientConnection implements SageTVInputCallback {
     private java.io.DataOutputStream eventChannel;
     private int replyCount;
     private GFXCMD2 myGfx;
+    private EventRouterThread eventRouterThread;
     private boolean alive;
     private String currentCrypto = null;
     private boolean fontServer;
@@ -492,6 +496,12 @@ public class MiniClientConnection implements SageTVInputCallback {
             mediaSocket.close();
         } catch (Exception e) {
         }
+
+        if (eventRouterThread!=null) {
+            // shut down the event router thread
+            eventRouterThread.interrupt();
+        }
+
         cleanupOfflineCache();
         client = null;
     }
@@ -522,6 +532,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         final java.util.Vector gfxSyncVector = new java.util.Vector();
 
         try {
+            // create the event router thread to handle routing of event on a separate thread
+            eventRouterThread = new EventRouterThread("EVTRouter");
+            eventRouterThread.start();
+
             eventChannel = new java.io.DataOutputStream(new java.io.BufferedOutputStream(gfxSocket.getOutputStream()));
             gfxIs = new java.io.DataInputStream(gfxSocket.getInputStream());
             zipMode = false;
@@ -1205,7 +1219,7 @@ public class MiniClientConnection implements SageTVInputCallback {
         postKeyEvent(keyCode, keyModifiers, keyChar);
     }
 
-    public void postIREvent(int IRCode) {
+    public void postIREvent(final int IRCode) {
 //        if (MiniClient.irKillCode != null && MiniClient.irKillCode.intValue() == IRCode) {
 //            System.out.println("IR Exit Code received...terminating");
 //            close();
@@ -1216,101 +1230,119 @@ public class MiniClientConnection implements SageTVInputCallback {
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
-        synchronized (eventChannel) {
-            try {
-                eventChannel.write(IR_EVENT_REPLY_TYPE); // ir event code
-                eventChannel.write(0);
-                eventChannel.writeShort(4);// 3 byte length of 4
-                eventChannel.writeInt(0); // timestamp
-                eventChannel.writeInt(replyCount++);
-                eventChannel.writeInt(0); // pad
-                if (encryptEvents && evtEncryptCipher != null) {
-                    byte[] data = new byte[4];
-                    data[0] = (byte) ((IRCode >> 24) & 0xFF);
-                    data[1] = (byte) ((IRCode >> 16) & 0xFF);
-                    data[2] = (byte) ((IRCode >> 8) & 0xFF);
-                    data[3] = (byte) (IRCode & 0xFF);
-                    eventChannel.write(evtEncryptCipher.doFinal(data));
-                } else {
-                    eventChannel.writeInt(IRCode);
+
+        eventRouterThread.queue.add(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (eventChannel) {
+                    try {
+                        eventChannel.write(IR_EVENT_REPLY_TYPE); // ir event code
+                        eventChannel.write(0);
+                        eventChannel.writeShort(4);// 3 byte length of 4
+                        eventChannel.writeInt(0); // timestamp
+                        eventChannel.writeInt(replyCount++);
+                        eventChannel.writeInt(0); // pad
+                        if (encryptEvents && evtEncryptCipher != null) {
+                            byte[] data = new byte[4];
+                            data[0] = (byte) ((IRCode >> 24) & 0xFF);
+                            data[1] = (byte) ((IRCode >> 16) & 0xFF);
+                            data[2] = (byte) ((IRCode >> 8) & 0xFF);
+                            data[3] = (byte) (IRCode & 0xFF);
+                            eventChannel.write(evtEncryptCipher.doFinal(data));
+                        } else {
+                            eventChannel.writeInt(IRCode);
+                        }
+                        eventChannel.flush();
+                    } catch (Exception e) {
+                        log.error("Error w/ event thread", e);
+                        eventChannelError();
+                    }
                 }
-                eventChannel.flush();
-            } catch (Exception e) {
-                log.error("Error w/ event thread", e);
-                eventChannelError();
             }
-        }
+        });
     }
 
-    public void postSageCommandEvent(int sageCommand) {
+    public void postSageCommandEvent(final int sageCommand) {
         // if (myGfx != null)
         // myGfx.setHidden(false, false);
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
-        log.debug("Begin Sending SageTV Command {}", sageCommand);
-        synchronized (eventChannel) {
-            try {
-                eventChannel.write(136); // SageTV Command event code
-                eventChannel.write(0);
-                eventChannel.writeShort(4);// 3 byte length of 4
-                eventChannel.writeInt(0); // timestamp
-                eventChannel.writeInt(replyCount++);
-                eventChannel.writeInt(0); // pad
-                if (encryptEvents && evtEncryptCipher != null) {
-                    byte[] data = new byte[4];
-                    data[0] = (byte) ((sageCommand >> 24) & 0xFF);
-                    data[1] = (byte) ((sageCommand >> 16) & 0xFF);
-                    data[2] = (byte) ((sageCommand >> 8) & 0xFF);
-                    data[3] = (byte) (sageCommand & 0xFF);
-                    eventChannel.write(evtEncryptCipher.doFinal(data));
-                } else {
-                    eventChannel.writeInt(sageCommand);
+
+        eventRouterThread.queue.add(new Runnable() {
+            @Override
+            public void run() {
+                log.debug("Begin Sending SageTV Command {}", sageCommand);
+                synchronized (eventChannel) {
+                    try {
+                        eventChannel.write(136); // SageTV Command event code
+                        eventChannel.write(0);
+                        eventChannel.writeShort(4);// 3 byte length of 4
+                        eventChannel.writeInt(0); // timestamp
+                        eventChannel.writeInt(replyCount++);
+                        eventChannel.writeInt(0); // pad
+                        if (encryptEvents && evtEncryptCipher != null) {
+                            byte[] data = new byte[4];
+                            data[0] = (byte) ((sageCommand >> 24) & 0xFF);
+                            data[1] = (byte) ((sageCommand >> 16) & 0xFF);
+                            data[2] = (byte) ((sageCommand >> 8) & 0xFF);
+                            data[3] = (byte) (sageCommand & 0xFF);
+                            eventChannel.write(evtEncryptCipher.doFinal(data));
+                        } else {
+                            eventChannel.writeInt(sageCommand);
+                        }
+                        eventChannel.flush();
+                    } catch (Exception e) {
+                        log.error("Error w/ event thread", e);
+                        eventChannelError();
+                    }
                 }
-                eventChannel.flush();
-            } catch (Exception e) {
-                log.error("Error w/ event thread", e);
-                eventChannelError();
             }
-        }
+        });
     }
 
-    public void postKeyEvent(int keyCode, int keyModifiers, char keyChar) {
+    public void postKeyEvent(final int keyCode, final int keyModifiers, final char keyChar) {
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
-        synchronized (eventChannel) {
-            try {
-                eventChannel.write(KB_EVENT_REPLY_TYPE); // kb event code
-                eventChannel.write(0);
-                eventChannel.writeShort(10);// 3 byte length of 10
-                eventChannel.writeInt(0); // timestamp
-                eventChannel.writeInt(replyCount++);
-                eventChannel.writeInt(0); // pad
-                if (encryptEvents && evtEncryptCipher != null) {
-                    byte[] data = new byte[10];
-                    data[0] = (byte) ((keyCode >> 24) & 0xFF);
-                    data[1] = (byte) ((keyCode >> 16) & 0xFF);
-                    data[2] = (byte) ((keyCode >> 8) & 0xFF);
-                    data[3] = (byte) (keyCode & 0xFF);
-                    data[4] = (byte) ((keyChar >> 8) & 0xFF);
-                    data[5] = (byte) (keyChar & 0xFF);
-                    data[6] = (byte) ((keyModifiers >> 24) & 0xFF);
-                    data[7] = (byte) ((keyModifiers >> 16) & 0xFF);
-                    data[8] = (byte) ((keyModifiers >> 8) & 0xFF);
-                    data[9] = (byte) (keyModifiers & 0xFF);
-                    eventChannel.write(evtEncryptCipher.doFinal(data));
-                } else {
-                    eventChannel.writeInt(keyCode);
-                    eventChannel.writeChar(keyChar);
-                    eventChannel.writeInt(keyModifiers);
+
+        eventRouterThread.queue.add(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (eventChannel) {
+                    try {
+                        eventChannel.write(KB_EVENT_REPLY_TYPE); // kb event code
+                        eventChannel.write(0);
+                        eventChannel.writeShort(10);// 3 byte length of 10
+                        eventChannel.writeInt(0); // timestamp
+                        eventChannel.writeInt(replyCount++);
+                        eventChannel.writeInt(0); // pad
+                        if (encryptEvents && evtEncryptCipher != null) {
+                            byte[] data = new byte[10];
+                            data[0] = (byte) ((keyCode >> 24) & 0xFF);
+                            data[1] = (byte) ((keyCode >> 16) & 0xFF);
+                            data[2] = (byte) ((keyCode >> 8) & 0xFF);
+                            data[3] = (byte) (keyCode & 0xFF);
+                            data[4] = (byte) ((keyChar >> 8) & 0xFF);
+                            data[5] = (byte) (keyChar & 0xFF);
+                            data[6] = (byte) ((keyModifiers >> 24) & 0xFF);
+                            data[7] = (byte) ((keyModifiers >> 16) & 0xFF);
+                            data[8] = (byte) ((keyModifiers >> 8) & 0xFF);
+                            data[9] = (byte) (keyModifiers & 0xFF);
+                            eventChannel.write(evtEncryptCipher.doFinal(data));
+                        } else {
+                            eventChannel.writeInt(keyCode);
+                            eventChannel.writeChar(keyChar);
+                            eventChannel.writeInt(keyModifiers);
+                        }
+                        eventChannel.flush();
+                    } catch (Exception e) {
+                        log.error("Error w/ event thread", e);
+                        eventChannelError();
+                    }
                 }
-                eventChannel.flush();
-            } catch (Exception e) {
-                log.error("Error w/ event thread", e);
-                eventChannelError();
             }
-        }
+        });
     }
 
     public boolean hasEventChannel() {
@@ -1320,6 +1352,10 @@ public class MiniClientConnection implements SageTVInputCallback {
     public void postResizeEvent(Dimension size) {
         if (performingReconnect)
             return;
+
+        // NOTE: not sure this needs to use the eventRouterThread... resize events normally happen
+        // in the background thread, so I think we are safe to leave this
+
         synchronized (eventChannel) {
             try {
                 eventChannel.write(UI_RESIZE_EVENT_REPLY_TYPE); // resize event
@@ -1355,6 +1391,10 @@ public class MiniClientConnection implements SageTVInputCallback {
     public void postRepaintEvent(int x, int y, int w, int h) {
         if (performingReconnect)
             return;
+
+        // We should be good to NOT use the eventRouterThread, since repaints happen in the background
+        // thread, usually.
+
         synchronized (eventChannel) {
             try {
                 eventChannel.write(UI_REPAINT_EVENT_REPLY_TYPE); // repaint
@@ -1465,78 +1505,85 @@ public class MiniClientConnection implements SageTVInputCallback {
         }
     }
 
-    public void postMouseEvent(MouseEvent evt) {
+    public void postMouseEvent(final MouseEvent evt) {
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
-        synchronized (eventChannel) {
-            try {
-                if (evt.getID() == MouseEvent.MOUSE_CLICKED)
-                    eventChannel.write(MCLICK_EVENT_REPLY_TYPE); // mouse click
-                    // event
-                    // code
-                else if (evt.getID() == MouseEvent.MOUSE_PRESSED)
-                    eventChannel.write(MPRESS_EVENT_REPLY_TYPE); // mouse press
-                    // event
-                    // code
-                else if (evt.getID() == MouseEvent.MOUSE_RELEASED)
-                    eventChannel.write(MRELEASE_EVENT_REPLY_TYPE); // mouse
-                    // release
-                    // event
-                    // code
-                else if (evt.getID() == MouseEvent.MOUSE_DRAGGED)
-                    eventChannel.write(MDRAG_EVENT_REPLY_TYPE); // mouse drag
-                    // event code
-                else if (evt.getID() == MouseEvent.MOUSE_MOVED)
-                    eventChannel.write(MMOVE_EVENT_REPLY_TYPE); // mouse move
-                    // event code
-                else if (evt.getID() == MouseEvent.MOUSE_WHEEL)
-                    eventChannel.write(MWHEEL_EVENT_REPLY_TYPE); // mouse wheel
-                    // event
-                    // code
-                else
-                    return;
-                eventChannel.write(0);
-                eventChannel.writeShort(14);// 3 byte length of 14
-                eventChannel.writeInt(0); // timestamp
-                eventChannel.writeInt(replyCount++);
-                eventChannel.writeInt(0); // pad
-                if (encryptEvents && evtEncryptCipher != null) {
-                    byte[] data = new byte[14];
-                    data[0] = (byte) ((evt.getX() >> 24) & 0xFF);
-                    data[1] = (byte) ((evt.getX() >> 16) & 0xFF);
-                    data[2] = (byte) ((evt.getX() >> 8) & 0xFF);
-                    data[3] = (byte) (evt.getX() & 0xFF);
-                    data[4] = (byte) ((evt.getY() >> 24) & 0xFF);
-                    data[5] = (byte) ((evt.getY() >> 16) & 0xFF);
-                    data[6] = (byte) ((evt.getY() >> 8) & 0xFF);
-                    data[7] = (byte) (evt.getY() & 0xFF);
-                    data[8] = (byte) ((evt.getModifiers() >> 24) & 0xFF);
-                    data[9] = (byte) ((evt.getModifiers() >> 16) & 0xFF);
-                    data[10] = (byte) ((evt.getModifiers() >> 8) & 0xFF);
-                    data[11] = (byte) (evt.getModifiers() & 0xFF);
-                    if (evt.getID() == MouseEvent.MOUSE_WHEEL)
-                        data[12] = (byte) (evt.getWheelRotation());
-                    else
-                        data[12] = (byte) evt.getClickCount();
-                    data[13] = (byte) evt.getButton();
-                    eventChannel.write(evtEncryptCipher.doFinal(data));
-                } else {
-                    eventChannel.writeInt(evt.getX());
-                    eventChannel.writeInt(evt.getY());
-                    eventChannel.writeInt(evt.getModifiers());
-                    if (evt.getID() == MouseEvent.MOUSE_WHEEL)
-                        eventChannel.write(evt.getWheelRotation());
-                    else
-                        eventChannel.write(evt.getClickCount());
-                    eventChannel.write(evt.getButton());
+
+        eventRouterThread.queue.add(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (eventChannel) {
+                    try {
+                        if (evt.getID() == MouseEvent.MOUSE_CLICKED)
+                            eventChannel.write(MCLICK_EVENT_REPLY_TYPE); // mouse click
+                            // event
+                            // code
+                        else if (evt.getID() == MouseEvent.MOUSE_PRESSED)
+                            eventChannel.write(MPRESS_EVENT_REPLY_TYPE); // mouse press
+                            // event
+                            // code
+                        else if (evt.getID() == MouseEvent.MOUSE_RELEASED)
+                            eventChannel.write(MRELEASE_EVENT_REPLY_TYPE); // mouse
+                            // release
+                            // event
+                            // code
+                        else if (evt.getID() == MouseEvent.MOUSE_DRAGGED)
+                            eventChannel.write(MDRAG_EVENT_REPLY_TYPE); // mouse drag
+                            // event code
+                        else if (evt.getID() == MouseEvent.MOUSE_MOVED)
+                            eventChannel.write(MMOVE_EVENT_REPLY_TYPE); // mouse move
+                            // event code
+                        else if (evt.getID() == MouseEvent.MOUSE_WHEEL)
+                            eventChannel.write(MWHEEL_EVENT_REPLY_TYPE); // mouse wheel
+                            // event
+                            // code
+                        else
+                            return;
+                        eventChannel.write(0);
+                        eventChannel.writeShort(14);// 3 byte length of 14
+                        eventChannel.writeInt(0); // timestamp
+                        eventChannel.writeInt(replyCount++);
+                        eventChannel.writeInt(0); // pad
+                        if (encryptEvents && evtEncryptCipher != null) {
+                            byte[] data = new byte[14];
+                            data[0] = (byte) ((evt.getX() >> 24) & 0xFF);
+                            data[1] = (byte) ((evt.getX() >> 16) & 0xFF);
+                            data[2] = (byte) ((evt.getX() >> 8) & 0xFF);
+                            data[3] = (byte) (evt.getX() & 0xFF);
+                            data[4] = (byte) ((evt.getY() >> 24) & 0xFF);
+                            data[5] = (byte) ((evt.getY() >> 16) & 0xFF);
+                            data[6] = (byte) ((evt.getY() >> 8) & 0xFF);
+                            data[7] = (byte) (evt.getY() & 0xFF);
+                            data[8] = (byte) ((evt.getModifiers() >> 24) & 0xFF);
+                            data[9] = (byte) ((evt.getModifiers() >> 16) & 0xFF);
+                            data[10] = (byte) ((evt.getModifiers() >> 8) & 0xFF);
+                            data[11] = (byte) (evt.getModifiers() & 0xFF);
+                            if (evt.getID() == MouseEvent.MOUSE_WHEEL)
+                                data[12] = (byte) (evt.getWheelRotation());
+                            else
+                                data[12] = (byte) evt.getClickCount();
+                            data[13] = (byte) evt.getButton();
+                            eventChannel.write(evtEncryptCipher.doFinal(data));
+                        } else {
+                            eventChannel.writeInt(evt.getX());
+                            eventChannel.writeInt(evt.getY());
+                            eventChannel.writeInt(evt.getModifiers());
+                            if (evt.getID() == MouseEvent.MOUSE_WHEEL)
+                                eventChannel.write(evt.getWheelRotation());
+                            else
+                                eventChannel.write(evt.getClickCount());
+                            eventChannel.write(evt.getButton());
+                        }
+                        eventChannel.flush();
+                    } catch (Exception e) {
+                        log.error("Error w/ event thread", e);
+                        eventChannelError();
+                    }
                 }
-                eventChannel.flush();
-            } catch (Exception e) {
-                log.error("Error w/ event thread", e);
-                eventChannelError();
             }
-        }
+        });
+
     }
 
     public void postMediaPlayerUpdateEvent() {
@@ -2142,4 +2189,38 @@ public class MiniClientConnection implements SageTVInputCallback {
     public boolean doesUseAdvancedImageCaching() {
         return usesAdvancedImageCaching;
     }
+
+    /**
+     * Android requires that all network activity happen in a background thread.  The EventRouterThread
+     * is a blocking queue of events that get processed on a separate thread when communicating to the server.
+     */
+    public class EventRouterThread extends Thread {
+        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(100);
+        Runnable event = null;
+
+        public EventRouterThread(String evtRouter) {
+            super(evtRouter);
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    // blocks until an event is ready
+                    event = queue.take();
+                    if (!performingReconnect) {
+                        event.run();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.interrupted();
+                    log.warn("EventRouterThread is shutting down");
+                    return;
+                } catch (Throwable t) {
+                    log.warn("Event Processing Error", t);
+                    // event likely caused an error, ignore it for now
+                }
+            }
+        }
+    }
+
 }
