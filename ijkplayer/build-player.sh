@@ -13,7 +13,7 @@ if [ ! -d Ndk ] ; then
     exit 1
 fi
 
-export ANDROID_NDK=`pwd`/Ndk/android-ndk-r10e
+export ANDROID_NDK=`pwd`/Ndk/android-ndk-r11c
 
 
 

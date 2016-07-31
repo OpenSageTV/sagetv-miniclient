@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-VERSION='r1.5.5-SNAPSHOT'
+VERSION='r1.5.9.1-SNAPSHOT'
 EXO_REPO="https://github.com/google/ExoPlayer.git"
 #EXO_REPO="https://github.com/Narflex/ExoPlayer.git"
 #EXO_BRANCH="ps-extractor2"
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
-    export ANDROID_SDK=/home/sls/Android/Sdk/
+    export ANDROID_SDK=/home/seans/Android/Sdk/
 fi
 
 if [ "$ANDROID_HOME" = "" ] ; then
@@ -29,11 +29,11 @@ if [ ! -e ExoPlayer ] ; then
 
     echo "Patching..."
     cd ExoPlayer
-    for p in ../*.patch ; do
-        echo "Applying $p"
-        patch -p0 < $p
-        echo "Applyied $p"
-    done
+#    for p in ../*.patch ; do
+#        echo "Applying $p"
+#        patch -p0 < $p
+#        echo "Applyied $p"
+#    done
     echo "Removing back up files (causes issues with javadoc)"
     find . -name '*.orig' -exec rm -fv {} \;
     cd ..

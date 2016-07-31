@@ -11,7 +11,7 @@ if [ ! -d Ndk ] ; then
     exit 1
 fi
 
-export ANDROID_NDK=`pwd`/Ndk/android-ndk-r10e
+export ANDROID_NDK=`pwd`/Ndk/android-ndk-r11c
 
 
 
@@ -22,7 +22,7 @@ cd ..
 ./init-android.sh
 cd android/contrib/
 #./compile-ffmpeg.sh clean
-#./compile-ffmpeg.sh all
+./compile-ffmpeg.sh all
 cd ..
 #./compile-ijk.sh clean
 ./compile-ijk.sh all
