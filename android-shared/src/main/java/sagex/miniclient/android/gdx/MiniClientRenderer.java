@@ -191,11 +191,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         long st = System.currentTimeMillis();
 
 
+        // clear gl is now moved to the start frame for perf reasons
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
-        Gdx.gl20.glClearColor(0, 0, 0, 0);
-        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+//        Gdx.gl20.glClearColor(0, 0, 0, 0);
+//        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE_2D);
@@ -669,6 +670,25 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         totalTextureTime = 0;
         longestTextureTime = 0;
         state = STATE_MENU;
+        if (firstFrame) {
+            invokeLater(new Runnable() {
+                @Override
+                public void run() {
+//        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+                    // must be set to 0,0,0,0 or else overlay on video does not work
+                    Gdx.gl20.glClearColor(0, 0, 0, 0);
+                    //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                    Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+//        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
+//        Gdx.gl.glEnable(GL10.GL_TEXTURE);
+//        Gdx.gl.glEnable(GL10.GL_TEXTURE_2D);
+//        Gdx.gl.glEnable(GL10.GL_LINE_SMOOTH);
+//        Gdx.gl.glDepthFunc(GL10.GL_LEQUAL);
+//        Gdx.gl.glClearDepthf(1.0F);
+
+                }
+            });
+        }
     }
 
     @Override
