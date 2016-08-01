@@ -10,8 +10,8 @@ android {
         minSdkVersion 17
         targetSdkVersion androidTargetSdkVersion
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        versionCode 2101007
-        versionName "1.0.4"
+        versionCode 2101009
+        versionName "1.0.6"
     }
 
     signingConfigs {

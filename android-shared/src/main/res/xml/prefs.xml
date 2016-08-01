@@ -52,6 +52,11 @@
             android:summary="@string/use_tv_ui_on_tablet_summary"
             android:title="@string/use_tv_ui_on_tablet_title"/>
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="animations_disabled"
+            android:summary="@string/animations_disabled_preference_summary"
+            android:title="@string/animations_disabled_preference"/>
 
     </PreferenceCategory>
 
@@ -137,6 +142,12 @@
             android:key="ipaddress"
             android:summary=""
             android:title="Device IP Address"/>
+
+        <EditTextPreference
+
+            android:key="screensize"
+            android:summary=""
+            android:title="Native UI Resolution"/>
 
         <Preference
             android:key="decoders"

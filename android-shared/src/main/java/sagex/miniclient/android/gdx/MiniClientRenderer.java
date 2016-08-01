@@ -104,9 +104,12 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     private Dimension lastScreenSize = new Dimension(0, 0);
     private boolean firstResize = true; // true until after do the first resize
 
+    private boolean animationsDisabled = false;
+
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;
         this.client = client;
+        this.animationsDisabled = client.properties().getBoolean("animations_disabled", false);
         client.setUIRenderer(this);
     }
 
@@ -197,20 +200,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         long st = System.currentTimeMillis();
 
-
-        // clear gl is now moved to the start frame for perf reasons
-//        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-        // must be set to 0,0,0,0 or else overlay on video does not work
-//        Gdx.gl20.glClearColor(0, 0, 0, 0);
-//        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-//        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
-//        Gdx.gl.glEnable(GL10.GL_TEXTURE);
-//        Gdx.gl.glEnable(GL10.GL_TEXTURE_2D);
-//        Gdx.gl.glEnable(GL10.GL_LINE_SMOOTH);
-//        Gdx.gl.glDepthFunc(GL10.GL_LEQUAL);
-//        Gdx.gl.glClearDepthf(1.0F);
-
+        if (animationsDisabled) {
+            clearUI();
+        }
 
         if (batch != null) {
             batch.begin();
@@ -679,21 +671,24 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    clearUI();
+                }
+            });
+        }
+    }
+
+    void clearUI() {
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-                    // must be set to 0,0,0,0 or else overlay on video does not work
-                    Gdx.gl20.glClearColor(0, 0, 0, 0);
-                    //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-                    Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        // must be set to 0,0,0,0 or else overlay on video does not work
+        Gdx.gl20.glClearColor(0, 0, 0, 0);
+        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE_2D);
 //        Gdx.gl.glEnable(GL10.GL_LINE_SMOOTH);
 //        Gdx.gl.glDepthFunc(GL10.GL_LEQUAL);
 //        Gdx.gl.glClearDepthf(1.0F);
-
-                }
-            });
-        }
     }
 
     @Override

@@ -1,6 +1,8 @@
 package sagex.miniclient.android;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -8,11 +10,14 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
+import android.view.Display;
+import android.view.WindowManager;
 
 import sagex.miniclient.Version;
 import sagex.miniclient.android.util.NetUtil;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
+import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.ClientIDGenerator;
 
 
@@ -77,6 +82,10 @@ public class SettingsFragment extends PreferenceFragment {
 
             final Preference ipaddress = findPreference("ipaddress");
             ipaddress.setSummary(NetUtil.getIPAddress(true));
+
+            Dimension size = getMaxScreenSize();
+            final Preference screensize = findPreference("screensize");
+            screensize.setSummary(size.getWidth()+"x"+size.getHeight());
 
             final EditTextPreference clientid = (EditTextPreference) findPreference(Keys.client_id);
             final ClientIDGenerator gen = new ClientIDGenerator();
@@ -149,4 +158,13 @@ public class SettingsFragment extends PreferenceFragment {
     private void updateSummary(Preference pref, int resId, Object value) {
         //pref.setSummary(getResources().getString(resId, value));
     }
+
+    public Dimension getMaxScreenSize() {
+        WindowManager wm = (WindowManager) MiniclientApplication.get().getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        return new Dimension(size.x, size.y);
+    }
+
 }
