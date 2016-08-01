@@ -137,6 +137,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         viewport = new StretchViewport(uiSize.getWidth(), uiSize.getHeight(), camera);
         stage = new Stage(viewport);
         batch = stage.getBatch();
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+
         shapeRenderer = new ShapeRenderer();
         Gdx.graphics.setContinuousRendering(false);
     }
@@ -164,6 +168,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
         log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
         log.debug("SCALE: " + scale);
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
 
         ready = true;
         notifySageTVAboutScreenSize();
@@ -204,10 +211,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 //        Gdx.gl.glDepthFunc(GL10.GL_LEQUAL);
 //        Gdx.gl.glClearDepthf(1.0F);
 
-        camera.update();
 
         if (batch != null) {
-            batch.setProjectionMatrix(camera.combined);
             batch.begin();
             batch.setColor(Color.BLACK);
             synchronized (renderQueue) {
