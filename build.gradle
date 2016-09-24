@@ -19,10 +19,10 @@ allprojects {
         versionText = new File('core/src/main/java/sagex/miniclient/Version.java').text
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
-        gdxVersion = "1.9.3"
+        gdxVersion = "1.9.4"
         ijkVersion = "0.4.5.1";
-        ijkVersionDev = "0.6.0.1-SNAPSHOT";
-        exoVersion = 'r1.5.9';
+        ijkVersionDev = "0.6.2.1-SNAPSHOT";
+        exoVersion = 'r1.5.11';
 
         androidExtrasVer = "22.2.1";
         androidBuildToolsVersion = "22.0.1";
