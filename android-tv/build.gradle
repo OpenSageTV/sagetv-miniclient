@@ -1,6 +1,10 @@
 apply plugin: 'com.android.application'
 
 
+def computeVersionCode() {
+    return appVersionCode;
+}
+
 android {
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
@@ -10,8 +14,8 @@ android {
         minSdkVersion 17
         targetSdkVersion androidTargetSdkVersion
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        versionCode 2101009
-        versionName "1.0.6"
+        versionCode computeVersionCode()
+        versionName "${appVersionName}"
     }
 
     signingConfigs {
