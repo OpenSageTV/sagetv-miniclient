@@ -71,6 +71,10 @@ public class BaseKeyListener implements View.OnKeyListener {
         KEYMAP.put(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, EventRouter.MEDIA_FF);
         KEYMAP.put(KeyEvent.KEYCODE_MEDIA_REWIND, EventRouter.MEDIA_REW);
 
+        // for harmony remote
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, EventRouter.ENTER);
+
+        // standard remotes
         KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);
         KEYMAP.put(KeyEvent.KEYCODE_MENU, EventRouter.OPTIONS);
         KEYMAP.put(KeyEvent.KEYCODE_HOME, EventRouter.HOME);
@@ -86,6 +90,7 @@ public class BaseKeyListener implements View.OnKeyListener {
 
         // UI Long Presses
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, EventRouter.OPTIONS);
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.OPTIONS);
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, EventRouter.PAGE_UP);
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, EventRouter.PAGE_DOWN);
@@ -108,7 +113,7 @@ public class BaseKeyListener implements View.OnKeyListener {
                             return false;
                         }
                         if (client.properties().getBoolean(PrefStore.Keys.long_press_select_for_osd, true) &&
-                                (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                                (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER || event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER)) {
                             client.eventbus().post(ShowNavigationEvent.INSTANCE);
                         } else {
                             EventRouter.post(client, key);
