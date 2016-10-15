@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.android.tools.build:gradle:2.2.1'
         classpath 'org.robovm:robovm-gradle-plugin:1.6.0'
     }
 }
@@ -22,7 +22,7 @@ allprojects {
         gdxVersion = "1.9.4"
         ijkVersion = "0.4.5.1";
         ijkVersionDev = "0.6.2.1-SNAPSHOT";
-        exoVersion = 'r1.5.11';
+        exoVersion = 'r2.0.2';
 
         androidExtrasVer = "22.2.1";
         androidBuildToolsVersion = "22.0.1";

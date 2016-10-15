@@ -34,7 +34,9 @@ android {
     }
 }
 
-configurations { natives }
+configurations {
+    natives
+}
 
 dependencies {
     compile project(":core")
@@ -54,6 +56,9 @@ dependencies {
 
     // video player
     compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
+
+    // exoplayer 2
+    // compile "sagetv:exoplayer2:${exo2Version}@aar"
 
     // ijkplayer
 //        compile "tv.danmaku.ijk.media:ijkplayer-java:${ijkVersion}"

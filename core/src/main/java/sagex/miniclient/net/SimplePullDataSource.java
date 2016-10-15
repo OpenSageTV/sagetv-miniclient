@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.util.DataCollector;
 import sagex.miniclient.util.VerboseLogging;
 
@@ -81,6 +82,7 @@ public class SimplePullDataSource implements ISageTVDataSource {
 
     String getPath(String uri) {
         if (uri == null) return null;
+        if (!uri.contains("stv://")) return uri;
         int pos = uri.indexOf("/", "stv://".length());
         log.debug("PATH: {}({})", uri, pos);
         return uri.substring(pos + 1);
@@ -90,6 +92,9 @@ public class SimplePullDataSource implements ISageTVDataSource {
         if (uri == null) return null;
         int s = "stv://".length();
         int pos = uri.indexOf("/", s);
+        if (pos==-1) {
+            return null;
+        }
         return uri.substring(s, pos);
     }
 

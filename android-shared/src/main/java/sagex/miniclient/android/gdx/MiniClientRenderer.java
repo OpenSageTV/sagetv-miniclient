@@ -35,7 +35,7 @@ import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
-import sagex.miniclient.android.video.exoplayer.ExoMediaPlayerImpl;
+import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
@@ -777,7 +777,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         if (useExoPlayer) {
             log.debug("Using ExoPlayer");
-            player = new ExoMediaPlayerImpl(activity);
+            //player = new ExoMediaPlayerImpl(activity);
+            player = new Exo2MediaPlayerImpl(activity);
         } else {
             log.debug("Using iJKPlayer");
             player = new IJKMediaPlayerImpl(activity);
