@@ -67,6 +67,8 @@ public class PropertiesPrefStore implements PrefStore {
             if (fos != null) {
                 try {
                     fos.flush();
+                } catch ( IOException e) {}
+                try {
                     fos.close();
                 } catch (IOException e) {
                     e.printStackTrace();

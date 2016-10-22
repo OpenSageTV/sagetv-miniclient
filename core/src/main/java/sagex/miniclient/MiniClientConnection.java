@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.RunnableFuture;
 
 import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
@@ -345,15 +344,18 @@ public class MiniClientConnection implements SageTVInputCallback {
         } catch (java.io.IOException e) {
             log.error("ERROR with socket connection", e);
             try {
-                sake.close();
+                if (sake!=null)
+                    sake.close();
             } catch (Exception e1) {
             }
             try {
-                inStream.close();
+                if (inStream!=null)
+                    inStream.close();
             } catch (Exception e1) {
             }
             try {
-                outStream.close();
+                if(outStream!=null)
+                    outStream.close();
             } catch (Exception e1) {
             }
             throw e;
@@ -726,7 +728,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                                         eventChannel.write(retbuf, 0, 4);
                                     eventChannel.flush();
                                 }
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
                                 eventChannelError();
                             }
                         }
@@ -1065,6 +1067,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                                         int h = Integer.parseInt(propVal.substring(xidx + 1));
                                         myGfx.getWindow().setSize(w, h);
                                     } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
                                 }
                             }
@@ -1336,7 +1339,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                             eventChannel.writeInt(keyModifiers);
                         }
                         eventChannel.flush();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         log.error("Error w/ event thread", e);
                         eventChannelError();
                     }
@@ -1431,7 +1434,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                     eventChannel.writeInt(h);
                 }
                 eventChannel.flush();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("Error w/ event thread", e);
                 eventChannelError();
             }
@@ -1576,7 +1579,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                             eventChannel.write(evt.getButton());
                         }
                         eventChannel.flush();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         log.error("Error w/ event thread", e);
                         eventChannelError();
                     }
@@ -1691,7 +1694,6 @@ public class MiniClientConnection implements SageTVInputCallback {
         if (fsSecurity == HIGH_SECURITY_FS)
             return;
         // System.out.println("MiniClient processing FS Command: " + cmdType);
-        len -= 4; // for the header
         byte[][] strRv = null;
         long longRv = 0;
         int intRv = 0;
@@ -2160,11 +2162,11 @@ public class MiniClientConnection implements SageTVInputCallback {
     }
 
     public void registerImageAccess(int handle) {
-        lruImageMap.put(new Integer(handle), new Long(System.currentTimeMillis()));
+        lruImageMap.put(handle, System.currentTimeMillis());
     }
 
     public void clearImageAccess(int handle) {
-        lruImageMap.remove(new Integer(handle));
+        lruImageMap.remove(handle);
     }
 
     public int getOldestImage() {

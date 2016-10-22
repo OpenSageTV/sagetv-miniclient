@@ -127,8 +127,6 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
     }
 
     private void loadRows() {
-        List<Movie> list = MovieList.setupMovies();
-
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         ServerItemPresenter serverPresenter = new ServerItemPresenter(getActivity(), new OnAfterCommands() {
             @Override

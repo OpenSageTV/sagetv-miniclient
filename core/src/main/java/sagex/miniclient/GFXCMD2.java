@@ -496,7 +496,7 @@ public class GFXCMD2 {
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
                     sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
-                    imageMap.put(new Integer(imghandle), img);
+                    imageMap.put(imghandle, img);
                     // imghandle=STBGFX.GFX_loadImage(width, height);
                     hasret[0] = 1;
                     return imghandle;

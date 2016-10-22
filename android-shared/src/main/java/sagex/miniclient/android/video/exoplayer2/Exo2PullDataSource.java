@@ -25,7 +25,7 @@ public class Exo2PullDataSource implements DataSource, HasClose {
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         dataSource = new BufferedPullDataSource();
-        this.uri=uri;
+        this.uri=dataSpec.uri;
         long size = dataSource.open(dataSpec.uri.toString());
         this.startPos = dataSpec.position;
         log.debug("Open: {}, Offset: {}", dataSource.getUri(), startPos);

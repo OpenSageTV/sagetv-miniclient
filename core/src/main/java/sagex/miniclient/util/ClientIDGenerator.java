@@ -20,7 +20,6 @@ public class ClientIDGenerator {
     }
 
     public String generateId(String in) {
-        int size = in.length();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 6; i++) {
             char ch = (i >= in.length()) ? 0 : in.charAt(i);
@@ -40,10 +39,8 @@ public class ClientIDGenerator {
         if (id == null) return null;
 
         StringBuilder sb = new StringBuilder();
-        if (id != null) {
-            for (int i = 0; i < id.length(); i += 3) {
-                sb.append((char) (Integer.parseInt(id.substring(i, i + 2), 16) & 0xFF));
-            }
+        for (int i = 0; i < id.length(); i += 3) {
+            sb.append((char) (Integer.parseInt(id.substring(i, i + 2), 16) & 0xFF));
         }
         return sb.toString();
     }

@@ -59,6 +59,23 @@ public class BaseKeyListener implements View.OnKeyListener {
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.SELECT);
         KEYMAP.put(KeyEvent.KEYCODE_BUTTON_B, EventRouter.BACK);
 
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_SELECT, EventRouter.SELECT);
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_START, EventRouter.MEDIA_PLAY_PAUSE);
+
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_R1, EventRouter.DELETE);
+        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_R2, EventRouter.HOME);
+
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_0, EventRouter.NUM_0);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_1, EventRouter.NUM_1);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_2, EventRouter.NUM_2);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_3, EventRouter.NUM_3);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_4, EventRouter.NUM_4);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_5, EventRouter.NUM_5);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_6, EventRouter.NUM_6);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_7, EventRouter.NUM_7);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_8, EventRouter.NUM_8);
+        KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_9, EventRouter.NUM_9);
+
         KEYMAP.put(KeyEvent.KEYCODE_PAGE_UP, EventRouter.PAGE_UP);
         KEYMAP.put(KeyEvent.KEYCODE_PAGE_DOWN, EventRouter.PAGE_DOWN);
 
@@ -138,8 +155,8 @@ public class BaseKeyListener implements View.OnKeyListener {
 
             // check if we are handling a keypress completion
             // send a-z 0-9 and PUNCTUATION as is
-            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z
-                    || keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9
+            if ((keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
+                    || (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
                     || keyCode == KeyEvent.KEYCODE_SPACE
                     || keyCode == KeyEvent.KEYCODE_TAB
                     || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
@@ -188,6 +205,6 @@ public class BaseKeyListener implements View.OnKeyListener {
         if (event.isAltPressed()) {
             modifiers = modifiers | Keys.ALT_MASK;
         }
-        return 0;
+        return modifiers;
     }
 }

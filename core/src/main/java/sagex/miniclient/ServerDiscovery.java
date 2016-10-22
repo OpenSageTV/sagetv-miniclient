@@ -99,7 +99,7 @@ public class ServerDiscovery {
                     }
                 }
             } while (true);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("Error discovering servers:", e);
         } finally {
             if (sock != null) {

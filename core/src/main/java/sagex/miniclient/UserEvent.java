@@ -234,15 +234,15 @@ public class UserEvent {
     static {
         nameCodeLookup = new java.util.HashMap();
         for (int i = 0; i < UENAMES.length; i++)
-            nameCodeLookup.put(UENAMES[i].toLowerCase(), new Integer(i));
+            nameCodeLookup.put(UENAMES[i].toLowerCase(), i);
         for (int i = 0; i < PRETTY_UENAMES.length; i++)
-            nameCodeLookup.put(PRETTY_UENAMES[i].toLowerCase(), new Integer(i));
+            nameCodeLookup.put(PRETTY_UENAMES[i].toLowerCase(), i);
     }
 
     public static void updateNameMaps() {
         for (int i = 2; i < PRETTY_UENAMES.length; i++) {
             PRETTY_UENAMES[i] = TRANSLATION_UENAMES[i];
-            nameCodeLookup.put(PRETTY_UENAMES[i].toLowerCase(), new Integer(i));
+            nameCodeLookup.put(PRETTY_UENAMES[i].toLowerCase(), i);
         }
         for (int i = 2; i < LITE_UENAMES.length; i++)
             LITE_PRETTY_UENAMES[i] = TRANSLATION_UENAMES[getEvtCodeForName(LITE_UENAMES[i])];
@@ -256,7 +256,7 @@ public class UserEvent {
         if (s == null) return 0;
         Integer i = (Integer) nameCodeLookup.get(s.toLowerCase());
         if (i != null)
-            return i.intValue();
+            return i;
         else
             return 0;
     }
@@ -512,13 +512,31 @@ public class UserEvent {
         }
     }
 
+    @Override
     public boolean equals(Object o) {
-        if (o instanceof UserEvent) {
-            UserEvent ue = (UserEvent) o;
-            return (type == ue.type) && (when == ue.when) && (irCode == ue.irCode) && (keyCode == ue.keyCode) &&
-                    (keyModifiers == ue.keyModifiers) && (keyChar == ue.keyChar);
-        }
-        return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserEvent userEvent = (UserEvent) o;
+
+        if (type != userEvent.type) return false;
+        if (when != userEvent.when) return false;
+        if (irCode != userEvent.irCode) return false;
+        if (keyCode != userEvent.keyCode) return false;
+        if (keyModifiers != userEvent.keyModifiers) return false;
+        return keyChar == userEvent.keyChar;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type;
+        result = 31 * result + (int) (when ^ (when >>> 32));
+        result = 31 * result + (int) (irCode ^ (irCode >>> 32));
+        result = 31 * result + keyCode;
+        result = 31 * result + keyModifiers;
+        result = 31 * result + (int) keyChar;
+        return result;
     }
 
     public boolean isDiscardable() {

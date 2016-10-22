@@ -12,11 +12,28 @@ buildscript {
     }
 }
 
+def getVersionFile(project) {
+    def ver = new File('core/src/main/java/sagex/miniclient/Version.java');
+    if (!ver.exists()) {
+        ver = new File('../core/src/main/java/sagex/miniclient/Version.java');
+    }
+    if (!ver.exists()) {
+        ver = new File('src/main/java/sagex/miniclient/Version.java');
+    }
+    if (!ver.exists()) {
+        ver = new File(project.rootDir, 'core/src/main/java/sagex/miniclient/Version.java');
+    }
+    if (!ver.exists()) {
+        throw new RuntimeException("Can't find VERSION from " + new File(".").getAbsolutePath() + " with project " + project.rootDir);
+    }
+    return ver;
+}
+
 allprojects {
     version = '1.0'
     ext {
         appName = "SageTVMiniclient"
-        versionText = new File('core/src/main/java/sagex/miniclient/Version.java').text
+        versionText = getVersionFile(project).text
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.9.4"
@@ -30,7 +47,7 @@ allprojects {
         androidTargetSdkVersion = 22;
 
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        appVersionCode = 2101010
+        appVersionCode = 2101011
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files

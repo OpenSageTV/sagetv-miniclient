@@ -29,7 +29,6 @@ public class ServerInfoUtil {
 
     public static PopupMenu createContextMenu(Context context, View item, OnMenuItemClickListener clickListener) {
         PopupMenu menu = new PopupMenu(context, item);
-        Menu m = menu.getMenu();
         menu.inflate(R.menu.server_actions);
         menu.setOnMenuItemClickListener(clickListener);
         return menu;

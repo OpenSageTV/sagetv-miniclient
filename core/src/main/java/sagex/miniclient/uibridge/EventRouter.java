@@ -42,6 +42,17 @@ public class EventRouter {
     public static final UserEvent PAGE_DOWN = new UserEvent(UserEvent.PAGE_DOWN);
     public static final UserEvent OPTIONS = new UserEvent(UserEvent.OPTIONS);
 
+    public static final UserEvent NUM_0 = new UserEvent(-1, -1, -1, Keys.VK_0, 0, '0');
+    public static final UserEvent NUM_1 = new UserEvent(-1, -1, -1, Keys.VK_1, 0, '1');
+    public static final UserEvent NUM_2 = new UserEvent(-1, -1, -1, Keys.VK_2, 0, '2');
+    public static final UserEvent NUM_3 = new UserEvent(-1, -1, -1, Keys.VK_3, 0, '3');
+    public static final UserEvent NUM_4 = new UserEvent(-1, -1, -1, Keys.VK_4, 0, '4');
+    public static final UserEvent NUM_5 = new UserEvent(-1, -1, -1, Keys.VK_5, 0, '5');
+    public static final UserEvent NUM_6 = new UserEvent(-1, -1, -1, Keys.VK_6, 0, '6');
+    public static final UserEvent NUM_7 = new UserEvent(-1, -1, -1, Keys.VK_7, 0, '7');
+    public static final UserEvent NUM_8 = new UserEvent(-1, -1, -1, Keys.VK_8, 0, '8');
+    public static final UserEvent NUM_9 = new UserEvent(-1, -1, -1, Keys.VK_9, 0, '9');
+
     /**
      * Post the UserEvent event to the server using the given MiniClient connection
      *

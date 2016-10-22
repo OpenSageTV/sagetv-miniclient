@@ -290,7 +290,7 @@ public class MediaCmd {
                         }
                     }
 
-                    if (flags == 0x80 && playa != null) {
+                    if (flags == 0x80) {
                         playa.setServerEOS();
                     }
                 }

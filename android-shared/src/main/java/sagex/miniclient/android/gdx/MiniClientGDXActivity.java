@@ -224,6 +224,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             if (si == null) {
                 log.error("Missing SERVER INFO in Intent: {}", ARG_SERVER_INFO);
                 finish();
+                return;
             }
 
             //setupNavigationDrawer();
@@ -304,8 +305,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             @Override
             public void run() {
                 if (connectingIsVisible) {
-                    errorContainer.setVisibility(connectingIsVisible ? View.GONE : View.VISIBLE);
-                    pleaseWait.setVisibility((connectingIsVisible) ? View.VISIBLE : View.GONE);
+                    errorContainer.setVisibility(View.GONE);
+                    pleaseWait.setVisibility(View.VISIBLE);
                 } else {
                     // hiding connecting is visible
                     YoYo.with(Techniques.FadeOutLeft).duration(700).playOn(pleaseWait);
@@ -511,9 +512,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Subscribe
     public void onChangeAspectRatio(SetAspectRatioEvent ar) {
-        int newAR = ar.getAspectRatio();
         if (ar.isToggleNext()) {
-            newAR = getVideoView().toggleAspectRatio();
+            getVideoView().toggleAspectRatio();
         } else {
             getVideoView().setAspectRatioMethod(ar.getAspectRatio());
         }
