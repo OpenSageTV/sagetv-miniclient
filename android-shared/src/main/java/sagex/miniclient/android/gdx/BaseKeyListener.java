@@ -1,5 +1,6 @@
 package sagex.miniclient.android.gdx;
 
+import android.support.v4.view.KeyEventCompat;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -36,6 +37,7 @@ public class BaseKeyListener implements View.OnKeyListener {
     protected final MiniClient client;
     protected int skipKey = -1;
     protected boolean skipUp = false;
+    protected int flircMeta = 0;
 
     Map<Object, UserEvent> LONGPRESS_KEYMAP;
     Map<Object, UserEvent> KEYMAP;
@@ -91,6 +93,9 @@ public class BaseKeyListener implements View.OnKeyListener {
         // for harmony remote
         KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, EventRouter.ENTER);
 
+        // flirc
+        KEYMAP.put(KeyEvent.KEYCODE_ESCAPE, EventRouter.OPTIONS);
+
         // standard remotes
         KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);
         KEYMAP.put(KeyEvent.KEYCODE_MENU, EventRouter.OPTIONS);
@@ -117,6 +122,7 @@ public class BaseKeyListener implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
+
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             // log.debug("KEYS: DOWN KEYCODE: " + keyCode + "; " + event + "; Video Playing: " + client.isVideoPlaying());
             if (LONGPRESS_KEYMAP.containsKey(keyCode)) {
@@ -151,6 +157,34 @@ public class BaseKeyListener implements View.OnKeyListener {
                 skipKey = -1;
                 log.debug("KEYS: Skipping Key {}", keyCode);
                 return true;
+            }
+
+            if (keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT) {
+                flircMeta+=Keys.CTRL_MASK;
+                log.debug("FLIRC Meta Ctrl");
+                return true;
+            }
+
+            if (keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
+                flircMeta+=Keys.SHIFT_MASK;
+                log.debug("FLIRC Meta Shift");
+                return true;
+            }
+
+            if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT) {
+                flircMeta+=Keys.ALT_MASK;
+                log.debug("FLIRC Meta Alt");
+                return true;
+            }
+
+            // if we have a multi-press FLIRC key, then process it
+            if (flircMeta>0) {
+                try {
+                    processFlircKeyMetaKey(keyCode, event);
+                } finally {
+                    log.debug("Resetting Flirc Meta");
+                    flircMeta=0;
+                }
             }
 
             // check if we are handling a keypress completion
@@ -192,6 +226,22 @@ public class BaseKeyListener implements View.OnKeyListener {
         }
 
         return false;
+    }
+
+    private void processFlircKeyMetaKey(int keyCode, KeyEvent event) {
+        if ((keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
+                || (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
+                || keyCode == KeyEvent.KEYCODE_SPACE
+                || keyCode == KeyEvent.KEYCODE_TAB
+                || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
+            //log.debug("KEYPRESS: {}; {}; {}", (char) event.getUnicodeChar(), (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON), event.getUnicodeChar());
+            char toSend = (char) event.getUnicodeChar();
+            if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
+                toSend = (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON);
+            }
+            log.debug("FLIRC: Sending {} with meta: {}", String.valueOf(toSend), flircMeta);
+            client.getCurrentConnection().postKeyEvent(toSend, flircMeta, (char) event.getUnicodeChar());
+        }
     }
 
     protected int androidToSageKeyModifier(KeyEvent event) {

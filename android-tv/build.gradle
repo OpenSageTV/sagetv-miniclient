@@ -59,3 +59,7 @@ dependencies {
     compile "com.android.support:appcompat-v7:${androidExtrasVer}"
     compile "com.github.bumptech.glide:glide:3.4.+"
 }
+
+clean {
+    delete '../build', 'android-phone-release.apk', 'android-tv-release.apk'
+}
