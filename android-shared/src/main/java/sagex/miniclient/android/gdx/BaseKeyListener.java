@@ -95,6 +95,7 @@ public class BaseKeyListener implements View.OnKeyListener {
 
         // flirc
         KEYMAP.put(KeyEvent.KEYCODE_ESCAPE, EventRouter.OPTIONS);
+        KEYMAP.put(KeyEvent.KEYCODE_MOVE_HOME, EventRouter.HOME);
 
         // standard remotes
         KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.ENTER);

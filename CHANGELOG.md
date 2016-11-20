@@ -1,3 +1,6 @@
+**1.0.11 (2016-11-06)**
+- Fixed FLIRC keyboard handling for HOME (MOVE_HOME)
+
 **1.0.10 (2016-11-06)**
 - Fixed FLIRC keyboard handling for CTRL/ALT/SHIFT
 
