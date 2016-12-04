@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "sagex.miniclient.android.tv"
-        minSdkVersion 17
+        minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
         versionCode computeVersionCode()

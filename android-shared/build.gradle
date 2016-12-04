@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
     }
 
@@ -61,9 +61,14 @@ dependencies {
     // compile "sagetv:exoplayer2:${exo2Version}@aar"
 
     // ijkplayer
-//        compile "tv.danmaku.ijk.media:ijkplayer-java:${ijkVersion}"
-//        compile "tv.danmaku.ijk.media:ijkplayer-armv7a:${ijkVersion}"
-//        compile "tv.danmaku.ijk.media:ijkplayer-x86:${ijkVersion}"
+    // don't use these since they will have limited profiles... ok for testing.
+//    compile "tv.danmaku.ijk.media:ijkplayer-java:${ijkVersion}"
+//    compile "tv.danmaku.ijk.media:ijkplayer-armv7a:${ijkVersion}"
+//    compile "tv.danmaku.ijk.media:ijkplayer-armv5:${ijkVersion}"
+//    //compile "tv.danmaku.ijk.media:ijkplayer-arm64:${ijkVersion}"
+//    compile "tv.danmaku.ijk.media:ijkplayer-x86:${ijkVersion}"
+//    //compile "tv.danmaku.ijk.media:ijkplayer-x86_64:${ijkVersion}"
+
     // requires API level 21
     // compile "tv.danmaku.ijk.media:ijkplayer-arm64:${ijkVersion}"
     // compile "tv.danmaku.ijk.media:ijkplayer-exo:${ijkVersion}"

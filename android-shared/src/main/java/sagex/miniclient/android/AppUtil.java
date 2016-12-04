@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -16,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -228,6 +232,19 @@ public class AppUtil {
         }
         return all;
     }
+
+    public static List<MediaCodecInfo> getDecoders() {
+        List<MediaCodecInfo> all = new ArrayList<>();
+        int count = MediaCodecList.getCodecCount();
+        for (int i = 0; i < count; i++) {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+            if (info.isEncoder()) continue;
+            if (info.getSupportedTypes() == null) continue;
+            all.add(info);
+        }
+        return all;
+    }
+
 
     public static Set<String> getAudioDecoders() {
         Set<String> all = new TreeSet<>();

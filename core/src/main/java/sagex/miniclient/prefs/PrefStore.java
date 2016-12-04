@@ -120,6 +120,16 @@ public interface PrefStore {
         String announce_software_decoder = "announce_software_decoder";
 
         /**
+         * Boolean: use native software decoders over ffmpeg software decoders
+         */
+        String prefer_android_software_decoders = "prefer_android_software_decoders";
+
+        /**
+         * Boolean: if true, then only software decoders are used
+         */
+        String disable_hardware_decoders = "disable_hardware_decoders";
+
+        /**
          * Boolean: default is true.  When enabled uses full screen resolution, when
          * disabled, it will report its screen size to be half native.
          */

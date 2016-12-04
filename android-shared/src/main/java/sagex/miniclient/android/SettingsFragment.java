@@ -14,6 +14,7 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import sagex.miniclient.Version;
+import sagex.miniclient.android.prefs.CodecDialogFragment;
 import sagex.miniclient.android.util.NetUtil;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
@@ -139,20 +140,22 @@ public class SettingsFragment extends PreferenceFragment {
     }
 
     private void showHardwareDecoderInfo() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.hardware_decoders);
-        StringBuilder sb = new StringBuilder();
-        sb.append("<B>").append("Video Decoders").append("</B><br/>\n");
-        for (String mi : AppUtil.getVideoDecoders()) {
-            sb.append(mi).append("<br/>\n");
-        }
-        sb.append("\n<br/><B>").append("Audio Decoders").append("</B><br/>\n");
-        for (String mi : AppUtil.getAudioDecoders()) {
-            sb.append(mi).append("<br/>\n");
-        }
-        builder.setMessage(Html.fromHtml(sb.toString()));
-        builder.setCancelable(true);
-        builder.show();
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//        builder.setTitle(R.string.hardware_decoders);
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("<B>").append("Video Decoders").append("</B><br/>\n");
+//        for (String mi : AppUtil.getVideoDecoders()) {
+//            sb.append(mi).append("<br/>\n");
+//        }
+//        sb.append("\n<br/><B>").append("Audio Decoders").append("</B><br/>\n");
+//        for (String mi : AppUtil.getAudioDecoders()) {
+//            sb.append(mi).append("<br/>\n");
+//        }
+//        builder.setMessage(Html.fromHtml(sb.toString()));
+//        builder.setCancelable(true);
+//        builder.show();
+
+        CodecDialogFragment.showDialog(getFragmentManager());
     }
 
     private void updateSummary(Preference pref, int resId, Object value) {

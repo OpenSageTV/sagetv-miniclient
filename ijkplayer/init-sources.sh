@@ -14,7 +14,7 @@ fi
 
 if [ ! -d Ndk ] ; then
     echo "Setting up NDK"
-    NDK=r11c
+    NDK=r13b
     mkdir Ndk
     cd Ndk/
     # wget http://dl.google.com/android/ndk/android-ndk-${NDK}-linux-x86_64.bin

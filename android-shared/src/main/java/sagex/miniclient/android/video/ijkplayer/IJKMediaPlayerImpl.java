@@ -150,15 +150,17 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
+        lastTime=-1;
         playerGetTimeOffset = -1;
         resumeMode = false;
+        lastGetTime=0;
         releasePlayer();
         try {
             if (player == null) {
                 player = new IjkMediaPlayer();
-                //player = new IjkExoMediaPlayer(context);
+                ((IjkMediaPlayer)player).setOnMediaCodecSelectListener(CodecSelector.sInstance);
             }
-            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_INFO);
+            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_VERBOSE);
 
             player.setDisplay(context.getVideoView().getHolder());
 
@@ -168,6 +170,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
 
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "packet-buffering", 0);
+            ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
 
             // setting this to 0 removes the pixelization for mpeg2 videos
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 0);
@@ -175,7 +178,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             // ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
             //((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "seekable", 0);
             //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
-            ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "fflags", "nobuffer");
 
             player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
                 @Override
@@ -186,10 +188,18 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             });
 
+//            player.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
+//                @Override
+//                public boolean onInfo(IMediaPlayer iMediaPlayer, int i, int i1) {
+//                    log.debug("IjkPlayer onINFO: {}, {}", i, i1);
+//                    return false;
+//                }
+//            });
+
             player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
                 @Override
                 public boolean onError(IMediaPlayer mp, int what, int extra) {
-                    log.error("IjkPlayer ERROR: {}, {}", what, extra);
+                    log.error("IjkPlayer onERROR: {}, {}", what, extra);
                     playerFailed();
                     return false;
                 }
@@ -237,16 +247,12 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                         }
                     }
 
-                    if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.announce_software_decoder, false)) {
                         MediaInfo mi = player.getMediaInfo();
                         if (mi != null) {
                             log.info("MEDIAINFO: video: {},{}", mi.mVideoDecoder, mi.mVideoDecoderImpl);
-                            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.announce_software_decoder, false)) {
-                                if (!"mediacodec".equalsIgnoreCase(mi.mVideoDecoder)) {
-                                    message("Using Software Decoder (" + (pushMode ? "PUSH MODE" : "PULL MODE") + ")");
-                                } else {
-                                    //message("Using Hardware Decoder");
-                                }
+                            if (!"mediacodec".equalsIgnoreCase(mi.mVideoDecoder)) {
+                                message("Using Software Decoder (" + (pushMode ? "PUSH MODE" : "PULL MODE") + ")");
                             }
                         }
                     }

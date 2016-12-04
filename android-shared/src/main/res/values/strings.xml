@@ -14,7 +14,7 @@
     <string name="summary_list_loglevels_preference">(%s) - The logging level</string>
     <string name="dialog_title_list_loglevels_preference">Set Logging Level</string>
     <string name="dialog_title_list_streaming_mode_preference">Set Stream Mode</string>
-    <string name="summary_list_streaming_mode_preference">(%s) - If not using LiveTV, you can set this to Pull, so that seeking will work.</string>
+    <string name="summary_list_streaming_mode_preference">(%s) - Dynamic is preferred, but if you are experiencing playback issue, you can try other values.</string>
     <string name="title_list_streaming_mode_preference">Streaming Mode</string>
     <string name="send_log">Send Log</string>
     <string name="send_log_summary">If using Send Log, then make sure that you are NOT logging to file.  Logging to a File will result in Send Log only capturing a partial log.</string>
@@ -45,12 +45,12 @@
     <string name="use_exoplayer_preference_title">Use ExoPlayer</string>
     <string name="title_use_http_proxy_preference">Use HTTP Proxy</string>
     <string name="summary_use_http_proxy_preference">Some players cannot access SageTV streams and require an http proxy.</string>
-    <string name="hardware_decoders">Hardware Decoders</string>
+    <string name="hardware_decoders">IJK: Configure Hardware Decoders</string>
     <string name="msg_player_failed">Failed to play the selected media file (URL: %s)</string>
     <string name="use_stateful_remote_title">Use Stateful Remote</string>
     <string name="use_stateful_remote_summary">If enabled, then the Select will be Pause/Play if the Video UI is visible</string>
     <string name="summary_announce_software_decoder_preference">If enabled, a message will appear when using software decoding</string>
-    <string name="title_announce_software_decoder_preference">Show message when using Software Decoders</string>
+    <string name="title_announce_software_decoder_preference">IJK: Show message when using Software Decoders</string>
     <string name="main_label_settings">Settings</string>
     <string name="sage_title">SageTV MiniClient</string>
     <string name="title_switch_player">Change Default Video Player</string>
@@ -77,4 +77,12 @@
     <string name="use_tv_ui_on_tablet_title">If enabled, then the leanback launcher will be used on a Phone/Tablet</string>
     <string name="animations_disabled_preference">Animations Disabled?</string>
     <string name="animations_disabled_preference_summary">Enabled this if Animations are disabled in SageTV.  This is fix some rendering issues when Animations are disabled.</string>
+    <string name="ijkplayer_preferences">IJKPlayer Preferences</string>
+    <string name="ijk_disable_hardware_codec_mpeg2_preference">Some hardware devices have faulty MPEG2 hardware decoders.  If you have issues with mpeg2 video, enable this.</string>
+    <string name="ijk_disable_hardware_codec_mpeg2_title">IJK: Disable MPEG2 Hardware Decoding</string>
+    <string name="enable_disable_decoders_pref_summary">Enable/Disable hardware decoders</string>
+    <string name="title_prefer_android_software_decoders_preference">IJK: Allow Native Software Decoders</string>
+    <string name="summary_prefer_android_software_decoders_preference">IJK will normally use ffmpeg software decoders over native android software decoders.  Enabling this allows IJK to use the native software decoders instead of ffmpeg</string>
+    <string name="title_disable_hardware_decoders_preference">IJK: Disable Hardware Decoders</string>
+    <string name="summary_disable_hardware_decoders_preference">Disable all hardware decoders.  If enabled, then ONLY software decoders are used.</string>
 </resources>

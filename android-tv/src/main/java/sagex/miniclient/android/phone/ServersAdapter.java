@@ -148,19 +148,19 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         items.endBatchedUpdates();
     }
 
-    // Create new views (invoked by the layout manager)
+    // Create new views (invoked by the codec_selection manager)
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent,
                                          int viewType) {
         // create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.servers_item, parent, false);
-        // set the view's size, margins, paddings and layout parameters
+        // set the view's size, margins, paddings and codec_selection parameters
         ViewHolder vh = new ViewHolder(v);
         return vh;
     }
 
-    // Replace the contents of a view (invoked by the layout manager)
+    // Replace the contents of a view (invoked by the codec_selection manager)
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         // - get element from your dataset at this position
@@ -194,7 +194,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         holder.serverInfo = si;
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
+    // Return the size of your dataset (invoked by the codec_selection manager)
     @Override
     public int getItemCount() {
         return items.size();
