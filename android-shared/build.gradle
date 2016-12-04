@@ -54,8 +54,9 @@ dependencies {
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
-    // video player
+    // ExoPlayer
     compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
+    compile "com.google.android.exoplayer:extension-ffmpeg:r2.0.4@aar"
 
     // exoplayer 2
     // compile "sagetv:exoplayer2:${exo2Version}@aar"
