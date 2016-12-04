@@ -1,3 +1,10 @@
+**1.1.0 (2016-12-04)**
+- Upgraded IJKPlayer
+- IJK: Added configuration options to disable hardware decoding
+- IJK: Added ability to disable some codecs
+- Upgraded ExoPlayer
+- EXO: Added ability to use ffmpeg for audio decoding (ARM only)
+
 **1.0.11 (2016-11-06)**
 - Fixed FLIRC keyboard handling for HOME (MOVE_HOME)
 

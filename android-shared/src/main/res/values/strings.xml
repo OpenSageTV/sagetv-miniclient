@@ -85,4 +85,6 @@
     <string name="summary_prefer_android_software_decoders_preference">IJK will normally use ffmpeg software decoders over native android software decoders.  Enabling this allows IJK to use the native software decoders instead of ffmpeg</string>
     <string name="title_disable_hardware_decoders_preference">IJK: Disable Hardware Decoders</string>
     <string name="summary_disable_hardware_decoders_preference">Disable all hardware decoders.  If enabled, then ONLY software decoders are used.</string>
+    <string name="title_disable_audio_passthrough_preference">Exo: Disable Audio Passthrough</string>
+    <string name="summary_disable_audio_passthrough_preference">If enabled, then ffmpeg will be used to decode AC-3 audio.</string>
 </resources>

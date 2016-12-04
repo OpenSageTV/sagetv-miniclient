@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
+import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -18,8 +19,10 @@ import com.google.android.exoplayer2.upstream.DataSource;
 
 import java.io.IOException;
 
+import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 
@@ -190,6 +193,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         //player = new SageTVPlayer(rendererBuilder);
         Handler mainHandler = new Handler();
         DefaultTrackSelector video = new DefaultTrackSelector(mainHandler);
+
+        // See if we need to disable ffmpeg audio decoding
+        FfmpegAudioRenderer.FFMPEG_DISABLED = !MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
+
         player = ExoPlayerFactory.newSimpleInstance(context, video, new DefaultLoadControl());
         //EventLogger eventLogger = new EventLogger();
         ///player.setInternalErrorListener(eventLogger);

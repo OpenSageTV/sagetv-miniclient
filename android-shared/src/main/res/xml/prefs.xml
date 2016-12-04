@@ -20,6 +20,12 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="disable_audio_passthrough"
+            android:summary="@string/summary_disable_audio_passthrough_preference"
+            android:title="@string/title_disable_audio_passthrough_preference"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="announce_software_decoder"
             android:summary="@string/summary_announce_software_decoder_preference"
             android:title="@string/title_announce_software_decoder_preference"/>

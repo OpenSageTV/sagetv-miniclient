@@ -130,6 +130,11 @@ public interface PrefStore {
         String disable_hardware_decoders = "disable_hardware_decoders";
 
         /**
+         * Boolean: if true, then only software decoders are used
+         */
+        String disable_audio_passthrough = "disable_audio_passthrough";
+
+        /**
          * Boolean: default is true.  When enabled uses full screen resolution, when
          * disabled, it will report its screen size to be half native.
          */

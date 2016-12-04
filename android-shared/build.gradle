@@ -55,8 +55,9 @@ dependencies {
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
     // ExoPlayer
+    // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
     compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
-    compile "com.google.android.exoplayer:extension-ffmpeg:r2.0.4@aar"
+    compile "com.google.android.exoplayer:extension-ffmpeg:${exoVersion}@aar"
 
     // exoplayer 2
     // compile "sagetv:exoplayer2:${exo2Version}@aar"

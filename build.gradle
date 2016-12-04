@@ -40,7 +40,9 @@ allprojects {
         // NOTE: we can't use grable builds for ijk because it uses a limited profile
         ijkVersion = "0.7.5";
         ijkVersionDev = "0.7.5.1-SNAPSHOT";
-        exoVersion = 'r2.0.4';
+
+        // NOTE: Exo is build from the stuckless/ExoPlayer repo
+        exoVersion = 'r2.0.4-SNAPSHOT';
 
 //        androidExtrasVer = "23.0.0";
 //        androidBuildToolsVersion = "25.0.1";
@@ -53,7 +55,7 @@ allprojects {
         androidTargetSdkVersion = 22;
 
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        appVersionCode = 2101013
+        appVersionCode = 2101014
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files
