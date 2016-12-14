@@ -29,7 +29,7 @@ import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
-import sagex.miniclient.android.events.SetAspectRatioEvent;
+import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
@@ -195,7 +195,7 @@ public class NavigationFragment extends DialogFragment {
 
     // @OnClick(R.id.nav_toggle_ar)
     public void onToggleAspectRatio() {
-        client.eventbus().post(SetAspectRatioEvent.NEXT_ASPECT_RATIO);
+        client.eventbus().post(ToggleAspectRatioEvent.INSTANCE);
     }
 
     // @OnClick(R.id.nav_remote_mode)

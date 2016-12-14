@@ -215,6 +215,8 @@ public class MiniClientConnection implements SageTVInputCallback {
     private List<String> pullFormats = new ArrayList<String>();
 
     private MenuHint menuHint = new MenuHint();
+    private String videoAspect=null;
+    private Properties profileProperties;
 
     public MiniClientConnection(MiniClient client, String myID, ServerInfo msi) {
         this.client = client;
@@ -448,12 +450,13 @@ public class MiniClientConnection implements SageTVInputCallback {
         } else {
             profile = "ijkplayer.profile";
         }
-        Properties prop = loadProperties(profile);
+        profileProperties = loadProperties("common.profile");
+        profileProperties.putAll(loadProperties(profile));
 
-        String acodec = prop.getProperty("AUDIO_CODECS", DEFAULT_AUDIO_CODECS);
-        String vcodec = prop.getProperty("VIDEO_CODECS", DEFAULT_VIDEO_CODECS);
-        String pushf = prop.getProperty("PUSH_FORMATS", DEFAULT_PUSH_FORMATS);
-        String pullf = prop.getProperty("PULL_FORMATS", DEFAULT_PULL_FORMATS);
+        String acodec = profileProperties.getProperty("AUDIO_CODECS", DEFAULT_AUDIO_CODECS);
+        String vcodec = profileProperties.getProperty("VIDEO_CODECS", DEFAULT_VIDEO_CODECS);
+        String pushf = profileProperties.getProperty("PUSH_FORMATS", DEFAULT_PUSH_FORMATS);
+        String pullf = profileProperties.getProperty("PULL_FORMATS", DEFAULT_PULL_FORMATS);
 
         audioCodecs = stringToList(acodec);
         videoCodecs = stringToList(vcodec);
@@ -970,10 +973,28 @@ public class MiniClientConnection implements SageTVInputCallback {
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height);
                     } else if ("GFX_DRAWMODE".equals(propName)) {
                         //&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
-                        propVal = "FULLSCREEN";
+                        propVal = profileProperties.getProperty("GFX_DRAWMODE","FULLSCREEN");
                         //propVal = "";
 //                    } else if ("PUSH_BUFFER_LIMIT".equals(propName)) {
 //                        propVal = String.valueOf(PUSH_BUFFER_LIMIT);
+                    } else if ("VIDEO_ADVANCED_ASPECT".equals(propName)) {
+                        if (client.options().isUsingAdvancedAspectModes()) {
+                            propVal=client.options().getDefaultAdvancedAspectMode();
+                        }
+                        else {
+                            propVal="";
+                        }
+                    } else if ("VIDEO_ADVANCED_ASPECT_LIST".equals(propName)) {
+                        if (client.options().isUsingAdvancedAspectModes()) {
+                            propVal=client.options().getAdvancedApectModes();
+                        }
+                        else {
+                            propVal="";
+                        }
+                    }
+
+                    if (propVal==null||propVal.isEmpty() && profileProperties!=null) {
+                        propVal = profileProperties.getProperty(propName, propVal);
                     }
                     log.debug("GetProperty: {}='{}'", propName, propVal);
                     try {
@@ -1105,6 +1126,16 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 getUiRenderer().onMenuHint(menuHint);
                             }
                             retval = 0;
+                        } else if ("GFX_ASPECT".equals(propName)) {
+                            propVal = new String(cmdbuffer, 4 + nameLen, valLen);
+                            videoAspect = propVal;
+                            retval = 0;
+                        } else if ("VIDEO_ADVANCED_ASPECT".equals(propName)) {
+                            propVal = new String(cmdbuffer, 4 + nameLen, valLen);
+                            retval = 0;
+                            if (uiRenderer!=null) {
+                                uiRenderer.setVideoAdvancedAspect(propVal);
+                            }
                         } else if ("SET_CACHED_AUTH".equals(propName)) {
                             // Save this authentication block in the properties
                             // file
@@ -1146,7 +1177,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                             eventChannelError();
                         }
                     }
-                    log.debug("SetProperty {}={}", propName, (propVal == null) ? "N/A" : propVal);
+                    log.debug("SetProperty {}={}", propName, (propVal == null) ? "(WAS_NULL)" : propVal);
                 } else if (command == FS_CMD_TYPE) {
                     command = (cmdbuffer[0] & 0xFF);
                     processFSCmd(command, len, cmdbuffer);

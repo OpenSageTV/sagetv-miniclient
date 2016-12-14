@@ -20,6 +20,7 @@ public class SimplePullDataSource implements ISageTVDataSource {
 
     Socket remoteServer;
     String uri;
+    String host;
     DataInputStream remoteReader;
     OutputStream remoteWriter;
 
@@ -30,6 +31,11 @@ public class SimplePullDataSource implements ISageTVDataSource {
 
     public SimplePullDataSource() {
     }
+
+    public SimplePullDataSource(String host) {
+        this.host=host;
+    }
+
 
     public String getUri() {
         return uri;
@@ -90,12 +96,14 @@ public class SimplePullDataSource implements ISageTVDataSource {
 
     String getHost(String uri) {
         if (uri == null) return null;
-        int s = "stv://".length();
-        int pos = uri.indexOf("/", s);
-        if (pos==-1) {
-            return null;
+        if (uri.startsWith("stv:")) {
+            int s = "stv://".length();
+            int pos = uri.indexOf("/", s);
+            if (pos != -1) {
+                return uri.substring(s, pos);
+            }
         }
-        return uri.substring(s, pos);
+        return host;
     }
 
     @Override

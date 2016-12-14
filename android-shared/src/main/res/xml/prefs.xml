@@ -81,12 +81,6 @@
             android:summary="@string/use_tv_ui_on_tablet_summary"
             android:title="@string/use_tv_ui_on_tablet_title"/>
 
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="animations_disabled"
-            android:summary="@string/animations_disabled_preference_summary"
-            android:title="@string/animations_disabled_preference"/>
-
     </PreferenceCategory>
 
 

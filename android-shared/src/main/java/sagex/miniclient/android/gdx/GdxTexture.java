@@ -64,9 +64,8 @@ public class GdxTexture {
         if (frameBuffer == null) {
             frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false, false);
             frameBuffer.begin();
-            Gdx.gl20.glClearColor(0, 0, 0, 1);
-            //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-            Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+            Gdx.gl20.glClearColor(0, 0, 0, 0);
+            Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
             frameBuffer.end();
         }
     }

@@ -53,6 +53,8 @@ public class EventRouter {
     public static final UserEvent NUM_8 = new UserEvent(-1, -1, -1, Keys.VK_8, 0, '8');
     public static final UserEvent NUM_9 = new UserEvent(-1, -1, -1, Keys.VK_9, 0, '9');
 
+    public static final UserEvent AR_TOGGLE = new UserEvent(UserEvent.AR_TOGGLE);
+
     /**
      * Post the UserEvent event to the server using the given MiniClient connection
      *

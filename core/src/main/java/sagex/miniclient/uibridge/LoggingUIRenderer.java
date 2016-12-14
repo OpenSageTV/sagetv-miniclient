@@ -245,4 +245,10 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
         return delegate.isFirstFrameRendered();
     }
 
+    @Override
+    public void setVideoAdvancedAspect(String value) {
+        log("setVideoAdvancedAspect");
+        delegate.setVideoAdvancedAspect(value);
+    }
+
 }

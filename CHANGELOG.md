@@ -1,3 +1,11 @@
+**1.2.0 (2016-12-12)**
+- Fixed #62 - Implemented SageTV AR Mode Changing
+- Fixed #64 - When Animations are disabled Video overlay doesn't render correctly
+- Fixed #3 - video not showing in preview window
+- Removed need to "disable animations" property
+- OpenGL: Fixed "CLEAR_RECT" implementation
+- OpenGL: Fixed Clear Screen issues
+
 **1.1.0 (2016-12-04)**
 - Upgraded IJKPlayer
 - IJK: Added configuration options to disable hardware decoding

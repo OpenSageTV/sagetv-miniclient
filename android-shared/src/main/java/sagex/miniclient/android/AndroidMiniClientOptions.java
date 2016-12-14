@@ -21,6 +21,7 @@ import java.util.TreeSet;
 import sagex.miniclient.IBus;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
+import sagex.miniclient.android.video.AspectModeManager;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -35,6 +36,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     private final IBus bus;
     private boolean isTV=false;
     private boolean isTOUCH=false;
+    private boolean advancedAspects=false;
 
     AndroidMiniClientOptions(Application ctx) {
         this.prefs = new AndroidPrefStore(PreferenceManager.getDefaultSharedPreferences(ctx));
@@ -43,6 +45,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         this.bus = new OttoBusImpl(new Bus(ThreadEnforcer.ANY));
         this.isTV = ctx.getResources().getBoolean(R.bool.istv);
         this.isTOUCH = !isTV;
+        this.advancedAspects=true;
     }
 
     @Override
@@ -124,6 +127,21 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     @Override
     public boolean isDesktopUI() {
         return false;
+    }
+
+    @Override
+    public boolean isUsingAdvancedAspectModes() {
+        return advancedAspects;
+    }
+
+    @Override
+    public String getAdvancedApectModes() {
+        return AspectModeManager.ASPECT_MODES;
+    }
+
+    @Override
+    public String getDefaultAdvancedAspectMode() {
+        return AspectModeManager.DEFAULT_ASPECT_MODE;
     }
 
     private Set<String> getAudioCodecs(MediaCodecInfo info) {

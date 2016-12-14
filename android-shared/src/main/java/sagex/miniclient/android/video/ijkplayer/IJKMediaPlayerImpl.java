@@ -160,7 +160,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 player = new IjkMediaPlayer();
                 ((IjkMediaPlayer)player).setOnMediaCodecSelectListener(CodecSelector.sInstance);
             }
-            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_VERBOSE);
+            IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_ERROR);
 
             player.setDisplay(context.getVideoView().getHolder());
 
@@ -181,10 +181,10 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
             player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
                 @Override
-                public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int width, int height, int i2, int i3) {
+                public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int width, int height, int sarNum, int sarDen) {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                        log.debug("IJKPlayer.onVideoSizeChanged: {}x{}, {},{}", width, height, i2, i3);
-                    setVideoSize(width, height);
+                        log.debug("IJKPlayer.onVideoSizeChanged: {}x{}, {},{}", width, height, sarNum, sarDen);
+                    setVideoSize(width, height, sarNum, sarDen);
                 }
             });
 
@@ -214,7 +214,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 player.setDataSource(dataSource);
             } else {
                 log.info("Playing URL Using DataSource: isPush:{}, sageTVUrl: {}", pushMode, sageTVurl);
-                dataSource = new IJKPullMediaSource();
+                dataSource = new IJKPullMediaSource(MiniclientApplication.get().getClient().getConnectedServerInfo().address);
                 ((IJKPullMediaSource) dataSource).open(sageTVurl);
                 player.setDataSource(dataSource);
             }

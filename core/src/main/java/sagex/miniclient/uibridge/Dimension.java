@@ -69,4 +69,9 @@ public class Dimension {
         result = 31 * result + height;
         return result;
     }
+
+    public void setSize(int width, int height) {
+        this.width=width;
+        this.height=height;
+    }
 }

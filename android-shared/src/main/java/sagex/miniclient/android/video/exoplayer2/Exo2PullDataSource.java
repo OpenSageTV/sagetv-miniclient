@@ -18,13 +18,18 @@ import sagex.miniclient.net.HasClose;
  */
 public class Exo2PullDataSource implements DataSource, HasClose {
     static final Logger log = LoggerFactory.getLogger(Exo2PullDataSource.class);
+    private String host = null;
     BufferedPullDataSource dataSource = null;
     private long startPos;
     private Uri uri;
 
+    public Exo2PullDataSource(String host) {
+        this.host=host;
+    }
+
     @Override
     public long open(DataSpec dataSpec) throws IOException {
-        dataSource = new BufferedPullDataSource();
+        dataSource = new BufferedPullDataSource(host);
         this.uri=dataSpec.uri;
         long size = dataSource.open(dataSpec.uri.toString());
         this.startPos = dataSpec.position;

@@ -24,6 +24,10 @@ public class BufferedPullDataSource extends SimplePullDataSource {
     public BufferedPullDataSource() {
     }
 
+    public BufferedPullDataSource(String host) {
+        super(host);
+    }
+
     @Override
     public void close() {
         super.close();

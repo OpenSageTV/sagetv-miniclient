@@ -13,6 +13,18 @@ public class Rectangle {
         this.width = width;
     }
 
+    public boolean update(int x, int y, int w, int h) {
+        if (this.x==x && this.y==y && this.width==w && this.height==h ) {
+            return false;
+        }
+
+        this.x=x;
+        this.y=y;
+        this.width=w;
+        this.height=h;
+        return true;
+    }
+
     public Rectangle copy() {
         return new Rectangle(x, y, width, height);
     }
@@ -26,6 +38,10 @@ public class Rectangle {
         sb.append(", height=").append(height);
         sb.append('}');
         return sb.toString();
+    }
+
+    public Dimension getDimension() {
+        return new Dimension(width,height);
     }
 
     @Override
@@ -49,5 +65,9 @@ public class Rectangle {
         result = 31 * result + width;
         result = 31 * result + height;
         return result;
+    }
+
+    public boolean update(Rectangle srcRect) {
+        return this.update(srcRect.x, srcRect.y, srcRect.width, srcRect.height);
     }
 }

@@ -31,4 +31,7 @@ public interface MiniClientOptions {
     public boolean isTouchUI();
     public boolean isTVUI();
     public boolean isDesktopUI();
+    public boolean isUsingAdvancedAspectModes();
+    public String getAdvancedApectModes();
+    public String getDefaultAdvancedAspectMode();
 }

@@ -87,6 +87,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     long frame = 0;
     boolean firstFrame = true;
     boolean ready = false;
+    boolean inFrame=false;
     // Current Surface (when surfaces are enabled)
     GdxTexture currentSurface = null;
     // render queues
@@ -104,12 +105,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     private Dimension lastScreenSize = new Dimension(0, 0);
     private boolean firstResize = true; // true until after do the first resize
 
-    private boolean animationsDisabled = false;
-
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;
         this.client = client;
-        this.animationsDisabled = client.properties().getBoolean("animations_disabled", false);
         client.setUIRenderer(this);
     }
 
@@ -158,6 +156,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         fullScreenSize.update(width, height);
         lastResize.update(width, height);
 
+// this seems right but causes a UI shift??
+//        if (!useNativeResolution) {
+//            uiSize.width = fullScreenSize.width / 2;
+//            uiSize.height = fullScreenSize.height / 2;
+//        } else {
+//            uiSize.width=fullScreenSize.width;
+//            uiSize.height=fullScreenSize.height;
+//        }
+
         uiSize.updateFrom(getScreenSize());
 
         lastScreenSize.updateFrom(uiSize);
@@ -194,33 +201,29 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
     }
 
+
     @Override
     public void render() {
+        if (batch==null) return;
         if (renderQueue.size() == 0) return;
 
         long st = System.currentTimeMillis();
 
-        if (animationsDisabled) {
-            clearUI();
-        }
-
-        if (batch != null) {
-            batch.begin();
-            batch.setColor(Color.BLACK);
-            synchronized (renderQueue) {
-                try {
-                    for (Runnable r : renderQueue) {
-                        r.run();
-                    }
-                } catch (Throwable t) {
-                    log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
-                    // TODO: How should we manage this.. request a re-render??
+        batch.begin();
+        batch.setColor(Color.BLACK);
+        synchronized (renderQueue) {
+            try {
+                int size=renderQueue.size();
+                for (int i=0;i<size;i++) {
+                    renderQueue.get(i).run();
                 }
-                renderQueue.clear();
+            } catch (Throwable t) {
+                log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
+                // TODO: How should we manage this.. request a re-render??
             }
-            batch.end();
+            renderQueue.clear();
         }
-
+        batch.end();
 
         long et = System.currentTimeMillis();
         if (logFrameTime) {
@@ -355,24 +358,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             public void run() {
                 log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
 
-                // kind of a hack, but if we are clearing the rectangle at 0,0 then assume full
-                // screen video, and the video mode
-//                if ((x == 0) && (y == 0) && !client.getCurrentConnection().getMenuHint().isOSDMenu()) {
-//                    // set the hint to having an OSD which will enable the smart remote
-//                    client.getCurrentConnection().getMenuHint().menuName = "FAKE OSD";
-//                }
-
                 batch.end();
-//                batch.enableBlending();
-//                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
                 camera.update();
 
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                //shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
-                shapeRenderer.rect(x, Y(y, height), width, height, Color.CLEAR, Color.CLEAR, Color.CLEAR, Color.CLEAR);
-                shapeRenderer.end();
-//                batch.disableBlending();
+                Gdx.gl20.glEnable(GL20.GL_SCISSOR_TEST);
+                Gdx.gl20.glScissor(x, (int)Y(y, height), width, height);
+                //Gdx.gl20.glClearColor(0,0,0,0);
+                Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+                Gdx.gl20.glDisable(GL20.GL_SCISSOR_TEST);
+
                 batch.begin();
             }
         });
@@ -658,6 +652,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             log.debug("FRAME: " + (frame) + "; Texture Load Time: " + totalTextureTime + "ms; Longest Single: " + longestTextureTime + "ms");
         }
         frame++;
+        inFrame=false;
     }
 
     @Override
@@ -675,14 +670,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 }
             });
         }
+        inFrame=true;
     }
 
     void clearUI() {
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
         Gdx.gl20.glClearColor(0, 0, 0, 0);
-        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT | GL20.GL_COVERAGE_BUFFER_BIT_NV);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE_2D);
@@ -712,11 +708,15 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
     @Override
     public Dimension getMaxScreenSize() {
-        WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return new Dimension(size.x, size.y);
+        if (fullScreenSize.getWidth()<=0) {
+            WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            return new Dimension(size.x, size.y);
+        } else {
+            return fullScreenSize;
+        }
     }
 
     @Override
@@ -790,6 +790,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public void setVideoBounds(Rectangle o, Rectangle o1) {
         log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
         state = STATE_VIDEO;
+        // I think this is being done already
+//        if (player!=null) {
+//            player.setVideoRectangles(o, o1, true);
+//        }
     }
 
     @Override
@@ -801,5 +805,13 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public boolean isFirstFrameRendered() {
         // we set firstFrame=false after first frame is rendered, so isFirstFrameRendered is !firstFrame
         return !firstFrame;
+    }
+
+    @Override
+    public void setVideoAdvancedAspect(String value) {
+        log.debug("Handling Video Aspect Ration Change Request: " + value);
+        if (player!=null) {
+            player.setVideoAdvancedAspect(value);
+        }
     }
 }

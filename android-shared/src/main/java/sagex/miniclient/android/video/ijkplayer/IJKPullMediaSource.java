@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import sagex.miniclient.net.BufferedPullDataSource;
 import sagex.miniclient.net.HasClose;
 import sagex.miniclient.net.ISageTVDataSource;
-import sagex.miniclient.net.SimplePullDataSource;
 import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 
@@ -16,11 +16,16 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
  */
 public class IJKPullMediaSource implements IMediaDataSource, HasClose {
     private static final Logger log = LoggerFactory.getLogger(IJKPullMediaSource.class);
+    private String host=null;
 
     private ISageTVDataSource dataSource;
     private String url;
 
     public IJKPullMediaSource() {
+    }
+
+    public IJKPullMediaSource(String host) {
+        this.host=host;
     }
 
     public void open(String url) throws IOException {
@@ -29,7 +34,8 @@ public class IJKPullMediaSource implements IMediaDataSource, HasClose {
 
     private void _open() throws IOException {
         if (dataSource != null) return;
-        dataSource = new SimplePullDataSource();
+        //dataSource = new SimplePullDataSource(host);
+        dataSource = new BufferedPullDataSource(host);
         dataSource.open(url);
     }
 

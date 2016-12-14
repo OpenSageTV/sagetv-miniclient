@@ -1,5 +1,7 @@
 package sagex.miniclient.android.video;
 
+import android.widget.FrameLayout;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,14 +9,11 @@ import java.io.IOException;
 
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.AppUtil;
-import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
-import sagex.miniclient.net.HasClose;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
-import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.util.VerboseLogging;
 
@@ -34,9 +33,6 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected Player player;
     protected DataSource dataSource;
 
-    // media player
-    protected Dimension videoSize = new Dimension(0, 0);
-
     protected boolean createPlayerOnUI = true;
     protected boolean waitForPlayer = true;
 
@@ -49,12 +45,17 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected boolean flushed = false;
 
+    protected VideoInfo videoInfo = null;
+
+    AspectModeManager aspectModeManager = new AspectModeManager();
+
     public BaseMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
         //this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
         this.waitForPlayer = waitForPlayer;
         state = NO_STATE;
+        videoInfo = new VideoInfo();
     }
 
     public Player getPlayer() {
@@ -252,48 +253,48 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         return 0;
     }
 
-    Rectangle lastVideoPositionUpdate = null;
-
     @Override
-    public void setVideoRectangles(Rectangle srcRect, final Rectangle destRect, boolean b) {
+    public void setVideoRectangles(final Rectangle srcRect, final Rectangle destRect, boolean hideCursor) {
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
             log.debug("setVideoRectangles: SRC: {}, DEST: {}", srcRect, destRect);
-        if (lastVideoPositionUpdate == null || !lastVideoPositionUpdate.equals(destRect) || !videoSize.equals(srcRect.width, srcRect.height)) {
-            // we need an update
-            lastVideoPositionUpdate = destRect;
-            videoSize.update(srcRect.width, srcRect.height);
-//            context.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-//                        log.debug("setVideoRectangles: Updating Video Location {}", destRect);
+        if (srcRect==null||destRect==null) return;
 
-//                    // need to convert destRect based on scale
-//                    Scale scale = context.getClient().getUIRenderer().getScale();
-//                    Rectangle pos = destRect.copy();
-//                    pos.width=(int)scale.xCanvasToScreen(pos.width);
-//                    pos.height=(int)scale.xCanvasToScreen(pos.height);
-//                    pos.x=(int)scale.xCanvasToScreen(pos.x);
-//                    pos.y=(int)scale.xCanvasToScreen(pos.y)-pos.width;
-//
-//                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-//                        log.debug("setVideoRectangles: Updating Video Location based on scale {}", pos);
-//
-//                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) context.getVideoViewParent().getLayoutParams();
-//                    lp.width = pos.width;
-//                    lp.height = pos.height;
-//                    lp.topMargin = pos.y;
-//                    lp.leftMargin = pos.x;
-//                    context.getVideoViewParent().setLayoutParams(lp);
-//                    context.getVideoViewParent().requestLayout();
-//                }
-//            });
+        if (srcRect.width==0) {
+            // need to translate the destRect from 0,0,4096,4096 where x,y is center not bottom right
+            Rectangle rect = destRect.copy();
+            rect.x = destRect.x - (destRect.width/2);
+            rect.y = destRect.y - (destRect.height/2);
+            Dimension screen = context.getClient().getUIRenderer().getMaxScreenSize();
+            rect.x = (int)(screen.getWidth() * ((float)rect.x/4096f));
+            rect.y = (int)(screen.getHeight() * ((float)rect.y/4096f));
+            rect.width = (int)(screen.getWidth() * ((float)destRect.width/4096f));
+            rect.height = (int)(screen.getHeight() * ((float)destRect.height/4096f));
+            if (!videoInfo.destRect.equals(rect)) {
+                videoInfo.destRect.update(rect);
+                if (videoInfo.destRect.x==0) {
+                    Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect);
+                    updatePlayerView(arRect);
+                    log.debug("Updating Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
+                } else {
+                    updatePlayerView(rect);
+                    log.debug("Updating Video View from {} to {} with NO AR (in window)", destRect, rect);
+                }
+            }
+            return;
+        }
+
+        if (!videoInfo.size.equals(srcRect) || !videoInfo.destRect.equals(destRect)) {
+            // need to adjust video size/position
+            videoInfo.size.update(srcRect);
+            videoInfo.destRect.update(destRect);
+
+            updatePlayerView(videoInfo.destRect);
         }
     }
 
     @Override
     public Dimension getVideoDimensions() {
-        return null;
+        return videoInfo.size.getDimension();
     }
 
     @Override
@@ -328,15 +329,20 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     }
 
-    protected void setVideoSize(int width, int height) {
-        context.getVideoView().setVideoSize(width, height);
-        context.getVideoView().requestLayout();
+    protected void setVideoSize(int width, int height, float ar) {
+        videoInfo.update(width, height, ar);
+        updatePlayerView();
+    }
+
+    protected void setVideoSize(int width, int height, int sarNum, int sarDen) {
+        videoInfo.update(width,height,sarNum, sarDen);
+        updatePlayerView();
     }
 
     protected void releasePlayer() {
         log.debug("Releasing Player");
         player = null;
-        videoSize.update(0, 0);
+        videoInfo.reset();
         releaseDataSource();
         dataSource = null;
         state = EOS_STATE;
@@ -348,5 +354,41 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         if (dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).release();
         }
+    }
+
+    @Override
+    public void setVideoAdvancedAspect(String aspectMode) {
+        this.videoInfo.aspectMode=aspectMode;
+        updatePlayerView();
+    }
+
+    public void updatePlayerView() {
+        Dimension screen = context.getClient().getUIRenderer().getMaxScreenSize();
+        Rectangle rect = aspectModeManager.doMeasure(videoInfo, screen);
+
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            log.debug("updatePlayerView: Video Size {}, Screen Size {}, Calculated: {}", videoInfo, videoInfo.destRect, rect);
+
+        updatePlayerView(rect);
+    }
+
+    public void updatePlayerView(final Rectangle rect) {
+        context.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.debug("updatePlayerView: Video Size {}", rect);
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) context.getVideoView().getLayoutParams();
+                lp.width = rect.width;
+                lp.height = rect.height;
+                lp.leftMargin = rect.x;
+                lp.topMargin = rect.y;
+                context.getVideoView().setLayoutParams(lp);
+                context.getVideoView().requestLayout();
+
+                // update the video info with the last destination window
+                videoInfo.destRect.update(rect);
+            }
+        });
     }
 }

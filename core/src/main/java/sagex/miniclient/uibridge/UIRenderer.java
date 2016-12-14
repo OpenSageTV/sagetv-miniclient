@@ -112,4 +112,11 @@ public interface UIRenderer<Image> {
      * @return
      */
     boolean isFirstFrameRendered();
+
+    /**
+     * Will be the name of an Advanced Apect Ratio Mode, like, 'Source', 'Fill', etc.  Client must
+     * have sent the list of valid aspects in the client VIDEO_ADVANCED_ASPECT_LIST property
+     * @param value
+     */
+    void setVideoAdvancedAspect(String value);
 }

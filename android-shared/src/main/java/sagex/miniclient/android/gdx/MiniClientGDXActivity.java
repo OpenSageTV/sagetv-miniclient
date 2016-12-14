@@ -42,7 +42,7 @@ import sagex.miniclient.android.events.HideKeyboardEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.MessageEvent;
-import sagex.miniclient.android.events.SetAspectRatioEvent;
+import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.video.PlayerSurfaceView;
@@ -50,7 +50,6 @@ import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
-import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.util.ClientIDGenerator;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
@@ -494,35 +493,15 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         });
     }
 
-    public void updateVideoUI(Rectangle destRect) {
-        log.debug("Updating Video UI size {}", destRect);
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) videoHolder.getLayoutParams();
-        lp.topMargin = destRect.y;
-        lp.leftMargin = destRect.x;
-        lp.width = destRect.width;
-        lp.height = destRect.height;
-        videoHolder.setLayoutParams(lp);
-        videoHolder.requestLayout();
-    }
-
     @Subscribe
     public void onChangePlayerOneTime(ChangePlayerOneTime changePlayerOneTime) {
         this.changePlayerOneTime = changePlayerOneTime;
     }
 
     @Subscribe
-    public void onChangeAspectRatio(SetAspectRatioEvent ar) {
-        if (ar.isToggleNext()) {
-            getVideoView().toggleAspectRatio();
-        } else {
-            getVideoView().setAspectRatioMethod(ar.getAspectRatio());
-        }
-
-        // force an invalidate of the video view to redrawe with new aspect ratio
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) videoHolder.getLayoutParams();
-        videoHolder.setLayoutParams(lp);
-        videoHolder.requestLayout();
-        // Toast.makeText(this,getString(R.string.msg_change_aspect_ratio, AspectHelper.getAspectRatioText(newAR)), Toast.LENGTH_SHORT ).show();
+    public void onToggleAspectRatio(ToggleAspectRatioEvent ar) {
+        log.debug("SENDING AR_TOGGLE: " + EventRouter.AR_TOGGLE);
+        EventRouter.post(client, EventRouter.AR_TOGGLE);
     }
 
     /**

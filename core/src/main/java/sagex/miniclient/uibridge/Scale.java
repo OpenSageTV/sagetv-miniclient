@@ -8,8 +8,11 @@ public class Scale {
     private float ys = 1;
 
     public Scale(float xs, float ys) {
-        this.xs = xs;
-        this.ys = ys;
+        setScale(xs,ys);
+    }
+
+    public Scale(Dimension src, Dimension dest) {
+        setScale(src,dest);
     }
 
     public void setScale(float xs, float ys) {
@@ -17,8 +20,8 @@ public class Scale {
         this.ys = ys;
     }
 
-    public void setScale(Dimension uiSize, Dimension screenSize) {
-        setScale(((float) screenSize.width) / (float) uiSize.width, ((float) screenSize.height) / (float) uiSize.height);
+    public void setScale(Dimension src, Dimension dest) {
+        setScale(((float) dest.width) / (float) src.width, ((float) dest.height) / (float) src.height);
     }
 
     @Override
@@ -52,5 +55,9 @@ public class Scale {
 
     public float yScreenToCanvas(float y) {
         return y / ys;
+    }
+
+    public Scale copy() {
+        return new Scale(xs, ys);
     }
 }

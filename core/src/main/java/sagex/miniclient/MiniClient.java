@@ -47,6 +47,7 @@ public class MiniClient {
     private boolean initialized = false;
     private IBus eventBus;
     private ExecutorService backgroundService = null;
+    private ServerInfo connectedServer;
 
     public MiniClient(MiniClientOptions options) {
         this.options = options;
@@ -59,6 +60,10 @@ public class MiniClient {
         this.serverDiscovery = new ServerDiscovery();
         this.servers = new Servers(this);
         init();
+    }
+
+    public ServerInfo getConnectedServerInfo() {
+        return connectedServer;
     }
 
     /**
@@ -155,6 +160,7 @@ public class MiniClient {
             si.address = address;
             log.debug("Server Address Lookup complete {}", si);
         }
+        this.connectedServer=si;
         MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si);
         connection.connect();
     }

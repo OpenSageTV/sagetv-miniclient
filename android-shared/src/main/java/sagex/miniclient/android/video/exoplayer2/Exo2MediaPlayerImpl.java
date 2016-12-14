@@ -177,9 +177,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             dataSource = new Exo2PushDataSource();
         } else {
             if (!sageTVurl.startsWith("stv://")) {
-                sageTVurl = "stv://" + context.getClient().getCurrentConnection().getServerName() +"/"+ sageTVurl;
+                sageTVurl = "stv://" + context.getClient().getConnectedServerInfo().address +"/"+ sageTVurl;
             }
-            dataSource = new Exo2PullDataSource();
+            dataSource = new Exo2PullDataSource(context.getClient().getConnectedServerInfo().address);
         }
         // mp4 and mkv will play (but not aac audio)
         // File file = new File("/sdcard/Movies/sample-mkv.mkv");
@@ -241,7 +241,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                     log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, ratio: {}", width, height, pixelWidthHeightRatio);
-                setVideoSize(width, height);
+
+                setVideoSize(width, height, pixelWidthHeightRatio);
             }
 
             @Override

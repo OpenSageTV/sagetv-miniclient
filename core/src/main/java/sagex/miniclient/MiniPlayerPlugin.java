@@ -98,7 +98,7 @@ public interface MiniPlayerPlugin extends Runnable {
 
     int setVolume(float v);
 
-    void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean b);
+    void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor);
 
     Dimension getVideoDimensions();
 
@@ -112,4 +112,11 @@ public interface MiniPlayerPlugin extends Runnable {
      * @return
      */
     int getBufferLeft();
+
+    /**
+     * Set the Advanced Aspect Ratio Mode for the player
+     *
+     * @param aspectMode
+     */
+    void setVideoAdvancedAspect(String aspectMode);
 }
