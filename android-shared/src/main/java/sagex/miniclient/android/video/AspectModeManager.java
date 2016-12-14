@@ -14,7 +14,7 @@ public class AspectModeManager {
     private static final Logger log = LoggerFactory.getLogger(AspectModeManager.class);
 
     public static String DEFAULT_ASPECT_MODE = "Fit";
-    public static String ASPECT_MODES="Fit;Stretch;Zoom;Cover";
+    public static String ASPECT_MODES="Fit;Zoom;Cover";
 
     public Rectangle doMeasure(VideoInfo info, Dimension uiSize) {
         return doMeasure(info, new Rectangle(0,0,uiSize.width,uiSize.height));
