@@ -1,5 +1,5 @@
-**1.2.0 (2016-12-12)**
-- Fixed #62 - Implemented SageTV AR Mode Changing
+**1.2.0 (2016-12-17)**
+- Fixed #62 - Implemented SageTV AR Mode Changing (Source,Stretch,Zoom)
 - Fixed #64 - When Animations are disabled Video overlay doesn't render correctly
 - Fixed #3 - video not showing in preview window
 - Removed need to "disable animations" property

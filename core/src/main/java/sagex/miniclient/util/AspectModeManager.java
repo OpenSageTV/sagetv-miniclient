@@ -60,6 +60,7 @@ public class AspectModeManager {
      * @return
      */
     private RectangleF doMeasureSource(VideoInfo videoInfo, RectangleF screen) {
-        return AspectHelper.fitInside(videoInfo.size, screen);
+        RectangleF vid = AspectHelper.fitInside(videoInfo.size, screen);
+        return vid;
     }
 }

@@ -15,6 +15,7 @@ import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.uibridge.RectangleF;
 import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.util.VideoInfo;
@@ -276,10 +277,15 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 if (videoInfo.destRect.x==0) {
                     Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect).asIntRect();
                     updatePlayerView(arRect);
-                    log.debug("Updating Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
+                    log.debug("Updating Full Screen Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
                 } else {
-                    updatePlayerView(rect);
-                    log.debug("Updating Video View from {} to {} with NO AR (in window)", destRect, rect);
+                    RectangleF vid = aspectModeManager.doMeasure(videoInfo, rect.asFloatRect().position(0,0));
+                    log.debug("Updating Window Video View Video in View {}", vid);
+                    // adust video for the dest rect offset
+                    vid.x = vid.x + rect.x;
+                    vid.y = vid.y + rect.y;
+                    updatePlayerView(vid.asIntRect());
+                    log.debug("Updating Window Video View from {} to {} with video: {}", destRect, rect, vid);
                 }
             }
             return;
