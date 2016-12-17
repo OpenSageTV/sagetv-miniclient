@@ -21,7 +21,7 @@ import java.util.TreeSet;
 import sagex.miniclient.IBus;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
-import sagex.miniclient.android.video.AspectModeManager;
+import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.prefs.PrefStore;
 
 /**

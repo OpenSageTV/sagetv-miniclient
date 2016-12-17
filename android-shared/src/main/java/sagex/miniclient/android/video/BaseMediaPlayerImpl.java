@@ -15,7 +15,9 @@ import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.util.VerboseLogging;
+import sagex.miniclient.util.VideoInfo;
 
 //import org.videolan.libvlc.LibVLC;
 
@@ -260,7 +262,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         if (srcRect==null||destRect==null) return;
 
         if (srcRect.width==0) {
-            // need to translate the destRect from 0,0,4096,4096 where x,y is center not bottom right
+            // need to translateImmutable the destRect from 0,0,4096,4096 where x,y is centerImmutable not bottom right
             Rectangle rect = destRect.copy();
             rect.x = destRect.x - (destRect.width/2);
             rect.y = destRect.y - (destRect.height/2);
@@ -272,7 +274,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             if (!videoInfo.destRect.equals(rect)) {
                 videoInfo.destRect.update(rect);
                 if (videoInfo.destRect.x==0) {
-                    Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect);
+                    Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect).asIntRect();
                     updatePlayerView(arRect);
                     log.debug("Updating Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
                 } else {
@@ -288,13 +290,13 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             videoInfo.size.update(srcRect);
             videoInfo.destRect.update(destRect);
 
-            updatePlayerView(videoInfo.destRect);
+            updatePlayerView(videoInfo.destRect.asIntRect());
         }
     }
 
     @Override
     public Dimension getVideoDimensions() {
-        return videoInfo.size.getDimension();
+        return videoInfo.size.getDimension().asIntDimension();
     }
 
     @Override
@@ -364,7 +366,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     public void updatePlayerView() {
         Dimension screen = context.getClient().getUIRenderer().getMaxScreenSize();
-        Rectangle rect = aspectModeManager.doMeasure(videoInfo, screen);
+        Rectangle rect = aspectModeManager.doMeasure(videoInfo, screen).asIntRect();
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
             log.debug("updatePlayerView: Video Size {}, Screen Size {}, Calculated: {}", videoInfo, videoInfo.destRect, rect);

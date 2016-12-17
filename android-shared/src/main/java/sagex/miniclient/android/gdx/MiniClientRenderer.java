@@ -64,7 +64,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     // if true, the uiSize is set to the Native resolution
     boolean useNativeResolution = true;
 
-    // the scale of the uiSize to the screenSize
+    // the scaleAndCenterImmutable of the uiSize to the screenSize
     Scale scale = new Scale(1, 1);
 
     // UI states, just MENU (default) and VIDEO.

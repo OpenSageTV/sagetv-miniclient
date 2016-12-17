@@ -28,6 +28,9 @@ public class Rectangle {
     public Rectangle copy() {
         return new Rectangle(x, y, width, height);
     }
+    public RectangleF asFloatRect() {
+        return new RectangleF(x, y, width, height);
+    }
 
     @Override
     public String toString() {
