@@ -125,9 +125,10 @@ public class AspectHelper {
         } else if (is_4_3(ar)) {
             // assumption is that if you stretching 4/3 content then content is 16/9 inside 4/3 rect
             RectangleF r169 = fitInside(RectF_16_9, src);
-            r169.height=r169.width*9/16;
+            r169.height = r169.width * 9 / 16;
             return r169.center(src).scale(src).center(src);
         }
+        // default just stretch it
         return stretch(src, ar);
     }
 

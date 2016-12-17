@@ -26,7 +26,6 @@ public class AspectModeManager {
     }
 
     public RectangleF doMeasure(VideoInfo info, RectangleF uiSize) {
-        log.debug("doMeasure(): info: {}, uiSize:{}", info, uiSize);
         if (info.size.width <= 0) return uiSize.copy();
 
         RectangleF vid = null;
@@ -42,23 +41,14 @@ public class AspectModeManager {
         return vid;
     }
 
-    /**
-     * Provides an AR that will "zoom" the video so that no black bars are present,
-     * preserving the video AR.  The video will likely be cropped horizontally or vertically.
-     * @param videoInfo
-     * @param screen
-     * @return
-     */
     private RectangleF doMeasureZoom(VideoInfo videoInfo, RectangleF screen) {
         RectangleF destRect = AspectHelper.zoom(videoInfo.size, videoInfo.aspectRatio);
-        return destRect.translateImmutable(videoInfo.size, screen);
+        return destRect.translate(videoInfo.size, screen);
     }
 
     private RectangleF doMeasureStretch(VideoInfo videoInfo, RectangleF uiSize) {
         RectangleF destRect = AspectHelper.stretch(videoInfo.size, videoInfo.aspectRatio);
-        RectangleF trans = destRect.translateImmutable(videoInfo.size, uiSize);
-        log.debug("doMeasureStretch: src: {}; ui: {}; dest: {}; trans: {}; AR: {}", videoInfo.size, uiSize, destRect, trans, videoInfo.aspectRatio);
-        return trans;
+        return destRect.translate(videoInfo.size, uiSize);
     }
 
     /**
