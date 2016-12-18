@@ -102,9 +102,11 @@ public class AspectHelper {
         } else if (is_4_3(ar)) {
             // assumption is that if you stretching 4/3 content then there is nothing to do
             // it will be stretched during the translation phase
-            return src;
+            // we don't ever want to return the actual src, but a copy, because it might be changed
+            return src.copy();
         }
-        return src;
+        // we don't ever want to return the actual src, but a copy, because it might be changed
+        return src.copy();
     }
 
     /**

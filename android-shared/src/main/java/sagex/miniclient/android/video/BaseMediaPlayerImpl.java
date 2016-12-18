@@ -262,8 +262,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             log.debug("setVideoRectangles: SRC: {}, DEST: {}", srcRect, destRect);
         if (srcRect==null||destRect==null) return;
 
+        // we are using our our aspect modes
         if (srcRect.width==0) {
-            // need to translateImmutable the destRect from 0,0,4096,4096 where x,y is centerImmutable not bottom right
+            // need to translate the destRect from 0,0,4096,4096 where x,y is center not bottom right
             Rectangle rect = destRect.copy();
             rect.x = destRect.x - (destRect.width/2);
             rect.y = destRect.y - (destRect.height/2);
@@ -272,30 +273,39 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             rect.y = (int)(screen.getHeight() * ((float)rect.y/4096f));
             rect.width = (int)(screen.getWidth() * ((float)destRect.width/4096f));
             rect.height = (int)(screen.getHeight() * ((float)destRect.height/4096f));
-            if (!videoInfo.destRect.equals(rect)) {
-                videoInfo.destRect.update(rect);
-                if (videoInfo.destRect.x==0) {
+
+            if (videoInfo.changed || !videoInfo.destRect.equals(rect)) {
+                if (rect.x==0) {
                     Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect).asIntRect();
-                    updatePlayerView(arRect);
-                    log.debug("Updating Full Screen Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
+                    videoInfo.updateDestRect(arRect.asFloatRect());
+                    if (videoInfo.changed) {
+                        videoInfo.changed=false;
+                        updatePlayerView(arRect);
+                        log.debug("Updating Full Screen Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
+                    }
                 } else {
                     RectangleF vid = aspectModeManager.doMeasure(videoInfo, rect.asFloatRect().position(0,0));
                     log.debug("Updating Window Video View Video in View {}", vid);
                     // adust video for the dest rect offset
                     vid.x = vid.x + rect.x;
                     vid.y = vid.y + rect.y;
-                    updatePlayerView(vid.asIntRect());
-                    log.debug("Updating Window Video View from {} to {} with video: {}", destRect, rect, vid);
+                    videoInfo.updateDestRect(vid);
+                    if (videoInfo.changed) {
+                        videoInfo.changed=false;
+                        updatePlayerView(vid.asIntRect());
+                        log.debug("Updating Window Video View from {} to {} with video: {}", destRect, rect, vid);
+                    }
                 }
             }
             return;
         }
 
-        if (!videoInfo.size.equals(srcRect) || !videoInfo.destRect.equals(destRect)) {
+        // aspect modes coming from sagetv server if we get here
+        if (videoInfo.changed || !videoInfo.size.equals(srcRect) || !videoInfo.destRect.equals(destRect)) {
             // need to adjust video size/position
             videoInfo.size.update(srcRect);
             videoInfo.destRect.update(destRect);
-
+            videoInfo.changed=false;
             updatePlayerView(videoInfo.destRect.asIntRect());
         }
     }
@@ -366,7 +376,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void setVideoAdvancedAspect(String aspectMode) {
-        this.videoInfo.aspectMode=aspectMode;
+        this.videoInfo.updateARMode(aspectMode);
         updatePlayerView();
     }
 
@@ -384,8 +394,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         context.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                    log.debug("updatePlayerView: Video Size {}", rect);
+                log.debug("updatePlayerView: Video Size {}", rect);
                 FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) context.getVideoView().getLayoutParams();
                 lp.width = rect.width;
                 lp.height = rect.height;
@@ -393,9 +402,6 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 lp.topMargin = rect.y;
                 context.getVideoView().setLayoutParams(lp);
                 context.getVideoView().requestLayout();
-
-                // update the video info with the last destination window
-                videoInfo.destRect.update(rect);
             }
         });
     }

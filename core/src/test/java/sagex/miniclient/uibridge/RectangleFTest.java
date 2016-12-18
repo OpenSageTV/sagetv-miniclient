@@ -2,6 +2,8 @@ package sagex.miniclient.uibridge;
 
 import org.junit.Test;
 
+import sagex.miniclient.util.AspectHelper;
+
 import static org.junit.Assert.*;
 
 /**
@@ -46,6 +48,12 @@ public class RectangleFTest {
         Rectangle r = new RectangleF(0,0,1920,1080).scale(2).asIntRect();
         assertEquals(1920*2, r.width);
         assertEquals(1080*2, r.height);
+    }
+
+    @Test
+    public void testEquals() {
+        assertTrue(AspectHelper.RectF_16_9.equals(AspectHelper.RectF_16_9.copy()));
+        assertFalse(AspectHelper.RectF_16_9.equals(AspectHelper.RectF_4_3));
     }
 
 }

@@ -154,11 +154,15 @@ public class RectangleF {
 
         RectangleF rectangle = (RectangleF) o;
 
-        if (x != rectangle.x) return false;
-        if (y != rectangle.y) return false;
-        if (width != rectangle.width) return false;
-        return height == rectangle.height;
-
+        //if (x != rectangle.x) return false;
+        float epsilon = 0.00000001f;
+        if (!(Math.abs(x-rectangle.x) < epsilon)) return false;
+        //if (y != rectangle.y) return false;
+        if (!(Math.abs(y-rectangle.y) < epsilon)) return false;
+        //if (width != rectangle.width) return false;
+        if (!(Math.abs(width-rectangle.width) < epsilon)) return false;
+        //return height == rectangle.height;
+        return Math.abs(height - rectangle.height) < epsilon;
     }
 
     @Override

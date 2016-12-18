@@ -41,12 +41,12 @@ public class AspectModeManager {
         return vid;
     }
 
-    private RectangleF doMeasureZoom(VideoInfo videoInfo, RectangleF screen) {
+    RectangleF doMeasureZoom(VideoInfo videoInfo, RectangleF screen) {
         RectangleF destRect = AspectHelper.zoom(videoInfo.size, videoInfo.aspectRatio);
         return destRect.translate(videoInfo.size, screen);
     }
 
-    private RectangleF doMeasureStretch(VideoInfo videoInfo, RectangleF uiSize) {
+    RectangleF doMeasureStretch(VideoInfo videoInfo, RectangleF uiSize) {
         RectangleF destRect = AspectHelper.stretch(videoInfo.size, videoInfo.aspectRatio);
         return destRect.translate(videoInfo.size, uiSize);
     }
@@ -59,8 +59,12 @@ public class AspectModeManager {
      * @param screen
      * @return
      */
-    private RectangleF doMeasureSource(VideoInfo videoInfo, RectangleF screen) {
+    RectangleF doMeasureSource(VideoInfo videoInfo, RectangleF screen) {
         RectangleF vid = AspectHelper.fitInside(videoInfo.size, screen);
         return vid;
+    }
+
+    public String[] getARModes() {
+        return ASPECT_MODES.split(";");
     }
 }
