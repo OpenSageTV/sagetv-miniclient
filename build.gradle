@@ -55,7 +55,7 @@ allprojects {
         androidTargetSdkVersion = 22;
 
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        appVersionCode = 2101016 // v1.2.0
+        appVersionCode = 2101017 // v1.2.1
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files
