@@ -22,6 +22,10 @@ public class AspectHelper {
         return Math.abs(ar - ar_16_9) < ar_tolerance;
     }
 
+    public static boolean is_ar_equals(float ar1, float ar2) {
+        return Math.abs(ar1 - ar2) < ar_tolerance;
+    }
+
     public static float minScale(RectangleF src, RectangleF dest) {
         return Math.min( dest.width/src.width, dest.height/src.height);
     }
@@ -96,17 +100,15 @@ public class AspectHelper {
      * @return
      */
     public static RectangleF stretch(RectangleF src, float ar) {
-        if (is_16_9(ar)) {
-            // assumption is that if you are stretching 16/9 then the content must be 4/3
-            return fitInside(RectF_4_3, src).aspectRatioScale(src).center(src);
-        } else if (is_4_3(ar)) {
+        if (is_4_3(ar)) {
             // assumption is that if you stretching 4/3 content then there is nothing to do
             // it will be stretched during the translation phase
             // we don't ever want to return the actual src, but a copy, because it might be changed
             return src.copy();
+        } else {
+            // assumption is that if you are stretching 16/9 then the content must be 4/3
+            return fitInside(RectF_4_3, src).aspectRatioScale(src).center(src);
         }
-        // we don't ever want to return the actual src, but a copy, because it might be changed
-        return src.copy();
     }
 
     /**
@@ -117,21 +119,19 @@ public class AspectHelper {
      * @return
      */
     public static RectangleF zoom(RectangleF src, float ar) {
-        if (is_16_9(ar)) {
+        if (is_4_3(ar)) {
+            // assumption is that if you stretching 4/3 content then content is 16/9 inside 4/3 rect
+            RectangleF r169 = fitInside(RectF_16_9, src);
+            r169.height = r169.width * 9 / 16;
+            return r169.center(src).aspectRatioScale(src).center(src);
+        } else {
             // assumption is that if you are zooming 16/9 then the content must be 16/9 letterbox
             // need to create 4/3 box, and inside that get a 16/9 box
             RectangleF r43 = fitInside(RectF_4_3, src);
             RectangleF r169 = fitInside(RectF_16_9, r43);
             r169.height=r169.width*9/16;
             return r169.center(src).aspectRatioScale(src).center(src);
-        } else if (is_4_3(ar)) {
-            // assumption is that if you stretching 4/3 content then content is 16/9 inside 4/3 rect
-            RectangleF r169 = fitInside(RectF_16_9, src);
-            r169.height = r169.width * 9 / 16;
-            return r169.center(src).aspectRatioScale(src).center(src);
         }
-        // default just stretch it
-        return stretch(src, ar);
     }
 
 }

@@ -40,8 +40,13 @@ public class VideoInfo {
             this.size.update(size.x, size.y, w, h);
         }
 
+        if (AspectHelper.is_ar_equals(0, ar)) {
+            System.out.println(String.format("** UPDATE VIDEO SIZE: Has 0 AR, wil use actual video %s", this.size.getAR()));
+            ar=this.size.getAR();
+        }
+
         // check if the video ar changed
-        if ((int)(ar * 1000) != ((int)aspectRatio*1000)) {
+        if (!AspectHelper.is_ar_equals(ar, aspectRatio)) {
             aspectRatio=ar;
             changed=true;
         }
@@ -72,5 +77,14 @@ public class VideoInfo {
         this.size.update(0,0,0,0);
         this.destRect.update(0,0,0,0);
         this.changed=false;
+    }
+
+    public VideoInfo copy() {
+        VideoInfo vi = new VideoInfo();
+        vi.aspectMode=aspectMode;
+        vi.aspectRatio=aspectRatio;
+        vi.size=size.copy();
+        vi.destRect = destRect.copy();
+        return vi;
     }
 }

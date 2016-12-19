@@ -193,4 +193,14 @@ public class RectangleF {
         this.y=y;
         return this;
     }
+
+    /**
+     * Keeps the width, and changes the height due to the new aspect ratio.
+     * @param ar
+     * @return
+     */
+    public RectangleF updateHeightUsingAspectRatio(float ar) {
+        this.height=this.width/ar;
+        return this;
+    }
 }

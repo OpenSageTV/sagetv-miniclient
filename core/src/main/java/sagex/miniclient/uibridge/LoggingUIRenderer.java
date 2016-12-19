@@ -251,4 +251,16 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
         delegate.setVideoAdvancedAspect(value);
     }
 
+    @Override
+    public void setUIAspectRatio(float value) {
+        log("setUIAspectRatio");
+        delegate.setUIAspectRatio(value);
+    }
+
+    @Override
+    public float getUIAspectRatio() {
+        log("getUIAspectRatio");
+        return delegate.getUIAspectRatio();
+    }
+
 }

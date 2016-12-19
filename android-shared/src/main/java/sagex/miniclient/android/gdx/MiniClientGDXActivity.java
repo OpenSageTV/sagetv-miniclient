@@ -35,6 +35,7 @@ import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.NavigationFragment;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.VideoInfoFragment;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
@@ -47,10 +48,13 @@ import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
+import sagex.miniclient.events.VideoInfoRequest;
+import sagex.miniclient.events.VideoInfoResponse;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.util.ClientIDGenerator;
+import sagex.miniclient.video.HasVideoInfo;
 
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
@@ -400,6 +404,14 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             showHideSoftRemote(true);
         } catch (Throwable t) {
             log.debug("Failed to show navigation");
+        }
+    }
+
+    @Subscribe
+    public void handleVideoInfoRequest(VideoInfoRequest request) {
+        if (client.getUIRenderer() instanceof HasVideoInfo) {
+            hideNavigationDialog();
+            VideoInfoFragment.showDialog(this);
         }
     }
 

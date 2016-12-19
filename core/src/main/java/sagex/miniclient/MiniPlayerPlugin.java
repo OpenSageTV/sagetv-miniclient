@@ -17,6 +17,7 @@ package sagex.miniclient;
 
 import java.io.IOException;
 
+import sagex.miniclient.events.VideoInfoResponse;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 

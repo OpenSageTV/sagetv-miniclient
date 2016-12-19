@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:columnCount="2"
+    android:rowCount="11"
+    android:layout_height="match_parent"
+    android:background="@color/iconbutton_background"
+    >
+
+    <TextView
+        style="@style/Base.TextAppearance.AppCompat.Headline"
+        android:text="Video Info"
+        android:layout_column="0"
+        android:layout_row="0"
+        android:layout_columnSpan="2"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView5" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="URI"
+        android:layout_column="0"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView6" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_uri" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Aspect Mode"
+        android:layout_column="0"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView7" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_aspectMode" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Video Aspect Ratio"
+        android:layout_column="0"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView8" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_aspectRatio" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Video Size"
+        android:layout_column="0"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView9" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_videoSize" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Screen Pixel Size"
+        android:layout_column="0"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView10" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_screenPixelSize" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Screen Pixel Aspect"
+        android:layout_column="0"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView11" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_screenPixelAR" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Screen Adjusted Size"
+        android:layout_column="0"
+        android:layout_row="7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView12" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_screenAdjustedSize" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="SageTV Screen Aspect"
+        android:layout_column="0"
+        android:layout_row="8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView13" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_sagetvScreenAspect" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="SageTV Dest Vid Rect"
+        android:layout_column="0"
+        android:layout_row="9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView14" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_sagetvDestRect" />
+
+    <LinearLayout         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_columnSpan="2"
+        android:layout_row="10"
+        android:layout_column="0"
+        >
+        <Button
+            android:text="Refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vib_refresh"
+            />
+        <Button
+            android:text="Toggle AR"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vib_toggleAR"
+            />
+        <Button
+            android:text="Force 16/19 UI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vib_set16_9"
+            />
+        <Button
+            android:text="Force 4/3 UI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vib_set4_3"
+            />
+        <Button
+            android:text="Force 2.4 UI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vib_set2_dot_4"
+            />
+        <Button
+            android:text="Close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vib_Close"
+            />
+
+    </LinearLayout>
+
+</GridLayout>

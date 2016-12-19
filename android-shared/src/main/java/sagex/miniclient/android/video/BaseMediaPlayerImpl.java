@@ -11,6 +11,7 @@ import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.events.VideoInfoResponse;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.uibridge.Dimension;
@@ -19,13 +20,14 @@ import sagex.miniclient.uibridge.RectangleF;
 import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.util.VideoInfo;
+import sagex.miniclient.video.HasVideoInfo;
 
 //import org.videolan.libvlc.LibVLC;
 
 /**
  * Created by seans on 06/10/15.
  */
-public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPlayerPlugin {
+public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPlayerPlugin, HasVideoInfo {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     protected final MiniClientGDXActivity context;
@@ -276,7 +278,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
             if (videoInfo.changed || !videoInfo.destRect.equals(rect)) {
                 if (rect.x==0) {
-                    Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect).asIntRect();
+                    Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect.asFloatRect(), context.getClient().getUIRenderer().getUIAspectRatio()).asIntRect();
                     videoInfo.updateDestRect(arRect.asFloatRect());
                     if (videoInfo.changed) {
                         videoInfo.changed=false;
@@ -284,7 +286,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                         log.debug("Updating Full Screen Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
                     }
                 } else {
-                    RectangleF vid = aspectModeManager.doMeasure(videoInfo, rect.asFloatRect().position(0,0));
+                    RectangleF vid = aspectModeManager.doMeasure(videoInfo, rect.asFloatRect().position(0,0),context.getClient().getUIRenderer().getUIAspectRatio());
                     log.debug("Updating Window Video View Video in View {}", vid);
                     // adust video for the dest rect offset
                     vid.x = vid.x + rect.x;
@@ -382,7 +384,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     public void updatePlayerView() {
         Dimension screen = context.getClient().getUIRenderer().getMaxScreenSize();
-        Rectangle rect = aspectModeManager.doMeasure(videoInfo, screen).asIntRect();
+        Rectangle rect = aspectModeManager.doMeasure(videoInfo, new RectangleF(0,0,screen.width, screen.height), context.getClient().getUIRenderer().getUIAspectRatio()).asIntRect();
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
             log.debug("updatePlayerView: Video Size {}, Screen Size {}, Calculated: {}", videoInfo, videoInfo.destRect, rect);
@@ -404,5 +406,21 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 context.getVideoView().requestLayout();
             }
         });
+    }
+
+    @Override
+    public VideoInfoResponse getVideoInfo() {
+        if (player!=null) {
+            VideoInfoResponse vi = new VideoInfoResponse();
+            vi.videoInfo = videoInfo.copy();
+            vi.uiAspectRatio = context.getClient().getUIRenderer().getUIAspectRatio();
+            vi.uiScreenSizePixels = new Rectangle(0,0,context.getClient().getUIRenderer().getMaxScreenSize().width, context.getClient().getUIRenderer().getMaxScreenSize().height).asFloatRect();
+            vi.uri = lastUri;
+            vi.mediaTime = lastMediaTime;
+            vi.state=state;
+            vi.pushMode=pushMode;
+            return vi;
+        }
+        return null;
     }
 }

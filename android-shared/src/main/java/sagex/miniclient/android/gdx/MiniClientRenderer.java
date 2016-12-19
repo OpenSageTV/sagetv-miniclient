@@ -37,17 +37,20 @@ import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
+import sagex.miniclient.events.VideoInfoResponse;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIRenderer;
+import sagex.miniclient.util.AspectHelper;
+import sagex.miniclient.video.HasVideoInfo;
 
 /**
  * Created by seans on 26/09/15.
  */
-public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTexture> {
+public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTexture>, HasVideoInfo {
     private static final Logger log = LoggerFactory.getLogger(MiniClientRenderer.class);
 
     private final MiniClientGDXActivity activity;
@@ -104,6 +107,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     private Dimension lastResize = new Dimension(0, 0);
     private Dimension lastScreenSize = new Dimension(0, 0);
     private boolean firstResize = true; // true until after do the first resize
+
+    private float uiAspectRatio = AspectHelper.ar_16_9;
 
     public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
         this.activity = parent;
@@ -792,10 +797,6 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     public void setVideoBounds(Rectangle o, Rectangle o1) {
         log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
         state = STATE_VIDEO;
-        // I think this is being done already
-//        if (player!=null) {
-//            player.setVideoRectangles(o, o1, true);
-//        }
     }
 
     @Override
@@ -815,5 +816,34 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (player!=null) {
             player.setVideoAdvancedAspect(value);
         }
+    }
+
+    @Override
+    public void setUIAspectRatio(float value) {
+        if (value<0) {
+            uiAspectRatio = AspectHelper.ar_16_9;
+        }
+        else {
+            uiAspectRatio = value;
+        }
+        log.debug("UI Apect Ratio has been set to " + uiAspectRatio);
+    }
+
+    @Override
+    public float getUIAspectRatio() {
+        return uiAspectRatio;
+    }
+
+    @Override
+    public VideoInfoResponse getVideoInfo() {
+        if (player==null) {
+            return null;
+        }
+
+        if (player instanceof HasVideoInfo) {
+            return ((HasVideoInfo)player).getVideoInfo();
+        }
+
+        return null;
     }
 }

@@ -215,7 +215,6 @@ public class MiniClientConnection implements SageTVInputCallback {
     private List<String> pullFormats = new ArrayList<String>();
 
     private MenuHint menuHint = new MenuHint();
-    private String videoAspect=null;
     private Properties profileProperties;
 
     public MiniClientConnection(MiniClient client, String myID, ServerInfo msi) {
@@ -1128,7 +1127,11 @@ public class MiniClientConnection implements SageTVInputCallback {
                             retval = 0;
                         } else if ("GFX_ASPECT".equals(propName)) {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);
-                            videoAspect = propVal;
+                            try {
+                                getUiRenderer().setUIAspectRatio(Float.parseFloat(propVal));
+                            } catch (Throwable t) {
+                                log.error("Failed to set UI ASPECT of " + propVal, t);
+                            }
                             retval = 0;
                         } else if ("VIDEO_ADVANCED_ASPECT".equals(propName)) {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);

@@ -208,6 +208,15 @@
             android:src="@drawable/ic_aspect_ratio_white_24dp"
             android:tag="aspect_ratio"/>
 
+            <ImageView
+                android:id="@+id/nav_video_info"
+                style="@style/NavIconButton"
+                android:layout_column="9"
+                android:layout_row="4"
+                android:src="@drawable/ic_vid_info_white_24dp"
+                android:tag="video_info"/>
+
+
         <ImageView
             android:id="@+id/nav_remote_mode"
             style="@style/NavIconButton"

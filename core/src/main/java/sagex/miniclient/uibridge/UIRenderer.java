@@ -119,4 +119,8 @@ public interface UIRenderer<Image> {
      * @param value
      */
     void setVideoAdvancedAspect(String value);
+
+    void setUIAspectRatio(float value);
+
+    float getUIAspectRatio();
 }

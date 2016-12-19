@@ -37,6 +37,16 @@
         <!--<item name="android:focusableInTouchMode">true</item>-->
     </style>
 
+    <style name="ViLabel">
+        <item name="android:paddingRight">10sp</item>
+        <item name="android:color">@android:color/white</item>
+    </style>
+
+    <style name="ViData">
+        <item name="android:color">@color/abc_primary_text_material_light</item>
+    </style>
+
+
     <style name="NavIconSpacer">
         <item name="android:layout_width">@dimen/nav_icon_spacer</item>
         <item name="android:layout_height">@dimen/nav_icon_spacer</item>

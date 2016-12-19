@@ -17,28 +17,42 @@ public class AspectModeManager {
     public static String DEFAULT_ASPECT_MODE = "Source";
     public static String ASPECT_MODES="Source;Stretch;Zoom";
 
-    public RectangleF doMeasure(VideoInfo info, Dimension uiSize) {
-        return doMeasure(info, new RectangleF(0,0,uiSize.width,uiSize.height));
-    }
+//    public RectangleF doMeasure(VideoInfo info, Dimension uiSize, float uiAR) {
+//        return doMeasure(info, new RectangleF(0,0,uiSize.width,uiSize.height), uiAR);
+//    }
 
-    public RectangleF doMeasure(VideoInfo info, Rectangle uiSize) {
-        return doMeasure(info, uiSize.asFloatRect());
-    }
+//    public RectangleF doMeasure(VideoInfo info, RectangleF uiSize) {
+//        return doMeasure(info, uiSize, uiSize.getAR());
+//    }
 
-    public RectangleF doMeasure(VideoInfo info, RectangleF uiSize) {
+    public RectangleF doMeasure(VideoInfo info, RectangleF uiSize, float uiAR) {
         if (info.size.width <= 0) return uiSize.copy();
+
+        RectangleF ui = uiSize.copy();
+
+        // if actual window and ui AR is NOT the same, then we need to adjust for it
+        if (!AspectHelper.is_ar_equals(uiAR, uiSize.getAR())) {
+            ui.height = ui.width / uiAR;
+        }
 
         RectangleF vid = null;
         if ("Stretch".equalsIgnoreCase(info.aspectMode)) {
-            vid =  doMeasureStretch(info, uiSize);
+            vid =  doMeasureStretch(info, ui);
         } else if ("Zoom".equalsIgnoreCase(info.aspectMode)) {
-            vid = doMeasureZoom(info, uiSize);
+            vid = doMeasureZoom(info, ui);
         } else {
             // source
-            vid =  doMeasureSource(info, uiSize);
+            vid =  doMeasureSource(info, ui);
         }
-        log.debug("doMeasure(): final: {}, screen: {}, vidInfo: {}", vid, uiSize, info);
-        return vid;
+
+        RectangleF vidFinal = vid.copy();
+        if (!AspectHelper.is_ar_equals(uiAR, uiSize.getAR())) {
+            // readjust the video to render to our actual screen size
+            vidFinal.translate(ui, uiSize);
+        }
+
+        log.debug("doMeasure(): vid: {}, vidFinal: {}, projected screen: {}, actual screen: {}, vidInfo: {}", vid, vidFinal, ui, uiSize, info);
+        return vidFinal;
     }
 
     RectangleF doMeasureZoom(VideoInfo videoInfo, RectangleF screen) {

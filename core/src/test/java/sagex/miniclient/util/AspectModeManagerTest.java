@@ -48,4 +48,74 @@ public class AspectModeManagerTest {
     public RectangleF newUIRect() {
         return new RectangleF(0,0,1920,1080);
     }
+
+    @Test
+    public void testMeasureSource16_9_in_16_9() {
+        RectangleF ui = new RectangleF(0,0,1920, 1920 / AspectHelper.ar_16_9);
+        RectangleF vid = new RectangleF(0,0,1280, 1280 / AspectHelper.ar_16_9);
+        System.out.println("UI: " + ui);
+        System.out.println("VID: " + vid);
+        assertTrue(AspectHelper.is_16_9(ui.getAR()));
+        assertTrue(AspectHelper.is_16_9(vid.getAR()));
+
+        VideoInfo vi = new VideoInfo();
+        vi.update(vid.asIntRect().width, vid.asIntRect().height, vid.getAR());
+        vi.updateARMode("Source");
+
+        AspectModeManager amm = new AspectModeManager();
+
+        Rectangle destVid = amm.doMeasureSource(vi, ui).asIntRect();
+        System.out.println("DESTVID: " + destVid);
+        assertTrue("Destination and UI should be same size", destVid.equals(ui.asIntRect()));
+    }
+
+    @Test
+    public void testMeasureSource16_9_in_wide_2_35() {
+        RectangleF ui = new RectangleF(0,0,1920, 1920f / AspectHelper.ar_16_9);
+        RectangleF vid = new RectangleF(0,0,1920, 1920f / AspectHelper.ar_16_9);
+        System.out.println("UI: " + ui);
+        System.out.println("VID: " + vid);
+        assertTrue(AspectHelper.is_16_9(ui.getAR()));
+        assertTrue(AspectHelper.is_16_9(vid.getAR()));
+
+        VideoInfo vi = new VideoInfo();
+        vi.update(vid.asIntRect().width, vid.asIntRect().height, vid.getAR());
+        vi.updateARMode("Source");
+
+        AspectModeManager amm = new AspectModeManager();
+
+        // screen is 1920 but 2.4 screen AR...
+        Rectangle destVid = amm.doMeasure(vi, ui, 2.4f).asIntRect();
+        System.out.println("DESTVID: " + destVid);
+
+        // since our src video was 1920 and the ui was 1920 but 2.4 AR... video
+        // is actually much narrower
+        assertEquals(new Rectangle(249, 0, 1422, 1080), destVid);
+    }
+
+
+    @Test
+    public void testMeasureSource4_3_in_16_9() {
+        RectangleF ui = new RectangleF(0,0,1920, 1920 / AspectHelper.ar_16_9);
+        RectangleF vid = new RectangleF(0,0,640, 640 / AspectHelper.ar_4_3);
+        System.out.println("UI: " + ui);
+        System.out.println("VID: " + vid);
+        assertTrue(AspectHelper.is_16_9(ui.getAR()));
+        assertTrue(AspectHelper.is_4_3(vid.getAR()));
+
+        VideoInfo vi = new VideoInfo();
+        vi.update(vid.asIntRect().width, vid.asIntRect().height, vid.getAR());
+        vi.updateARMode("Source");
+
+        AspectModeManager amm = new AspectModeManager();
+
+        Rectangle destVid = amm.doMeasureSource(vi, ui).asIntRect();
+        System.out.println("DESTVID: " + destVid);
+
+        // destination height should be the same
+        assertEquals(ui.asIntRect().height, destVid.height);
+
+        // sum of x * 2 + width should be ui width
+        assertEquals(destVid.x * 2 + destVid.width, ui.asIntRect().width);
+    }
 }
