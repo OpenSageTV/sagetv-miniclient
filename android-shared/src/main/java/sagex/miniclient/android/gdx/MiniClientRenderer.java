@@ -80,10 +80,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     boolean logFrameBuffer = false;
     boolean logFrameTime = false;
     boolean logTextureTime = false;
+    private boolean logTexture = false;
     long longestTextureTime = 0;
     long totalTextureTime = 0;
     long frameTime = 0;
-    long frameOps = 0;
     long frame = 0;
     boolean firstFrame = true;
     boolean ready = false;
@@ -205,29 +205,30 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     @Override
     public void render() {
         if (batch==null) return;
-        if (renderQueue.size() == 0) return;
+        int size=renderQueue.size();
+        if (size==0) return;
 
         long st = System.currentTimeMillis();
 
-        batch.begin();
-        batch.setColor(Color.BLACK);
         synchronized (renderQueue) {
             try {
-                int size=renderQueue.size();
+                batch.begin();
+                batch.setColor(Color.BLACK);
                 for (int i=0;i<size;i++) {
                     renderQueue.get(i).run();
                 }
             } catch (Throwable t) {
                 log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
                 // TODO: How should we manage this.. request a re-render??
+            } finally {
+                batch.end();
+                renderQueue.clear();
             }
-            renderQueue.clear();
         }
-        batch.end();
 
         long et = System.currentTimeMillis();
         if (logFrameTime) {
-            log.debug("RENDER: Time: " + (et - st) + "ms");
+            log.debug("RENDER: Time: " + (et - st) + "ms; Ops: " + size);
         }
     }
 
@@ -485,6 +486,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
                 if (t != null) {
                     batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
+                    if (logTexture)
+                        log.debug("Texture: {},{} {}x{} (buffer:{})", x,y, w,h,img.get().isFrameBuffer);
                 } else {
                     log.warn("We got a null texture for {}", img);
                 }
@@ -646,7 +649,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
         Gdx.graphics.requestRendering();
         if (logFrameTime) {
-            log.debug("FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis() - frameTime) + "ms; Ops: " + frameOps);
+            log.debug("FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis() - frameTime) + "ms");
         }
         if (logTextureTime) {
             log.debug("FRAME: " + (frame) + "; Texture Load Time: " + totalTextureTime + "ms; Longest Single: " + longestTextureTime + "ms");
@@ -658,7 +661,6 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     @Override
     public void startFrame() {
         frameTime = System.currentTimeMillis();
-        frameOps = 0;
         totalTextureTime = 0;
         longestTextureTime = 0;
         state = STATE_MENU;

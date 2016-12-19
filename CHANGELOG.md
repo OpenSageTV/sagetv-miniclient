@@ -1,3 +1,7 @@
+**1.2.1 (2016-12-18)**
+- Fixed: When animations disabled, the screen shows junk
+- Fixed: 16/9 stretch does a shrink instead
+
 **1.2.0 (2016-12-17)**
 - Fixed #62 - Implemented SageTV AR Mode Changing (Source,Stretch,Zoom)
 - Fixed #64 - When Animations are disabled Video overlay doesn't render correctly

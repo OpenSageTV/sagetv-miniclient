@@ -127,14 +127,14 @@ public class AspectHelperTest {
         System.out.println(rtrans);
         test= rtrans.asIntRect();
         assertEquals(0, test.x);
-        assertEquals(-320, test.y);
+        assertEquals(-135, test.y);
         assertEquals(1920, test.width);
         assertEquals(1080, test.height);
     }
 
 
     @Test
-    public void testStretch() {
+    public void testStretch4_3() {
         RectangleF r43 = new RectangleF(0,0,640,480);
         RectangleF stretch43 = AspectHelper.stretch(r43, r43.getAR());
         Rectangle trans = stretch43.translateImmutable(r43, new RectangleF(0,0,1920,1080)).asIntRect();
@@ -144,6 +144,19 @@ public class AspectHelperTest {
         assertEquals(1920, trans.width);
         assertEquals(1080, trans.height);
     }
+
+    @Test
+    public void testStretch16_9() {
+        RectangleF r169 = new RectangleF(0,0,1280,720);
+        RectangleF stretch169 = AspectHelper.stretch(r169, r169.getAR());
+        Rectangle trans = stretch169.translateImmutable(r169, new RectangleF(0,0,1920,1080)).asIntRect();
+        System.out.println(trans);
+        assertEquals(-320, trans.x);
+        assertEquals(0, trans.y);
+        assertEquals(2560, trans.width);
+        assertEquals(1080, trans.height);
+    }
+
 
     @Test
     public void testIsAR() {

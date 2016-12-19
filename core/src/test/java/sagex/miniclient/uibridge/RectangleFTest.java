@@ -35,7 +35,7 @@ public class RectangleFTest {
     public void testScaleRect() throws Exception {
         RectangleF r = new RectangleF(0,0,1920,1080);
         RectangleF sub = new RectangleF(240,135,1440,810);
-        Rectangle test = sub.scaleImmutable(r).asIntRect();
+        Rectangle test = sub.aspectRatioScaleImmutable(r).asIntRect();
         assertEquals(2560, test.width);
         assertEquals(1440, test.height);
         test = test.asFloatRect().center(r).asIntRect();

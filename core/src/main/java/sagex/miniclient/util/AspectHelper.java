@@ -98,7 +98,7 @@ public class AspectHelper {
     public static RectangleF stretch(RectangleF src, float ar) {
         if (is_16_9(ar)) {
             // assumption is that if you are stretching 16/9 then the content must be 4/3
-            return fitHeight(RectF_4_3, src);
+            return fitInside(RectF_4_3, src).aspectRatioScale(src).center(src);
         } else if (is_4_3(ar)) {
             // assumption is that if you stretching 4/3 content then there is nothing to do
             // it will be stretched during the translation phase
@@ -123,12 +123,12 @@ public class AspectHelper {
             RectangleF r43 = fitInside(RectF_4_3, src);
             RectangleF r169 = fitInside(RectF_16_9, r43);
             r169.height=r169.width*9/16;
-            return r169.center(src).scale(src).center(src);
+            return r169.center(src).aspectRatioScale(src).center(src);
         } else if (is_4_3(ar)) {
             // assumption is that if you stretching 4/3 content then content is 16/9 inside 4/3 rect
             RectangleF r169 = fitInside(RectF_16_9, src);
             r169.height = r169.width * 9 / 16;
-            return r169.center(src).scale(src).center(src);
+            return r169.center(src).aspectRatioScale(src).center(src);
         }
         // default just stretch it
         return stretch(src, ar);

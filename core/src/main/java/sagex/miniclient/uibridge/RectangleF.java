@@ -74,7 +74,7 @@ public class RectangleF {
      * @param dest
      * @return
      */
-    public RectangleF scale(RectangleF dest) {
+    public RectangleF aspectRatioScale(RectangleF dest) {
         width = dest.width * dest.width / width;
         height = dest.height * dest.height / height;
         return this;
@@ -86,8 +86,8 @@ public class RectangleF {
      * @param dest
      * @return
      */
-    public RectangleF scaleImmutable(RectangleF dest) {
-        return this.copy().scale(dest);
+    public RectangleF aspectRatioScaleImmutable(RectangleF dest) {
+        return this.copy().aspectRatioScale(dest);
     }
 
     /**

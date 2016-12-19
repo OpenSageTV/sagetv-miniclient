@@ -3,7 +3,10 @@ AUDIO_CODECS=MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,
 PULL_FORMATS=AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3
 PUSH_FORMATS=MPEG2-PS,MPEG2-TS,MPEG1-PS
 GFX_SUPPORTED_ASPECTS=16\:9
-GFX_DRAWMODE=UPDATE
+## GFX_DRAWMODE=UPDATE seems more efficient and works for animations
+## but doesn't appear to work when animations are disabled
+## FULLSCREEN appears to work for animations being disabled
+GFX_DRAWMODE=FULLSCREEN
 GFX_TEXTMODE=NONE
 ## handled in the java code
 xxVIDEO_ADVANCED_ASPECT=Source
