@@ -48,8 +48,7 @@ import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
-import sagex.miniclient.events.VideoInfoRequest;
-import sagex.miniclient.events.VideoInfoResponse;
+import sagex.miniclient.events.VideoInfoShow;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
@@ -408,7 +407,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     @Subscribe
-    public void handleVideoInfoRequest(VideoInfoRequest request) {
+    public void handleVideoInfoRequest(VideoInfoShow request) {
         if (client.getUIRenderer() instanceof HasVideoInfo) {
             hideNavigationDialog();
             VideoInfoFragment.showDialog(this);

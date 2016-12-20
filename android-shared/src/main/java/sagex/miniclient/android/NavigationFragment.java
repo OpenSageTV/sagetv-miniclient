@@ -31,7 +31,7 @@ import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
-import sagex.miniclient.events.VideoInfoRequest;
+import sagex.miniclient.events.VideoInfoShow;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
@@ -144,7 +144,7 @@ public class NavigationFragment extends DialogFragment {
     }
 
     private void onVideoInfo() {
-        client.eventbus().post(new VideoInfoRequest());
+        client.eventbus().post(new VideoInfoShow());
     }
 
     public void buttonClick(View v) {

@@ -1,7 +1,5 @@
 package sagex.miniclient.video;
 
-import sagex.miniclient.events.VideoInfoResponse;
-
 /**
  * Created by seans on 19/12/16.
  */

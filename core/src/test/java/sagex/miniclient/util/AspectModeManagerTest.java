@@ -26,7 +26,7 @@ public class AspectModeManagerTest {
         VideoInfo vi = new VideoInfo();
         vi.update(vidRect.asIntRect().width, vidRect.asIntRect().height, ar);
         RectangleF uiCopy = uiRect.copy();
-        RectangleF r = mgr.doMeasure(vi, uiCopy);
+        RectangleF r = mgr.doMeasure(vi, uiCopy, AspectHelper.ar_16_9);
         verifyRect("VIDEO",vidRect, vi.size);
         verifyRect("UI",uiRect, uiCopy);
         System.out.println("PASSED " + mode + "; " + ar);

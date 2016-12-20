@@ -134,4 +134,9 @@ public class AspectHelper {
         }
     }
 
+//    public static RectangleF source(RectangleF src, float ar) {
+//        RectangleF vid = AspectHelper.fitInside(src, screen);
+//        return vid;
+//    }
+
 }

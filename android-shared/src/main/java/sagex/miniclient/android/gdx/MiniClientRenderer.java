@@ -35,9 +35,10 @@ import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
-import sagex.miniclient.events.VideoInfoResponse;
+import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
@@ -825,6 +826,9 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
         else {
             uiAspectRatio = value;
+        }
+        if (player!=null && player instanceof BaseMediaPlayerImpl) {
+            ((BaseMediaPlayerImpl)player).notifyUIAspectChanged();
         }
         log.debug("UI Apect Ratio has been set to " + uiAspectRatio);
     }

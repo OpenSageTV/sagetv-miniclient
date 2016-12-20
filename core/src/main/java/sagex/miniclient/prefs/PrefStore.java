@@ -95,6 +95,12 @@ public interface PrefStore {
         String log_level = "log_level";
 
         /**
+         * if true, then aspect ratio debugging is enabled.
+         */
+        String debug_ar = "debug_ar";
+
+
+        /**
          * if enabled the long press select will bring up OSD
          */
         String long_press_select_for_osd = "long_press_select_for_osd";

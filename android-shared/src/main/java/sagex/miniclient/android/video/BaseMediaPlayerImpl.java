@@ -11,9 +11,12 @@ import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
-import sagex.miniclient.events.VideoInfoResponse;
+import sagex.miniclient.events.VideoInfoRefresh;
+import sagex.miniclient.events.VideoInfoShow;
+import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.RectangleF;
@@ -52,7 +55,13 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected VideoInfo videoInfo = null;
 
+    // this is mainly for testing... when we force a different UI aspect than what we really have
+    private boolean uiAspectChanged=true;
+    Rectangle lastVidSrc=null, lastVidDest=null;
+
     AspectModeManager aspectModeManager = new AspectModeManager();
+
+    boolean debug_ar=false;
 
     public BaseMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
@@ -61,6 +70,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         this.waitForPlayer = waitForPlayer;
         state = NO_STATE;
         videoInfo = new VideoInfo();
+        debug_ar = context.getClient().properties().getBoolean(PrefStore.Keys.debug_ar, false);
     }
 
     public Player getPlayer() {
@@ -104,6 +114,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             setupPlayer(urlString);
             if (dataSource == null)
                 throw new RuntimeException("setupPlayer must create a datasource");
+        }
+
+        if (debug_ar) {
+            // if debug AR is turned on then show the AR UI immediately
+            context.getClient().eventbus().post(new VideoInfoShow());
         }
     }
 
@@ -264,6 +279,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             log.debug("setVideoRectangles: SRC: {}, DEST: {}", srcRect, destRect);
         if (srcRect==null||destRect==null) return;
 
+        if (debug_ar) {
+            lastVidSrc = srcRect.copy();
+            lastVidDest = destRect.copy();
+        }
+
         // we are using our our aspect modes
         if (srcRect.width==0) {
             // need to translate the destRect from 0,0,4096,4096 where x,y is center not bottom right
@@ -276,11 +296,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             rect.width = (int)(screen.getWidth() * ((float)destRect.width/4096f));
             rect.height = (int)(screen.getHeight() * ((float)destRect.height/4096f));
 
-            if (videoInfo.changed || !videoInfo.destRect.equals(rect)) {
+            if (uiAspectChanged || videoInfo.changed || !videoInfo.destRect.equals(rect)) {
                 if (rect.x==0) {
                     Rectangle arRect = aspectModeManager.doMeasure(videoInfo, rect.asFloatRect(), context.getClient().getUIRenderer().getUIAspectRatio()).asIntRect();
                     videoInfo.updateDestRect(arRect.asFloatRect());
-                    if (videoInfo.changed) {
+                    if (uiAspectChanged || videoInfo.changed) {
                         videoInfo.changed=false;
                         updatePlayerView(arRect);
                         log.debug("Updating Full Screen Video View from {} to {} adjusted with AR: {}", destRect, rect, arRect);
@@ -292,18 +312,20 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                     vid.x = vid.x + rect.x;
                     vid.y = vid.y + rect.y;
                     videoInfo.updateDestRect(vid);
-                    if (videoInfo.changed) {
+                    if (uiAspectChanged || videoInfo.changed) {
                         videoInfo.changed=false;
                         updatePlayerView(vid.asIntRect());
                         log.debug("Updating Window Video View from {} to {} with video: {}", destRect, rect, vid);
                     }
                 }
+                uiAspectChanged=false;
             }
             return;
         }
 
         // aspect modes coming from sagetv server if we get here
-        if (videoInfo.changed || !videoInfo.size.equals(srcRect) || !videoInfo.destRect.equals(destRect)) {
+        if (uiAspectChanged || videoInfo.changed || !videoInfo.size.equals(srcRect) || !videoInfo.destRect.equals(destRect)) {
+            uiAspectChanged=false;
             // need to adjust video size/position
             videoInfo.size.update(srcRect);
             videoInfo.destRect.update(destRect);
@@ -367,6 +389,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         dataSource = null;
         state = EOS_STATE;
         eos=true;
+        uiAspectChanged=true;
         context.removeVideoFrame();
     }
 
@@ -404,6 +427,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 lp.topMargin = rect.y;
                 context.getVideoView().setLayoutParams(lp);
                 context.getVideoView().requestLayout();
+                if (debug_ar) {
+                    context.getClient().eventbus().post(VideoInfoRefresh.INSTANCE);
+                }
             }
         });
     }
@@ -422,5 +448,14 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             return vi;
         }
         return null;
+    }
+
+    public void notifyUIAspectChanged() {
+        uiAspectChanged=true;
+        if (debug_ar) {
+            log.debug("UI Aspect Ratio Changed:  Notifying Video.");
+            // only do this if we are debugging AR, since that's really when this would happen
+            setVideoRectangles(lastVidSrc, lastVidDest, true);
+        }
     }
 }

@@ -1,4 +1,4 @@
-package sagex.miniclient.events;
+package sagex.miniclient.video;
 
 import sagex.miniclient.uibridge.RectangleF;
 import sagex.miniclient.util.VideoInfo;

@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:columnCount="2"
-    android:rowCount="11"
+    android:rowCount="12"
     android:layout_height="match_parent"
     android:background="@color/iconbutton_background"
     >
@@ -59,25 +59,7 @@
 
     <TextView
         style="@style/ViLabel"
-        android:text="Video Aspect Ratio"
-        android:layout_column="0"
-        android:layout_row="4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView8" />
-
-    <TextView
-        style="@style/ViData"
-        android:text="xxxxxxxxxxxxxxxxxxx"
-        android:layout_column="1"
-        android:layout_row="4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/vi_aspectRatio" />
-
-    <TextView
-        style="@style/ViLabel"
-        android:text="Video Size"
+        android:text="Video Pixel Size"
         android:layout_column="0"
         android:layout_row="3"
         android:layout_width="wrap_content"
@@ -95,9 +77,45 @@
 
     <TextView
         style="@style/ViLabel"
-        android:text="Screen Pixel Size"
+        android:text="Video Pixel Aspect"
+        android:layout_column="0"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewvpa" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_videoPixelAspect" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Video Aspect Ratio"
         android:layout_column="0"
         android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView8" />
+
+    <TextView
+        style="@style/ViData"
+        android:text="xxxxxxxxxxxxxxxxxxx"
+        android:layout_column="1"
+        android:layout_row="5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vi_aspectRatio" />
+
+    <TextView
+        style="@style/ViLabel"
+        android:text="Screen Pixel Size"
+        android:layout_column="0"
+        android:layout_row="6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView10" />
@@ -106,7 +124,7 @@
         style="@style/ViData"
         android:text="xxxxxxxxxxxxxxxxxxx"
         android:layout_column="1"
-        android:layout_row="5"
+        android:layout_row="6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/vi_screenPixelSize" />
@@ -115,7 +133,7 @@
         style="@style/ViLabel"
         android:text="Screen Pixel Aspect"
         android:layout_column="0"
-        android:layout_row="6"
+        android:layout_row="7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView11" />
@@ -124,7 +142,7 @@
         style="@style/ViData"
         android:text="xxxxxxxxxxxxxxxxxxx"
         android:layout_column="1"
-        android:layout_row="6"
+        android:layout_row="7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/vi_screenPixelAR" />
@@ -133,7 +151,7 @@
         style="@style/ViLabel"
         android:text="Screen Adjusted Size"
         android:layout_column="0"
-        android:layout_row="7"
+        android:layout_row="8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView12" />
@@ -142,7 +160,7 @@
         style="@style/ViData"
         android:text="xxxxxxxxxxxxxxxxxxx"
         android:layout_column="1"
-        android:layout_row="7"
+        android:layout_row="8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/vi_screenAdjustedSize" />
@@ -151,7 +169,7 @@
         style="@style/ViLabel"
         android:text="SageTV Screen Aspect"
         android:layout_column="0"
-        android:layout_row="8"
+        android:layout_row="9"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView13" />
@@ -160,7 +178,7 @@
         style="@style/ViData"
         android:text="xxxxxxxxxxxxxxxxxxx"
         android:layout_column="1"
-        android:layout_row="8"
+        android:layout_row="9"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/vi_sagetvScreenAspect" />
@@ -169,7 +187,7 @@
         style="@style/ViLabel"
         android:text="SageTV Dest Vid Rect"
         android:layout_column="0"
-        android:layout_row="9"
+        android:layout_row="10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/textView14" />
@@ -178,7 +196,7 @@
         style="@style/ViData"
         android:text="xxxxxxxxxxxxxxxxxxx"
         android:layout_column="1"
-        android:layout_row="9"
+        android:layout_row="10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/vi_sagetvDestRect" />
@@ -187,7 +205,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_columnSpan="2"
-        android:layout_row="10"
+        android:layout_row="11"
         android:layout_column="0"
         >
         <Button

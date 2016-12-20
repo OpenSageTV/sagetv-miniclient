@@ -85,4 +85,6 @@
     <string name="summary_disable_hardware_decoders_preference">Disable all hardware decoders.  If enabled, then ONLY software decoders are used.</string>
     <string name="title_disable_audio_passthrough_preference">Exo: Disable Audio Passthrough</string>
     <string name="summary_disable_audio_passthrough_preference">If enabled, then ffmpeg will be used to decode AC-3 audio.</string>
+    <string name="title_debug_ar_preference">Debug Aspect Ratios</string>
+    <string name="summary_debug_ar_preference">Turns on logging and UI tools for debugging Aspect Ratios</string>
 </resources>

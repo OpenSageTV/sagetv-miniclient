@@ -18,12 +18,15 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.events.ToggleAspectRatioEvent;
-import sagex.miniclient.events.VideoInfoResponse;
+import sagex.miniclient.events.VideoInfoRefresh;
+import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.util.AspectHelper;
 import sagex.miniclient.video.HasVideoInfo;
 
@@ -52,7 +55,7 @@ public class VideoInfoFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         navView = inflater.inflate(R.layout.video_info, container, false);
 
-        refresh();
+        refresh(VideoInfoRefresh.INSTANCE);
 
         connect(R.id.vib_Close, new Runnable() {
             public void run() {
@@ -62,7 +65,7 @@ public class VideoInfoFragment extends DialogFragment {
 
         connect(R.id.vib_refresh, new Runnable() {
             public void run() {
-                refresh();
+                refresh(VideoInfoRefresh.INSTANCE);
             }
         });
 
@@ -97,12 +100,14 @@ public class VideoInfoFragment extends DialogFragment {
         return navView;
     }
 
-    private void refresh() {
+    @Subscribe
+    public void refresh(VideoInfoRefresh refresh) {
         VideoInfoResponse resp = ((HasVideoInfo) client.getUIRenderer()).getVideoInfo();
         log.debug("Got a Request for Video Info", resp);
         if (resp!=null) {
             setText(R.id.vi_videoSize, resp.videoInfo.size);
             setText(R.id.vi_aspectMode, resp.videoInfo.aspectMode);
+            setText(R.id.vi_videoPixelAspect, resp.videoInfo.size.getAR());
             setText(R.id.vi_aspectRatio, resp.videoInfo.aspectRatio);
             setText(R.id.vi_sagetvDestRect, resp.videoInfo.destRect);
             setText(R.id.vi_sagetvScreenAspect, resp.uiAspectRatio);
@@ -138,6 +143,18 @@ public class VideoInfoFragment extends DialogFragment {
     // @OnClick(R.id.nav_toggle_ar)
     public void onToggleAspectRatio() {
         client.eventbus().post(ToggleAspectRatioEvent.INSTANCE);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        client.eventbus().unregister(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        client.eventbus().register(this);
     }
 
     @Override

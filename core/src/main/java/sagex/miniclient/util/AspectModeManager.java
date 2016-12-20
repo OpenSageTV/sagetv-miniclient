@@ -74,8 +74,17 @@ public class AspectModeManager {
      * @return
      */
     RectangleF doMeasureSource(VideoInfo videoInfo, RectangleF screen) {
-        RectangleF vid = AspectHelper.fitInside(videoInfo.size, screen);
-        return vid;
+        if (AspectHelper.is_ar_equals(videoInfo.size.getAR(), videoInfo.aspectRatio)) {
+            // we have the same Aspect Ratio, so just "fit" it in the window
+            return AspectHelper.fitInside(videoInfo.size, screen);
+        } else {
+            if (AspectHelper.is_16_9(videoInfo.aspectRatio)) {
+                // video is 16/9, so make it fit inside the screen as a 16/9 window
+                return AspectHelper.fitInside(AspectHelper.RectF_16_9.copy(), screen);
+            } else {
+                return AspectHelper.fitInside(videoInfo.size, screen);
+            }
+        }
     }
 
     public String[] getARModes() {
