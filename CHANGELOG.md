@@ -1,3 +1,6 @@
+**1.2.3 (2016-12-19)**
+- AR Fixes
+
 **1.2.1 (2016-12-18)**
 - Fixed: When animations disabled, the screen shows junk
 - Fixed: 16/9 stretch does a shrink instead

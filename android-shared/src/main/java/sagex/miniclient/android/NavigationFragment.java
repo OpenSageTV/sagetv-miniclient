@@ -81,7 +81,11 @@ public class NavigationFragment extends DialogFragment {
                 R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
                 R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
                 R.id.nav_media_stop, R.id.nav_back, R.id.nav_info, R.id.nav_video_info}) {
-            navView.findViewById(id).setOnClickListener(buttonClickListener);
+            try {
+                navView.findViewById(id).setOnClickListener(buttonClickListener);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
         }
 
         navView.findViewById(R.id.nav_switch_player).setOnClickListener(new View.OnClickListener() {
