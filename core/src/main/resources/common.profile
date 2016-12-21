@@ -6,7 +6,10 @@ GFX_SUPPORTED_ASPECTS=16\:9
 ## GFX_DRAWMODE=UPDATE seems more efficient and works for animations
 ## but doesn't appear to work when animations are disabled
 ## FULLSCREEN appears to work for animations being disabled
-GFX_DRAWMODE=FULLSCREEN
+## NOTE: When Animations are enabled, FULLSCREEN is used anyways by the server
+## so getting UPDATE to work only benefits when Animations are disabled.
+#GFX_DRAWMODE=FULLSCREEN
+GFX_DRAWMODE=UPDATE
 GFX_TEXTMODE=NONE
 ## handled in the java code
 xxVIDEO_ADVANCED_ASPECT=Source

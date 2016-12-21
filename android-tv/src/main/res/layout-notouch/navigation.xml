@@ -206,7 +206,7 @@
             android:tag="_switch_video"/>
 
             <ImageView
-                android:visibility="invisible"
+                android:visibility="visible"
                 android:id="@+id/nav_video_info"
                 style="@style/NavIconButton"
                 android:layout_column="9"
