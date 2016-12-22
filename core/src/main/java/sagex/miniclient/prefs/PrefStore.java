@@ -41,8 +41,9 @@ public interface PrefStore {
     void remove(String key);
 
     interface Keys {
-        String image_cache_size = "image_cache_size";
-        String disk_image_cache_size = "disk_image_cache_size";
+        String image_cache_size_mb = "image_cache_size_mb";
+        String disk_image_cache_size_mb = "disk_image_cache_size_mb";
+
         String cache_images_on_disk = "cache_images_on_disk";
         String use_bitmap_images = "use_bitmap_images";
 

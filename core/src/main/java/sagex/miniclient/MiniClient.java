@@ -48,6 +48,7 @@ public class MiniClient {
     private IBus eventBus;
     private ExecutorService backgroundService = null;
     private ServerInfo connectedServer;
+    private ImageCache imageCache;
 
     public MiniClient(MiniClientOptions options) {
         this.options = options;
@@ -161,6 +162,10 @@ public class MiniClient {
             log.debug("Server Address Lookup complete {}", si);
         }
         this.connectedServer=si;
+        if (imageCache!=null) {
+            imageCache.cleanUp();
+        }
+        imageCache = new ImageCache(this);
         MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si);
         connection.connect();
     }
@@ -169,6 +174,9 @@ public class MiniClient {
         if (currentConnection != null) {
             currentConnection.close();
             currentConnection = null;
+        }
+        if (imageCache!=null) {
+            imageCache.cleanUp();
         }
     }
 
@@ -201,5 +209,9 @@ public class MiniClient {
 
     public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs) {
         options.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
+    }
+
+    public ImageCache getImageCache() {
+        return imageCache;
     }
 }

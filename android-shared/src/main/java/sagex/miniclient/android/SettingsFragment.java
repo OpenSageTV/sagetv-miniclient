@@ -20,6 +20,7 @@ import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.ClientIDGenerator;
+import sagex.miniclient.util.Utils;
 
 
 /**
@@ -66,6 +67,27 @@ public class SettingsFragment extends PreferenceFragment {
                 }
             });
 
+            final Preference memCache = findPreference(Keys.image_cache_size_mb);
+            memCache.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    if (MiniclientApplication.get(getActivity()).getClient().getImageCache()!=null)
+                        MiniclientApplication.get(getActivity()).getClient().getImageCache().reloadSettings();
+                    return true;
+                }
+            });
+
+            final Preference diskCache = findPreference(Keys.disk_image_cache_size_mb);
+            diskCache.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    if (MiniclientApplication.get(getActivity()).getClient().getImageCache()!=null)
+                        MiniclientApplication.get(getActivity()).getClient().getImageCache().reloadSettings();
+                    return true;
+                }
+            });
+
+
             updateSummary(loglevel, R.string.summary_list_loglevels_preference, prefs.getString(PrefStore.Keys.log_level, "debug"));
             updateSummary(streammode, R.string.summary_list_streaming_mode_preference, prefs.getString(PrefStore.Keys.streaming_mode, "dynamic"));
 
@@ -87,6 +109,9 @@ public class SettingsFragment extends PreferenceFragment {
             Dimension size = getMaxScreenSize();
             final Preference screensize = findPreference("screensize");
             screensize.setSummary(size.getWidth()+"x"+size.getHeight());
+
+            final Preference appmemory = findPreference("appmemory");
+            appmemory.setSummary(Utils.toMB(Runtime.getRuntime().maxMemory())+"mb");
 
             final EditTextPreference clientid = (EditTextPreference) findPreference(Keys.client_id);
             final ClientIDGenerator gen = new ClientIDGenerator();

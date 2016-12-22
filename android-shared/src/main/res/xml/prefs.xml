@@ -81,6 +81,25 @@
             android:summary="@string/use_tv_ui_on_tablet_summary"
             android:title="@string/use_tv_ui_on_tablet_title"/>
 
+        <ListPreference
+            android:defaultValue="64"
+            android:dialogTitle="@string/dialog_title_list_mem_cache_preference"
+            android:entries="@array/entries_list_mem_cache_preference"
+            android:entryValues="@array/entryvalues_list_mem_cache_preference"
+            android:key="image_cache_size_mb"
+            android:summary="@string/summary_list_mem_cache_preference"
+            android:title="@string/title_list_mem_cache_preference"/>
+
+        <ListPreference
+            android:defaultValue="512"
+            android:dialogTitle="@string/dialog_title_list_disk_cache_preference"
+            android:entries="@array/entries_list_disk_cache_preference"
+            android:entryValues="@array/entryvalues_list_disk_cache_preference"
+            android:key="disk_image_cache_size_mb"
+            android:summary="@string/summary_list_disk_cache_preference"
+            android:title="@string/title_list_disk_cache_preference"/>
+
+
     </PreferenceCategory>
 
 
@@ -167,10 +186,15 @@
             android:title="Device IP Address"/>
 
         <EditTextPreference
-
             android:key="screensize"
             android:summary=""
             android:title="Native UI Resolution"/>
+
+        <EditTextPreference
+            android:key="appmemory"
+            android:summary=""
+            android:title="Application Available Memory"/>
+
 
     </PreferenceCategory>
 

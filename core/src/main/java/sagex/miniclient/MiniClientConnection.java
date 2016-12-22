@@ -161,17 +161,16 @@ public class MiniClientConnection implements SageTVInputCallback {
     public static int HIGH_SECURITY_FS = 3;
     public static int MED_SECURITY_FS = 2;
     public static int LOW_SECURITY_FS = 1;
-    protected long offlineImageCacheLimit;
-    protected java.io.File cacheDir;
+
     private MiniClient client;
     private UIRenderer<?> uiRenderer;
     private MediaCmd myMedia;
     private java.net.Socket gfxSocket;
     private java.net.Socket mediaSocket;
-    //    private String serverName;
-//    private int port;
+
     private String myID;
     private java.io.DataInputStream gfxIs;
+
     // This is the secret symmetric key encrypted with the public key
     private byte[] encryptedSecretKeyBytes;
     private java.security.PublicKey serverPublicKey;
@@ -244,12 +243,6 @@ public class MiniClientConnection implements SageTVInputCallback {
         this.myID = myID;
 
         this.msi = msi;
-        offlineImageCacheLimit = client.properties().getLong(PrefStore.Keys.disk_image_cache_size, 100000000);
-        if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true)) {
-            cacheDir = new java.io.File(client.options().getCacheDir(), "imgcache");
-            cacheDir.mkdir();
-        } else
-            cacheDir = null;
         usesAdvancedImageCaching = false;
     }
 
@@ -506,7 +499,6 @@ public class MiniClientConnection implements SageTVInputCallback {
             eventRouterThread.interrupt();
         }
 
-        cleanupOfflineCache();
         client = null;
     }
 
@@ -772,7 +764,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                         else
                             propVal = "FALSE";
                     } else if ("OFFLINE_CACHE_CONTENTS".equals(propName)) {
-                        propVal = getOfflineCacheList();
+                        propVal = client.getImageCache().getOfflineCacheList();
                     } else if ("ADVANCED_IMAGE_CACHING".equals(propName)) {
                         propVal = "TRUE";
                         usesAdvancedImageCaching = true;
@@ -2112,110 +2104,9 @@ public class MiniClientConnection implements SageTVInputCallback {
         return ("127.0.0.1".equals(msi.address) || "localhost".equals(msi.address));
     }
 
-    public String getWindowTitle() {
-        if (isLocahostConnection())
-            return "SageTV";
-        else
-            return "SageTV Placeshifter";
-    }
-
-    public java.io.File getCachedImageFile(String resourceID) {
-        return getCachedImageFile(resourceID, true);
-    }
-
-    public java.io.File getCachedImageFile(String resourceID, boolean verify) {
-        if (cacheDir == null)
-            return null;
-        java.io.File cachedFile = new java.io.File(cacheDir, resourceID);
-        return (!verify || (cachedFile.isFile() && cachedFile.length() > 0)) ? cachedFile : null;
-    }
-
-    public void saveCacheData(String resourceID, byte[] data, int offset, int length) {
-        if (cacheDir == null)
-            return;
-        java.io.FileOutputStream fos = null;
-        try {
-            fos = new java.io.FileOutputStream(new java.io.File(cacheDir, resourceID));
-            fos.write(data, offset, length);
-        } catch (java.io.IOException ioe) {
-            log.error("ERROR writing cache data to file", ioe);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (Exception e) {
-                }
-            }
-        }
-    }
-
-    private String getOfflineCacheList() {
-        if (cacheDir == null)
-            return "";
-        StringBuffer sb = new StringBuffer();
-        java.io.File[] cacheFiles = cacheDir.listFiles();
-        for (int i = 0; cacheFiles != null && i < cacheFiles.length; i++) {
-            sb.append(cacheFiles[i].getName());
-            sb.append("|");
-        }
-        return sb.toString();
-    }
-
-    private void cleanupOfflineCache() {
-        // Cleanup the offline cache...just dump the oldest half of it
-        java.io.File[] cacheFiles = cacheDir.listFiles();
-        long size = 0;
-        if (cacheFiles == null) return;
-        for (int i = 0; i < cacheFiles.length; i++) {
-            size += cacheFiles[i].length();
-            if (size > offlineImageCacheLimit) {
-                log.info("Dumping offline image cache because it's exceeded the maximum size");
-                java.util.Arrays.sort(cacheFiles, new java.util.Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        java.io.File f1 = (java.io.File) o1;
-                        java.io.File f2 = (java.io.File) o2;
-                        long l1 = f1.lastModified();
-                        long l2 = f2.lastModified();
-                        if (l1 < l2)
-                            return -1;
-                        else if (l1 > l2)
-                            return 1;
-                        else
-                            return 0;
-                    }
-                });
-                for (int j = 0; j < cacheFiles.length / 2; j++)
-                    cacheFiles[j].delete();
-                break;
-            }
-        }
-    }
 
     public UIRenderer<?> getUiRenderer() {
         return uiRenderer;
-    }
-
-    public void registerImageAccess(int handle) {
-        lruImageMap.put(handle, System.currentTimeMillis());
-    }
-
-    public void clearImageAccess(int handle) {
-        lruImageMap.remove(handle);
-    }
-
-    public int getOldestImage() {
-        java.util.Iterator walker = lruImageMap.entrySet().iterator();
-        Integer oldestHandle = null;
-        long oldestTime = Long.MAX_VALUE;
-        while (walker.hasNext()) {
-            java.util.Map.Entry ent = (java.util.Map.Entry) walker.next();
-            long currTime = ((Long) ent.getValue()).longValue();
-            if (currTime < oldestTime) {
-                oldestTime = currTime;
-                oldestHandle = (Integer) ent.getKey();
-            }
-        }
-        return (oldestHandle == null) ? 0 : oldestHandle.intValue();
     }
 
     public MiniPlayerPlugin newPlayerPlugin() {

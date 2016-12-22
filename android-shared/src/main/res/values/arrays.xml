@@ -40,4 +40,36 @@
         <item>8</item>
         <item>10</item>
     </string-array>
+
+    <string-array name="entries_list_mem_cache_preference">
+        <item>32 mb</item>
+        <item>64 mb</item>
+        <item>96 mb</item>
+        <item>128 mb</item>
+        <item>160 mb</item>
+        <item>192 mb</item>
+    </string-array>
+    <string-array name="entryvalues_list_mem_cache_preference">
+        <item>32</item>
+        <item>64</item>
+        <item>96</item>
+        <item>128</item>
+        <item>160</item>
+        <item>192</item>
+    </string-array>
+
+    <string-array name="entries_list_disk_cache_preference">
+        <item>128 mb</item>
+        <item>256 mb</item>
+        <item>512 mb</item>
+        <item>1024 mb</item>
+    </string-array>
+    <string-array name="entryvalues_list_disk_cache_preference">
+        <item>128</item>
+        <item>256</item>
+        <item>512</item>
+        <item>1024</item>
+    </string-array>
+
+
 </resources>

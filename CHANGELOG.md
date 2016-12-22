@@ -1,3 +1,6 @@
+**1.3 **
+- Added Ability to change/set the amount of memory used for image caching
+
 **1.2.3 (2016-12-19)**
 - AR Fixes
 

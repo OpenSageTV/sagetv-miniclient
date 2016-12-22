@@ -23,6 +23,7 @@ import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.UIRenderer;
+import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
 
 public class GFXCMD2 {
@@ -104,15 +105,9 @@ public class GFXCMD2 {
     private static final Logger log = LoggerFactory.getLogger(GFXCMD2.class);
     private final MiniClient client;
     // mode, sx, sy, swidth, sheight, ox, oy, owidth, oheight, alpha, activewin
-    protected long offlineImageCacheLimit;
-    protected java.io.File cacheDir;
     private UIRenderer<?> windowManager;
     private MiniClientConnection myConn;
-    private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
-    private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
     private int handleCount = 2;
-    private long imageCacheSize;
-    private long imageCacheLimit;
     private boolean cursorHidden;
     private String lastImageResourceID;
     private int lastImageResourceIDHandle;
@@ -121,14 +116,6 @@ public class GFXCMD2 {
         this.client = client;
         this.windowManager = client.getUIRenderer();
         this.myConn = client.getCurrentConnection();
-        imageCacheLimit = client.properties().getLong(PrefStore.Keys.image_cache_size, 32000000);
-
-        offlineImageCacheLimit = client.properties().getLong(PrefStore.Keys.disk_image_cache_size, 100000000);
-        if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true)) {
-            cacheDir = new java.io.File(client.options().getCacheDir(), "imgcache");
-            cacheDir.mkdir();
-        } else
-            cacheDir = null;
     }
 
     public static int readInt(int pos, byte[] cmddata) {
@@ -416,8 +403,8 @@ public class GFXCMD2 {
                     srcwidth = readInt(28, cmddata);
                     srcheight = readInt(32, cmddata);
                     blend = readInt(36, cmddata);
-                    windowManager.drawTexture(x, y, width, height, handle, imageMap.get(handle), srcx, srcy, srcwidth, srcheight, blend);
-                    registerImageAccess(handle);
+                    windowManager.drawTexture(x, y, width, height, handle, client.getImageCache().get(handle), srcx, srcy, srcwidth, srcheight, blend);
+                    client.getImageCache().registerImageAccess(handle);
                 } else {
                     log.warn("Invalid len for GFXCMD_DRAWTEXTURED: {}", len);
                 }
@@ -444,14 +431,12 @@ public class GFXCMD2 {
                     int imghandle = handleCount++;
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
-                    if (width * height * 4 + imageCacheSize > imageCacheLimit)
+                    if (!client.getImageCache().canCache(width, height))
                         imghandle = 0;
                     else {
                         sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
-                        imageMap.put(imghandle, img);
-                        imageCacheSize += width * height * 4;
+                        client.getImageCache().put(imghandle, img, width, height);
                     }
-                    // imghandle=STBGFX.GFX_loadImage(width, height);
                     hasret[0] = 1;
                     return imghandle;
                 } else {
@@ -466,23 +451,10 @@ public class GFXCMD2 {
                     int imghandle = readInt(0, cmddata);
                     width = readInt(4, cmddata);
                     height = readInt(8, cmddata);
-                    while (width * height * 4 + imageCacheSize > imageCacheLimit) {
-                        // Keep freeing the oldest image until we have enough memory
-                        // to do this
-                        int oldestImage = getOldestImage();
-                        if (oldestImage != 0) {
-                            log.debug("Freeing image to make room in cache");
-                            unloadImage(oldestImage);
-                            postImageUnload(oldestImage);
-                        } else {
-                            log.error("ERROR cannot free enough from the cache to support loading a new image!!!");
-                            break;
-                        }
-                    }
+                    client.getImageCache().makeRoom(width, height);
                     sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
-                    imageMap.put(imghandle, img);
-                    imageCacheSize += width * height * 4;
-                    registerImageAccess(imghandle);
+                    client.getImageCache().put(imghandle, img, width, height);
+                    client.getImageCache().registerImageAccess(imghandle);
                     hasret[0] = 0;
                 } else {
                     log.warn("Invalid len for GFXCMD_LOADIMAGETARGETED: {}", len);
@@ -496,8 +468,7 @@ public class GFXCMD2 {
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
                     sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
-                    imageMap.put(imghandle, img);
-                    // imghandle=STBGFX.GFX_loadImage(width, height);
+                    client.getImageCache().put(imghandle, img, width, height);
                     hasret[0] = 1;
                     return imghandle;
                 } else {
@@ -517,7 +488,7 @@ public class GFXCMD2 {
                     // We don't actually use this, it's just for being sure we have
                     // enough room for allocation
                     int imghandle = 1;
-                    if (width * height * 4 + imageCacheSize > imageCacheLimit)
+                    if (!client.getImageCache().canCache(width, height))
                         imghandle = 0;
                     else if (len >= 12) {
                         // We've got enough room for it and there's a cache ID,
@@ -531,7 +502,7 @@ public class GFXCMD2 {
                                 // loadCompressedImage call so we know we're caching
                                 // the right thing
                                 lastImageResourceIDHandle = imghandle = Math.abs(lastImageResourceID.hashCode());
-                                java.io.File cachedFile = getCachedImageFile(rezName);
+                                java.io.File cachedFile = client.getImageCache().getCachedImageFile(rezName);
                                 if (cachedFile != null) {
                                     // We've got it locally in our cache! Read it
                                     // from there.
@@ -551,8 +522,7 @@ public class GFXCMD2 {
 
                                         log.debug("PREPIMAGE: CACHED: Loading {}", imghandle);
 
-                                        imageMap.put(imghandle, bi);
-                                        imageCacheSize += (width * height * 4);
+                                        client.getImageCache().put(imghandle, bi, width, height);
 
                                         hasret[0] = 1;
                                         return -1 * imghandle;
@@ -579,19 +549,7 @@ public class GFXCMD2 {
                     width = readInt(4, cmddata);
                     height = readInt(8, cmddata);
                     int strlen = readInt(12, cmddata);
-                    while (width * height * 4 + imageCacheSize > imageCacheLimit) {
-                        // Keep freeing the oldest image until we have enough memory
-                        // to do this
-                        int oldestImage = getOldestImage();
-                        if (oldestImage != 0) {
-                            log.debug("Freeing image to make room in cache");
-                            unloadImage(oldestImage);
-                            postImageUnload(oldestImage);
-                        } else {
-                            log.error("ERROR cannot free enough from the cache to support loading a new image!!!");
-                            break;
-                        }
-                    }
+                    client.getImageCache().makeRoom(width, height);
                     if (len >= 16) {
                         // We will not have this cached locally...but setup our vars
                         // to track it
@@ -600,7 +558,7 @@ public class GFXCMD2 {
                         lastImageResourceIDHandle = imghandle;
                         log.debug("Prepped targeted image with handle " + imghandle + " resource=" + rezName);
                     }
-                    registerImageAccess(imghandle);
+                    client.getImageCache().registerImageAccess(imghandle);
                     hasret[0] = 0;
                 } else {
                     log.warn("Invalid len for GFXCMD_PREPIMAGE: {}", len);
@@ -617,23 +575,11 @@ public class GFXCMD2 {
                     String rezName = new String(cmddata, 20, strlen - 1);
                     log.debug("imghandle=" + imghandle + " width=" + width + " height=" + height + " strlen=" + strlen
                             + " rezName=" + rezName);
-                    while (width * height * 4 + imageCacheSize > imageCacheLimit) {
-                        // Keep freeing the oldest image until we have enough memory
-                        // to do this
-                        int oldestImage = getOldestImage();
-                        if (oldestImage != 0) {
-                            log.debug("Freeing image to make room in cache");
-                            unloadImage(oldestImage);
-                            postImageUnload(oldestImage);
-                        } else {
-                            log.error("ERROR cannot free enough from the cache to support loading a new image!!!");
-                            break;
-                        }
-                    }
-                    registerImageAccess(imghandle);
+                    client.getImageCache().makeRoom(width, height);
+                    client.getImageCache().registerImageAccess(imghandle);
                     try {
                         log.debug("Loading resource from cache: {}", rezName);
-                        java.io.File cachedFile = getCachedImageFile(rezName);
+                        java.io.File cachedFile = client.getImageCache().getCachedImageFile(rezName);
                         if (cachedFile != null) {
                             // We've got it locally in our cache! Read it from
                             // there.
@@ -655,11 +601,10 @@ public class GFXCMD2 {
                                 // This load failed but the server thought it would
                                 // succeed, so we need to inform it that the image
                                 // is no longer loaded.
-                                postImageUnload(imghandle);
+                                client.getImageCache().postImageUnload(imghandle);
                                 myConn.postOfflineCacheChange(false, rezName);
                             } else {
-                                imageMap.put(imghandle, bi);
-                                imageCacheSize += width * height * 4;
+                                client.getImageCache().put(imghandle, bi, width, height);
                                 hasret[0] = 0;
                             }
                         } else {
@@ -667,7 +612,7 @@ public class GFXCMD2 {
                             // This load failed but the server thought it would
                             // succeed, so we need to inform it that the image is no
                             // longer loaded.
-                            postImageUnload(imghandle);
+                            client.getImageCache().postImageUnload(imghandle);
                             myConn.postOfflineCacheChange(false, rezName);
                         }
                     } catch (Exception e) {
@@ -683,8 +628,8 @@ public class GFXCMD2 {
                 if (len == 4) {
                     int handle;
                     handle = readInt(0, cmddata);
-                    unloadImage(handle);
-                    clearImageAccess(handle);
+                    client.getImageCache().unloadImage(handle);
+                    client.getImageCache().clearImageAccess(handle);
                 } else {
                     log.error("Invalid len for GFXCMD_UNLOADIMAGE: {}", len);
                 }
@@ -694,7 +639,7 @@ public class GFXCMD2 {
                 if (len == 4) {
                     int handle;
                     handle = readInt(0, cmddata);
-                    windowManager.setTargetSurface(handle, (handle != 0) ? imageMap.get(handle) : null);
+                    windowManager.setTargetSurface(handle, (handle != 0) ? client.getImageCache().get(handle) : null);
                 } else {
                     log.error("Invalid len for GFXCMD_SETTARGETSURFACE: {}", len);
                 }
@@ -802,7 +747,7 @@ public class GFXCMD2 {
                     int datalen = readInt(4 + namelen, cmddata);
                     if (len >= datalen + 8 + namelen) {
                         log.debug("Saving font {} to cache", name);
-                        saveCacheData(name.toString() + "-" + myConn.getServerName(), cmddata, 12 + namelen, datalen);
+                        client.getImageCache().saveCacheData(name.toString() + "-" + myConn.getServerName(), cmddata, 12 + namelen, datalen);
                     }
                 } else {
                     log.error("Invalid len for GFXCMD_LOADFONTSTREAM: {}", len);
@@ -824,8 +769,8 @@ public class GFXCMD2 {
                     handle = readInt(0, cmddata);
                     line = readInt(4, cmddata);
                     len2 = readInt(8, cmddata);
-                    windowManager.loadImageLine(handle, imageMap.get(handle), line, len2, cmddata);
-                    registerImageAccess(handle);
+                    windowManager.loadImageLine(handle, client.getImageCache().get(handle), line, len2, cmddata);
+                    client.getImageCache().registerImageAccess(handle);
                 } else {
                     log.error("Invalid len for GFXCMD_LOADIMAGELINE: {}", len);
                 }
@@ -846,7 +791,7 @@ public class GFXCMD2 {
                         //log.debug("LoadImageCompressed: {}", handle);
                         if (lastImageResourceID != null && lastImageResourceIDHandle == handle) {
                             //log.debug("LoadImageCompressed: {}, {}", handle, lastImageResourceID);
-                            cacheFile = getCachedImageFile(lastImageResourceID, false);
+                            cacheFile = client.getImageCache().getCachedImageFile(lastImageResourceID, false);
                             resID = lastImageResourceID;
                             if (cacheFile != null && (!cacheFile.isFile() || cacheFile.length() == 0))
                                 cacheAdd = true;
@@ -872,7 +817,7 @@ public class GFXCMD2 {
                         }
                         fos = null;
                     }
-                    registerImageAccess(handle);
+                    client.getImageCache().registerImageAccess(handle);
                     if (cacheFile != null) {
                         if (!myConn.doesUseAdvancedImageCaching()) {
                             handle = handleCount++;
@@ -884,8 +829,7 @@ public class GFXCMD2 {
                             //log.debug("LoadImageCompressed: {}, reading Cached File: {}", handle, cacheFile);
                             sagex.miniclient.uibridge.ImageHolder<?> img = null;
                             img = windowManager.readImage(cacheFile);
-                            imageMap.put(handle, img);
-                            imageCacheSize += img.getWidth() * img.getHeight() * 4;
+                            client.getImageCache().put(handle, img, img.getWidth(), img.getHeight());
                             if (deleteCacheFile)
                                 cacheFile.delete();
                             return handle;
@@ -914,13 +858,12 @@ public class GFXCMD2 {
                         hasret[0] = 1;
                     } else
                         hasret[0] = 0;
-                    sagex.miniclient.uibridge.ImageHolder srcImg = imageMap.get(srcHandle);
-                    if ((hasret[0] == 1 && destWidth * destHeight * 4 + imageCacheSize > imageCacheLimit) || srcImg == null)
+                    sagex.miniclient.uibridge.ImageHolder srcImg = client.getImageCache().get(srcHandle);
+                    if ((hasret[0] == 1 && !client.getImageCache().canCache(destWidth, destHeight)) || srcImg == null)
                         rvHandle = 0;
                     else {
                         sagex.miniclient.uibridge.ImageHolder destImg = windowManager.newImage(destWidth, destHeight);
-                        imageMap.put(rvHandle, destImg);
-                        imageCacheSize += destWidth * destHeight * 4;
+                        client.getImageCache().put(rvHandle, destImg, destWidth, destHeight);
                         windowManager.xfmImage(srcHandle, srcImg, destHandle, destImg, destWidth, destHeight, maskCornerArc);
                     }
                     return rvHandle;
@@ -961,10 +904,6 @@ public class GFXCMD2 {
         return 0;
     }
 
-    private void postImageUnload(int oldestImage) {
-        myConn.postImageUnload(oldestImage);
-    }
-
     public boolean createVideo(int width, int height, int format) {
         return windowManager.createVideo(width, height, format);
     }
@@ -973,115 +912,8 @@ public class GFXCMD2 {
         return windowManager.updateVideo(frametype, buf);
     }
 
-    private void unloadImage(int handle) {
-        ImageHolder bi = imageMap.get(handle);
-        if (bi != null)
-            imageCacheSize -= bi.getWidth() * bi.getHeight() * 4;
-        imageMap.remove(handle);
-        if (bi != null)
-            bi.flush();
-        clearImageAccess(handle);
-        windowManager.unloadImage(handle, bi);
-    }
-
     public String getVideoOutParams() {
         return null;
-    }
-
-    public java.io.File getCachedImageFile(String resourceID) {
-        return getCachedImageFile(resourceID, true);
-    }
-
-    public java.io.File getCachedImageFile(String resourceID, boolean verify) {
-        if (cacheDir == null)
-            return null;
-        java.io.File cachedFile = new java.io.File(cacheDir, resourceID);
-        return (!verify || (cachedFile.isFile() && cachedFile.length() > 0)) ? cachedFile : null;
-    }
-
-    public void saveCacheData(String resourceID, byte[] data, int offset, int length) {
-        if (cacheDir == null)
-            return;
-        java.io.FileOutputStream fos = null;
-        try {
-            log.debug("Writing Cached Image: {}", resourceID);
-            fos = new java.io.FileOutputStream(new java.io.File(cacheDir, resourceID));
-            fos.write(data, offset, length);
-            fos.flush();
-        } catch (java.io.IOException ioe) {
-            log.error("ERROR writing cache data to file", ioe);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (Exception e) {
-                }
-            }
-        }
-    }
-
-    private String getOfflineCacheList() {
-        if (cacheDir == null)
-            return "";
-        StringBuilder sb = new StringBuilder();
-        java.io.File[] cacheFiles = cacheDir.listFiles();
-        for (int i = 0; cacheFiles != null && i < cacheFiles.length; i++) {
-            sb.append(cacheFiles[i].getName());
-            sb.append("|");
-        }
-        return sb.toString();
-    }
-
-    private void cleanupOfflineCache() {
-        // Cleanup the offline cache...just dump the oldest half of it
-        java.io.File[] cacheFiles = cacheDir.listFiles();
-        long size = 0;
-        for (int i = 0; i < cacheFiles.length; i++) {
-            size += cacheFiles[i].length();
-            if (size > offlineImageCacheLimit) {
-                log.info("Dumping offline image cache because it's exceeded the maximum size");
-                java.util.Arrays.sort(cacheFiles, new java.util.Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        java.io.File f1 = (java.io.File) o1;
-                        java.io.File f2 = (java.io.File) o2;
-                        long l1 = f1.lastModified();
-                        long l2 = f2.lastModified();
-                        if (l1 < l2)
-                            return -1;
-                        else if (l1 > l2)
-                            return 1;
-                        else
-                            return 0;
-                    }
-                });
-                for (int j = 0; j < cacheFiles.length / 2; j++)
-                    cacheFiles[j].delete();
-                break;
-            }
-        }
-    }
-
-    public void registerImageAccess(int handle) {
-        lruImageMap.put(handle, System.currentTimeMillis());
-    }
-
-    public void clearImageAccess(int handle) {
-        lruImageMap.remove(handle);
-    }
-
-    public int getOldestImage() {
-        java.util.Iterator walker = lruImageMap.entrySet().iterator();
-        Integer oldestHandle = null;
-        long oldestTime = Long.MAX_VALUE;
-        while (walker.hasNext()) {
-            java.util.Map.Entry ent = (java.util.Map.Entry) walker.next();
-            long currTime = ((Long) ent.getValue()).longValue();
-            if (currTime < oldestTime) {
-                oldestTime = currTime;
-                oldestHandle = (Integer) ent.getKey();
-            }
-        }
-        return (oldestHandle == null) ? 0 : oldestHandle;
     }
 
     public Dimension getScreenSize() {

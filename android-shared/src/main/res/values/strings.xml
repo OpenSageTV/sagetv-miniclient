@@ -87,4 +87,10 @@
     <string name="summary_disable_audio_passthrough_preference">If enabled, then ffmpeg will be used to decode AC-3 audio.</string>
     <string name="title_debug_ar_preference">Debug Aspect Ratios</string>
     <string name="summary_debug_ar_preference">Turns on logging and UI tools for debugging Aspect Ratios</string>
+    <string name="dialog_title_list_mem_cache_preference">Set Memory Image Cache</string>
+    <string name="title_list_mem_cache_preference">Memory Image Cache</string>
+    <string name="summary_list_mem_cache_preference">Sets the amount of Memory to use for Image Caching.  Higher values will result in better peformance, especially with Fanart enabled.</string>
+    <string name="title_list_disk_cache_preference">Disk Cache for Images</string>
+    <string name="summary_list_disk_cache_preference">Amount of disk space to use for caching images</string>
+    <string name="dialog_title_list_disk_cache_preference">Set Disk Image Cache</string>
 </resources>
