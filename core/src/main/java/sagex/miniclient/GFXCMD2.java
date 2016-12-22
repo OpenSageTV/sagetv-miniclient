@@ -18,12 +18,9 @@ package sagex.miniclient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
-import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.UIRenderer;
-import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
 
 public class GFXCMD2 {
@@ -431,9 +428,9 @@ public class GFXCMD2 {
                     int imghandle = handleCount++;
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
-                    if (!client.getImageCache().canCache(width, height))
+                    if (!client.getImageCache().canCache(width, height)) {
                         imghandle = 0;
-                    else {
+                    } else {
                         sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.loadImage(width, height);
                         client.getImageCache().put(imghandle, img, width, height);
                     }
@@ -512,7 +509,7 @@ public class GFXCMD2 {
                                             // It doesn't match the cache
                                             log.debug("PREPIMAGE: CACHE ID verification failed for rezName={} cacheSize={}x{} reqSize={}x{}",
                                                     rezName, bi.getWidth(), bi.getHeight(), width, height);
-                                            bi.flush();
+                                            bi.dispose();
                                             cachedFile.delete();
                                         }
                                         // else we failed loading it from the cache
@@ -593,7 +590,7 @@ public class GFXCMD2 {
                                     // It doesn't match the cache
                                     log.debug("LOADIMAGECACHE: CACHE ID verification failed for rezName={} cacheSize={}x{} reqSize={}x{}",
                                             rezName, bi.getWidth(), bi.getHeight(), width, height);
-                                    bi.flush();
+                                    bi.dispose();
                                     cachedFile.delete();
                                 }
                                 // else we failed loading it from the cache so we

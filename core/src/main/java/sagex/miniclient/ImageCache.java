@@ -26,14 +26,31 @@ public class ImageCache {
         reloadSettings();
     }
 
+    /**
+     * NOTE: in the cases where this is used, if this returns false, then sagetv wills start sending
+     * unload image requests to make room.
+     *
+     * @param width
+     * @param height
+     * @return
+     */
     public boolean canCache(int width, int height) {
-        return width * height * 4 + imageCacheSize <= imageCacheLimit;
+        boolean canDo =  width * height * 4 + imageCacheSize <= imageCacheLimit;
+        if (!canDo) {
+            log.debug("Can't cache {}x{} ({}mb).  Not enough room.", width, height, Utils.toMB(width*height*4));
+        }
+        return canDo;
     }
 
     public void cleanUp() {
         log.debug("Resetting up in-memory cache states");
         imageCacheSize=0;
         lruImageMap.clear();
+        if (imageMap.size()>0) {
+            for (ImageHolder ih : imageMap.values()) {
+                ih.dispose();
+            }
+        }
         imageMap.clear();
         cleanupOfflineCache();
     }
@@ -89,7 +106,7 @@ public class ImageCache {
             if (VerboseLogging.DETAILED_IMAGE_CACHE) {
                 log.debug("Unloaded: {}, {}x{} freeing {}mb.  Cache: {}mb/{}mb", handle, bi.getWidth(), bi.getHeight(), Utils.toMB((bi.getWidth() * bi.getHeight() * 4)), Utils.toMB(imageCacheSize), Utils.toMB(imageCacheLimit));
             }
-            bi.flush();
+            bi.dispose();
         } else {
             if (VerboseLogging.DETAILED_IMAGE_CACHE) {
                 log.debug("Unloaded: {}, but was not in the cache", handle);

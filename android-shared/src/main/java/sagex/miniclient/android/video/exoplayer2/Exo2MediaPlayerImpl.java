@@ -158,7 +158,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         super.flush();
         if (player == null) return;
 //        player.sendMessages(ExoPlayer.ExoPlayerMessage);
-//        ((SageTVPlayer) player).flush();
+//        ((SageTVPlayer) player).dispose();
         player.seekTo(Long.MIN_VALUE);
     }
 

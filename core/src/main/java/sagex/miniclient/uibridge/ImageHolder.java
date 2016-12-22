@@ -7,10 +7,6 @@ public class ImageHolder<T> extends Holder<T> {
     public ImageHolder() {
     }
 
-//    public ImageHolder(T val) {
-//        this(val, 0, 0);
-//    }
-
     public ImageHolder(T img, int width, int height) {
         super(img);
         this.width = width;
@@ -26,6 +22,13 @@ public class ImageHolder<T> extends Holder<T> {
     }
 
     // release resources for this image
-    public void flush() {
+    public void dispose() {
+        if (get() instanceof  Disposable) {
+            try {
+                ((Disposable) get()).dispose();
+            } catch (Throwable t) {
+            }
+        }
+        set(null);
     }
 }

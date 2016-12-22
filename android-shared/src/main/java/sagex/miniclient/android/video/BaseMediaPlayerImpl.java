@@ -144,7 +144,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     /**
      * Delegatest the media time to the actual player implementation.  lastServerTime is passed
-     * so that if the player needs to adjust the time based on the last time the buffer had flush
+     * so that if the player needs to adjust the time based on the last time the buffer had dispose
      * then it can use this value.
      *
      * @param lastServerTime
@@ -172,7 +172,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         }
         if (flushed && mt < 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                log.debug("getMediaTimeMillis() is {} after a flush.  Using lastMediaTime: {}, until data shows up.", mt, lastMediaTime);
+                log.debug("getMediaTimeMillis() is {} after a dispose.  Using lastMediaTime: {}, until data shows up.", mt, lastMediaTime);
             }
             return lastMediaTime;
         }
@@ -349,7 +349,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void flush() {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("flush()");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("dispose()");
         if (dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).flush();
         }

@@ -527,6 +527,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         if (bi != null && bi.get() != null) {
             log.debug("Unloading Image: {}", bi);
             bi.get().dispose();
+            bi.dispose();
         }
     }
 

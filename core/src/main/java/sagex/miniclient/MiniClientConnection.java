@@ -1471,6 +1471,7 @@ public class MiniClientConnection implements SageTVInputCallback {
         if (performingReconnect)
             return;
         synchronized (eventChannel) {
+
             try {
                 eventChannel.write(IMAGE_UNLOAD_REPLY_TYPE); // repaint event
                 // code

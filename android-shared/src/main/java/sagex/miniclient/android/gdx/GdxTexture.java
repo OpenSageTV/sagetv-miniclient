@@ -13,10 +13,12 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sagex.miniclient.uibridge.Disposable;
+
 /**
  * Created by seans on 26/09/15.
  */
-public class GdxTexture {
+public class GdxTexture implements Disposable {
     private static final Logger log = LoggerFactory.getLogger(GdxTexture.class);
 
     int width;

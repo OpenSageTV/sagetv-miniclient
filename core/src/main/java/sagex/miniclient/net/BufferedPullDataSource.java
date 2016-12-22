@@ -65,7 +65,7 @@ public class BufferedPullDataSource extends SimplePullDataSource {
             if (VerboseLogging.DATASOURCE_LOGGING)
                 log.debug("Filling Buffer with {} bytes at postion {}", len, position);
             // if might be more efficient to use a Circular Buffer, but right now I don't have the
-            // time to work in that logic :(, so we just flush and fill.
+            // time to work in that logic :(, so we just dispose and fill.
             flush();
             bytesRead = fillBuffer(position);
             if (bytesRead < 0) return -1;
