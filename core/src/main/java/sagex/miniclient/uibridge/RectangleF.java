@@ -203,4 +203,9 @@ public class RectangleF {
         this.height=this.width/ar;
         return this;
     }
+
+    public RectangleF updateWidthUsingAspectRatio(float ar) {
+        this.width=this.height*ar;
+        return this;
+    }
 }

@@ -82,7 +82,13 @@ public class AspectModeManager {
                 // video is 16/9, so make it fit inside the screen as a 16/9 window
                 return AspectHelper.fitInside(AspectHelper.RectF_16_9.copy(), screen);
             } else {
-                return AspectHelper.fitInside(videoInfo.size, screen);
+                // we have a 4/3 see if the actual rect is less than 4/3
+                if (videoInfo.size.getAR() < videoInfo.aspectRatio) {
+                    // stretch the video to 4/3 if the actual video is not really 4/3
+                    return AspectHelper.fitInside(videoInfo.size.copy().updateWidthUsingAspectRatio(AspectHelper.ar_4_3), screen);
+                } else {
+                    return AspectHelper.fitInside(videoInfo.size, screen);
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
-**1.3 **
+**1.2.4 (2016-12-22)**
 - Added Ability to change/set the amount of memory used for image caching
+- Another aspect ratio fix for 4/3 content
 
 **1.2.3 (2016-12-19)**
 - AR Fixes
