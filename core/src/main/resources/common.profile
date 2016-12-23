@@ -8,12 +8,9 @@ GFX_SUPPORTED_ASPECTS=16\:9
 ## FULLSCREEN appears to work for animations being disabled
 ## NOTE: When Animations are enabled, FULLSCREEN is used anyways by the server
 ## so getting UPDATE to work only benefits when Animations are disabled.
-#GFX_DRAWMODE=FULLSCREEN
-GFX_DRAWMODE=UPDATE
+GFX_DRAWMODE=FULLSCREEN
 GFX_TEXTMODE=NONE
 ## handled in the java code
-xxVIDEO_ADVANCED_ASPECT=Source
-xxVIDEO_ADVANCED_ASPECT_LIST=Source;Fill;Zoom;Stretch
 GFX_HIRES_SURFACES=TRUE
 GFX_VIDEO_MASKS=31
 OPENURL_INIT=TRUE

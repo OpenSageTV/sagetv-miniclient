@@ -1,3 +1,6 @@
+**1.2.5 (2016-12-23)**
+- Fixed regression issue when Animations are disabled
+
 **1.2.4 (2016-12-22)**
 - Added Ability to change/set the amount of memory used for image caching
 - Another aspect ratio fix for 4/3 content
