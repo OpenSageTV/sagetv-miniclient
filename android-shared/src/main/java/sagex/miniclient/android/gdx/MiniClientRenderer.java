@@ -80,7 +80,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     Batch batch;
     Camera camera;
     Viewport viewport;
-    ShapeRenderer shapeRenderer;
+    SageShapeRenderer shapeRenderer;
     // logging stuff
     boolean logFrameBuffer = VerboseLogging.DETAILED_GFX_TEXTURES;
     boolean logFrameTime = false;
@@ -149,7 +149,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
-        shapeRenderer = new ShapeRenderer();
+        shapeRenderer = new SageShapeRenderer();
         Gdx.graphics.setContinuousRendering(false);
     }
 
@@ -423,41 +423,30 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+    public void drawRoundRect(final int x, final int y, final int width, final int height, int thickness, final int arcRadius, final int argbTL, final int argbTR, final int argbBR, final int argbBL, int clipX, int clipY, int clipW, int clipH) {
         // TODO: make it rounded (libgdx support arcs, curves, and lines, just need to figure out the right combination)
         drawRect(x, y, width, height, thickness, argbTL, argbTR, argbBR, argbBL);
     }
 
     @Override
     public void fillRoundRect(final int x, final int y, final int width, final int height, final int arcRadius, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-//        invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                batch.end();
-//
-//                camera.update();
-//                shapeRenderer.setColor(getColor(argbTL));
-//                shapeRenderer.setProjectionMatrix(camera.combined);
-//                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-//
-//                shapeRenderer.rect(x, Y(y, height) + arcRadius, width, height - (2 * arcRadius));
-//
-//                shapeRenderer.rect(x + arcRadius, Y(y, height), width - (2 * arcRadius), height);
-//
-//                shapeRenderer.circle(x + arcRadius, Y(y, height) + arcRadius, arcRadius);
-//
-//                shapeRenderer.circle(x + arcRadius, Y(y, height) + height - arcRadius, arcRadius);
-//
-//                shapeRenderer.circle(x + width - arcRadius, Y(y, height) + arcRadius, arcRadius);
-//
-//                shapeRenderer.circle(x+width-arcRadius, Y(y,height)+height-arcRadius, arcRadius);
-//
-//                shapeRenderer.end();
-//
-//                batch.begin();
-//            }
-//        });
-        fillRect(x, y, width, height, argbTL, argbTR, argbBR, argbBL);
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                batch.end();
+
+                camera.update();
+                shapeRenderer.setProjectionMatrix(camera.combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                Color c = shapeRenderer.getColor();
+                shapeRenderer.setColor(getColor(argbTL));
+                shapeRenderer.roundedRect(x,Y(y, height),width,height,arcRadius);
+                shapeRenderer.setColor(c);
+                shapeRenderer.end();
+
+                batch.begin();
+            }
+        });
     }
 
     private Color getColor(int color) {

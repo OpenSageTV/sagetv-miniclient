@@ -1,3 +1,6 @@
+**1.2.6 (2017-01-08)**
+- Fixed UI rendering issue that affected SageMC
+
 **1.2.5 (2016-12-23)**
 - Fixed regression issue when Animations are disabled
 
