@@ -35,9 +35,9 @@ public class ImageCache {
      * @return
      */
     public boolean canCache(int width, int height) {
-        boolean canDo =  width * height * 4 + imageCacheSize <= imageCacheLimit;
+        boolean canDo =  (width * height * 4 + imageCacheSize) <= imageCacheLimit;
         if (!canDo) {
-            log.debug("Can't cache {}x{} ({}mb).  Not enough room.", width, height, Utils.toMB(width*height*4));
+            log.debug("Can't cache {}x{} ({}mb).  Not enough room.  Cache Size: {}; Cache Limit: {}", width, height, Utils.toMB(width*height*4), Utils.toMB(imageCacheSize), Utils.toMB(imageCacheLimit));
         }
         return canDo;
     }
@@ -56,10 +56,18 @@ public class ImageCache {
     }
 
     public ImageHolder get(int handle) {
-        return imageMap.get(handle);
+        ImageHolder h = imageMap.get(handle);
+        if (h != null && handle!=h.getHandle()) {
+            log.error("ImageCache: Error: We asked for {}, but got {}", handle, h.getHandle());
+
+        }
+        return h;
     }
 
     public void put(int imghandle, ImageHolder<?> img, int width, int height) {
+        if (img.getHandle()!= imghandle) {
+            log.warn("ImageCache.put({}) has image with different handle {}", imghandle, img.getHandle(), new Exception());
+        }
         imageMap.put(imghandle, img);
         imageCacheSize += width * height * 4;
         if (VerboseLogging.DETAILED_IMAGE_CACHE) {

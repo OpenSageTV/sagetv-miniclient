@@ -38,6 +38,7 @@ import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
+import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
@@ -81,10 +82,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     Viewport viewport;
     ShapeRenderer shapeRenderer;
     // logging stuff
-    boolean logFrameBuffer = false;
+    boolean logFrameBuffer = VerboseLogging.DETAILED_GFX_TEXTURES;
     boolean logFrameTime = false;
     boolean logTextureTime = false;
-    private boolean logTexture = false;
+    private boolean logTexture = VerboseLogging.DETAILED_GFX_TEXTURES;
     long longestTextureTime = 0;
     long totalTextureTime = 0;
     long frameTime = 0;
@@ -93,7 +94,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     boolean ready = false;
     boolean inFrame=false;
     // Current Surface (when surfaces are enabled)
-    GdxTexture currentSurface = null;
+    ImageHolder<GdxTexture> currentSurface = null;
     // render queues
     final private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
@@ -363,7 +364,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
+                if (VerboseLogging.DETAILED_GFX) log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
 
                 batch.end();
                 camera.update();
@@ -467,7 +468,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void drawTexture(final int x, final int y, final int width, final int height, int handle, final ImageHolder<GdxTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
+    public void drawTexture(final int x, final int y, final int width, final int height, final int handle, final ImageHolder<GdxTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
         state = STATE_MENU;
         invokeLater(new Runnable() {
             @Override
@@ -491,9 +492,18 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 int h = Math.abs(height);
 
                 if (t != null) {
-                    batch.draw(t, x, Y(y, h), w, h, srcx, srcy, srcwidth, srcheight, false, img.get().isFrameBuffer);
-                    if (logTexture)
-                        log.debug("Texture: {},{} {}x{} (buffer:{})", x,y, w,h,img.get().isFrameBuffer);
+                    float dy = Y(y, h);
+                    // when the src is fb we need to not remap the y, since it's already inverted
+                    float sy = !img.get().isFrameBuffer?srcy:Y(srcy,srcheight);
+                    batch.draw(t, x, dy, w, h, srcx, (int)sy, srcwidth, srcheight, false, img.get().isFrameBuffer);
+                    if (logTexture) {
+                        if (img.get().isFrameBuffer) {
+                            log.debug("drawFramebufferTexture[({},{}) -> {}]: Pos: {},{}; Size: {}x{};", handle, img.getHandle(), currentSurface != null ? currentSurface.getHandle() : 0, x, dy, w, h);
+                        } else {
+                            log.debug("drawTexture[{} -> {}]: Pos: {},{}; Size: {}x{};  Src: Pos: {},{}; Size: {},{}", handle, currentSurface != null ? currentSurface.getHandle() : 0, x, dy, w, h, srcx, sy, srcwidth, srcheight);
+                        }
+
+                    }
                 } else {
                     log.warn("We got a null texture for {}", img);
                 }
@@ -538,32 +548,45 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         // need to keep a reference to the previous batch
         // need to set the MAIN surface to be this fbo
         if (logFrameBuffer)
-            log.debug("Creating Framebuffer[" + handle + "]: " + width + "x" + height);
+            log.debug("createSurface["+handle+"]: Creating Framebuffer: " + width + "x" + height);
         final GdxTexture t = new GdxTexture(width, height);
-        ImageHolder<GdxTexture> h = new ImageHolder<>(t, width, height);
+        final ImageHolder<GdxTexture> h = new ImageHolder<>(t, width, height);
+        h.setHandle(handle);
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                t.load();
-                setupSurface(t);
+                //h.get().load();
+                setupSurface(h);
             }
         });
         return h;
     }
 
-    void setupSurface(GdxTexture t) {
-        if (currentSurface != null) {
-            t.unbindFrameBuffer();
+    void setupSurface(ImageHolder<GdxTexture> t) {
+        // we are the current surface
+        if (currentSurface!=null && (t == currentSurface || t.getHandle() == currentSurface.getHandle())) {
+            if (logFrameBuffer) log.debug("Setting Surface to ourself: {}", t.getHandle());
+            return;
         }
-        // close the batch in prep for a new surface
+
+        // close the batch in prep for a new surface, flushed gl
         batch.end();
 
-        // bind it (is, SetTargetSurface)
-        t.bindFrameBuffer();
-        currentSurface = t;
+        // now we can unbind the fb..
+        if (currentSurface != null) {
+            currentSurface.get().unbindFrameBuffer();
+        }
+
+        // bind it (is, SetTargetSurface) and set it up
+        t.get().bindFrameBuffer();
 
         // start the batch in prep for new surface
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
+
+        // set the current surface
+        currentSurface = t;
     }
 
     @Override
@@ -580,21 +603,22 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 if (handle == 0) {
                     // we are switching to the primary surface (screen)
                     if (currentSurface != null) {
-                        if (logFrameBuffer) log.debug("Unbinding Old Framebuffer");
+                        if (logFrameBuffer) log.debug("setTargetSurface[{}, {}]: Unbinding Old Framebuffer: {}", handle, (image!=null)?image.getHandle():null, currentSurface.getHandle());
                         batch.end();
-                        currentSurface.unbindFrameBuffer();
+                        currentSurface.get().unbindFrameBuffer();
                         currentSurface = null;
-
+//
                         // reset the camera and batch
                         camera.update();
                         batch.setProjectionMatrix(camera.combined);
                         batch.begin();
                     } else {
+                        if (logFrameBuffer) log.debug("setTargetSurface[{},{}]", handle, (image!=null)?image.getHandle():null);
                         // nothing to do, we are being told to set the surface to 0, but, we are 0
                     }
                 } else {
-                    if (logFrameBuffer) log.debug("Using Framebuffer[" + handle + "]");
-                    setupSurface(image.get());
+                    if (logFrameBuffer) log.debug("setTargetSurface[{},{}]", handle, (image!=null)?image.getHandle():null);
+                    setupSurface(image);
                 }
             }
         });

@@ -465,6 +465,7 @@ public class GFXCMD2 {
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
                     sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
+                    img.setHandle(imghandle);
                     client.getImageCache().put(imghandle, img, width, height);
                     hasret[0] = 1;
                     return imghandle;
@@ -517,8 +518,8 @@ public class GFXCMD2 {
                                     } else {
                                         imghandle = handleCount++;
 
-                                        log.debug("PREPIMAGE: CACHED: Loading {}", imghandle);
-
+                                        log.debug("PREPIMAGE[{}]: Loading Loading From Cache: {}", imghandle, cachedFile);
+                                        bi.setHandle(imghandle);
                                         client.getImageCache().put(imghandle, bi, width, height);
 
                                         hasret[0] = 1;
@@ -601,6 +602,7 @@ public class GFXCMD2 {
                                 client.getImageCache().postImageUnload(imghandle);
                                 myConn.postOfflineCacheChange(false, rezName);
                             } else {
+                                bi.setHandle(imghandle);
                                 client.getImageCache().put(imghandle, bi, width, height);
                                 hasret[0] = 0;
                             }
@@ -826,6 +828,7 @@ public class GFXCMD2 {
                             //log.debug("LoadImageCompressed: {}, reading Cached File: {}", handle, cacheFile);
                             sagex.miniclient.uibridge.ImageHolder<?> img = null;
                             img = windowManager.readImage(cacheFile);
+                            img.setHandle(handle);
                             client.getImageCache().put(handle, img, img.getWidth(), img.getHeight());
                             if (deleteCacheFile)
                                 cacheFile.delete();

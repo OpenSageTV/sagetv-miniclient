@@ -1,6 +1,7 @@
 package sagex.miniclient.uibridge;
 
 public class ImageHolder<T> extends Holder<T> {
+    private int handle=-1;
     private int width;
     private int height;
 
@@ -11,6 +12,7 @@ public class ImageHolder<T> extends Holder<T> {
         super(img);
         this.width = width;
         this.height = height;
+        this.handle = -1;
     }
 
     public int getWidth() {
@@ -19,6 +21,10 @@ public class ImageHolder<T> extends Holder<T> {
 
     public int getHeight() {
         return height;
+    }
+
+    public int getHandle() {
+        return handle;
     }
 
     // release resources for this image
@@ -30,5 +36,12 @@ public class ImageHolder<T> extends Holder<T> {
             }
         }
         set(null);
+        this.handle=-1;
+        this.width=0;
+        this.height=0;
+    }
+
+    public void setHandle(int handle) {
+        this.handle = handle;
     }
 }

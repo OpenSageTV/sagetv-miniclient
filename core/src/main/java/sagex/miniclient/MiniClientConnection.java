@@ -777,7 +777,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                     } else if ("GFX_COMPOSITE".equals(propName)) {
                         propVal = "BLEND"; // opengl uses blend
                         //propVal = "COLORKEY";
-                    } else if ("GFX_SURFACES".equals(propName)) {
+                    } else if ("GFX_SURFACES".equals(propName) || "GFX_HIRES_SURFACES".equals(propName)) {
                         propVal = "TRUE";
                     } else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
                         // if (myGfx instanceof DirectX9GFXCMD)
