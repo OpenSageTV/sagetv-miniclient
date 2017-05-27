@@ -22,6 +22,9 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
     public String authBlock;
     public boolean forceLocator = false;
 
+    public String macAddress = null;
+    public Boolean use_stateful_remote=null;
+
     public ServerInfo() {
     }
 
@@ -32,6 +35,8 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
         sb.append(", port=").append(port);
         sb.append(", name='").append(name).append('\'');
         sb.append(", locatorID='").append(locatorID).append('\'');
+        sb.append(", macAddress='").append(macAddress).append('\'');
+        sb.append(", use_stateful_remote='").append(use_stateful_remote).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -43,25 +48,35 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
 
         ServerInfo that = (ServerInfo) o;
 
-        // 2 servers with same locator is same server
-        if (locatorID != null) {
-            return locatorID.equals(that.locatorID);
-        }
+        // host:port and client makes a connection unique
+        // this allows us to rename a connection that is discovered
+        // and allows us to copy a connection to a new name, since clientid will change
 
-        // 2 servers with same host and port
         if (port != that.port) return false;
-        if (address != null) {
-            return address.equals(that.address);
-        }
+        if (!address.equals(that.address)) return false;
 
-        return false;
+        // for mac address null and empty are the same
+        if (macAddress == null || macAddress.trim().length() == 0) {
+            if (that.macAddress == null || that.macAddress.trim().length() == 0) {
+                return true;
+            }
+        }
+        if (that.macAddress == null || that.macAddress.trim().length() == 0) {
+            if (macAddress == null || macAddress.trim().length() == 0) {
+                return true;
+            }
+        }
+        if (macAddress != null) {
+            macAddress.equals(that.macAddress);
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = address != null ? address.hashCode() : 0;
+        int result = address.hashCode();
         result = 31 * result + port;
-        result = 31 * result + (locatorID != null ? locatorID.hashCode() : 0);
+        result = 31 * result + (macAddress != null ? macAddress.hashCode() : 0);
         return result;
     }
 
@@ -104,6 +119,12 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
         store.setLong("servers/" + name + "/last_connect_time", lastConnectTime);
         if (authBlock != null)
             store.setString("servers/" + name + "/auth_block", authBlock);
+        if (macAddress!=null) {
+            store.setString("servers/" + name + "/mac", macAddress);
+        }
+        if (use_stateful_remote!=null) {
+            store.setBoolean("servers/" + name + "/use_stateful_remote", use_stateful_remote);
+        }
     }
 
     public void load(String name, PrefStore store) {
@@ -114,12 +135,19 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
         lastConnectTime = store.getLong("servers/" + name + "/last_connect_time", 0);
         authBlock = store.getString("servers/" + name + "/auth_block", "");
         port = store.getInt("servers/" + name + "/port", 31099);
+        macAddress = store.getString("servers/" + name + "/mac", "");
+        if (store.contains("servers/" + name + "/use_stateful_remote")) {
+            use_stateful_remote = store.getBoolean("servers/" + name + "/use_stateful_remote", true);
+        }
     }
 
     public boolean isLocatorOnly() {
         return (!Utils.isEmpty(locatorID) && Utils.isEmpty(address))
                 || (Utils.isEmpty(locatorID) && !Utils.isEmpty(address) && Utils.isGUID(address));
+    }
 
+    public static String getPrefKey(String name, String id) {
+        return "servers/" + name + "/" + id;
     }
 
     @Override

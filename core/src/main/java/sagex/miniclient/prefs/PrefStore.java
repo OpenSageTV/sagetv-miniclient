@@ -40,6 +40,10 @@ public interface PrefStore {
 
     void remove(String key);
 
+    boolean contains(String key);
+
+    boolean canSet(String key);
+
     interface Keys {
         String image_cache_size_mb = "image_cache_size_mb";
         String disk_image_cache_size_mb = "disk_image_cache_size_mb";

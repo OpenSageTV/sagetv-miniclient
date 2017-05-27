@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.android.tools.build:gradle:2.3.1'
         classpath 'org.robovm:robovm-gradle-plugin:1.6.0'
     }
 }
@@ -36,13 +36,13 @@ allprojects {
         versionText = getVersionFile(project).text
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
-        gdxVersion = "1.9.4"
+        gdxVersion = "1.9.6"
         // NOTE: we can't use grable builds for ijk because it uses a limited profile
         ijkVersion = "0.7.5";
-        ijkVersionDev = "0.7.5.1-SNAPSHOT";
+        ijkVersionDev = "0.7.7.1-SNAPSHOT";
 
         // NOTE: Exo is build from the stuckless/ExoPlayer repo
-        exoVersion = 'r2.0.4-SNAPSHOT';
+        exoVersion = 'r2.2.0-SNAPSHOT';
 
 //        androidExtrasVer = "23.0.0";
 //        androidBuildToolsVersion = "25.0.1";

@@ -131,11 +131,13 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
         ServerItemPresenter serverPresenter = new ServerItemPresenter(getActivity(), new OnAfterCommands() {
             @Override
             public void onAfterDelete(ServerInfo serverInfo) {
+                log.info("loadRows: AfterDelete: {}", serverInfo);
                 serversAdapter.remove(serverInfo);
             }
 
             @Override
             public void onAfterAdd(ServerInfo serverInfo) {
+                log.info("loadRows: AfterAdd: {}", serverInfo);
                 serversAdapter.addServer(serverInfo);
             }
         });

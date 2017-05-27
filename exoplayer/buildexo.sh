@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION='r2.0.4-SNAPSHOT'
+VERSION='r2.2.0-SNAPSHOT'
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"

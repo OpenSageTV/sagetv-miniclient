@@ -242,6 +242,11 @@ public class MiniClientConnection implements SageTVInputCallback {
 
         this.myID = myID;
 
+        if (msi.macAddress!=null && !msi.macAddress.trim().isEmpty()) {
+            log.info("Overriding CLIENT ID with Connection Specific ID: Old ID: {}; New ID: {}", myID, msi.macAddress);
+            this.myID = msi.macAddress;
+        }
+
         this.msi = msi;
         usesAdvancedImageCaching = false;
     }

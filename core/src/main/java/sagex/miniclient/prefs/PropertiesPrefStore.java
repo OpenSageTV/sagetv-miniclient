@@ -168,4 +168,14 @@ public class PropertiesPrefStore implements PrefStore {
     public void remove(String key) {
         props.remove(key);
     }
+
+    @Override
+    public boolean contains(String key) {
+        return props.contains(key);
+    }
+
+    @Override
+    public boolean canSet(String key) {
+        return true;
+    }
 }

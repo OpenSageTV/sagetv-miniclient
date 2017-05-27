@@ -50,11 +50,13 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
         OnAfterCommands afterDelete = new OnAfterCommands() {
             @Override
             public void onAfterDelete(ServerInfo serverInfo) {
+                log.debug("After Server Delete: {}", serverInfo);
                 ((ServersActivity) context).deleteServer(serverInfo);
             }
 
             @Override
             public void onAfterAdd(ServerInfo serverInfo) {
+                log.debug("After Server Add: {}", serverInfo);
                 addServer(serverInfo);
             }
         };
@@ -210,6 +212,7 @@ public class ServersAdapter extends RecyclerView.Adapter<ServersAdapter.ViewHold
     }
 
     public void addServer(ServerInfo si) {
+        log.debug("Attempting to add server: {}", si);
         int size = items.size();
         for (int i = 0; i < size; i++) {
             if (si.equals(items.get(i))) {

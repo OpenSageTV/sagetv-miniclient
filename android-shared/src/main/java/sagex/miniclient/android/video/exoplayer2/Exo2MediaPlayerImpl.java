@@ -14,7 +14,9 @@ import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
 
 import java.io.IOException;
@@ -191,8 +193,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         //SageTVPlayer.RendererBuilder rendererBuilder = new DataSourceExtractorRendererBuilder(context, "sagetv", Uri.parse("http://192.168.1.176:8000/The%20Walking%20Dead%20S05E14%20Spend.mp4"));
         // ExtractorRendererBuilder rendererBuilder = new ExtractorRendererBuilder(context, "sagetv", Uri.parse(file.toURI().toString()));
         //player = new SageTVPlayer(rendererBuilder);
+
         Handler mainHandler = new Handler();
-        DefaultTrackSelector video = new DefaultTrackSelector(mainHandler);
+
+        DefaultTrackSelector video = new DefaultTrackSelector();
 
         // See if we need to disable ffmpeg audio decoding
         FfmpegAudioRenderer.FFMPEG_DISABLED = !MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
@@ -227,6 +231,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
             @Override
+            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+            }
+
+            @Override
             public void onPlayerError(ExoPlaybackException e) {
 
             }
@@ -247,11 +256,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
             @Override
             public void onRenderedFirstFrame() {
-
-            }
-
-            @Override
-            public void onVideoTracksDisabled() {
 
             }
         });

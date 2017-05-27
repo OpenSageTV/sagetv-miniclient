@@ -21,6 +21,7 @@ import java.util.TreeSet;
 import sagex.miniclient.IBus;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
+import sagex.miniclient.prefs.ConnectionPrefStore;
 import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.prefs.PrefStore;
 
@@ -30,7 +31,7 @@ import sagex.miniclient.prefs.PrefStore;
 public class AndroidMiniClientOptions implements MiniClientOptions {
     private static final Logger log = LoggerFactory.getLogger(AndroidMiniClientOptions.class);
 
-    private final AndroidPrefStore prefs;
+    private final PrefStore prefs;
     private final File configDir;
     private final File cacheDir;
     private final IBus bus;
@@ -39,7 +40,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     private boolean advancedAspects=false;
 
     AndroidMiniClientOptions(Application ctx) {
-        this.prefs = new AndroidPrefStore(PreferenceManager.getDefaultSharedPreferences(ctx));
+        this.prefs=new AndroidPrefStore(PreferenceManager.getDefaultSharedPreferences(ctx));
         this.configDir = ctx.getFilesDir();
         this.cacheDir = ctx.getCacheDir();
         this.bus = new OttoBusImpl(new Bus(ThreadEnforcer.ANY));

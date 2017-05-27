@@ -10,6 +10,12 @@
         android:id="@+id/menu_change_name"
         android:title="Change Name"/>
     <item
+        android:id="@+id/menu_change_client_id"
+        android:title="Change Client Id"/>
+    <item
+        android:id="@+id/menu_duplicate"
+        android:title="Duplicate"/>
+    <item
         android:id="@+id/menu_remove"
         android:title="Remove"/>
 </menu>

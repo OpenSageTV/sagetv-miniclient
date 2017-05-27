@@ -19,6 +19,7 @@ import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.util.ClientIDGenerator;
 import sagex.miniclient.util.Utils;
 
 /**
@@ -39,6 +40,10 @@ public class ServerInfoUtil {
             deleteServer(context, serverInfo, true, after);
         } else if (item.getItemId() == R.id.menu_change_name) {
             onChangeName(context, serverInfo, after);
+        } else if (item.getItemId() == R.id.menu_change_client_id) {
+            onChangeClientID(context, serverInfo, after);
+        } else if (item.getItemId() == R.id.menu_duplicate) {
+            onDuplicate(context, serverInfo, after);
         } else if (item.getItemId() == R.id.menu_connect) {
             connect(context, serverInfo);
         } else if (item.getItemId() == R.id.menu_connect_locator) {
@@ -95,6 +100,7 @@ public class ServerInfoUtil {
             AppUtil.confirmAction(context, context.getString(R.string.title_remove_server), context.getString(R.string.msg_remove_server), new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    log.info("Removed Server: {}", serverInfo);
                     MiniclientApplication.get().getClient().getServers().deleteServer(serverInfo.name);
                     afterDelete.onAfterDelete(serverInfo);
                 }
@@ -104,6 +110,31 @@ public class ServerInfoUtil {
             afterDelete.onAfterDelete(serverInfo);
         }
     }
+
+    private static void onChangeClientID(final Context context, final ServerInfo serverInfo, final OnAfterCommands after) {
+        AppUtil.prompt(context, "Change Client ID", "Enter New Client ID", serverInfo.macAddress, new AppUtil.OnValueChangeListener() {
+            @Override
+            public void onValueChanged(String oldValue, String newValue) {
+                if (newValue==null||newValue.isEmpty()) {
+                    serverInfo.macAddress="";
+                    serverInfo.save(MiniclientApplication.get().getClient().properties());
+                    return;
+                }
+
+                ClientIDGenerator gen = new ClientIDGenerator();
+                if (newValue.indexOf(':')<0) {
+                    newValue = gen.generateId(newValue);
+                    serverInfo.macAddress = newValue;
+                } else {
+                    serverInfo.macAddress = newValue;
+                }
+
+                serverInfo.save(MiniclientApplication.get().getClient().properties());
+            }
+        });
+    }
+
+
 
     public static void onChangeName(final Context context, final ServerInfo serverInfo, final OnAfterCommands after) {
         AppUtil.prompt(context, "Change Server Name", "Enter new Server Name", serverInfo.name, new AppUtil.OnValueChangeListener() {
@@ -119,6 +150,27 @@ public class ServerInfoUtil {
                 newSI.save(MiniclientApplication.get().getClient().properties());
 
                 after.onAfterAdd(newSI);
+            }
+        });
+    }
+
+    public static void onDuplicate(final Context context, final ServerInfo serverInfo, final OnAfterCommands after) {
+        AppUtil.prompt(context, "Duplicate", "Enter new Server Name", serverInfo.name, new AppUtil.OnValueChangeListener() {
+            @Override
+            public void onValueChanged(String oldValue, String newValue) {
+                ServerInfo newSI = serverInfo.clone();
+                newSI.name = newValue;
+
+                // we need to create a new macAddress on the copy
+                ClientIDGenerator gen = new ClientIDGenerator();
+                newSI.macAddress = gen.generateId();
+
+                // save the new server
+                newSI.save(MiniclientApplication.get().getClient().properties());
+
+                after.onAfterAdd(newSI);
+
+                log.info("New Server Duplicated: {}; {}", newValue, newSI);
             }
         });
     }

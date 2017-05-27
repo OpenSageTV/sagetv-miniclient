@@ -10,6 +10,10 @@ import sagex.miniclient.prefs.PrefStore;
  * Created by seans on 08/11/15.
  */
 public interface MiniClientOptions {
+    /**
+     * Application level preferences
+     * @return
+     */
     PrefStore getPrefs();
 
     File getConfigDir();

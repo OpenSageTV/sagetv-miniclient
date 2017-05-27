@@ -20,10 +20,10 @@ www-test/
 .gwt-tmp/
 
 ## Android Studio and Intellij and Android in general
-android/libs/armeabi/
-android/libs/armeabi-v7a/
-android/libs/x86/
-android/gen/
+**/libs/armeabi/
+**/libs/armeabi-v7a/
+**/libs/x86/
+**/gen/
 .idea/
 *.ipr
 *.iws

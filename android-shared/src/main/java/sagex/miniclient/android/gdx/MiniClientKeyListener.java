@@ -30,7 +30,9 @@ public class MiniClientKeyListener implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        if (client.properties().getBoolean(PrefStore.Keys.use_stateful_remote, true)) {
+        boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(PrefStore.Keys.use_stateful_remote, true);
+
+        if (useRemote) {
             // if there's a popup then just use normal keys
             if (client.getCurrentConnection().getMenuHint().popupName != null) {
                 log.debug("Using Normal Key Listener");

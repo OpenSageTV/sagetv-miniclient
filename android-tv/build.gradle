@@ -47,6 +47,7 @@ android {
 //    dataBinding {
 //        enabled = true
 //    }
+    buildToolsVersion '25.0.0'
 }
 
 

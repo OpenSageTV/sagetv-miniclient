@@ -4,4 +4,5 @@
     <item name="stop" type="id"/>
     <item name="media_ff" type="id"/>
     <item name="media_rew" type="id"/>
+    <item name="menu_duplicate" type="id" />
 </resources>

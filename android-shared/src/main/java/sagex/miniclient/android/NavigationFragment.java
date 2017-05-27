@@ -217,20 +217,24 @@ public class NavigationFragment extends DialogFragment {
 
     // @OnClick(R.id.nav_remote_mode)
     public void onToggleSmartRemote() {
-        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
-            client.getCurrentConnection().getMenuHint().popupName = null;
-            client.getCurrentConnection().getMenuHint().menuName = null;
-        } else {
-            client.getCurrentConnection().getMenuHint().popupName = null;
-            client.getCurrentConnection().getMenuHint().menuName = "OSD";
-        }
+//        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
+//            client.getCurrentConnection().getMenuHint().popupName = null;
+//            client.getCurrentConnection().getMenuHint().menuName = null;
+//        } else {
+//            client.getCurrentConnection().getMenuHint().popupName = null;
+//            client.getCurrentConnection().getMenuHint().menuName = "OSD";
+//        }
+        boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
+        client.getConnectedServerInfo().use_stateful_remote =  !useRemote;
+        client.getConnectedServerInfo().save(client.properties());
         updateSmartRemoteToggle();
     }
 
     private void updateSmartRemoteToggle() {
-        navSmartRemote.setVisibility(client.properties().getBoolean(Keys.use_stateful_remote, true) && getResources().getBoolean(R.bool.istv) ? View.VISIBLE : View.GONE);
+        boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
+        navSmartRemote.setVisibility(getResources().getBoolean(R.bool.istv) ? View.VISIBLE : View.GONE);
         // GoogleMaterial.Icon.gmd_a
-        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
+        if (useRemote) {
             navSmartRemote.setImageResource(R.drawable.ic_open_with_white_24dp);
         } else {
             navSmartRemote.setImageResource(R.drawable.ic_open_with_red_24dp);

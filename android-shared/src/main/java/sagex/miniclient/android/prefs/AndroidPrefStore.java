@@ -109,4 +109,14 @@ public class AndroidPrefStore implements PrefStore {
     public void remove(String key) {
         prefs.edit().remove(key).commit();
     }
+
+    @Override
+    public boolean contains(String key) {
+        return prefs.contains(key);
+    }
+
+    @Override
+    public boolean canSet(String key) {
+        return true;
+    }
 }
