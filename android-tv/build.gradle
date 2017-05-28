@@ -16,6 +16,10 @@ android {
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
         versionCode computeVersionCode()
         versionName "${appVersionName}"
+//        // might need this later to strip out some architectures
+//        ndk {
+//            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+//        }
     }
 
     signingConfigs {
@@ -43,11 +47,10 @@ android {
         buildTypes.release.signingConfig = null
     }
 
-
 //    dataBinding {
 //        enabled = true
 //    }
-    buildToolsVersion '25.0.0'
+    buildToolsVersion androidBuildToolsVersion
 }
 
 

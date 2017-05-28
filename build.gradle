@@ -38,17 +38,17 @@ allprojects {
         //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.9.6"
         // NOTE: we can't use grable builds for ijk because it uses a limited profile
-        ijkVersion = "0.7.5";
-        ijkVersionDev = "0.7.7.1-SNAPSHOT";
+        ijkVersionDev = "0.8.0-SNAPSHOT";
+        ijkVersion = "0.7.5"; // NOT USED
 
         // NOTE: Exo is build from the stuckless/ExoPlayer repo
-        exoVersion = 'r2.2.0-SNAPSHOT';
+        exoVersion = 'r2.4.0-SNAPSHOT';
 
 //        androidExtrasVer = "23.0.0";
 //        androidBuildToolsVersion = "25.0.1";
 
         androidExtrasVer = "22.2.1";
-        androidBuildToolsVersion = "22.0.1";
+        androidBuildToolsVersion = "25.0.1";
 
         androidMinSdkVersion = 21;
         androidCompileSdkVersion = 22;

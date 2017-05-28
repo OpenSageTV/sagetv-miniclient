@@ -32,7 +32,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion '25.0.0'
+    buildToolsVersion androidBuildToolsVersion
 }
 
 configurations {
@@ -53,11 +53,13 @@ dependencies {
     compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
 
     // ExoPlayer
     // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
-    compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
+    //compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
+    compile "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
     compile "com.google.android.exoplayer:extension-ffmpeg:${exoVersion}@aar"
 
     // exoplayer 2
@@ -80,6 +82,7 @@ dependencies {
     // then uncomment these.
     compile "sagetv.ijkplayer:ijkplayer-java:${ijkVersionDev}@aar"
     compile "sagetv.ijkplayer:ijkplayer-armv7a:${ijkVersionDev}@aar"
+    compile "sagetv.ijkplayer:ijkplayer-arm64:${ijkVersionDev}@aar"
     compile "sagetv.ijkplayer:ijkplayer-x86:${ijkVersionDev}@aar"
     compile "sagetv.ijkplayer:ijkplayer-exo:${ijkVersionDev}@aar"
 
@@ -114,6 +117,7 @@ task copyAndroidNatives() {
         if(jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
         if(jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
         if(jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
+        if(jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
         if(outputDir != null) {
             copy {
                 from zipTree(jar)

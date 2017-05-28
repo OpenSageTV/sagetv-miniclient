@@ -1,7 +1,7 @@
 **1.2.7 (???)
-- Upgraded to IJKPlayer 0.7.1
-- Upgraded to ExoPlayer r2.2.0
-- Upgreded to LibGDX 1.9.6
+- Upgraded to IJKPlayer 0.8.0
+- Upgraded to ExoPlayer r2.4.0
+- Upgraded to LibGDX 1.9.6
 - Add "Duplicate" connection action
 - Each connection have a different client id
 - Each connection can set stateful remote on/off (useful for testing Phoenix)
