@@ -41,6 +41,9 @@
         android:supportsRtl="true"
         android:banner="@drawable/sagetv_orig"
         >
+
+        <meta-data android:name="android.max_aspect" android:value="2.1" />
+
         <activity
             android:name="sagex.miniclient.android.phone.ServersActivity"
             android:label="@string/app_name"

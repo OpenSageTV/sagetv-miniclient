@@ -1,10 +1,11 @@
-**1.2.7 (???)
+**1.2.8 (2017-05-28)
 - Upgraded to IJKPlayer 0.8.0
 - Upgraded to ExoPlayer r2.4.0
 - Upgraded to LibGDX 1.9.6
 - Add "Duplicate" connection action
 - Each connection have a different client id
 - Each connection can set stateful remote on/off (useful for testing Phoenix)
+- Aspect Ratio update for larger non 16/9 screens
 
 **1.2.6 (2017-01-08)**
 - Fixed UI rendering issue that affected SageMC

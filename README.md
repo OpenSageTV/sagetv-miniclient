@@ -1,5 +1,11 @@
 # SageTV MiniClient
- [ ![Download](https://api.bintray.com/packages/opensagetv/sagetv/AndroidMiniClient/images/download.svg) ](https://bintray.com/opensagetv/sagetv/AndroidMiniClient/_latestVersion)
+
+<a href="https://play.google.com/store/apps/details?id=sagex.miniclient.android.tv">
+  <img alt="Get it on Google Play"
+       src="https://developer.android.com/images/brand/en_generic_rgb_wo_45.png" />
+</a>
+
+[![Download](https://api.bintray.com/packages/opensagetv/sagetv/AndroidMiniClient/images/download.svg) ](https://bintray.com/opensagetv/sagetv/AndroidMiniClient/_latestVersion)
  
 SageTV MiniClient is an HD Extender (ie, HD300) for Android devices. Using this app, you can connect to your SageTV server like you can with an HD200 or HD300 device. Once connected you will get your familiar SageTV UI as this App basically identifies itself as an HD300 extender.
 This client supports the playback of many different Media Formats, and, if hardware decoding is available on the device, then it will be used.
@@ -14,7 +20,7 @@ SageTV MiniClient for Android is available on the [Google Play Store](https://pl
 If isntalling from BinTray then you'll need to know how to side load apps. 
 
 ## Features
-* Runs like HD300 (ie, impersonates and HD300)
+* Runs like HD300 (ie, impersonates HD300)
 * H264 content in MP4, MKV, and TS containers (hardware decoding)
 * H265 (HEVC) content in MKV containers (hardware decoding)
 * MPEG2 content in MPG and TS containers (hardware decoding on some platforms)
