@@ -6,6 +6,8 @@
 - Each connection have a different client id
 - Each connection can set stateful remote on/off (useful for testing Phoenix)
 - Aspect Ratio update for larger non 16/9 screens
+- Added support for GUIDE and INFO keys
+- Added support for F1-F12 keys
 
 **1.2.6 (2017-01-08)**
 - Fixed UI rendering issue that affected SageMC
