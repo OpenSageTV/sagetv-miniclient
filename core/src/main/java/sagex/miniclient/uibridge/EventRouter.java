@@ -53,6 +53,19 @@ public class EventRouter {
     public static final UserEvent NUM_8 = new UserEvent(-1, -1, -1, Keys.VK_8, 0, '8');
     public static final UserEvent NUM_9 = new UserEvent(-1, -1, -1, Keys.VK_9, 0, '9');
 
+    public static final UserEvent F1 = new UserEvent(-1, -1, -1, Keys.VK_F1, 0, (char)Keys.VK_F1);
+    public static final UserEvent F2 = new UserEvent(-1, -1, -1, Keys.VK_F2, 0, (char)Keys.VK_F2);
+    public static final UserEvent F3 = new UserEvent(-1, -1, -1, Keys.VK_F3, 0, (char)Keys.VK_F3);
+    public static final UserEvent F4 = new UserEvent(-1, -1, -1, Keys.VK_F4, 0, (char)Keys.VK_F4);
+    public static final UserEvent F5 = new UserEvent(-1, -1, -1, Keys.VK_F5, 0, (char)Keys.VK_F5);
+    public static final UserEvent F6 = new UserEvent(-1, -1, -1, Keys.VK_F6, 0, (char)Keys.VK_F6);
+    public static final UserEvent F7 = new UserEvent(-1, -1, -1, Keys.VK_F7, 0, (char)Keys.VK_F7);
+    public static final UserEvent F8 = new UserEvent(-1, -1, -1, Keys.VK_F8, 0, (char)Keys.VK_F8);
+    public static final UserEvent F9 = new UserEvent(-1, -1, -1, Keys.VK_F9, 0, (char)Keys.VK_F9);
+    public static final UserEvent F10 = new UserEvent(-1, -1, -1, Keys.VK_F10, 0, (char)Keys.VK_F10);
+    public static final UserEvent F11 = new UserEvent(-1, -1, -1, Keys.VK_F11, 0, (char)Keys.VK_F11);
+    public static final UserEvent F12 = new UserEvent(-1, -1, -1, Keys.VK_F12, 0, (char)Keys.VK_F12);
+
     public static final UserEvent AR_TOGGLE = new UserEvent(UserEvent.AR_TOGGLE);
 
     /**

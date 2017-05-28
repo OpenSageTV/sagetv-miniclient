@@ -119,6 +119,24 @@ public class BaseKeyListener implements View.OnKeyListener {
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, EventRouter.PAGE_DOWN);
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.FORWORAD);
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.BACK);
+
+        // guide and info
+        KEYMAP.put(KeyEvent.KEYCODE_GUIDE, EventRouter.GUIDE);
+        KEYMAP.put(KeyEvent.KEYCODE_INFO, EventRouter.INFO);
+
+        // Fkeys
+        KEYMAP.put(KeyEvent.KEYCODE_F1, EventRouter.F1);
+        KEYMAP.put(KeyEvent.KEYCODE_F2, EventRouter.F2);
+        KEYMAP.put(KeyEvent.KEYCODE_F3, EventRouter.F3);
+        KEYMAP.put(KeyEvent.KEYCODE_F4, EventRouter.F4);
+        KEYMAP.put(KeyEvent.KEYCODE_F5, EventRouter.F5);
+        KEYMAP.put(KeyEvent.KEYCODE_F6, EventRouter.F6);
+        KEYMAP.put(KeyEvent.KEYCODE_F7, EventRouter.F7);
+        KEYMAP.put(KeyEvent.KEYCODE_F8, EventRouter.F8);
+        KEYMAP.put(KeyEvent.KEYCODE_F9, EventRouter.F9);
+        KEYMAP.put(KeyEvent.KEYCODE_F10, EventRouter.F10);
+        KEYMAP.put(KeyEvent.KEYCODE_F11, EventRouter.F11);
+        KEYMAP.put(KeyEvent.KEYCODE_F12, EventRouter.F12);
     }
 
     @Override
