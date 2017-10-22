@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION='r2.2.0-SNAPSHOT'
+VERSION='r2.4.4-SNAPSHOT'
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
@@ -33,7 +33,7 @@ if [ ! -d extensions/ffmpeg/contrib ] ; then
 fi
 
 cd extensions/ffmpeg/contrib
-export FFMPEG_EXT_ARGS="--enable-decoder=ac3 --enable-decoder=eac3 --enable-decoder=dts --enable-decoder=dcadec --enable-decoder=aac"
+
 ./build-natives.sh || exit 1
 popd
 

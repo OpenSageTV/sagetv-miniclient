@@ -71,7 +71,9 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
             if (time < 0) {
                 // push mode seeking, we are adjusting
-                // log.debug("IJK: getMediaTime(): seeking/adjusting... {}, serverTime: {}", time, serverStartTime);
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    log.debug("IJK: getMediaTime(): seeking/adjusting... {}, serverTime: {}", time, serverStartTime);
+                }
                 lastTime = time;
                 return time;
             }
@@ -100,6 +102,9 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
 
         // return the time adjusted by the player's time offset
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+            log.debug("IJK: getMediaTime(): Time: {}", time + ((pushMode) ? playerGetTimeOffset : 0));
+        }
         return time + ((pushMode) ? playerGetTimeOffset : 0);
     }
 

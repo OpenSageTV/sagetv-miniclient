@@ -20,10 +20,10 @@ ln -sf module-default.sh module.sh
 cd ..
 ./init-android.sh
 cd android/contrib/
-#./compile-ffmpeg.sh clean
+./compile-ffmpeg.sh clean
 ./compile-ffmpeg.sh all
 cd ..
-#./compile-ijk.sh clean
+./compile-ijk.sh clean
 ./compile-ijk.sh all
 cd ..
 
