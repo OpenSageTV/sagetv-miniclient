@@ -49,7 +49,10 @@ dependencies {
     // compile 'com.jakewharton:butterknife:7.0.1'
 
     // gdx
-    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    compile ("com.badlogicgames.gdx:gdx:$gdxVersion") {
+        exclude group: 'xerces'
+        exclude group: 'xpp3'
+    }
     compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
@@ -60,7 +63,7 @@ dependencies {
     // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
     //compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
     compile "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
-    compile "com.google.android.exoplayer:extension-ffmpeg:${exoVersion}@aar"
+    compile "com.google.android.exoplayer:extension-ffmpeg:${exoVersionStuckless}@aar"
 
     // exoplayer 2
     // compile "sagetv:exoplayer2:${exo2Version}@aar"
@@ -87,8 +90,10 @@ dependencies {
     compile "sagetv.ijkplayer:ijkplayer-exo:${ijkVersionDev}@aar"
 
     // logging
-    compile "com.github.tony19:logback-android-core:1.1.1-4"
-    compile "com.github.tony19:logback-android-classic:1.1.1-4"
+    compile "com.github.tony19:logback-android-core:1.1.1-6"
+    compile ("com.github.tony19:logback-android-classic:1.1.1-6") {
+        exclude group: 'com.google.android', module: 'android'
+    }
 
     compile "org.l6n:sendlog-library:2.0@aar"
     compile 'com.github.rahatarmanahmed:circularprogressview:2.4.0'

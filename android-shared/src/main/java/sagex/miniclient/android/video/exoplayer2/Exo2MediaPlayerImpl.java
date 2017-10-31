@@ -2,23 +2,25 @@ package sagex.miniclient.android.video.exoplayer2;
 
 import android.net.Uri;
 import android.os.Handler;
-import android.view.Surface;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
+
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
 import java.io.IOException;
 
@@ -29,11 +31,17 @@ import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 
+
 /**
  * Created by seans on 24/09/16.
  */
 
 public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, DataSource> {
+    private static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
+    private static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
+
+    public long serverTime = 0;
+
     public Exo2MediaPlayerImpl(MiniClientGDXActivity activity) {
         super(activity, true, false);
     }
@@ -75,7 +83,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         } catch (Throwable t) {
         }
         player = null;
-
+        serverTime = 0;
         super.releasePlayer();
     }
 
@@ -103,12 +111,20 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     public long getPlayerMediaTimeMillis(long lastServerTime) {
         if (player == null) return 0;
         long time = player.getCurrentPosition();
+
+        if (time <= 0) {
+            // the player is adjusting
+            return serverTime;
+        }
+
         // NOTE: exoplayer will lose it's time after a seek/resume, so this ensures that it
         // will send back the last known server start time plus the player time
         if (pushMode) {
-            // log.debug("Exo: getMediaTime(): {}, {}, {}", lastServerTime, time, lastServerTime+time);
-            return lastServerTime + time;
+            log.debug("ExoPlayer: getPlayerMediaTimeMillis(): serverTime: {}, time: {}, total: {}", lastServerTime, time, lastServerTime+time);
+            time = lastServerTime + time;
         }
+
+        serverTime=time;
         return time;
     }
 
@@ -200,14 +216,27 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         DefaultTrackSelector video = new DefaultTrackSelector();
 
         // See if we need to disable ffmpeg audio decoding
-        FfmpegAudioRenderer.FFMPEG_DISABLED = !MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
+        boolean preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
+        @DefaultRenderersFactory.ExtensionRendererMode int extensionRendererMode =
+                        (preferExtensionDecoders ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
+                        : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context,null, extensionRendererMode);
 
-        player = ExoPlayerFactory.newSimpleInstance(context, video, new DefaultLoadControl());
+        TrackSelection.Factory adaptiveTrackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter());
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
+
+        // EventLogger is in the demo package
+        // EventLogger eventLogger = new EventLogger(trackSelector);
+
+        player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
+        //player = ExoPlayerFactory.newSimpleInstance(context, video, new DefaultLoadControl());
+
         //EventLogger eventLogger = new EventLogger();
         ///player.setInternalErrorListener(eventLogger);
         //player.setInfoListener(eventLogger);
         //player.addListener(eventLogger);
-        player.addListener(new ExoPlayer.EventListener() {
+        player.addListener(new Player.EventListener() {
             @Override
             public void onLoadingChanged(boolean b) {
 
@@ -224,6 +253,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     eos = true;
                     Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
                 }
+            }
+
+            @Override
+            public void onRepeatModeChanged(int repeatMode) {
+
             }
 
             @Override

@@ -1,3 +1,7 @@
+**1.2.9 (?)**
+- updated IJKPlayer to 0.8.0
+- Build Tools to 26.0.2
+
 **1.2.8 (2017-05-28)**
 - Upgraded to IJKPlayer 0.8.0
 - Upgraded to ExoPlayer r2.4.0

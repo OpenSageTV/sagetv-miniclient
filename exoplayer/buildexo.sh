@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION='r2.4.4-SNAPSHOT'
+VERSION='r2.5.4-SNAPSHOT'
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
@@ -18,28 +18,24 @@ if [ -d ExoPlayer ] ; then
     cd ExoPlayer
     git pull
 else
-    REPO="https://github.com/stuckless/ExoPlayer.git"
+    #REPO="https://github.com/stuckless/ExoPlayer.git"
+    #git clone -b sagetv-miniclient $REPO
+    REPO="https://github.com/google/ExoPlayer.git"
     echo "Fetching ExoPlayer Sources from ${REPO}"
-    #REPO="https://github.com/google/ExoPlayer.git"
-    git clone -b sagetv-miniclient $REPO
+    git clone $REPO
     cd ExoPlayer
 fi
 
 pushd .
 echo "Building FFMpeg"
-if [ ! -d extensions/ffmpeg/contrib ] ; then
-    echo "Missing ffmpeg extension dir"
-    exit 1
-fi
-
-cd extensions/ffmpeg/contrib
+cd ../build-ffmpeg/
 
 ./build-natives.sh || exit 1
 popd
 
 echo "Building..."
 echo "Setting BUILD RELEASE $VERSION"
-./gradlew -Dexoplayer.version="${VERSION}" assemble publishToMavenLocal
+./gradlew -Dexoplayer.version="${VERSION}" assemble publishToMavenLocal || exit 1
 cd ..
 
 echo "Gradle Dependency is 'com.google.android.exoplayer:exoplayer:$VERSION'"

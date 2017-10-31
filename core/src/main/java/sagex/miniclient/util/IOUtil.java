@@ -1,6 +1,10 @@
 package sagex.miniclient.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,4 +49,29 @@ public class IOUtil {
         fastCopy(is, os);
         return os.toString("UTF-8");
     }
+
+    public static String toString(File f) throws IOException {
+        FileInputStream fis = null;
+        try {
+            return toString(fis=new FileInputStream(f));
+        } finally {
+            if (fis!=null) {
+                fis.close();
+            }
+        }
+    }
+
+    public static void StringToFile(String text, File f) throws IOException {
+        FileOutputStream fos = null;
+        try {
+            fos=new FileOutputStream(f);
+            fos.write(text.getBytes("UTF-8"));
+            fos.flush();
+        } finally {
+            if (fos!=null) {
+                fos.close();
+            }
+        }
+    }
+
 }
