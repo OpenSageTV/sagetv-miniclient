@@ -136,6 +136,8 @@ public class NavigationFragment extends DialogFragment {
             });
         }
 
+        if (client==null||client.getCurrentConnection()==null) return navView;
+
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup() && (client.isVideoPlaying() || client.isVideoPaused())) {
             navPause.requestFocus();
         } else {

@@ -53,7 +53,8 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
         // and allows us to copy a connection to a new name, since clientid will change
 
         if (port != that.port) return false;
-        if (!address.equals(that.address)) return false;
+        if (address==null && that.address!=null) return false;
+        if (address!=null && !address.equals(that.address)) return false;
 
         // for mac address null and empty are the same
         if (macAddress == null || macAddress.trim().length() == 0) {
@@ -67,7 +68,7 @@ public class ServerInfo implements Serializable, Comparable<ServerInfo>, Cloneab
             }
         }
         if (macAddress != null) {
-            macAddress.equals(that.macAddress);
+            return macAddress.equals(that.macAddress);
         }
         return true;
     }

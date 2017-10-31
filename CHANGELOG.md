@@ -1,6 +1,9 @@
 **1.2.9 (?)**
-- updated IJKPlayer to 0.8.0
+- updated IJKPlayer to 0.8.4
+- updated ExoPlayer to r2.5.4
+- Enhanced ExoPlayer (Seeking in .ts files seems OK for everyday use)
 - Build Tools to 26.0.2
+- Fixed lots of NullPointerExceptions
 
 **1.2.8 (2017-05-28)**
 - Upgraded to IJKPlayer 0.8.0

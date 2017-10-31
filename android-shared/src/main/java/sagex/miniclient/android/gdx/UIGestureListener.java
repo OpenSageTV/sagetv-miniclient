@@ -182,6 +182,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     }
 
     private int getFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        if (e1==null||e2==null) return FLING_NONE;
         float dx = Math.abs(e1.getX()-e2.getX());
         float dy = Math.abs(e1.getY()-e2.getY());
         //log.debug("getFling: x1: {}, x2: {}, y1: {}, y2: {}", e1.getX(), e2.getX(), e1.getY(), e2.getY());

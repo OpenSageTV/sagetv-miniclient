@@ -173,6 +173,7 @@ public class ImageCache {
     public void cleanupOfflineCache() {
         // Cleanup the offline cache...just dump the oldest half of it
         java.io.File[] cacheFiles = cacheDir.listFiles();
+        if (cacheFiles==null) return;
         long size = 0;
         for (int i = 0; i < cacheFiles.length; i++) {
             size += cacheFiles[i].length();
