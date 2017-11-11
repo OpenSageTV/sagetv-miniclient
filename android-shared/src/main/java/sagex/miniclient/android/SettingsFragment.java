@@ -91,15 +91,6 @@ public class SettingsFragment extends PreferenceFragment {
             updateSummary(loglevel, R.string.summary_list_loglevels_preference, prefs.getString(PrefStore.Keys.log_level, "debug"));
             updateSummary(streammode, R.string.summary_list_streaming_mode_preference, prefs.getString(PrefStore.Keys.streaming_mode, "dynamic"));
 
-            final Preference sendlog = findPreference("sendlog");
-            sendlog.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    startActivity(new Intent(getActivity().getBaseContext(), SendLogActivity.class));
-                    return true;
-                }
-            });
-
             final Preference version = findPreference("version");
             version.setSummary(Version.VERSION);
 

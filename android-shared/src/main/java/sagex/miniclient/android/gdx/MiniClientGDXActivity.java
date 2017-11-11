@@ -26,8 +26,6 @@ import android.widget.Toast;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.daimajia.androidanimations.library.Techniques;
-import com.daimajia.androidanimations.library.YoYo;
 import com.squareup.otto.DeadEvent;
 import com.squareup.otto.Subscribe;
 
@@ -252,7 +250,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             }
             plaseWaitText.setText(connect);
             setConnectingIsVisible(true);
-            YoYo.with(Techniques.BounceInUp).duration(700).playOn(plaseWaitText);
 
             startMiniClient(si);
         } catch (Throwable t) {
@@ -320,7 +317,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         errorMessage.setText(message);
         errorCause.setText(cause);
         errorContainer.setVisibility(View.VISIBLE);
-        YoYo.with(Techniques.RubberBand).duration(700).playOn(errorContainer);
     }
 
     @Override
@@ -362,7 +358,9 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                     pleaseWait.setVisibility(View.VISIBLE);
                 } else {
                     // hiding connecting is visible
-                    YoYo.with(Techniques.FadeOutLeft).duration(700).playOn(pleaseWait);
+                    //YoYo.with(Techniques.FadeOutLeft).duration(700).playOn(pleaseWait);
+                    errorContainer.setVisibility(View.GONE);
+                    pleaseWait.setVisibility(View.GONE);
                 }
             }
         });

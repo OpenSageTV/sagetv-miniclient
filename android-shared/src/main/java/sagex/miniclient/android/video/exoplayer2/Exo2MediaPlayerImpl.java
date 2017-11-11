@@ -15,6 +15,8 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.text.Cue;
+import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -23,6 +25,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
 import java.io.IOException;
+import java.util.List;
 
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
@@ -312,6 +315,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
             }
         });
+
+
+//        player.addTextOutput(new TextRenderer.Output() {
+//            @Override
+//            public void onCues(List<Cue> cues) {
+//                log.debug("Got a Text Cue");
+//            }
+//        });
 
         // player.setBackgrounded(false);
         if (resumePos >= 0) {

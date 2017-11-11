@@ -161,10 +161,6 @@
             android:summary="@string/summary_list_loglevels_preference"
             android:title="@string/title_list_loglevels_preference"/>
 
-        <Preference
-            android:key="sendlog"
-            android:summary="@string/send_log_summary"
-            android:title="@string/send_log"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="About">

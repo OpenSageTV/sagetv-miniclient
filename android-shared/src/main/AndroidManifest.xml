@@ -53,8 +53,6 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.PhoneTheme">
         </activity>
-
-        <activity android:name=".SendLogActivity"/>
     </application>
 
 </manifest>

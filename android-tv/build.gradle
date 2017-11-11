@@ -61,7 +61,7 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${androidExtrasVer}"
     compile "com.android.support:leanback-v17:${androidExtrasVer}"
     compile "com.android.support:appcompat-v7:${androidExtrasVer}"
-    compile "com.github.bumptech.glide:glide:3.4.+"
+    compile "com.github.bumptech.glide:glide:3.7.0"
 }
 
 clean {
