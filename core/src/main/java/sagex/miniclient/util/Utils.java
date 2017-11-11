@@ -29,4 +29,24 @@ public class Utils {
         float tmp = number * pow;
         return (float) (int) ((tmp - (int) tmp) >= 0.5f ? tmp + 1 : tmp) / pow;
     }
+
+    public static String toHHMMSS(long millisec) {
+        return toHHMMSS(millisec, false);
+    }
+
+    public static String toHHMMSS(long millisec, boolean includeOriginalMS) {
+        long sec = millisec/1000;
+        long second = sec % 60;
+        long minute = sec / 60;
+        String val = null;
+        if (minute >= 60) {
+            long hour = minute / 60;
+            minute %= 60;
+            val = hour + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (second < 10 ? "0" + second : second);
+        } else {
+            val = minute + ":" + (second < 10 ? "0" + second : second);
+        }
+        if (includeOriginalMS) val = val + " ("+millisec+")";
+        return val;
+    }
 }

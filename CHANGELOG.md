@@ -1,4 +1,7 @@
-**1.2.9 (?)**
+**1.2.12 (2017-11-11)**
+- Fixes to Skip ahead
+
+**1.2.9 (2017-11-01)**
 - updated IJKPlayer to 0.8.4
 - updated ExoPlayer to r2.5.4
 - Enhanced ExoPlayer (Seeking in .ts files seems OK for everyday use)

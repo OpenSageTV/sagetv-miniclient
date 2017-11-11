@@ -31,6 +31,7 @@ import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 
+import static sagex.miniclient.util.Utils.toHHMMSS;
 
 /**
  * Created by seans on 24/09/16.
@@ -40,7 +41,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     private static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
     private static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
 
-    public long serverTime = 0;
+    long resumePos = -1;
+    long logLastTime = -1;
 
     public Exo2MediaPlayerImpl(MiniClientGDXActivity activity) {
         super(activity, true, false);
@@ -60,8 +62,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         if (player == null) return;
         player.setPlayWhenReady(true);
     }
-
-    long resumePos = -1;
 
     protected void releasePlayer() {
         if (player == null)
@@ -83,7 +83,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         } catch (Throwable t) {
         }
         player = null;
-        serverTime = 0;
         super.releasePlayer();
     }
 
@@ -106,25 +105,41 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         return null;
     }
 
-
     @Override
     public long getPlayerMediaTimeMillis(long lastServerTime) {
         if (player == null) return 0;
         long time = player.getCurrentPosition();
 
-        if (time <= 0) {
+        // happens after a seek
+        if (time == Long.MIN_VALUE) {
             // the player is adjusting
-            return serverTime;
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("ExoPlayer: getPlayerMediaTimeMillis(): player adjusting (lastServerTime was: {})", toHHMMSS(lastServerTime, true));
+            return 0;
         }
 
         // NOTE: exoplayer will lose it's time after a seek/resume, so this ensures that it
         // will send back the last known server start time plus the player time
         if (pushMode) {
-            log.debug("ExoPlayer: getPlayerMediaTimeMillis(): serverTime: {}, time: {}, total: {}", lastServerTime, time, lastServerTime+time);
+            if (time<=0) {
+                // player is adjusting, after a push/seek.
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.debug("ExoPlayer: getPlayerMediaTimeMillis(): player adjusting using 0 but lastServerTime was {}", toHHMMSS(lastServerTime, true));
+                return 0;
+            }
+
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                if (time!=logLastTime) {
+                    log.debug("ExoPlayer: getPlayerMediaTimeMillis(): serverTime: {}, time: {}, total: {}", toHHMMSS(lastServerTime, true),
+                            toHHMMSS(time, true), toHHMMSS(lastServerTime + time, true));
+                }
+                logLastTime=time;
+            }
+            if (time + lastServerTime > PTS_ROLLOVER) {
+                time = time - PTS_ROLLOVER;
+            }
             time = lastServerTime + time;
         }
-
-        serverTime=time;
         return time;
     }
 
@@ -176,8 +191,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     public void flush() {
         super.flush();
         if (player == null) return;
-//        player.sendMessages(ExoPlayer.ExoPlayerMessage);
-//        ((SageTVPlayer) player).dispose();
         player.seekTo(Long.MIN_VALUE);
     }
 

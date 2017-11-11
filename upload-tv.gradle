@@ -1,5 +1,5 @@
 plugins {
-    id "com.jfrog.bintray" version "1.7.1"
+    id "com.jfrog.bintray" version "1.8.0"
 }
 
 repositories {
@@ -13,17 +13,18 @@ ext {
     baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
 }
 
-task(copyFiles) << {
-
+task(copyFiles) {
+    print "Copy Files for Upload..."
     delete {
         fileTree(dir: "build", include: "*.apk")
     }
 
     copy {
-        from "android-tv/build/outputs/apk/"
+        from "android-tv/build/outputs/apk/release/"
         into "build"
         include "*-release.apk"
         rename('(.+)\\.(.+)', "sagetv-miniclient-${baseVersion}.\$2")
+        eachFile { println it.file }
     }
 }
 

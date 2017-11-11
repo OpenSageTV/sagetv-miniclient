@@ -12,5 +12,4 @@ public class VerboseLogging {
     public static boolean DETAILED_IMAGE_CACHE = false;
     public static boolean DATASOURCE_LOGGING = false;
     public static boolean LOG_DATASOURCE_BYTES_TO_FILE = false;
-
 }

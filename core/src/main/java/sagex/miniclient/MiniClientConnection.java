@@ -596,6 +596,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 }
                                 try {
                                     gfxSocket = EstablishServerConnection(5);
+                                    if (gfxSocket == null) throw new Exception("Failed to reconnect to server.  Unable to establish Graphics Socket.");
                                     eventChannel = new java.io.DataOutputStream(
                                             new java.io.BufferedOutputStream(gfxSocket.getOutputStream()));
                                     myStream = gfxIs = new java.io.DataInputStream(gfxSocket.getInputStream());

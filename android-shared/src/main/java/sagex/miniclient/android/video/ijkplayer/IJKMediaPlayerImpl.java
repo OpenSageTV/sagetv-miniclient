@@ -15,8 +15,6 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
  * Created by seans on 06/10/15.
  */
 public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource> {
-    private static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
-    private static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
     long preSeekPos = -1;
     long playerGetTimeOffset = -1;
     long lastTime = 0;

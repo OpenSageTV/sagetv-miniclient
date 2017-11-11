@@ -122,7 +122,8 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     public void flush() {
         log.debug("FLUSH()");
         bytesRead = 0;
-        circularByteBuffer.clear();
+        if (circularByteBuffer!=null)
+            circularByteBuffer.clear();
     }
 
     @Override

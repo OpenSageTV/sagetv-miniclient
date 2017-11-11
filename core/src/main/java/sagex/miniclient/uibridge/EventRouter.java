@@ -40,6 +40,8 @@ public class EventRouter {
     public static final UserEvent HOME = new UserEvent(UserEvent.HOME);
     public static final UserEvent PAGE_UP = new UserEvent(UserEvent.PAGE_UP);
     public static final UserEvent PAGE_DOWN = new UserEvent(UserEvent.PAGE_DOWN);
+    public static final UserEvent PAGE_LEFT = new UserEvent(UserEvent.PAGE_LEFT);
+    public static final UserEvent PAGE_RIGHT = new UserEvent(UserEvent.PAGE_RIGHT);
     public static final UserEvent OPTIONS = new UserEvent(UserEvent.OPTIONS);
 
     public static final UserEvent NUM_0 = new UserEvent(-1, -1, -1, Keys.VK_0, 0, '0');

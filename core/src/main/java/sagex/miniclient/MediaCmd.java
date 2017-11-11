@@ -25,6 +25,7 @@ import java.util.Map;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
+import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
 
 /**
@@ -101,7 +102,8 @@ public class MediaCmd {
     private int statsTargetBWKbps;
     private long serverMuxTime;
     private long prebufferTime;
-    private long lastServerTime = 0;
+    private long lastServerStartTime = 0;
+    private long lastServerMuxTime = -1;
 
     /**
      * Creates a new instance of MediaCmd
@@ -249,10 +251,13 @@ public class MediaCmd {
                 return 4;
             case MEDIACMD_FLUSH:
                 writeInt(1, retbuf, 0);
-                if (playa != null && pushMode && numPushedBuffers > 0) {
-                    numPushedBuffers = 0;
+                // original sagetv code has numPushBuffers > 0, but they are writing to disk
+                // so I don't think we need this numPushBuffers, we should reset always.
+                if (playa != null && pushMode) {
                     playa.flush();
-                    lastServerTime = 0;
+                    numPushedBuffers = 0;
+                    lastServerStartTime = 0;
+                    bufferFilePushedBytes=0;
                 }
                 return 4;
             case MEDIACMD_PUSHBUFFER:
@@ -266,12 +271,29 @@ public class MediaCmd {
                     statsTargetBWKbps = readShort(12, cmddata);
                     serverMuxTime = readInt(14, cmddata);
 
-                    if (lastServerTime == 0) {
-                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                            log.debug("PushBuffer: Setting ServerMUXTime: {}", serverMuxTime);
-                        lastServerTime = serverMuxTime;
-                    }
                     if (playa != null) {
+                        // this happens after a flush, so we capture the start of where
+                        // sagetv is telling us about the buffer, so we can use it later
+                        // in the determining the player position
+                        if (lastServerStartTime == 0) {
+                            if (serverMuxTime == lastServerMuxTime) {
+                                // server is sending us the same last as when we flushed??
+                                // this appears to happen with ExoPlayer in that we flush,
+                                // sagetv sends up more data, but the first few times the serverMuxTime
+                                // is the same as what we had before the flush.  So this is a sanity
+                                // check to make sure we use a time that is not the same as before we flushed
+                                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                                    log.debug("PushBuffer: PUSHED ServerMUXTime is SAME as last Flush??: {}, Let's wait for it to change", Utils.toHHMMSS(serverMuxTime, true));
+                            } else {
+                                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                                    log.debug("PushBuffer: Setting ServerMUXTime: {}, last: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerMuxTime, true));
+                                // set our know server start time
+                                lastServerStartTime = serverMuxTime;
+                            }
+                        } else if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                            log.debug("PushBuffer: PUSHED ServerMUXTime: {}, lastServerMuxTime: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerMuxTime, true));
+                        }
+                        lastServerMuxTime = serverMuxTime;
                         prebufferTime = serverMuxTime - getMediaTimeMillis();
                     }
                     // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
@@ -378,8 +400,8 @@ public class MediaCmd {
 
     private long getMediaTimeMillis() {
         if (playa != null) {
-            return playa.getMediaTimeMillis(lastServerTime);
+            return playa.getMediaTimeMillis(lastServerStartTime);
         }
-        return lastServerTime;
+        return lastServerStartTime;
     }
 }

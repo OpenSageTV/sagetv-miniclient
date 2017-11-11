@@ -33,6 +33,10 @@ import sagex.miniclient.video.HasVideoInfo;
 public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPlayerPlugin, HasVideoInfo {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    protected static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
+    protected static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
+
+
     protected final MiniClientGDXActivity context;
 
     protected boolean pushMode;
@@ -159,31 +163,34 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 log.debug("getMediaTimeMillis(): Player not ready, returning 0");
             return 0;
         }
+        if (state == STOPPED_STATE) {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("getMediaTimeMillis(): Player State Stopped");
+            return 0;
+        }
+
         if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("getMediaTimeMillis(): Player State Not Ready {} returning last time {}", state, lastMediaTime);
             return lastMediaTime;
         }
+        // when paused just keep using the last known time
+        if (state == PAUSE_STATE) {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("getMediaTimeMillis(): Player is paused returning last time: {}", lastMediaTime);
+            return lastMediaTime;
+        }
         long mt = getPlayerMediaTimeMillis(lastServerTime);
-        if (mt <= 0 && state == PAUSE_STATE) {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player is paused returingin last time: {}", lastMediaTime);
-            return lastMediaTime;
-        }
-        if (flushed && mt < 0) {
+        if (flushed && mt <= 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                log.debug("getMediaTimeMillis() is {} after a dispose.  Using lastMediaTime: {}, until data shows up.", mt, lastMediaTime);
+                log.debug("getMediaTimeMillis() is {} after a flush/seek.  Using 0, until data shows up.", mt);
             }
-            return lastMediaTime;
+            return 0;
         }
-        if (flushed) {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): current: {}, last time: {}", mt, lastMediaTime);
-        }
+        if (mt <= 0) return 0;
+        // we have some data, so we are not flushing/seeking
         flushed = false;
-        if (mt < 0) return lastMediaTime;
         lastMediaTime = mt;
-        // log.debug("getMediaTimeMillis(): current: {}, last time: {}", mt, lastMediaTime);
         return mt;
     }
 

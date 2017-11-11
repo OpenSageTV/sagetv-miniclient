@@ -72,10 +72,10 @@ public class ServersActivity extends Activity implements OnAddServerListener {
             return;
         }
 
-        list = (RecyclerView) findViewById(R.id.list);
+        list = findViewById(R.id.list);
         header = findViewById(R.id.header);
-        addServerButton = (ImageView) findViewById(R.id.btn_add_server);
-        settingsButton = (ImageView) findViewById(R.id.btn_settings);
+        addServerButton = findViewById(R.id.btn_add_server);
+        settingsButton = findViewById(R.id.btn_settings);
 
         settingsButton.setOnClickListener(new OnClickListener() {
 
