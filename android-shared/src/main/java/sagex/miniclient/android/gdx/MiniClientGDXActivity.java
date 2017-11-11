@@ -3,11 +3,18 @@ package sagex.miniclient.android.gdx;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.ResultReceiver;
+import android.support.v4.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -46,6 +53,7 @@ import sagex.miniclient.android.events.MessageEvent;
 import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
+import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.events.VideoInfoShow;
@@ -78,6 +86,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     MiniClient client;
     MiniClientRenderer mgr;
 
+    MediaSessionCompat mediaSessionCompat;
+
     private View miniClientView;
 
     private ChangePlayerOneTime changePlayerOneTime = null;
@@ -92,6 +102,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Override
     protected void onResume() {
         log.debug("MiniClient UI onResume() called");
+
+        AudioUtil.requestAudioFocus(this);
 
         // setup to handle events
         client.eventbus().register(this);
@@ -164,6 +176,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         super.onCreate(savedInstanceState);
 
         try {
+            initMediaSession();
+
             hideSystemUI(this);
 
             setContentView(R.layout.miniclientgl_layout);
@@ -252,6 +266,33 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         }
     }
 
+    void initMediaSession() {
+        // NOTE: all this is so that when you press pause/play in the app, we can capture the
+        // media control event, so that other apps DON'T (ie, google play music, plex, etc).
+        // ideally we could do something useful with this, but for not, just eat it.
+
+        try {
+            ComponentName mediaButtonReceiver = new ComponentName(getApplicationContext(), MediaButtonReceiver.class);
+            mediaSessionCompat = new MediaSessionCompat(getApplicationContext(), "SAGETVMINICLIENT", mediaButtonReceiver, null);
+            mediaSessionCompat.setCallback(new MediaSessionCompat.Callback() {
+                @Override
+                public void onCommand(String command, Bundle extras, ResultReceiver cb) {
+                    log.debug("Audio Session Callback Handler: Command {}", command);
+                }
+            });
+            mediaSessionCompat.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
+
+            Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+            mediaButtonIntent.setClass(this, MediaButtonReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, mediaButtonIntent, 0);
+            mediaSessionCompat.setMediaButtonReceiver(pendingIntent);
+            mediaSessionCompat.setActive(true);
+            log.debug("Media Session is setup to capture pause/play. session: "+mediaSessionCompat.getSessionToken());
+        } catch (Throwable t) {
+            log.error("Failed to capture the media session", t);
+        }
+    }
+
     public void startMiniClient(final ServerInfo si) {
         Thread t = new Thread("ANDROID-MINICLIENT") {
             @Override
@@ -294,7 +335,17 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     protected void onDestroy() {
         log.debug("Closing MiniClient Connection");
 
+        if (mediaSessionCompat!=null) {
+            try {
+                mediaSessionCompat.setActive(false);
+                mediaSessionCompat.release();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+
         try {
+
             client.closeConnection();
         } catch (Throwable t) {
             log.error("Error shutting down client", t);

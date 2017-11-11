@@ -21,6 +21,7 @@ import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AddServerFragment.OnAddServerListener;
 import sagex.miniclient.android.AutoConnectDialog;
 import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.prefs.PrefStore;
 
 /*
@@ -49,5 +50,11 @@ public class MainActivity extends Activity implements OnAddServerListener {
     @Override
     public void onAddServer(String name, String addr) {
         ((OnAddServerListener) getFragmentManager().findFragmentById(R.id.main_browse_fragment)).onAddServer(name, addr);
+    }
+
+    @Override
+    protected void onResume() {
+        AudioUtil.requestAudioFocus(this);
+        super.onResume();
     }
 }

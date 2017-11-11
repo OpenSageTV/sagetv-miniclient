@@ -50,7 +50,7 @@ allprojects {
 //        androidExtrasVer = "23.0.0";
 //        androidBuildToolsVersion = "25.0.1";
 
-        androidExtrasVer = "22.2.1";
+        androidExtrasVer = "27.0.0";
         androidBuildToolsVersion = "26.0.2";
 
         androidMinSdkVersion = 21;

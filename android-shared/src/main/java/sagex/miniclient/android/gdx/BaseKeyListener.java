@@ -1,6 +1,5 @@
 package sagex.miniclient.android.gdx;
 
-import android.support.v4.view.KeyEventCompat;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;

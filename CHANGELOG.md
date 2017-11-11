@@ -1,5 +1,8 @@
 **1.2.12 (2017-11-11)**
-- Fixes to Skip ahead
+- Fixes to Skip ahead for ExoPlayer
+- Fixed Paused Issue (ie, timeline changes when paused)
+- Fixed issue where pause/play would be intecepted by background app
+
 
 **1.2.9 (2017-11-01)**
 - updated IJKPlayer to 0.8.4
