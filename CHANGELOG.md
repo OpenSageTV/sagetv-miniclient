@@ -1,7 +1,7 @@
 **1.2.12 (2017-11-11)**
 - Fixes to Skip ahead for ExoPlayer
 - Fixed Paused Issue (ie, timeline changes when paused)
-- Fixed issue where pause/play would be intecepted by background app
+- Fixed issue where pause/play would be intercepted by background app
 
 
 **1.2.9 (2017-11-01)**
