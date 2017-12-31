@@ -148,6 +148,11 @@ public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
         return delegate.newImage(destWidth, destHeight);
     }
 
+    @Override
+    public void registerTexture(ImageHolder<Image> texture) {
+
+    }
+
     public void setTargetSurface(int handle, ImageHolder<Image> image) {
         log(String.format("setTargetSurface[%s]", handle));
         delegate.setTargetSurface(handle, image);

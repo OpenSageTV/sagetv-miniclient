@@ -72,6 +72,8 @@ public interface UIRenderer<Image> {
 
     ImageHolder<Image> newImage(int destWidth, int destHeight);
 
+    void registerTexture(ImageHolder<Image> texture);
+
     void setTargetSurface(int handle, ImageHolder<Image> image);
 
     void flipBuffer();

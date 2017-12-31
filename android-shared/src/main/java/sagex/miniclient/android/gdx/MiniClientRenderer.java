@@ -657,6 +657,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
+    public void registerTexture(ImageHolder<GdxTexture> texture) {
+        // not used here, but, could be used to let the UI know that this texture is being registered.
+    }
+
+    @Override
     public void flipBuffer() {
         if (firstFrame) {
             firstFrame = false;

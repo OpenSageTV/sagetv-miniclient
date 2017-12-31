@@ -30,6 +30,8 @@ public class PropertiesPrefStore implements PrefStore {
     public PropertiesPrefStore(Properties props, File propFile) {
         this.props = props;
         this.propFile = propFile;
+        if (props.size()==0)
+            load();
     }
 
     void load() {

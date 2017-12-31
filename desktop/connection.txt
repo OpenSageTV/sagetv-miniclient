@@ -1,0 +1,73 @@
+CREATE: UI SIZE: Dimension{height=1080, width=1776}, SCREEN SIZE: Dimension{height=1080, width=1776}
+DEBUG - Waiting For UI...
+RESIZE SCREEN: width: 1920; height: 1080
+VIEWPORT: width: 1920; height: 1080
+VIEWPORT: x: 0; y: 0
+WORLD: width: 1920.0; height: 1080.0
+SCALE: Scale{xs=1.0, ys=1.0}
+Notifying SageTV about the Resize Event: Dimension{height=1080, width=1920}
+Notifying SageTV about the Resize Event: Dimension{height=1080, width=1920}
+GetProperty: GFX_TEXTMODE='NONE'
+GetProperty: FIRMWARE_VERSION='9.0.0'
+GetProperty: GFX_BLENDMODE='PREMULTIPLY'
+GetProperty: GFX_DRAWMODE='FULLSCREEN'
+GetProperty: GFX_SURFACES='TRUE'
+GetProperty: GFX_HIRES_SURFACES='TRUE'
+GetProperty: GFX_VIDEO_UPDATE='TRUE'
+GetProperty: GFX_VIDEO_MASKS='31'
+GetProperty: GFX_BITMAP_FORMAT='PNG,JPG,GIF,BMP'
+GetProperty: GFX_SCALING='HARDWARE'
+GetProperty: GFX_NEGSCALING=''
+GetProperty: GFX_OFFLINE_IMAGE_CACHE='TRUE'
+GetProperty: GFX_YUV_IMAGE_CACHE='SEPARATE'
+GetProperty: GFX_SUPPORTED_ASPECTS='16:9'
+GetProperty: GFX_ASPECT=''
+GetProperty: GFX_FIXED_PAR=''
+GetProperty: GFX_DIFFUSE_TEXTURES=''
+GetProperty: GFX_XFORMS=''
+GetProperty: GFX_TEXTURE_BATCH_LIMIT=''
+GetProperty: VIDEO_ADVANCED_ASPECT_LIST='Source;Stretch;Zoom'
+GetProperty: GFX_SUPPORTED_RESOLUTIONS='1920x1080;windowed'
+GetProperty: GFX_SUPPORTED_RESOLUTIONS_DIGITAL=''
+GetProperty: GFX_RESOLUTION='1920x1080'
+GetProperty: GFX_HDMI_MODE=''
+GetProperty: GFX_COMPOSITE='BLEND'
+GetProperty: GFX_COLORKEY='080010'
+GetProperty: AUDIO_OUTPUTS=''
+GetProperty: AUDIO_OUTPUT=''
+GetProperty: INPUT_DEVICES='IR,KEYBOARD,TOUCH'
+GetProperty: DISPLAY_OVERSCAN='0;0;1.0;1.0'
+GetProperty: VIDEO_CODECS='MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG,HEVC,0X0000'
+GetProperty: AUDIO_CODECS='MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3'
+GetProperty: PULL_AV_CONTAINERS='AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3'
+GetProperty: PUSH_AV_CONTAINERS='MPEG2-PS,MPEG2-TS,MPEG1-PS'
+GetProperty: STREAMING_PROTOCOLS='file,stv'
+GetProperty: FIXED_PUSH_MEDIA_FORMAT=''
+GetProperty: OPENURL_INIT='TRUE'
+GetProperty: FRAME_STEP='TRUE'
+GetProperty: GFX_CURSORPROP=''
+GetProperty: DETAILED_BUFFER_STATS='TRUE'
+GetProperty: PUSH_BUFFER_SEEKING='TRUE'
+GetProperty: MEDIA_PLAYER_BUFFER_DELAY='0'
+GetProperty: REMOTE_FS=''
+GetProperty: IR_PROTOCOL=''
+GetProperty: GFX_SUBTITLES='TRUE'
+GetProperty: FORCED_MEDIA_RECONNECT='TRUE'
+GetProperty: AUTH_CACHE='TRUE'
+GetProperty: DEINTERLACE_CONTROL=''
+GetProperty: PUSH_BUFFER_LIMIT=''
+GetProperty: SCREENSHOT_CAP=''
+GetProperty: ZLIB_COMM='TRUE'
+GetProperty: OFFLINE_CACHE_CONTENTS=''
+GetProperty: ADVANCED_IMAGE_CACHING='TRUE'
+GetProperty: VIDEO_ADVANCED_ASPECT='Source'
+SetProperty ADVANCED_IMAGE_CACHING=false
+SetProperty RECONNECT_SUPPORTED=true
+SetProperty ZLIB_COMM_XFER=true
+UI Apect Ratio has been set to 1.7777778
+SetProperty GFX_ASPECT=1.7777778
+SetProperty SUBTITLES_CALLBACKS=true
+GetProperty: CRYPTO_ALGORITHMS='RSA,Blowfish,DH,DES'
+Setting MENU_HINT: MenuHint{hasTextInput=false, menuName='Configuration Wizard - Choose Country', popupName='null'}
+SetProperty MENU_HINT=menuName:Configuration Wizard - Choose Country, popupName:null, hasTextInput:false
+SetProperty GFX_FLIP=(WAS_NULL)

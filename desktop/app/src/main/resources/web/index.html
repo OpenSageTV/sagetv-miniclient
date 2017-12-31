@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SageTV MiniClient Web</title>
+    <style>
+        #screen {
+            border: 1px solid red;
+        }
+        .offscreen {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div id="servers">
+    <template id="server">
+        <div>
+            <div id="name"></div>
+            <button id="connect">Connect</button>
+        </div>
+    </template>
+    <div id="list">
+
+    </div>
+</div>
+<canvas id="screen" width="1024" height="576" style="display: none">
+</canvas>
+<script>
+    function hide(id) {
+        document.getElementById(id).style.display='none';
+    }
+    function show(id) {
+        document.getElementById(id).style.display='';
+    }
+    function connectToServer(server) {
+        hide("servers");
+
+        var clientId = 'browser';
+        var screenW=1024,screenH=576;
+
+        function log() {
+            console.log(arguments);
+        }
+
+        function offscreenElement(el, w, h) {
+            var offscreen = document.createElement(el);
+            offscreen.className='offscreen';
+            if (w) offscreen.width=w;
+            if (h) offscreen.height=h;
+            document.body.appendChild(offscreen);
+            return offscreen;
+        }
+
+        var dstSurface = document.getElementById("screen");
+        var dstCtx = dstSurface.getContext('2d');
+        document.addEventListener('keydown', function(ev) {
+            console.log(ev);
+            ws.send("key " + ev.keyCode + " " + ev.key + " SHIFT " + ev.shiftKey + " CTRL " + ev.ctrlKey + " ALT " + ev.altKey);
+        });
+
+        function colorize(img, sx, sy, sw, sh, x, y, w, h, color) {
+            return img;
+            if (color==="#FFFFFF") return img;
+
+            var c=document.createElement('canvas');
+            c.width=w;
+            c.height=h;
+            var cctx=c.getContext('2d');
+            cctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+            cctx.globalCompositeOperation='source-atop';
+            cctx.fillStyle=color;
+            cctx.fillRect(0,0,img.width,img.height);
+            cctx.globalCompositeOperation='source-over';
+            return c;
+        }
+
+        var imgHandle;
+        var images = {};
+        var surfaces = {};
+        surfaces['0'] = offscreenElement('canvas', screenW, screenH);
+        var curSurface = surfaces[0];
+        var curCtx = curSurface.getContext('2d');
+        var ws = new WebSocket("ws://localhost:8099/ui");
+        ws.onopen = function (ev) {
+            console.log("Opened", ev);
+            ws.send("connect to " + server + " from " + clientId + " with screen size " + screenW + " " + screenH);
+        };
+        var firstFrame=true;
+
+        ws.onmessage = function (ev) {
+            //console.log("DATA", ev.data, ev);
+            if (ev.data instanceof Blob) {
+                //console.log("Got Binary Data");
+                var imgEl = offscreenElement('img');
+                imgEl.src = URL.createObjectURL(new Blob([ev.data]));
+                images[imgHandle] = imgEl;
+            } else {
+                var cmds = ev.data.split(" ");
+                //console.log("COMMANDS", cmds);
+                switch (cmds[0]) {
+                    case 'init':
+                        break;
+                    case 'register':
+                        //console.log(cmds);
+                        imgHandle = cmds[1];
+                        break;
+                    case 'start':
+                        break;
+                    case 'flip':
+                        dstCtx.drawImage(curSurface, 0, 0);
+                        if (firstFrame) {
+                            firstFrame=false;
+                            // show it
+                            show("screen");
+
+                            // sage aparently need a resize after the first frame,
+                            // likely a timing thing that I need to figure out
+                            ws.send("resize " + screenW + " " + screenH);
+                        }
+                        break;
+                    case 'draw_texture':
+                        //console.log(cmds);
+                        var x = parseInt(cmds[2]),
+                            y = parseInt(cmds[3]),
+                            w = parseInt(cmds[4]),
+                            h = parseInt(cmds[5]),
+                            sx = parseInt(cmds[6]),
+                            sy = parseInt(cmds[7]),
+                            sw = parseInt(cmds[8]),
+                            sh = parseInt(cmds[9]),
+                            c = cmds[10],
+                            a = parseFloat(cmds[11]);
+                        var img = images[cmds[1]] || surfaces[cmds[1]];
+                        if (img) {
+                            //console.log("texture " + cmds[1] + " " + img.width + " " + img.height);
+                            curCtx.globalCompositeOperation = 'source-over';
+                            if (h<0) {
+                                curCtx.globalCompositeOperation = 'source-atop';
+                            }
+                            var font=(w<0);
+                            w = Math.abs(w);
+                            h = Math.abs(h);
+                            if (font) {
+                                curCtx.globalAlpha=a;
+                                curCtx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+                                var img2 = colorize(img, sx, sy, sw, sh, x, y, w, h, c);
+                                if (img2!==img) {
+                                    curCtx.globalCompositeOperation = 'color';
+                                    curCtx.drawImage(colorize(img, sx, sy, sw, sh, x, y, w, h, c), 0, 0);
+                                    curCtx.globalCompositeOperation = 'source-over';
+                                }
+                            } else {
+                                curCtx.globalAlpha=a;
+                                curCtx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+                            }
+                        } else {
+                            console.log("No Texture to draw for", cmds)
+                        }
+                        break;
+                    case 'create_surface':
+                        surfaces[cmds[1]]=offscreenElement('canvas', parseInt(cmds[2]), parseInt(cmds[3]));
+                        break;
+                    case 'set_surface':
+                        curSurface = surfaces[cmds[1]];
+                        curCtx = curSurface.getContext('2d');
+                        break;
+                    case 'close':
+                        closeSageTV();
+                        break;
+                    default:
+                        console.log("Unhandled Command", cmds)
+                }
+            }
+
+        };
+
+        ws.onclose = function (ev) {
+            console.log("Closed");
+            closeSageTV();
+        };
+
+        function closeSageTV() {
+            hide("screen");
+            show("servers");
+        }
+    }
+
+
+    console.log("Discovering Servers...");
+    var list = document.getElementById("list");
+    list.innerHTML="<div>Finding Servers...</div>";
+    fetch("/servers").then(function(response) {
+        return response.json();
+    }).then(function(json) {
+        console.log('Servers', json);
+        var tpl = document.getElementById("server");
+
+        if (!json || !json.length) {
+            list.innerHTML='<div>No Servers</div>';
+        } else {
+            for (var i=0;i<json.length;i++) {
+                var node = document.createElement("div");
+                node.innerHTML = tpl.innerHTML;
+                var name = node.querySelector("#name");
+                var server = json[i].address + ":" + json[i].port;
+                name.innerHTML=server;
+                var btn = node.querySelector("#connect");
+                btn.setAttribute("onclick","connectToServer('"+server+"')");
+                list.innerHTML += node.innerHTML;
+            }
+        }
+
+
+    });
+</script>
+</body>
+</html>

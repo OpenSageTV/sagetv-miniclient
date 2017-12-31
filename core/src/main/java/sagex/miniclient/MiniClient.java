@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import sagex.miniclient.events.ConnectedEvent;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -168,6 +169,7 @@ public class MiniClient {
         imageCache = new ImageCache(this);
         MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si);
         connection.connect();
+        eventbus().post(new ConnectedEvent());
     }
 
     public void closeConnection() {
@@ -213,5 +215,9 @@ public class MiniClient {
 
     public ImageCache getImageCache() {
         return imageCache;
+    }
+
+    public boolean isReady() {
+        return isConnected() && getCurrentConnection().hasEventChannel();
     }
 }

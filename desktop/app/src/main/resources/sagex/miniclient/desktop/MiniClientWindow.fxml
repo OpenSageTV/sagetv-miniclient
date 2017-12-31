@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+
+
+<StackPane fx:id="layers" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sagex.miniclient.desktop.MiniClientWindow">
+   <children>
+      <Label fx:id="message" text="Label" />
+   </children>
+</StackPane>

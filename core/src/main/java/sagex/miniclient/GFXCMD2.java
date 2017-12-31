@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.uibridge.Dimension;
+import sagex.miniclient.uibridge.HandlesNativeGFXCommand;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.VerboseLogging;
@@ -108,11 +109,12 @@ public class GFXCMD2 {
     private boolean cursorHidden;
     private String lastImageResourceID;
     private int lastImageResourceIDHandle;
-
+    private boolean deleageGFXCommands = false;
     public GFXCMD2(MiniClient client) {
         this.client = client;
         this.windowManager = client.getUIRenderer();
         this.myConn = client.getCurrentConnection();
+        deleageGFXCommands=this.windowManager instanceof HandlesNativeGFXCommand;
     }
 
     public static int readInt(int pos, byte[] cmddata) {
@@ -154,6 +156,10 @@ public class GFXCMD2 {
     public int ExecuteGFXCommand(int cmd, int len, byte[] cmddata, int[] hasret) {
         len -= 4; // for the 4 byte header
         hasret[0] = 0; // Nothing to return by default
+
+        if (deleageGFXCommands) {
+            return ((HandlesNativeGFXCommand)windowManager).ExecuteGFXCommand(cmd, len, cmddata, hasret);
+        }
 
         if (VerboseLogging.DETAILED_GFX) {
             if (cmd == GFXCMD_SETVIDEOPROP) {
@@ -504,7 +510,7 @@ public class GFXCMD2 {
                                 if (cachedFile != null) {
                                     // We've got it locally in our cache! Read it
                                     // from there.
-                                    sagex.miniclient.uibridge.ImageHolder<?> bi = windowManager.readImage(cachedFile);
+                                    sagex.miniclient.uibridge.ImageHolder bi = windowManager.readImage(cachedFile);
                                     if (bi == null || bi.getWidth() != width || bi.getHeight() != height) {
                                         if (bi != null) {
                                             // It doesn't match the cache
@@ -521,7 +527,7 @@ public class GFXCMD2 {
                                         log.debug("PREPIMAGE[{}]: Loading Loading From Cache: {}", imghandle, cachedFile);
                                         bi.setHandle(imghandle);
                                         client.getImageCache().put(imghandle, bi, width, height);
-
+                                        windowManager.registerTexture(bi);
                                         hasret[0] = 1;
                                         return -1 * imghandle;
                                     }
@@ -585,7 +591,7 @@ public class GFXCMD2 {
 
                             // We've got it locally in our cache! Read it from
                             // there.
-                            sagex.miniclient.uibridge.ImageHolder<?> bi = windowManager.readImage(cachedFile);
+                            sagex.miniclient.uibridge.ImageHolder bi = windowManager.readImage(cachedFile);
                             if (bi == null || bi.getWidth() != width || bi.getHeight() != height) {
                                 if (bi != null) {
                                     // It doesn't match the cache
@@ -604,6 +610,7 @@ public class GFXCMD2 {
                             } else {
                                 bi.setHandle(imghandle);
                                 client.getImageCache().put(imghandle, bi, width, height);
+                                windowManager.registerTexture(bi);
                                 hasret[0] = 0;
                             }
                         } else {
@@ -826,10 +833,11 @@ public class GFXCMD2 {
                         //log.debug("LOADIMAGE: AdvancedImageCaching: {}, Handle: {}, Return: {}", myConn.doesUseAdvancedImageCaching(), handle, hasret[0]);
                         try {
                             //log.debug("LoadImageCompressed: {}, reading Cached File: {}", handle, cacheFile);
-                            sagex.miniclient.uibridge.ImageHolder<?> img = null;
+                            sagex.miniclient.uibridge.ImageHolder img = null;
                             img = windowManager.readImage(cacheFile);
                             img.setHandle(handle);
                             client.getImageCache().put(handle, img, img.getWidth(), img.getHeight());
+                            windowManager.registerTexture(img);
                             if (deleteCacheFile)
                                 cacheFile.delete();
                             return handle;
