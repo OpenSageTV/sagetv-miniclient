@@ -55,8 +55,18 @@
         var dstSurface = document.getElementById("screen");
         var dstCtx = dstSurface.getContext('2d');
         document.addEventListener('keydown', function(ev) {
-            console.log(ev);
+            console.log("key", ev);
             ws.send("key " + ev.keyCode + " " + ev.key + " SHIFT " + ev.shiftKey + " CTRL " + ev.ctrlKey + " ALT " + ev.altKey);
+        });
+
+        document.addEventListener('mousemove', function (ev) {
+            console.log("move", ev);
+            ws.send("move " + ev.x + " " + ev.y);
+        });
+
+        document.addEventListener('click', function (ev) {
+            console.log("click", ev);
+            ws.send("click " + ev.x + " " + ev.y);
         });
 
         function colorize(img, sx, sy, sw, sh, x, y, w, h, color) {
@@ -81,7 +91,8 @@
         surfaces['0'] = offscreenElement('canvas', screenW, screenH);
         var curSurface = surfaces[0];
         var curCtx = curSurface.getContext('2d');
-        var ws = new WebSocket("ws://localhost:8099/ui");
+        var ourLocation = window.location.hostname + ":" + window.location.port;
+        var ws = new WebSocket("ws://"+ourLocation+"/ui");
         ws.onopen = function (ev) {
             console.log("Opened", ev);
             ws.send("connect to " + server + " from " + clientId + " with screen size " + screenW + " " + screenH);

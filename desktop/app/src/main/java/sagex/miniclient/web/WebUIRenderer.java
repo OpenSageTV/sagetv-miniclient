@@ -87,27 +87,27 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void hideCursor() {
-
+        sendString("hide_cursor");
     }
 
     @Override
     public void showBusyCursor() {
-
+        sendString("show_busy_cursor");
     }
 
     @Override
     public void drawRect(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+        sendString("draw_rect " + x + " " + y + " " + " " + width + " " + height + " " + thickness + " " + argbTL);
     }
 
     @Override
     public void fillRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+        sendString("fill_rect " + x + " " + y + " " + " " + width + " " + height + " " + argbTL);
     }
 
     @Override
     public void clearRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+        sendString("clear_rect " + x + " " + y + " " + " " + width + " " + height + " " + argbTL);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2) {
-
+        sendString("draw_line " + x1 + " " + y1 + " " + " " + x2 + " " + y2 + " " + argb1 + " " + argb2);
     }
 
     @Override
@@ -153,6 +153,7 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void unloadImage(int handle, ImageHolder<WebTexture> bi) {
+        sendString("unload_image " + bi.getHandle());
     }
 
     @Override
@@ -232,17 +233,18 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void setFullScreen(boolean b) {
-
+        sendString("fullscreen");
     }
 
     @Override
     public void setSize(int w, int h) {
-
+        sendString("set_size " + w + " " + h);
     }
 
     @Override
     public void invokeLater(Runnable runnable) {
-
+        // we just run it now
+        runnable.run();
     }
 
     @Override
@@ -272,7 +274,8 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void onMenuHint(MenuHint hint) {
-
+        if (hint!=null)
+            sendString("menu_hint " + hint.menuName + " " + hint.popupName + " " + hint.hasTextInput + " " + hint.isOSDMenu() + " " + hint.isOSDMenuNoPopup());
     }
 
     @Override
@@ -282,16 +285,16 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void setVideoAdvancedAspect(String value) {
-
+        sendString("set_video_ar " + value);
     }
 
     @Override
     public void setUIAspectRatio(float value) {
-
+        sendString("set_ui_ar " + value);
     }
 
     @Override
     public float getUIAspectRatio() {
-        return 1;
+        return ((float)size.width)/(float)size.height;
     }
 }
