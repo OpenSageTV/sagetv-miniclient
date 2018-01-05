@@ -34,6 +34,7 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     Dimension size;
     Dimension maxSize;
+    boolean resume=true;
 
     public WebUIRenderer(Session session, int w, int h) {
         this.session=session;
@@ -102,7 +103,7 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void fillRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-        sendString("fill_rect " + x + " " + y + " " + " " + width + " " + height + " " + argbTL);
+        sendString("fill_rect " + x + " " + y + " " + width + " " + height + " " + argbTL + " " + argbTR + " " + argbBR + " " + argbBL);
     }
 
     @Override
@@ -132,8 +133,18 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<WebTexture> img, int srcx, int srcy, int srcwidth, int srcheight, int blend) {
-
+        block();
         sendString("draw_texture " + handle + " " + x + " " + y + " " + width + " " + height + " " + srcx + " " + srcy + " " + srcwidth + " " + srcheight + " " + getColor(blend) + " " + (((blend >> 24) & 0xFF)/255f));
+    }
+
+    private void block() {
+        while (!resume) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static String getColor(int color) {
@@ -188,6 +199,8 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
     public void registerTexture(ImageHolder<WebTexture> texture) {
         // send the image and texture bytes
         sendString("register " + texture.getHandle() + " " + texture.getWidth() + " " + texture.getHeight());
+        // we will wait for resume
+        resume=false;
         sendBytes(texture.get().getTexture());
     }
 
@@ -296,5 +309,10 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
     @Override
     public float getUIAspectRatio() {
         return ((float)size.width)/(float)size.height;
+    }
+
+    public void resume() {
+        log.debug("Resuming..");
+        resume=true;
     }
 }

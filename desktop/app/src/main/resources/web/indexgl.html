@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SageTV MiniClient Web</title>
+    <style>
+        #screen {
+            border: 1px solid red;
+        }
+        .offscreen {
+            display: none;
+        }
+    </style>
+    <script id="2d-fragment-shader" type="x-shader/x-fragment">
+    varying mediump vec4 myColorOut;
+    void main(void)
+    {
+        gl_FragColor = myColorOut;
+    }
+    </script>
+    <script id="2d-vertex-shader" type="x-shader/x-vertex">
+    attribute highp vec4 myVertex;
+    attribute mediump vec4 myColor;
+    uniform mediump mat4 myPMVMatrix;
+    varying mediump vec4 myColorOut;
+
+    void main(void)
+    {
+        gl_Position = myPMVMatrix * myVertex;
+        myColorOut = myColor;
+    }
+    </script>
+    <script id="2d-texture-fragment-shader" type="x-shader/x-texture-fragment">
+    uniform sampler2D sampler2d;
+    varying mediump vec2 myTexCoord;
+    varying mediump vec4 myColorOut;
+    void main (void)
+    {
+        gl_FragColor = myColorOut * texture2D(sampler2d,myTexCoord);
+        // NOTE: webgl images use unmultipled alpha
+        // https://stackoverflow.com/questions/39341564/webgl-how-to-correctly-blend-alpha-channel-png/
+        // we could do it here, but, we'll do it when we load the texture
+        //gl_FragColor.rgb *= gl_FragColor.a;
+    }
+    </script>
+    <script id="2d-texture-vertex-shader" type="x-shader/x-texture-vertex">
+    attribute highp vec4 myVertex;
+    attribute mediump vec4 myUV;
+    attribute mediump vec4 myColor;
+    uniform mediump mat4 myPMVMatrix;
+    varying mediump vec2 myTexCoord;
+    varying mediump vec4 myColorOut;
+    void main(void)
+    {
+        gl_Position = myPMVMatrix * myVertex;
+        myTexCoord = myUV.st;
+        myColorOut = myColor;
+    }
+    </script>
+</head>
+<body>
+<div id="servers">
+    <template id="server">
+        <div>
+            <div id="name"></div>
+            <button id="connect">Connect</button>
+        </div>
+    </template>
+    <div id="list">
+
+    </div>
+</div>
+<canvas id="screen" width="1024" height="576" style="display: none">
+</canvas>
+<script>
+    'use strict';
+
+    function hide(id) {
+        document.getElementById(id).style.display='none';
+    }
+    function show(id) {
+        document.getElementById(id).style.display='';
+    }
+
+    function discoverServers() {
+        console.log("Discovering Servers...");
+        var list = document.getElementById("list");
+        list.innerHTML = "<div>Finding Servers...</div>";
+        fetch("/servers").then(function (response) {
+            return response.json();
+        }).then(function (json) {
+            console.log('Servers', json);
+            var tpl = document.getElementById("server");
+
+            if (!json || !json.length) {
+                list.innerHTML = '<div>No Servers</div>';
+            } else {
+                for (var i = 0; i < json.length; i++) {
+                    var node = document.createElement("div");
+                    node.innerHTML = tpl.innerHTML;
+                    var name = node.querySelector("#name");
+                    var server = json[i].address + ":" + json[i].port;
+                    name.innerHTML = server;
+                    var btn = node.querySelector("#connect");
+                    btn.setAttribute("onclick", "connectToServer('" + server + "')");
+                    list.innerHTML += node.innerHTML;
+                }
+            }
+        });
+    }
+
+    var lastError;
+    var loadShader = function(gl, shaderSource, shaderType, opt_errorCallback) {
+        var errFn = opt_errorCallback || console.log;
+        // Create the shader object
+        var shader = gl.createShader(shaderType);
+
+        // Load the shader source
+        gl.shaderSource(shader, shaderSource);
+
+        // Compile the shader
+        gl.compileShader(shader);
+
+        // Check the compile status
+        var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+        if (!compiled) {
+            // Something went wrong during compilation; get the error
+            lastError = gl.getShaderInfoLog(shader);
+            errFn("*** Error compiling shader '" + shader + "':" + lastError);
+            gl.deleteShader(shader);
+            return null;
+        }
+
+        return shader;
+    };
+
+    var createShaderFromScript = function(
+        gl, scriptId, opt_shaderType, opt_errorCallback) {
+        var shaderSource = "";
+        var shaderType;
+        var shaderScript = document.getElementById(scriptId);
+        if (!shaderScript) {
+            throw("*** Error: unknown script element" + scriptId);
+        }
+        shaderSource = shaderScript.text;
+        console.log(shaderScript);
+        if (!opt_shaderType) {
+            if (shaderScript.getAttribute("type").indexOf('vertex')>=0) {
+                shaderType = gl.VERTEX_SHADER;
+            } else if (shaderScript.getAttribute("type").indexOf('fragment')>=0) {
+                shaderType = gl.FRAGMENT_SHADER;
+            } else {
+                throw("*** Error: unknown shader type");
+                return null;
+            }
+        }
+
+        return loadShader(
+            gl, shaderSource, opt_shaderType ? opt_shaderType : shaderType,
+            opt_errorCallback);
+    };
+
+    function testGL() {
+        var WINDOW_WIDTH=1024.0;
+        var WINDOW_HEIGHT=576.0;
+
+        const VERTEX_ARRAY = 0;
+        const COLOR_ARRAY = 1;
+        const COORD_ARRAY = 2;
+        hide("servers");
+        show("screen");
+
+        var screen = document.getElementById("screen");
+        var gl = screen.getContext("webgl", {
+            premultipliedAlpha: false
+        });
+        if (!gl) {
+            console.log("No WebGL");
+            return;
+        }
+
+        function log() {
+            console.log(arguments);
+        }
+
+        function offscreenElement(el, w, h) {
+            var offscreen = document.createElement(el);
+            offscreen.className='offscreen';
+            if (w) offscreen.width=w;
+            if (h) offscreen.height=h;
+            document.body.appendChild(offscreen);
+            return offscreen;
+        }
+
+
+        // {
+        //     buffer:null, texture:null, width:WINDOW_WIDTH, height:WINDOW_HEIGHT, viewMatrix: []
+        // };
+        var currentSurface=null;
+        var currentShader=-1;
+        var mainSurface=null;
+        var matrixLocation;
+
+        var surfaces = [];
+        var images = [] ;
+
+        var baseVertShader = createShaderFromScript(gl, "2d-vertex-shader");
+        var baseFragShader = createShaderFromScript(gl, "2d-fragment-shader");
+        var baseTexturedVertShader = createShaderFromScript(gl, "2d-texture-vertex-shader");
+        var baseTexturedFragShader = createShaderFromScript(gl, "2d-texture-fragment-shader");
+
+        var baseProgram = gl.createProgram();
+        gl.attachShader(baseProgram, baseFragShader);
+        gl.attachShader(baseProgram, baseVertShader);
+
+        // Bind the custom vertex attribute "myVertex" to location VERTEX_ARRAY
+        gl.bindAttribLocation(baseProgram, VERTEX_ARRAY, "myVertex");
+        gl.bindAttribLocation(baseProgram, COLOR_ARRAY, "myColor");
+
+        // Link the program
+        gl.linkProgram(baseProgram);
+        gl.useProgram(baseProgram);
+        var linked = (gl.getProgramParameter(baseProgram, gl.LINK_STATUS) != 0);
+        if (!linked) {
+            console.log("Failed to link Base Program", gl.getProgramInfoLog(baseProgram));
+            return;
+        }
+
+        var baseProgramPMVLocation=gl.getUniformLocation(baseProgram, "myPMVMatrix");
+
+        var baseTexturedProgram = gl.createProgram();
+        gl.attachShader(baseTexturedProgram, baseTexturedFragShader);
+        gl.attachShader(baseTexturedProgram, baseTexturedVertShader);
+
+        // Bind the custom vertex attribute "myVertex" to location VERTEX_ARRAY
+        gl.bindAttribLocation(baseTexturedProgram, VERTEX_ARRAY, "myVertex");
+        gl.bindAttribLocation(baseTexturedProgram, COLOR_ARRAY, "myColor");
+        gl.bindAttribLocation(baseTexturedProgram, COORD_ARRAY, "myUV");
+
+        // Link the program
+        gl.linkProgram(baseTexturedProgram);
+        gl.useProgram(baseTexturedProgram);
+        linked = (gl.getProgramParameter(baseTexturedProgram, gl.LINK_STATUS) != 0);
+        if (!linked) {
+            console.log("Failed to link Base Texture Program", gl.getProgramInfoLog(baseTexturedProgram));
+            return;
+        }
+
+        var baseTexturedProgramPMVLocation=gl.getUniformLocation(baseTexturedProgram, "myPMVMatrix");
+        console.log("Shaders are configured");
+
+        // 0: base 1: baseTextured
+        function setShaders(mode)
+        {
+            if(mode!=currentShader)
+            {
+                switch(mode)
+                {
+                    case 1:
+                        gl.useProgram(baseProgram);
+                        matrixLocation=baseProgramPMVLocation;
+                        break;
+                    case 2:
+                        gl.useProgram(baseTexturedProgram);
+                        matrixLocation=baseTexturedProgramPMVLocation;
+                        break;
+                    default:
+                        console.log("Unknown shader",mode);
+                        return -1;
+                }
+                currentShader=mode;
+                //setShaderParams();
+            }
+            return 0;
+        }
+
+        function setShaderParams()
+        {
+            //if (currentSurface)
+                gl.uniformMatrix4fv( matrixLocation, false, currentSurface.viewMatrix);
+            return 0;
+        }
+
+        function createSurface(surface)
+        {
+            if(surface.texture!==null)
+            {
+                gl.deleteTexture(surface.texture);
+            }
+            if(surface.buffer!==null)
+            {
+                gl.deleteFramebuffer(surface.buffer);
+            }
+            surface.buffer = gl.createFramebuffer();
+            surface.texture = gl.createTexture();
+            // Binds this texture handle so we can load the data into it
+            gl.bindTexture(gl.TEXTURE_2D, surface.texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+                surface.width, surface.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, surface.buffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, surface.texture, 0);
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            if (currentSurface && currentSurface.buffer!==null) {
+                // rebind to current buffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, currentSurface.buffer);
+            }
+            return surface;
+        }
+
+        function setSurface(surface)
+        {
+            surface.viewMatrix=[];
+            surface.viewMatrix[0]=2.0/surface.width;
+            surface.viewMatrix[1]=0.0;
+            surface.viewMatrix[2]=0.0;
+            surface.viewMatrix[3]=0.0;
+            surface.viewMatrix[4]=0.0;
+            surface.viewMatrix[5]=2.0/surface.height;
+            surface.viewMatrix[6]=0.0;
+            surface.viewMatrix[7]=0.0;
+            surface.viewMatrix[8]=0.0;
+            surface.viewMatrix[9]=0.0;
+            surface.viewMatrix[10]=1.0;
+            surface.viewMatrix[11]=0.0;
+            surface.viewMatrix[12]=-1.0;
+            surface.viewMatrix[13]=-1.0;
+            surface.viewMatrix[14]=0.0;
+            surface.viewMatrix[15]=1.0;
+            currentSurface=surface;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, surface.buffer);
+            return surface;
+        }
+
+        function flipBuffer() {
+            // Flip code...
+            var viewMatrix =
+            [
+                2.0/mainSurface.width,0.0,0.0,0.0,
+                0.0,-2.0/mainSurface.height,0.0,0.0,
+                0.0,0.0,1.0,0.0,
+                -1.0,1.0,0.0,1.0
+            ];
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.useProgram(baseTexturedProgram);
+            gl.uniformMatrix4fv(baseTexturedProgramPMVLocation, false, viewMatrix);
+
+            //gl.enable(gl.TEXTURE_2D);
+            gl.disable(gl.BLEND);
+            gl.bindTexture(gl.TEXTURE_2D, mainSurface.texture);
+
+            var pVertices2 = [0,0, mainSurface.width,
+                0, mainSurface.width, mainSurface.height, mainSurface.width,
+                mainSurface.height, 0, mainSurface.height, 0, 0];
+
+            var pColors2 = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+            var pCoords2 = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0];
+
+            var vertices = new Float32Array(pVertices2);
+            var vertBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+            gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
+
+            var colors = new Uint8Array(pColors2);
+            var colorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+            gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
+
+            var coordBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, coordBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pCoords2), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(COORD_ARRAY, 2, gl.FLOAT, false, 0,0);
+
+            gl.enableVertexAttribArray(VERTEX_ARRAY);
+            gl.enableVertexAttribArray(COLOR_ARRAY);
+            gl.enableVertexAttribArray(COORD_ARRAY);
+
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+
+            //requestAnimationFrame();
+        }
+
+        function hexToRgb(hex, fAlpha) {
+            if (fAlpha<=0) {
+                return {r:0,g:0,b:0,a:0}
+            }
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+                a: 255.0 * fAlpha
+            } : null;
+        }
+
+        function intToRgb(color) {
+            return {
+                r: ((color >> 16) & 0xFF),
+                g: ((color >> 8) & 0xFF),
+                b: ((color) & 0xFF),
+                a: ((color >> 24) & 0xFF)
+            }
+        }
+
+        function rgbToInt(red, green, blue, alpha) {
+            var r = red & 0xFF;
+            var g = green & 0xFF;
+            var b = blue & 0xFF;
+            var a = alpha & 0xFF;
+
+            return (r << 24) + (g << 16) + (b << 8) + (a);
+        }
+
+        // setup the main rendering surface
+        mainSurface = {
+            buffer:null, texture:null, width:WINDOW_WIDTH, height:WINDOW_HEIGHT, viewMatrix: []
+        };
+        createSurface(mainSurface);
+        setSurface(mainSurface);
+        surfaces[0]=mainSurface;
+
+        // small test color green screen
+        gl.clearColor(0.0,0.5,0.0,1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        flipBuffer();
+
+        // small test, draw a red triangle
+        setSurface(mainSurface);
+        gl.useProgram(baseProgram);
+        var i32Location = gl.getUniformLocation(baseProgram, "myPMVMatrix");
+        var viewMatrix =
+            [
+                2.0/WINDOW_WIDTH,0.0,
+                0.0,0.0,
+                0.0,2.0/WINDOW_HEIGHT,
+                0.0,0.0,
+                0.0,0.0,
+                1.0,0.0,
+                -1.0,-1.0,
+                0.0,1.0
+            ];
+        gl.uniformMatrix4fv(i32Location, false, viewMatrix);
+
+        // gl.enable(gl.BLEND);
+        // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        //
+        // // Vertex position (x,y)
+        // var pVertices = [1, WINDOW_HEIGHT-1, WINDOW_WIDTH-2, WINDOW_HEIGHT-1, WINDOW_WIDTH/2, 1];
+        // var pColors = [0xFF,0,0,0xFF, 0xFF,0x0,0,0xFF, 0xFF,0x00,0x00,0xFF];
+        //
+        // // Sets the vertex data to this attribute index
+        // var vertBuffer = gl.createBuffer();
+        // gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+        // gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(pVertices), gl.STATIC_DRAW);
+        // gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
+        // gl.enableVertexAttribArray(VERTEX_ARRAY);
+        //
+        // var colorBuffer = gl.createBuffer();
+        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        // gl.bufferData(gl.ARRAY_BUFFER, Uint8Array.from(pColors), gl.STATIC_DRAW);
+        // gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
+        // gl.enableVertexAttribArray(COLOR_ARRAY);
+        //
+        // gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        draw("fill_rect 10 10 " +(WINDOW_WIDTH-20) + " " + (WINDOW_HEIGHT-20) + " " + rgbToInt(0x00, 0x00, 0xff, 0xff));
+
+        flipBuffer();
+
+        // set the main surface
+        setSurface(mainSurface);
+
+        // let's go
+        var server = "192.168.1.152:31099";
+        var clientId = "browser";
+        var ourLocation = window.location.hostname + ":" + window.location.port;
+        var ws = new WebSocket("ws://"+ourLocation+"/ui");
+
+
+        document.addEventListener('keydown', function(ev) {
+            log("key", ev);
+            ws.send("key " + ev.keyCode + " " + ev.key + " SHIFT " + ev.shiftKey + " CTRL " + ev.ctrlKey + " ALT " + ev.altKey);
+        });
+
+        document.addEventListener('mousemove', function (ev) {
+            log("move", ev);
+            ws.send("move " + ev.x + " " + ev.y);
+        });
+
+        document.addEventListener('click', function (ev) {
+            log("click", ev);
+            ws.send("click " + ev.x + " " + ev.y);
+        });
+
+
+
+
+        //ws.binaryType='arraybuffer';
+        ws.onopen = function (ev) {
+            console.log("Opened", ev);
+            ws.send("connect to " + server + " from " + clientId + " with screen size " + WINDOW_WIDTH + " " + WINDOW_HEIGHT);
+        };
+        var firstFrame=true;
+        var imgHandle;
+
+        ws.onmessage = function (ev) {
+            //console.log("DATA", ev.data, ev);
+            if (ev.data instanceof Blob) {
+                log("Got Binary Data");
+                // images[imgHandle] = imgEl;
+                var image = images[imgHandle];
+                if (!image) {
+                    console.log("Invalid Image Handle", imgHandle);
+                    return;
+                }
+
+                var imgEl = new Image();//offscreenElement('img', image.width, image.height);
+                imgEl.src = URL.createObjectURL(new Blob([ev.data]));
+                image.imgEl=imgEl;
+                imgEl.onload = function() {
+                    log("Creating Texture", imgEl);
+                    var texture = gl.createTexture();
+                    gl.bindTexture(gl.TEXTURE_2D, texture);
+                    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+                    //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, imgEl);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imgEl);
+                    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.bindTexture(gl.TEXTURE_2D, null);
+                    image.texture=texture;
+
+                    // server will block until we load this texture
+                    ws.send("resume");
+                };
+
+
+            } else {
+                draw(ev.data);
+            }
+        };
+
+        ws.onclose = function (ev) {
+            console.log("Closed");
+            closeSageTV();
+        };
+
+        function draw(cmdString) {
+            var cmds = cmdString.split(" ");
+            if (cmds[0] !== 'draw_texture')
+                 console.log("COMMANDS", cmds);
+            switch (cmds[0]) {
+                case 'init':
+                    break;
+                case 'register':
+                    //console.log(cmds);
+                    imgHandle = cmds[1];
+                    // register it now, we'll get the texture later
+                    images[imgHandle] =  {
+                        handle: imgHandle,
+                        width: parseInt(cmds[2]),
+                        height: parseInt(cmds[3]),
+                        texture: null
+                    };
+                    break;
+                case 'start':
+                    setSurface(mainSurface);
+                    break;
+                case 'flip':
+                    flipBuffer();
+                    if (firstFrame) {
+                        firstFrame=false;
+                        // show it
+                        show("screen");
+
+                        // sage aparently need a resize after the first frame,
+                        // likely a timing thing that I need to figure out
+                        ws.send("resize " + WINDOW_WIDTH + " " + WINDOW_HEIGHT);
+                    }
+                    break;
+                case 'fill_rect':
+                    var x = parseInt(cmds[1]),
+                        y = parseInt(cmds[2]),
+                        w = parseInt(cmds[3]),
+                        h = parseInt(cmds[4]),
+                        c = parseInt(cmds[5]);
+
+                    setShaders(1);
+                    setShaderParams();
+
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+                    // Vertex position (x,y)
+                    var color = intToRgb(c);
+                    var pColors = [];
+                    pColors.push(color.r, color.g, color.b, color.a);
+                    pColors.push(color.r, color.g, color.b, color.a);
+                    pColors.push(color.r, color.g, color.b, color.a);
+                    pColors.push(color.r, color.g, color.b, color.a);
+                    pColors.push(color.r, color.g, color.b, color.a);
+                    pColors.push(color.r, color.g, color.b, color.a);
+                    var colorBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, Uint8Array.from(pColors), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
+                    gl.enableVertexAttribArray(COLOR_ARRAY);
+
+                    // Sets the vertex data to this attribute index
+                    var vertBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+                    setRectangle(gl, x, y, w, h);
+                    //gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(pVertices), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(VERTEX_ARRAY);
+
+
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+
+                    break;
+                case 'draw_texture':
+                    //console.log(cmds);
+                    var x = parseInt(cmds[2]),
+                        y = parseInt(cmds[3]),
+                        w = parseInt(cmds[4]),
+                        h = parseInt(cmds[5]),
+                        sx = parseInt(cmds[6]),
+                        sy = parseInt(cmds[7]),
+                        sw = parseInt(cmds[8]),
+                        sh = parseInt(cmds[9]),
+                        c = cmds[10],
+                        a = parseFloat(cmds[11]);
+                    var img = images[cmds[1]] || surfaces[cmds[1]];
+
+                    if (img) {
+                        if (!img.texture) {
+                            console.log("No Texture for ", img);
+                        }
+
+                        setShaders(2);
+                        setShaderParams();
+                        gl.disable(gl.DEPTH_TEST)
+                        gl.enable(gl.BLEND);
+                        gl.bindTexture(gl.TEXTURE_2D, img.texture);
+                        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+                        if(h<0)
+                        {
+                            gl.blendFunc(gl.ONE, gl.ZERO);
+                            h*=-1;
+                        }
+
+                        if(w<0) w*=-1;
+                        // Images
+                        var pVertices2 = [x, y, x+w, y, x+w, y+h,
+                            x+w, y+h, x, y+h, x, y];
+                        var color = hexToRgb(c, a);
+                        var pColors2 = [];
+                        pColors2.push(color.r, color.g, color.b, color.a);
+                        pColors2.push(color.r, color.g, color.b, color.a);
+                        pColors2.push(color.r, color.g, color.b, color.a);
+                        pColors2.push(color.r, color.g, color.b, color.a);
+                        pColors2.push(color.r, color.g, color.b, color.a);
+                        pColors2.push(color.r, color.g, color.b, color.a);
+
+                        var pCoords2 = [
+                            sx/img.width,
+                            sy/img.height,
+                            (sx + sw)/img.width,
+                            sy/img.height,
+                            (sx + sw)/img.width,
+                            (sy + sh)/img.height,
+                            (sx + sw)/img.width,
+                            (sy + sh)/img.height,
+                            sx/img.width,
+                            (sy + sh)/img.height,
+                            sx/img.width,
+                            sy/img.height];
+
+                        var vertBuffer = gl.createBuffer();
+                        gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pVertices2), gl.STATIC_DRAW);
+                        gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
+                        gl.enableVertexAttribArray(VERTEX_ARRAY);
+
+                        var colorBuffer = gl.createBuffer();
+                        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(pColors2), gl.STATIC_DRAW);
+                        gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
+                        gl.enableVertexAttribArray(COLOR_ARRAY);
+
+                        var coordBuffer = gl.createBuffer();
+                        gl.bindBuffer(gl.ARRAY_BUFFER, coordBuffer);
+                        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pCoords2), gl.STATIC_DRAW);
+                        gl.vertexAttribPointer(COORD_ARRAY, 2, gl.FLOAT, false, 0,0);
+
+                        gl.enableVertexAttribArray(COORD_ARRAY);
+
+                        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                        gl.disable(gl.BLEND);
+                        gl.bindTexture(gl.TEXTURE_2D, null);
+                    } else {
+                        console.log("No Texture to draw for", cmds)
+                    }
+                    break;
+                case 'create_surface':
+                    surfaces[cmds[1]]=createSurface({buffer:null, texture: null, width: parseInt(cmds[2]), height: parseInt(cmds[3])});
+                    break;
+                case 'set_surface':
+                    setSurface(surfaces[cmds[1]]);
+                    break;
+                case 'close':
+                    closeSageTV();
+                    break;
+                default:
+                    log("Unhandled Command", cmds)
+            }
+        }
+
+        function setRectangle(gl, x, y, width, height) {
+            var x1 = x;
+            var x2 = x + width;
+            var y1 = y;
+            var y2 = y + height;
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2,
+            ]), gl.STATIC_DRAW);
+        }
+
+        function closeSageTV() {
+            hide("screen");
+            show("servers");
+        }
+    }
+
+    testGL();
+</script>
+</body>
+</html>

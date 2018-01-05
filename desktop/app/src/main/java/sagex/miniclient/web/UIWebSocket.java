@@ -84,6 +84,10 @@ public class UIWebSocket {
             client.getCurrentConnection().postMouseEvent(toSageMouseEvent(x, y, MouseEvent.MOUSE_PRESSED));
             client.getCurrentConnection().postMouseEvent(toSageMouseEvent(x, y, MouseEvent.MOUSE_RELEASED));
             client.getCurrentConnection().postMouseEvent(toSageMouseEvent(x, y, MouseEvent.MOUSE_CLICKED));
+        } else if (message.startsWith("resume")) {
+            ((WebUIRenderer)client.getCurrentConnection().getUiRenderer()).resume();
+        } else {
+            log.error("Unhandled Message: " + message);
         }
     }
 
