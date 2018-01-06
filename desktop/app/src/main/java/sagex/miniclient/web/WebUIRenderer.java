@@ -98,7 +98,7 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
 
     @Override
     public void drawRect(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL) {
-        sendString("draw_rect " + x + " " + y + " " + " " + width + " " + height + " " + thickness + " " + argbTL);
+        sendString("draw_rect " + x + " " + y + " " + " " + width + " " + height + " " + thickness + " " + argbTL +  " " + argbTR + " " + argbBR + " " + argbBL);
     }
 
     @Override
@@ -134,12 +134,13 @@ public class WebUIRenderer implements UIRenderer<WebTexture> {
     @Override
     public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<WebTexture> img, int srcx, int srcy, int srcwidth, int srcheight, int blend) {
         block();
-        sendString("draw_texture " + handle + " " + x + " " + y + " " + width + " " + height + " " + srcx + " " + srcy + " " + srcwidth + " " + srcheight + " " + getColor(blend) + " " + (((blend >> 24) & 0xFF)/255f));
+        sendString("draw_texture " + handle + " " + x + " " + y + " " + width + " " + height + " " + srcx + " " + srcy + " " + srcwidth + " " + srcheight + " " + blend);
     }
 
     private void block() {
         while (!resume) {
             try {
+                System.out.println("Waiting...");
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -2,15 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024">
     <title>SageTV MiniClient Web</title>
     <style>
+        body {
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
         #screen {
-            border: 1px solid red;
+            border: none;
         }
         .offscreen {
             display: none;
         }
     </style>
+    <script id="2d-gradient-fragment-shader" type="x-shader/x-fragment">
+    uniform mediump vec2 u_resolution;
+    uniform mediump vec4 u_argbTL;
+    uniform mediump vec4 u_argbTR;
+    uniform mediump vec4 u_argbBL;
+    uniform mediump vec4 u_argbBR;
+
+    void main(void)
+    {
+        mediump vec2 st = gl_FragCoord.xy/u_resolution.xy;
+
+        if (u_argbTR==u_argbTL) {
+            // gradient y
+            mediump vec3 colorY = mix(u_argbTL.rgb, u_argbBL.rgb, vec3(st.y));
+            gl_FragColor = vec4(colorY,1.0);
+        } else {
+            mediump vec3 colorX = mix(u_argbTL.rgb, u_argbTR.rgb, vec3(st.x));
+            gl_FragColor = vec4(colorX,1.0);
+        }
+
+    }
+    </script>
+    <script id="2d-gradient-vertex-shader" type="x-shader/x-vertex">
+    attribute highp vec4 myVertex;
+    uniform mediump mat4 myPMVMatrix;
+
+    void main(void)
+    {
+        gl_Position = myPMVMatrix * myVertex;
+    }
+    </script>
+
     <script id="2d-fragment-shader" type="x-shader/x-fragment">
     varying mediump vec4 myColorOut;
     void main(void)
@@ -30,7 +69,7 @@
         myColorOut = myColor;
     }
     </script>
-    <script id="2d-texture-fragment-shader" type="x-shader/x-texture-fragment">
+    <script id="2d-texture-fragment-shader" type="x-shader/x-fragment">
     uniform sampler2D sampler2d;
     varying mediump vec2 myTexCoord;
     varying mediump vec4 myColorOut;
@@ -43,10 +82,10 @@
         //gl_FragColor.rgb *= gl_FragColor.a;
     }
     </script>
-    <script id="2d-texture-vertex-shader" type="x-shader/x-texture-vertex">
+    <script id="2d-texture-vertex-shader" type="x-shader/x-vertex">
     attribute highp vec4 myVertex;
     attribute mediump vec4 myUV;
-    attribute mediump vec4 myColor;
+    uniform vec4 myColor;
     uniform mediump mat4 myPMVMatrix;
     varying mediump vec2 myTexCoord;
     varying mediump vec4 myColorOut;
@@ -72,6 +111,8 @@
 </div>
 <canvas id="screen" width="1024" height="576" style="display: none">
 </canvas>
+<pre id="log" style="max-height: 100px; overflow: hidden; display: none">
+</pre>
 <script>
     'use strict';
 
@@ -110,7 +151,7 @@
     }
 
     var lastError;
-    var loadShader = function(gl, shaderSource, shaderType, opt_errorCallback) {
+    function loadShader(gl, shaderSource, shaderType, opt_errorCallback) {
         var errFn = opt_errorCallback || console.log;
         // Create the shader object
         var shader = gl.createShader(shaderType);
@@ -132,11 +173,11 @@
         }
 
         return shader;
-    };
+    }
 
-    var createShaderFromScript = function(
+    function createShaderFromScript(
         gl, scriptId, opt_shaderType, opt_errorCallback) {
-        var shaderSource = "";
+        var shaderSource;
         var shaderType;
         var shaderScript = document.getElementById(scriptId);
         if (!shaderScript) {
@@ -160,9 +201,10 @@
             opt_errorCallback);
     };
 
-    function testGL() {
-        var WINDOW_WIDTH=1024.0;
-        var WINDOW_HEIGHT=576.0;
+    function connectToServer(server) {
+        var screen = document.getElementById("screen");
+        var WINDOW_WIDTH=screen.width;
+        var WINDOW_HEIGHT=screen.height;
 
         const VERTEX_ARRAY = 0;
         const COLOR_ARRAY = 1;
@@ -170,17 +212,43 @@
         hide("servers");
         show("screen");
 
-        var screen = document.getElementById("screen");
+        log("Physical Screen Size: " + document.documentElement.clientWidth + "x" + document.documentElement.clientHeight);
+
+        log("Canvas Screen Size: " + screen.width + "x" + screen.height);
+
+        WINDOW_WIDTH=document.documentElement.clientWidth;
+        WINDOW_HEIGHT=document.documentElement.clientHeight;
+        screen.width=WINDOW_WIDTH;
+        screen.height=WINDOW_HEIGHT;
+
         var gl = screen.getContext("webgl", {
             premultipliedAlpha: false
         });
+
+        console.log("ViewPort: ", gl.getParameter(gl.VIEWPORT));
+
         if (!gl) {
             console.log("No WebGL");
             return;
         }
+        //gl.viewport(0,0,WINDOW_WIDTH,WINDOW_HEIGHT);
 
+        var logid=null;
         function log() {
-            console.log(arguments);
+            // if (logid==null) {
+            //     logid=document.getElementById("log");
+            // }
+            // var argString = JSON.stringify(arguments);
+            // logid.innerText = argString+"\n"+logid.innerText;
+            console.log.apply(console,arguments);
+        }
+        function debug() {
+            // if (logid==null) {
+            //     logid=document.getElementById("log");
+            // }
+            // var argString = JSON.stringify(arguments);
+            // logid.innerText = argString+"\n"+logid.innerText;
+            console.log.apply(console,arguments);
         }
 
         function offscreenElement(el, w, h) {
@@ -191,7 +259,6 @@
             document.body.appendChild(offscreen);
             return offscreen;
         }
-
 
         // {
         //     buffer:null, texture:null, width:WINDOW_WIDTH, height:WINDOW_HEIGHT, viewMatrix: []
@@ -206,8 +273,6 @@
 
         var baseVertShader = createShaderFromScript(gl, "2d-vertex-shader");
         var baseFragShader = createShaderFromScript(gl, "2d-fragment-shader");
-        var baseTexturedVertShader = createShaderFromScript(gl, "2d-texture-vertex-shader");
-        var baseTexturedFragShader = createShaderFromScript(gl, "2d-texture-fragment-shader");
 
         var baseProgram = gl.createProgram();
         gl.attachShader(baseProgram, baseFragShader);
@@ -228,13 +293,16 @@
 
         var baseProgramPMVLocation=gl.getUniformLocation(baseProgram, "myPMVMatrix");
 
+        var baseTexturedVertShader = createShaderFromScript(gl, "2d-texture-vertex-shader");
+        var baseTexturedFragShader = createShaderFromScript(gl, "2d-texture-fragment-shader");
+
         var baseTexturedProgram = gl.createProgram();
         gl.attachShader(baseTexturedProgram, baseTexturedFragShader);
         gl.attachShader(baseTexturedProgram, baseTexturedVertShader);
 
         // Bind the custom vertex attribute "myVertex" to location VERTEX_ARRAY
         gl.bindAttribLocation(baseTexturedProgram, VERTEX_ARRAY, "myVertex");
-        gl.bindAttribLocation(baseTexturedProgram, COLOR_ARRAY, "myColor");
+        //gl.bindAttribLocation(baseTexturedProgram, COLOR_ARRAY, "myColor");
         gl.bindAttribLocation(baseTexturedProgram, COORD_ARRAY, "myUV");
 
         // Link the program
@@ -247,9 +315,37 @@
         }
 
         var baseTexturedProgramPMVLocation=gl.getUniformLocation(baseTexturedProgram, "myPMVMatrix");
+        var baseTexturedColorLocation=gl.getUniformLocation(baseTexturedProgram, "myColor");
+
+        var baseGradientVertShader = createShaderFromScript(gl, "2d-gradient-vertex-shader");
+        var baseGradientFragShader = createShaderFromScript(gl, "2d-gradient-fragment-shader");
+
+        var baseGradientProgram = gl.createProgram();
+        gl.attachShader(baseGradientProgram, baseGradientFragShader);
+        gl.attachShader(baseGradientProgram, baseGradientVertShader);
+
+        // Bind the custom vertex attribute "myVertex" to location VERTEX_ARRAY
+        gl.bindAttribLocation(baseGradientProgram, VERTEX_ARRAY, "myVertex");
+
+        // Link the program
+        gl.linkProgram(baseGradientProgram);
+        gl.useProgram(baseGradientProgram);
+        var linked = (gl.getProgramParameter(baseGradientProgram, gl.LINK_STATUS) != 0);
+        if (!linked) {
+            console.log("Failed to link Base Program", gl.getProgramInfoLog(baseGradientProgram));
+            return;
+        }
+
+        var baseGradientPMVMatrixLocation=gl.getUniformLocation(baseGradientProgram, "myPMVMatrix");
+        var baseGradient_resolution=gl.getUniformLocation(baseGradientProgram, "u_resolution");
+        var baseGradient_argb_tl=gl.getUniformLocation(baseGradientProgram, "u_argbTL");
+        var baseGradient_argb_tr=gl.getUniformLocation(baseGradientProgram, "u_argbTR");
+        var baseGradient_argb_bl=gl.getUniformLocation(baseGradientProgram, "u_argbBL");
+        var baseGradient_argb_br=gl.getUniformLocation(baseGradientProgram, "u_argbBR");
+
         console.log("Shaders are configured");
 
-        // 0: base 1: baseTextured
+        // 1: base 2: baseTextured, 3: gradient base
         function setShaders(mode)
         {
             if(mode!=currentShader)
@@ -263,6 +359,10 @@
                     case 2:
                         gl.useProgram(baseTexturedProgram);
                         matrixLocation=baseTexturedProgramPMVLocation;
+                        break;
+                    case 3:
+                        gl.useProgram(baseGradientProgram);
+                        matrixLocation=baseGradientPMVMatrixLocation;
                         break;
                     default:
                         console.log("Unknown shader",mode);
@@ -283,6 +383,7 @@
 
         function createSurface(surface)
         {
+            debug("Create Surface", surface);
             if(surface.texture!==null)
             {
                 gl.deleteTexture(surface.texture);
@@ -333,6 +434,7 @@
             surface.viewMatrix[15]=1.0;
             currentSurface=surface;
             gl.bindFramebuffer(gl.FRAMEBUFFER, surface.buffer);
+            //gl.viewport(0,0,surface.width, surface.height);
             return surface;
         }
 
@@ -346,11 +448,11 @@
                 -1.0,1.0,0.0,1.0
             ];
 
+            //gl.viewport(0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             gl.useProgram(baseTexturedProgram);
             gl.uniformMatrix4fv(baseTexturedProgramPMVLocation, false, viewMatrix);
 
-            //gl.enable(gl.TEXTURE_2D);
             gl.disable(gl.BLEND);
             gl.bindTexture(gl.TEXTURE_2D, mainSurface.texture);
 
@@ -358,8 +460,7 @@
                 0, mainSurface.width, mainSurface.height, mainSurface.width,
                 mainSurface.height, 0, mainSurface.height, 0, 0];
 
-            var pColors2 = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
-            var pCoords2 = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0];
+            gl.uniform4fv(baseTexturedColorLocation, rgbToFloatArray(0xff, 0xff, 0xff, 0xff));
 
             var vertices = new Float32Array(pVertices2);
             var vertBuffer = gl.createBuffer();
@@ -367,26 +468,17 @@
             gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
             gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
 
-            var colors = new Uint8Array(pColors2);
-            var colorBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-            gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
-
+            var pCoords2 = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0];
             var coordBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, coordBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pCoords2), gl.STATIC_DRAW);
             gl.vertexAttribPointer(COORD_ARRAY, 2, gl.FLOAT, false, 0,0);
 
             gl.enableVertexAttribArray(VERTEX_ARRAY);
-            gl.enableVertexAttribArray(COLOR_ARRAY);
             gl.enableVertexAttribArray(COORD_ARRAY);
-
 
             gl.drawArrays(gl.TRIANGLES, 0, 6);
             gl.bindTexture(gl.TEXTURE_2D, null);
-
-            //requestAnimationFrame();
         }
 
         function hexToRgb(hex, fAlpha) {
@@ -411,6 +503,15 @@
             }
         }
 
+        function intToFloatArray(color) {
+            return new Float32Array([
+                ((color >> 16) & 0xFF)/255.0,
+                ((color >> 8) & 0xFF)/255.0,
+                ((color) & 0xFF)/255.0,
+                ((color >> 24) & 0xFF)/255.0
+            ]);
+        }
+
         function rgbToInt(red, green, blue, alpha) {
             var r = red & 0xFF;
             var g = green & 0xFF;
@@ -418,6 +519,15 @@
             var a = alpha & 0xFF;
 
             return (r << 24) + (g << 16) + (b << 8) + (a);
+        }
+
+        function rgbToFloatArray(red, green, blue, alpha) {
+            var r = red & 0xFF;
+            var g = green & 0xFF;
+            var b = blue & 0xFF;
+            var a = alpha & 0xFF;
+
+            return new Float32Array([r/255.0,g/255.0,b/255.0,a/255.0]);
         }
 
         // setup the main rendering surface
@@ -431,91 +541,86 @@
         // small test color green screen
         gl.clearColor(0.0,0.5,0.0,1);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        flipBuffer();
 
         // small test, draw a red triangle
         setSurface(mainSurface);
-        gl.useProgram(baseProgram);
-        var i32Location = gl.getUniformLocation(baseProgram, "myPMVMatrix");
-        var viewMatrix =
-            [
-                2.0/WINDOW_WIDTH,0.0,
-                0.0,0.0,
-                0.0,2.0/WINDOW_HEIGHT,
-                0.0,0.0,
-                0.0,0.0,
-                1.0,0.0,
-                -1.0,-1.0,
-                0.0,1.0
-            ];
-        gl.uniformMatrix4fv(i32Location, false, viewMatrix);
+        setShaders(1);
+        setShaderParams();
 
-        // gl.enable(gl.BLEND);
-        // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        //
-        // // Vertex position (x,y)
-        // var pVertices = [1, WINDOW_HEIGHT-1, WINDOW_WIDTH-2, WINDOW_HEIGHT-1, WINDOW_WIDTH/2, 1];
-        // var pColors = [0xFF,0,0,0xFF, 0xFF,0x0,0,0xFF, 0xFF,0x00,0x00,0xFF];
-        //
-        // // Sets the vertex data to this attribute index
-        // var vertBuffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(pVertices), gl.STATIC_DRAW);
-        // gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
-        // gl.enableVertexAttribArray(VERTEX_ARRAY);
-        //
-        // var colorBuffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, Uint8Array.from(pColors), gl.STATIC_DRAW);
-        // gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
-        // gl.enableVertexAttribArray(COLOR_ARRAY);
-        //
-        // gl.drawArrays(gl.TRIANGLES, 0, 3);
+        draw("fill_rect 10 10 " +(WINDOW_WIDTH-20) + " " + (WINDOW_HEIGHT-20) + " " + rgbToInt(0x00, 0x00, 0xff, 0xff) + " " + rgbToInt(0xFF, 0x00, 0x00, 0xff)+ " " + rgbToInt(0xFF, 0xFF, 0x00, 0xff)+ " " + rgbToInt(0x00, 0xFF, 0xFF, 0xff));
 
-        draw("fill_rect 10 10 " +(WINDOW_WIDTH-20) + " " + (WINDOW_HEIGHT-20) + " " + rgbToInt(0x00, 0x00, 0xff, 0xff));
+        draw("draw_line 20 20 " +(WINDOW_WIDTH-40) + " " + (WINDOW_HEIGHT-40) + " " + rgbToInt(0xFF, 0x00, 0x00, 0xff)+ " " + rgbToInt(0x00, 0xFF, 0x00, 0xff));
+
+        draw("draw_rect 30 30 " +(WINDOW_WIDTH-60) + " " + (WINDOW_HEIGHT-60) + " 5 " + rgbToInt(0x00, 0xFF, 0x00, 0xff) + " " + rgbToInt(0x00, 0xFF, 0x00, 0xff)+ " " + rgbToInt(0x00, 0x00, 0x00, 0xff)+ " " + rgbToInt(0x00, 0x00, 0x00, 0xff));
 
         flipBuffer();
 
-        // set the main surface
-        setSurface(mainSurface);
-
         // let's go
-        var server = "192.168.1.152:31099";
         var clientId = "browser";
         var ourLocation = window.location.hostname + ":" + window.location.port;
         var ws = new WebSocket("ws://"+ourLocation+"/ui");
 
+        var OPENED=false;
 
         document.addEventListener('keydown', function(ev) {
+            if (!OPENED) return;
             log("key", ev);
             ws.send("key " + ev.keyCode + " " + ev.key + " SHIFT " + ev.shiftKey + " CTRL " + ev.ctrlKey + " ALT " + ev.altKey);
         });
 
-        document.addEventListener('mousemove', function (ev) {
-            log("move", ev);
+        screen.addEventListener('mousemove', function (ev) {
+            if (!OPENED) return;
+            debug("move", ev);
             ws.send("move " + ev.x + " " + ev.y);
         });
 
-        document.addEventListener('click', function (ev) {
+        screen.addEventListener('click', function (ev) {
+            if (!OPENED) return;
             log("click", ev);
             ws.send("click " + ev.x + " " + ev.y);
         });
 
+        var rect = screen.getBoundingClientRect();
 
+        screen.addEventListener("touchend", function(e) {
+            if (!OPENED) return;
+            var clkEvt = document.createEvent('MouseEvent');
+            clkEvt.initMouseEvent('click', true, true, window, 1,
+                e.touches[0].screenX, e.touches[0].screenY,
+                e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top,
+                false, false, false, false,
+                0, null);
+            screen.dispatchEvent(clkEvt);
+        } );
 
+        screen.addEventListener('touchmove', function (e) {
+            if (!OPENED) return;
+            // stop touch event
+            e.stopPropagation();
+            e.preventDefault();
 
-        //ws.binaryType='arraybuffer';
+            // translate to mouse event
+            var clkEvt = document.createEvent('MouseEvent');
+            clkEvt.initMouseEvent('mousemove', true, true, window, e.detail,
+                e.touches[0].screenX, e.touches[0].screenY,
+                e.touches[0].clientX-rect.left, e.touches[0].clientY - rect.top,
+                false, false, false, false,
+                0, null);
+            screen.dispatchEvent(clkEvt);
+        });
+
         ws.onopen = function (ev) {
-            console.log("Opened", ev);
+            console.log("Web Socket Opened.  Connecting to Server...", ev);
             ws.send("connect to " + server + " from " + clientId + " with screen size " + WINDOW_WIDTH + " " + WINDOW_HEIGHT);
         };
         var firstFrame=true;
         var imgHandle;
 
         ws.onmessage = function (ev) {
+            OPENED=true;
             //console.log("DATA", ev.data, ev);
             if (ev.data instanceof Blob) {
-                log("Got Binary Data");
+                debug("Got Binary Data");
                 // images[imgHandle] = imgEl;
                 var image = images[imgHandle];
                 if (!image) {
@@ -523,11 +628,11 @@
                     return;
                 }
 
-                var imgEl = new Image();//offscreenElement('img', image.width, image.height);
+                var imgEl = new Image();
                 imgEl.src = URL.createObjectURL(new Blob([ev.data]));
                 image.imgEl=imgEl;
                 imgEl.onload = function() {
-                    log("Creating Texture", imgEl);
+                    debug("Creating Texture", imgEl);
                     var texture = gl.createTexture();
                     gl.bindTexture(gl.TEXTURE_2D, texture);
                     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
@@ -558,7 +663,7 @@
         function draw(cmdString) {
             var cmds = cmdString.split(" ");
             if (cmds[0] !== 'draw_texture')
-                 console.log("COMMANDS", cmds);
+                 debug("COMMANDS", cmds);
             switch (cmds[0]) {
                 case 'init':
                     break;
@@ -588,33 +693,61 @@
                         ws.send("resize " + WINDOW_WIDTH + " " + WINDOW_HEIGHT);
                     }
                     break;
-                case 'fill_rect':
+                case 'draw_line':
+                    //console.log("draw_line", cmdString);
                     var x = parseInt(cmds[1]),
                         y = parseInt(cmds[2]),
-                        w = parseInt(cmds[3]),
-                        h = parseInt(cmds[4]),
-                        c = parseInt(cmds[5]);
+                        x1 = parseInt(cmds[3]),
+                        y1 = parseInt(cmds[4]),
+                        argbTL = parseInt(cmds[5]),
+                        argbTR = parseInt(cmds[6]);
 
-                    setShaders(1);
+                    setShaders(3);
                     setShaderParams();
 
                     gl.enable(gl.BLEND);
                     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-                    // Vertex position (x,y)
-                    var color = intToRgb(c);
-                    var pColors = [];
-                    pColors.push(color.r, color.g, color.b, color.a);
-                    pColors.push(color.r, color.g, color.b, color.a);
-                    pColors.push(color.r, color.g, color.b, color.a);
-                    pColors.push(color.r, color.g, color.b, color.a);
-                    pColors.push(color.r, color.g, color.b, color.a);
-                    pColors.push(color.r, color.g, color.b, color.a);
-                    var colorBuffer = gl.createBuffer();
-                    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-                    gl.bufferData(gl.ARRAY_BUFFER, Uint8Array.from(pColors), gl.STATIC_DRAW);
-                    gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
-                    gl.enableVertexAttribArray(COLOR_ARRAY);
+                    gl.uniform4fv(baseGradient_argb_tl, intToFloatArray(argbTL));
+                    gl.uniform4fv(baseGradient_argb_tr, intToFloatArray(argbTR));
+                    gl.uniform4fv(baseGradient_argb_bl, intToFloatArray(argbTL));
+                    gl.uniform4fv(baseGradient_argb_br, intToFloatArray(argbTR));
+
+                    gl.uniform2fv(baseGradient_resolution, new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]));
+
+                    // Sets the vertex data to this attribute index
+                    var vertBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+                    var vertices = [x,y, x1, y1];
+                    gl.bufferData(gl.ARRAY_BUFFER, Float32Array.from(vertices), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(VERTEX_ARRAY);
+
+                    gl.drawArrays(gl.LINES, 0, 2);
+                    break;
+                case 'fill_rect':
+                    var x = parseInt(cmds[1]),
+                        y = parseInt(cmds[2]),
+                        w = parseInt(cmds[3]),
+                        h = parseInt(cmds[4]),
+                        argbTL = parseInt(cmds[5]),
+                        argbTR = parseInt(cmds[6]),
+                        argbBL = parseInt(cmds[7]),
+                        argbBR = parseInt(cmds[8]);
+
+                    setShaders(3);
+                    setShaderParams();
+
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+                    gl.uniform4fv(baseGradient_argb_tl, intToFloatArray(argbTL));
+                    gl.uniform4fv(baseGradient_argb_tr, intToFloatArray(argbTR));
+                    gl.uniform4fv(baseGradient_argb_bl, intToFloatArray(argbBL));
+                    gl.uniform4fv(baseGradient_argb_br, intToFloatArray(argbBR));
+
+                    var res = new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]);
+                    gl.uniform2fv(baseGradient_resolution, res);
 
                     // Sets the vertex data to this attribute index
                     var vertBuffer = gl.createBuffer();
@@ -629,6 +762,47 @@
 
 
                     break;
+                case 'draw_rect':
+                    var x = parseInt(cmds[1]),
+                        y = parseInt(cmds[2]),
+                        w = parseInt(cmds[3]),
+                        h = parseInt(cmds[4]),
+                        thickness = parseFloat(cmds[5]),
+                        argbTL = parseInt(cmds[6]),
+                        argbTR = parseInt(cmds[7]),
+                        argbBL = parseInt(cmds[8]),
+                        argbBR = parseInt(cmds[9]);
+
+                    setShaders(3);
+                    setShaderParams();
+
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+                    gl.uniform4fv(baseGradient_argb_tl, intToFloatArray(argbTL));
+                    gl.uniform4fv(baseGradient_argb_tr, intToFloatArray(argbTR));
+                    gl.uniform4fv(baseGradient_argb_bl, intToFloatArray(argbBL));
+                    gl.uniform4fv(baseGradient_argb_br, intToFloatArray(argbBR));
+
+                    var res = new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]);
+                    gl.uniform2fv(baseGradient_resolution, res);
+
+                    // Sets the vertex data to this attribute index
+                    var vertBuffer = gl.createBuffer();
+                    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                        x, y,
+                        x+w, y,
+                        x+w, y+h,
+                        x, y+h,
+                        x, y
+                    ]), gl.STATIC_DRAW);
+                    gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
+                    gl.enableVertexAttribArray(VERTEX_ARRAY);
+                    gl.lineWidth(thickness);
+                    gl.drawArrays(gl.LINE_LOOP, 0, 5);
+
+                    break;
                 case 'draw_texture':
                     //console.log(cmds);
                     var x = parseInt(cmds[2]),
@@ -639,8 +813,7 @@
                         sy = parseInt(cmds[7]),
                         sw = parseInt(cmds[8]),
                         sh = parseInt(cmds[9]),
-                        c = cmds[10],
-                        a = parseFloat(cmds[11]);
+                        c = parseInt(cmds[10])
                     var img = images[cmds[1]] || surfaces[cmds[1]];
 
                     if (img) {
@@ -650,7 +823,10 @@
 
                         setShaders(2);
                         setShaderParams();
-                        gl.disable(gl.DEPTH_TEST)
+                        var color = intToFloatArray(c);
+                        gl.uniform4fv(baseTexturedColorLocation, color);
+
+                        gl.disable(gl.DEPTH_TEST);
                         gl.enable(gl.BLEND);
                         gl.bindTexture(gl.TEXTURE_2D, img.texture);
                         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
@@ -664,14 +840,6 @@
                         // Images
                         var pVertices2 = [x, y, x+w, y, x+w, y+h,
                             x+w, y+h, x, y+h, x, y];
-                        var color = hexToRgb(c, a);
-                        var pColors2 = [];
-                        pColors2.push(color.r, color.g, color.b, color.a);
-                        pColors2.push(color.r, color.g, color.b, color.a);
-                        pColors2.push(color.r, color.g, color.b, color.a);
-                        pColors2.push(color.r, color.g, color.b, color.a);
-                        pColors2.push(color.r, color.g, color.b, color.a);
-                        pColors2.push(color.r, color.g, color.b, color.a);
 
                         var pCoords2 = [
                             sx/img.width,
@@ -692,12 +860,6 @@
                         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pVertices2), gl.STATIC_DRAW);
                         gl.vertexAttribPointer(VERTEX_ARRAY, 2, gl.FLOAT, false, 0, 0);
                         gl.enableVertexAttribArray(VERTEX_ARRAY);
-
-                        var colorBuffer = gl.createBuffer();
-                        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-                        gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(pColors2), gl.STATIC_DRAW);
-                        gl.vertexAttribPointer(COLOR_ARRAY, 4, gl.UNSIGNED_BYTE, true, 0, 0);
-                        gl.enableVertexAttribArray(COLOR_ARRAY);
 
                         var coordBuffer = gl.createBuffer();
                         gl.bindBuffer(gl.ARRAY_BUFFER, coordBuffer);
@@ -724,7 +886,7 @@
                     closeSageTV();
                     break;
                 default:
-                    log("Unhandled Command", cmds)
+                    console.log("Unhandled Command", cmds)
             }
         }
 
@@ -749,7 +911,8 @@
         }
     }
 
-    testGL();
+    discoverServers();
+    //connectToServer("192.168.1.152:31099")
 </script>
 </body>
 </html>
