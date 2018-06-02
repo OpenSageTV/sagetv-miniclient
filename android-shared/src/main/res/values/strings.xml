@@ -93,4 +93,8 @@
     <string name="title_list_disk_cache_preference">Disk Cache for Images</string>
     <string name="summary_list_disk_cache_preference">Amount of disk space to use for caching images</string>
     <string name="dialog_title_list_disk_cache_preference">Set Disk Image Cache</string>
+
+    <string name="title_activity_connecting">ConnectingActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

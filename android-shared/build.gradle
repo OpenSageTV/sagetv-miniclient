@@ -15,7 +15,7 @@ android {
             jniLibs.srcDirs = ['libs']
         }
 
-        instrumentTest.setRoot('tests')
+        //instrumentTest.setRoot('tests')
     }
     lintOptions {
         abortOnError false
@@ -32,7 +32,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion androidBuildToolsVersion
+    buildToolsVersion '27.0.3'
 }
 
 configurations {
@@ -40,6 +40,7 @@ configurations {
 }
 
 dependencies {
+    implementation 'com.android.support:support-v4:26.1.0'
     compile project(":core")
     compile "com.android.support:support-v4:${androidExtrasVer}"
     compile "com.android.support:appcompat-v7:${androidExtrasVer}"
@@ -49,7 +50,7 @@ dependencies {
     // compile 'com.jakewharton:butterknife:7.0.1'
 
     // gdx
-    compile ("com.badlogicgames.gdx:gdx:$gdxVersion") {
+    compile("com.badlogicgames.gdx:gdx:$gdxVersion") {
         exclude group: 'xerces'
         exclude group: 'xpp3'
     }
@@ -91,7 +92,7 @@ dependencies {
 
     // logging
     compile "com.github.tony19:logback-android-core:1.1.1-6"
-    compile ("com.github.tony19:logback-android-classic:1.1.1-6") {
+    compile("com.github.tony19:logback-android-classic:1.1.1-6") {
         exclude group: 'com.google.android', module: 'android'
     }
 
@@ -108,22 +109,21 @@ dependencies {
 //    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
 }
 
-
 // called every time gradle gets executed, takes the native dependencies of
 // the natives configuration, and extracts them to the proper libs/ folders
 // so they get packed with the APK.
-task copyAndroidNatives() { 
+task copyAndroidNatives() {
     file("libs/armeabi/").mkdirs();
     file("libs/armeabi-v7a/").mkdirs();
     file("libs/x86/").mkdirs();
 
     configurations.natives.files.each { jar ->
         def outputDir = null
-        if(jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
-        if(jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
-        if(jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
-        if(jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
-        if(outputDir != null) {
+        if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
+        if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
+        if (jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
+        if (jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
+        if (outputDir != null) {
             copy {
                 from zipTree(jar)
                 into outputDir

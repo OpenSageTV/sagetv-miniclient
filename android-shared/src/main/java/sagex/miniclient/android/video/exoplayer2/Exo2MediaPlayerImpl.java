@@ -15,17 +15,15 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.video.VideoListener;
 
 import java.io.IOException;
-import java.util.List;
 
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
@@ -236,7 +234,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         @DefaultRenderersFactory.ExtensionRendererMode int extensionRendererMode =
                         (preferExtensionDecoders ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
                         : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context,null, extensionRendererMode);
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context, extensionRendererMode);
 
         TrackSelection.Factory adaptiveTrackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter());
@@ -277,7 +275,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
             @Override
-            public void onTimelineChanged(Timeline timeline, Object o) {
+            public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+            }
+
+            @Override
+            public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
             }
 
@@ -292,7 +295,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
             @Override
-            public void onPositionDiscontinuity() {
+            public void onPositionDiscontinuity(int reason) {
 
             }
 
@@ -300,8 +303,13 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
 
             }
+
+            @Override
+            public void onSeekProcessed() {
+
+            }
         });
-        player.setVideoListener(new SimpleExoPlayer.VideoListener() {
+        player.addVideoListener(new VideoListener() {
             @Override
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)

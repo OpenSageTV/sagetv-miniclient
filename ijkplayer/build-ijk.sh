@@ -13,6 +13,7 @@ fi
 
 export ANDROID_NDK=`pwd`/Ndk/android-ndk-r13b
 
+export COMMON_FF_CFG_FLAGS="$COMMON_FF_CFG_FLAGS --disable-linux-perf"
 
 cd ijkplayer
 cd config

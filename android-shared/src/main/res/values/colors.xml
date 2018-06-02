@@ -4,4 +4,6 @@
     <color name="iconbutton_background">#A0000000</color>
     <color name="iconbutton_alt">#81C784</color>
     <color name="iconbutton_on">#00ff00</color>
+
+    <color name="black_overlay">#66000000</color>
 </resources>

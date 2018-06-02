@@ -1,6 +1,6 @@
 <resources>
-    <style name="Theme.PhoneTheme" parent="Theme.AppCompat.NoActionBar">
-    </style>
+
+    <style name="Theme.PhoneTheme" parent="Theme.AppCompat.NoActionBar"></style>
 
     <style name="Theme.Dialog.DoNotDim" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">
         <item name="android:backgroundDimEnabled">false</item>
@@ -54,6 +54,18 @@
 
     <style name="NavButtonContainer">
         <item name="android:background">#22000000</item>
+    </style>
+
+    <style name="FullscreenTheme" parent="Theme.PhoneTheme">
+        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
+        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    </style>
+
+    <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
     </style>
 
 </resources>

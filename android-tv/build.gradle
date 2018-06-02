@@ -50,7 +50,7 @@ android {
 //    dataBinding {
 //        enabled = true
 //    }
-    buildToolsVersion androidBuildToolsVersion
+    buildToolsVersion '27.0.3'
 }
 
 

@@ -36,7 +36,9 @@ if [ -e ${FFMPEG_EXT_PATH}/jni/ffmpeg ] ; then
     #rm -rf ${FFMPEG_EXT_PATH}/jni/ffmpeg
     #git clone git://source.ffmpeg.org/ffmpeg ffmpeg || exit 1
 else
+    cd ${FFMPEG_EXT_PATH}/jni/
     git clone git://source.ffmpeg.org/ffmpeg ffmpeg || exit 1
+    cd -
 fi
 
 COMMON_OPTIONS="\

@@ -65,3 +65,8 @@ JUST FOR Reference...
  
  # use copyresources to build/update mavelLocal
  ```
+
+if ffmpeg fails to build is linux perf error, then edit modules-defaults.sh
+```
+export COMMON_FF_CFG_FLAGS="$COMMON_FF_CFG_FLAGS --disable-linux-perf"
+```
