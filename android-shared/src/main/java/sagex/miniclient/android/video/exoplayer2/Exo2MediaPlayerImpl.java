@@ -2,6 +2,7 @@ package sagex.miniclient.android.video.exoplayer2;
 
 import android.net.Uri;
 import android.os.Handler;
+import android.view.SurfaceView;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -27,6 +28,7 @@ import java.io.IOException;
 
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
@@ -45,7 +47,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     long resumePos = -1;
     long logLastTime = -1;
 
-    public Exo2MediaPlayerImpl(MiniClientGDXActivity activity) {
+    public Exo2MediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, false);
     }
 
@@ -230,11 +232,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         DefaultTrackSelector video = new DefaultTrackSelector();
 
         // See if we need to disable ffmpeg audio decoding
-        boolean preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
+        final boolean preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
         @DefaultRenderersFactory.ExtensionRendererMode int extensionRendererMode =
                         (preferExtensionDecoders ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
                         : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
-        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context, extensionRendererMode);
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context.getContext(), extensionRendererMode);
 
         TrackSelection.Factory adaptiveTrackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter());
@@ -313,9 +315,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             @Override
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                    log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, ratio: {}", width, height, pixelWidthHeightRatio);
+                    log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, pixel ratio: {}", width, height, pixelWidthHeightRatio);
 
-                setVideoSize(width, height, pixelWidthHeightRatio);
+                // note if pixel ratio is != 0 then calc the ar and apply it.
+                if (pixelWidthHeightRatio!=0f) {
+                    setVideoSize(width, height, pixelWidthHeightRatio * ((float)width/(float)height));
+                } else {
+                    setVideoSize(width, height, 0);
+                }
             }
 
             @Override
@@ -361,7 +368,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         player.prepare(mediaSource);
 
         // start playing
-        player.setVideoSurface(context.getVideoView().getHolder().getSurface());
+        player.setVideoSurface(((SurfaceView)context.getVideoView()).getHolder().getSurface());
         player.setPlayWhenReady(true);
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("Video Player is online");

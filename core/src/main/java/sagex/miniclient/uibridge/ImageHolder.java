@@ -1,6 +1,6 @@
 package sagex.miniclient.uibridge;
 
-public class ImageHolder<T> extends Holder<T> {
+public class ImageHolder<T extends Texture> extends Holder<T> {
     private int handle=-1;
     private int width;
     private int height;

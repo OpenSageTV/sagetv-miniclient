@@ -13,7 +13,7 @@ import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 
-public class LoggingUIRenderer<Image> implements UIRenderer<Image> {
+public class LoggingUIRenderer<Image extends Texture> implements UIRenderer<Image> {
     private static final Logger log = LoggerFactory.getLogger(LoggingUIRenderer.class);
 
     private static final boolean LOGGING = false;

@@ -1,5 +1,6 @@
 package sagex.miniclient.android.video;
 
+import android.content.Context;
 import android.widget.FrameLayout;
 
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.events.VideoInfoRefresh;
 import sagex.miniclient.events.VideoInfoShow;
 import sagex.miniclient.video.VideoInfoResponse;
@@ -37,7 +39,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
 
 
-    protected final MiniClientGDXActivity context;
+    protected final AndroidUIController context;
 
     protected boolean pushMode;
     protected boolean playerReady;
@@ -67,7 +69,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     boolean debug_ar=false;
 
-    public BaseMediaPlayerImpl(MiniClientGDXActivity activity, boolean createPlayerOnUI, boolean waitForPlayer) {
+    public BaseMediaPlayerImpl(AndroidUIController activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
         //this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
@@ -138,7 +140,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         eos=true;
         releasePlayer();
         notifySageTVStop();
-        message(context.getString(R.string.msg_player_failed, lastUri));
+        message(context.getContext().getString(R.string.msg_player_failed, lastUri));
     }
 
     protected void notifySageTVStop() {

@@ -1,8 +1,10 @@
-package sagex.miniclient.android.gdx;
+package sagex.miniclient.android.ui;
 
+import android.app.Activity;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     public static final int FLING_THRESHHOLD = 50;
 
     private final MiniClient client;
-    private final MiniClientGDXActivity context;
+    private final Activity context;
     private final int edgeSize;
     private int pointers;
     private int edgesTouched;
@@ -60,7 +62,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
     boolean touchFocusEnabled =false;
     boolean edgesEnabled=true;
 
-    public UIGestureListener(MiniClientGDXActivity act, MiniClient client) {
+    public UIGestureListener(Activity act, MiniClient client) {
         super();
         this.client = client;
         this.context = act;
@@ -283,11 +285,22 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener {
 
     private int getEdgesTouched(int x, int y) {
         int result = 0;
-        if (x < context.getRootView().getLeft() + edgeSize) result |= EDGE_LEFT;
-        if (y < context.getRootView().getTop() + edgeSize) result |= EDGE_TOP;
-        if (x > context.getRootView().getRight() - edgeSize) result |= EDGE_RIGHT;
-        if (y > context.getRootView().getBottom() - edgeSize) result |= EDGE_BOTTOM;
+        if (x < getRootView().getLeft() + edgeSize) result |= EDGE_LEFT;
+        if (y < getRootView().getTop() + edgeSize) result |= EDGE_TOP;
+        if (x > getRootView().getRight() - edgeSize) result |= EDGE_RIGHT;
+        if (y > getRootView().getBottom() - edgeSize) result |= EDGE_BOTTOM;
         return result;
+    }
+
+    View rootView = null;
+
+    View getRootView() {
+        if (rootView!=null) return rootView;
+        context.getWindow().getDecorView().getRootView();
+        if (rootView==null) {
+            rootView = context.findViewById(android.R.id.content);
+        }
+        return rootView;
     }
 
     public boolean isEdgeTouched(int edges) {

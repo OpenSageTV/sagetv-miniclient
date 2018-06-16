@@ -8,7 +8,7 @@ import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 
-public interface UIRenderer<Image> {
+public interface UIRenderer<Image extends Texture> {
     /**
      * Determining States
      * START,CLEAR,FLIP == VIDEO ONLY

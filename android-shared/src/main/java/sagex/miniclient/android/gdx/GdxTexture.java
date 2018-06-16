@@ -18,7 +18,7 @@ import sagex.miniclient.uibridge.Disposable;
 /**
  * Created by seans on 26/09/15.
  */
-public class GdxTexture implements Disposable {
+public class GdxTexture implements Disposable, sagex.miniclient.uibridge.Texture {
     private static final Logger log = LoggerFactory.getLogger(GdxTexture.class);
 
     int width;

@@ -1,7 +1,10 @@
 package sagex.miniclient.android.video.ijkplayer;
 
+import android.view.SurfaceView;
+
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
+import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
@@ -21,7 +24,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     boolean resumeMode = false;
     long lastGetTime = 0;
 
-    public IJKMediaPlayerImpl(MiniClientGDXActivity activity) {
+    public IJKMediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, true);
     }
 
@@ -165,7 +168,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             }
             IjkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_ERROR);
 
-            player.setDisplay(context.getVideoView().getHolder());
+            player.setDisplay(((SurfaceView)context.getVideoView()).getHolder());
 
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-avc", 1); // enable hardware acceleration
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-hevc", 1); // enable hardware acceleration

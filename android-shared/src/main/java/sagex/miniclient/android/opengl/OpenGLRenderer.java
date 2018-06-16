@@ -1,24 +1,13 @@
-package sagex.miniclient.android.gdx;
+package sagex.miniclient.android.opengl;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
 import android.view.Display;
 import android.view.WindowManager;
-
-import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,36 +17,64 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
-import sagex.miniclient.util.VerboseLogging;
-import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.Scale;
+import sagex.miniclient.uibridge.Texture;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.AspectHelper;
+import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.video.HasVideoInfo;
+import sagex.miniclient.video.VideoInfoResponse;
 
-/**
- * Created by seans on 26/09/15.
- */
-public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTexture>, HasVideoInfo {
-    private static final Logger log = LoggerFactory.getLogger(MiniClientRenderer.class);
+public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.Renderer {
+    private static final Logger log = LoggerFactory.getLogger(OpenGLRenderer.class);
 
-    private final MiniClientGDXActivity activity;
+
+    private final AndroidUIController activity;
     private final MiniClient client;
 
+    // UI states, just MENU (default) and VIDEO.
+    int state = STATE_MENU;
+
+    // logging stuff
+    boolean logFrameBuffer = VerboseLogging.DETAILED_GFX_TEXTURES;
+    boolean logFrameTime = false;
+    boolean logTextureTime = false;
+    private boolean logTexture = VerboseLogging.DETAILED_GFX_TEXTURES;
+    long longestTextureTime = 0;
+    long totalTextureTime = 0;
+    long frameTime = 0;
+    long frame = 0;
+    boolean firstFrame = true;
+    boolean ready = false;
+    boolean inFrame=false;
+    // Current Surface (when surfaces are enabled)
+    ImageHolder<OpenGLTexture> currentSurface = null;
+    OpenGLSurface mainSurface = null;
+
+    // render queues
+    final private List<Runnable> renderQueue = new ArrayList<>();
+    private List<Runnable> frameQueue = new ArrayList<>();
+
+    private MiniPlayerPlugin player;
     // Screen and UI resolutions
     // Total available screan pixels that we have
     Dimension fullScreenSize = new Dimension(0, 0);
@@ -72,55 +89,16 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     // the scaleAndCenterImmutable of the uiSize to the screenSize
     Scale scale = new Scale(1, 1);
 
-    // UI states, just MENU (default) and VIDEO.
-    int state = STATE_MENU;
-
-    // GDX stuff
-    Stage stage;
-    Batch batch;
-    Camera camera;
-    Viewport viewport;
-    SageShapeRenderer shapeRenderer;
-    // logging stuff
-    boolean logFrameBuffer = VerboseLogging.DETAILED_GFX_TEXTURES;
-    boolean logFrameTime = false;
-    boolean logTextureTime = false;
-    private boolean logTexture = VerboseLogging.DETAILED_GFX_TEXTURES;
-    long longestTextureTime = 0;
-    long totalTextureTime = 0;
-    long frameTime = 0;
-    long frame = 0;
-    boolean firstFrame = true;
-    boolean ready = false;
-    boolean inFrame=false;
-    // Current Surface (when surfaces are enabled)
-    ImageHolder<GdxTexture> currentSurface = null;
-    // render queues
-    final private List<Runnable> renderQueue = new ArrayList<>();
-    private List<Runnable> frameQueue = new ArrayList<>();
-    // the pipeline is synchonous so only one operations can affect this at a time
-    private Color batchColor = null;
-    // Because getColor() is only called on the render queue, in sequence we can do this
-    private Color lastColor = null;
-    private int lastColorInt = -1;
-
-    private MiniPlayerPlugin player;
-
     private Dimension lastResize = new Dimension(0, 0);
     private Dimension lastScreenSize = new Dimension(0, 0);
     private boolean firstResize = true; // true until after do the first resize
 
     private float uiAspectRatio = AspectHelper.ar_16_9;
 
-    public MiniClientRenderer(MiniClientGDXActivity parent, MiniClient client) {
+    public OpenGLRenderer(AndroidUIController parent, MiniClient client) {
         this.activity = parent;
         this.client = client;
         client.setUIRenderer(this);
-    }
-
-    public static int readInt(int pos, byte[] cmddata) {
-        pos += 4; // for the 4 bytes for the header
-        return ((cmddata[pos] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF);
     }
 
     @Override
@@ -128,32 +106,38 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         return state;
     }
 
-    @Override
     public void create() {
         useNativeResolution = client.properties().getBoolean(PrefStore.Keys.use_native_resolution, true);
 
         fullScreenSize.updateFrom(getMaxScreenSize());
         lastResize.updateFrom(fullScreenSize);
 
-        uiSize.updateFrom(getScreenSize());
+        uiSize.setSize(1280, 720);
         lastScreenSize.updateFrom(uiSize);
 
         scale.setScale(uiSize, fullScreenSize);
 
         log.debug("CREATE: UI SIZE: {}, SCREEN SIZE: {}", uiSize, fullScreenSize);
-        camera = new OrthographicCamera();
-        viewport = new StretchViewport(uiSize.getWidth(), uiSize.getHeight(), camera);
-        stage = new Stage(viewport);
-        batch = stage.getBatch();
 
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+        // load shaders and programs
+        ShaderUtils.createPrograms();
 
-        shapeRenderer = new SageShapeRenderer();
-        Gdx.graphics.setContinuousRendering(false);
+        // create the main surface
+        mainSurface = new OpenGLSurface(uiSize.width, uiSize.height);
+        mainSurface.createSurface();
+
+//        camera = new OrthographicCamera();
+//        viewport = new StretchViewport(uiSize.getWidth(), uiSize.getHeight(), camera);
+//        stage = new Stage(viewport);
+//        batch = stage.getBatch();
+//
+//        camera.update();
+//        batch.setProjectionMatrix(camera.combined);
+//
+//        shapeRenderer = new SageShapeRenderer();
+//        Gdx.graphics.setContinuousRendering(false);
     }
 
-    @Override
     public void resize(int width, int height) {
         if (!firstResize && lastResize.equals(width, height) && lastScreenSize.equals(getScreenSize())) {
             log.debug("Resize Already Happened, Ignoring this: {}x{}", width, height);
@@ -178,16 +162,16 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         this.scale.setScale(uiSize, fullScreenSize);
 
-        stage.getViewport().setWorldSize(uiSize.width, uiSize.height);
-        stage.getViewport().update(fullScreenSize.width, fullScreenSize.height, true);
-        log.debug("RESIZE SCREEN: width: " + fullScreenSize.width + "; height: " + fullScreenSize.height);
-        log.debug("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
-        log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
-        log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
-        log.debug("SCALE: " + scale);
-
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+//        stage.getViewport().setWorldSize(uiSize.width, uiSize.height);
+//        stage.getViewport().update(fullScreenSize.width, fullScreenSize.height, true);
+//        log.debug("RESIZE SCREEN: width: " + fullScreenSize.width + "; height: " + fullScreenSize.height);
+//        log.debug("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
+//        log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
+//        log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
+//        log.debug("SCALE: " + scale);
+//
+//        camera.update();
+//        batch.setProjectionMatrix(camera.combined);
 
         ready = true;
         notifySageTVAboutScreenSize();
@@ -208,10 +192,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
     }
 
-
-    @Override
     public void render() {
-        if (batch==null) return;
+        //if (batch==null) return;
         int size=renderQueue.size();
         if (size==0) return;
 
@@ -219,8 +201,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         synchronized (renderQueue) {
             try {
-                batch.begin();
-                batch.setColor(Color.BLACK);
+                //batch.begin();
+                //batch.setColor(Color.BLACK);
                 for (int i=0;i<size;i++) {
                     renderQueue.get(i).run();
                 }
@@ -228,28 +210,77 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                 log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
                 // TODO: How should we manage this.. request a re-render??
             } finally {
-                batch.end();
+                //batch.end();
                 renderQueue.clear();
             }
         }
 
+        glFlipBuffer();
+        
         long et = System.currentTimeMillis();
         if (logFrameTime) {
             log.debug("RENDER: Time: " + (et - st) + "ms; Ops: " + size);
         }
     }
 
-    @Override
-    public void pause() {
+    private void glFlipBuffer() {
+            // Flip code...
+            float viewMatrix[] =
+                    {
+                            2.0f / (float)mainSurface.width, 0.0f, 0.0f, 0.0f,
+                            0.0f, -2.0f / (float)mainSurface.height, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            -1.0f, 1.0f, 0.0f, 1.0f
+                    };
+
+            //GLES20.viewport(0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+            ShaderUtils.useProgram(ShaderUtils.Shader.Base);
+            //GLES20.glUseProgram(baseTexturedProgram);
+            GLES20.glUniformMatrix4fv(ShaderUtils.BASE_PROGRAM_PMVMatrix_Location, viewMatrix.length, false, viewMatrix, 0);
+
+            GLES20.glDisable(GLES20.GL_BLEND);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mainSurface.texture());
+
+            float pVertices2[] = {0,0, mainSurface.width,
+                    0, mainSurface.width, mainSurface.height, mainSurface.width,
+                    mainSurface.height, 0, mainSurface.height, 0, 0};
+
+            GLES20.glUniform4fv(ShaderUtils.TEXTURE_PROGRAM_Color_Location, 4, ShaderUtils.rgbToFloatArray(0xff, 0xff, 0xff, 0xff), 0);
+
+            int vertBuffer = ShaderUtils.glCreateBuffer();
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertBuffer);
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, pVertices2.length, FloatBuffer.wrap(pVertices2), GLES20.GL_STATIC_DRAW);
+            GLES20.glVertexAttribPointer(ShaderUtils.VERTEX_ARRAY, 2, GLES20.GL_FLOAT, false, 0, 0);
+
+            float pCoords2[] = {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+            int coordBuffer = ShaderUtils.glCreateBuffer();
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, coordBuffer);
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, pCoords2.length, FloatBuffer.wrap(pCoords2), GLES20.GL_STATIC_DRAW);
+            GLES20.glVertexAttribPointer(ShaderUtils.COORD_ARRAY, 2, GLES20.GL_FLOAT, false, 0,0);
+
+            GLES20.glEnableVertexAttribArray(ShaderUtils.VERTEX_ARRAY);
+            GLES20.glEnableVertexAttribArray(ShaderUtils.COORD_ARRAY);
+
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
     }
 
-    @Override
-    public void resume() {
+//    private Color getColor(int color) {
+//        if (lastColor != null && color == lastColorInt) return lastColor;
+//        lastColorInt = color;
+//        lastColor = new Color(((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, ((color) & 0xFF) / 255f, ((color >> 24) & 0xFF) / 255f);
+//        return lastColor;
+//    }
+
+    float Y(int y, int height) {
+        return uiSize.getHeight() - y - height;
     }
 
-    @Override
-    public void dispose() {
+    float Y(int y) {
+        return uiSize.getHeight() - y;
     }
+
 
     @Override
     public void GFXCMD_INIT() {
@@ -266,12 +297,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
 
         // one last attempt to setup our screen
         notifySageTVAboutScreenSize();
+
     }
 
     @Override
     public void GFXCMD_DEINIT() {
         activity.removeVideoFrame();
         activity.finish();
+
     }
 
     @Override
@@ -281,6 +314,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             player.free();
             player = null;
         }
+
     }
 
     @Override
@@ -299,259 +333,90 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void drawLine(final int x1, final int y1, final int x2, final int y2, final int argb1, final int argb2) {
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
+    public void drawRect(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL) {
 
-                camera.update();
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.line(x1, Y(y1), x2, Y(y2), getColor(argb1), getColor(argb2));
-                shapeRenderer.end();
-
-                batch.begin();
-            }
-        });
     }
 
     @Override
-    public void drawRect(final int x, final int y, final int width, final int height, int thickness, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
+    public void fillRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
 
-                camera.update();
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
-                shapeRenderer.end();
-
-                batch.begin();
-            }
-        });
     }
 
     @Override
-    public void fillRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
+    public void clearRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
 
-                camera.update();
-                batch.enableBlending();
-                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                shapeRenderer.rect(x, Y(y, height), width, height, getColor(argbTL), getColor(argbTR), getColor(argbBR), getColor(argbBL));
-                shapeRenderer.end();
-
-                batch.disableBlending();
-
-                batch.begin();
-            }
-        });
     }
 
     @Override
-    public void clearRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
-        // clear rect is only used when showing video
-        state = STATE_VIDEO;
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (VerboseLogging.DETAILED_GFX) log.debug("*** CLEAR RECT ** x:{}, y:{}, w:{}, h:{}", x, y, width, height);
+    public void drawOval(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
 
-                batch.end();
-                camera.update();
-
-                Gdx.gl20.glEnable(GL20.GL_SCISSOR_TEST);
-                Gdx.gl20.glScissor(x, (int)Y(y, height), width, height);
-                //Gdx.gl20.glClearColor(0,0,0,0);
-                Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
-                Gdx.gl20.glDisable(GL20.GL_SCISSOR_TEST);
-
-                batch.begin();
-            }
-        });
     }
 
     @Override
-    public void drawOval(final int x, final int y, final int width, final int height, int thickness, final int argbTL, final int argbTR, final int argbBR, final int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        // TODO: make ovals
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
+    public void fillOval(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
 
-                camera.update();
-                shapeRenderer.setColor(getColor(argbTL));
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.ellipse(x, Y(y, height), width, height);
-                //shapeRenderer.circle(x, y, height / 2);
-                shapeRenderer.end();
-
-                batch.begin();
-            }
-        });
     }
 
     @Override
-    public void fillOval(final int x, final int y, final int width, final int height, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        // TODO: make ovals
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
+    public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
 
-                camera.update();
-                shapeRenderer.setColor(getColor(argbTL));
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                //shapeRenderer.circle(x, y, height / 2);
-                shapeRenderer.ellipse(x, Y(y, height), width, height);
-                shapeRenderer.end();
-
-                batch.begin();
-            }
-        });
     }
 
     @Override
-    public void drawRoundRect(final int x, final int y, final int width, final int height, int thickness, final int arcRadius, final int argbTL, final int argbTR, final int argbBR, final int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        // TODO: make it rounded (libgdx support arcs, curves, and lines, just need to figure out the right combination)
-        drawRect(x, y, width, height, thickness, argbTL, argbTR, argbBR, argbBL);
+    public void fillRoundRect(int x, int y, int width, int height, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
+
     }
 
     @Override
-    public void fillRoundRect(final int x, final int y, final int width, final int height, final int arcRadius, final int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                batch.end();
+    public void drawTexture(int x, int y, int width, int height, int handle, ImageHolder<OpenGLTexture> img, int srcx, int srcy, int srcwidth, int srcheight, int blend) {
 
-                camera.update();
-                shapeRenderer.setProjectionMatrix(camera.combined);
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                Color c = shapeRenderer.getColor();
-                shapeRenderer.setColor(getColor(argbTL));
-                shapeRenderer.roundedRect(x,Y(y, height),width,height,arcRadius);
-                shapeRenderer.setColor(c);
-                shapeRenderer.end();
-
-                batch.begin();
-            }
-        });
-    }
-
-    private Color getColor(int color) {
-        if (lastColor != null && color == lastColorInt) return lastColor;
-        lastColorInt = color;
-        lastColor = new Color(((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, ((color) & 0xFF) / 255f, ((color >> 24) & 0xFF) / 255f);
-        return lastColor;
     }
 
     @Override
-    public void drawTexture(final int x, final int y, final int width, final int height, final int handle, final ImageHolder<GdxTexture> img, final int srcx, final int srcy, final int srcwidth, final int srcheight, final int blend) {
-        state = STATE_MENU;
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (img == null) return;
-                if (img.get() == null) return;
+    public void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2) {
 
-                Texture t = img.get().texture();
-                batch.enableBlending();
-                //Gdx.gl20.glEnable(GL20.GL_TEXTURE_2D);
-
-                batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ONE_MINUS_SRC_ALPHA);
-                if (height < 0) {
-                    batch.setBlendFunction(GL20.GL_ONE, GL20.GL_ZERO);
-                }
-
-                batchColor = batch.getColor();
-                batch.setColor(getColor(blend));
-
-                int w = Math.abs(width);
-                int h = Math.abs(height);
-
-                if (t != null) {
-                    float dy = Y(y, h);
-                    // when the src is fb we need to not remap the y, since it's already inverted
-                    float sy = !img.get().isFrameBuffer?srcy:Y(srcy,srcheight);
-                    batch.draw(t, x, dy, w, h, srcx, (int)sy, srcwidth, srcheight, false, img.get().isFrameBuffer);
-                    if (logTexture) {
-                        if (img.get().isFrameBuffer) {
-                            log.debug("drawFramebufferTexture[({},{}) -> {}]: Pos: {},{}; Size: {}x{};", handle, img.getHandle(), currentSurface != null ? currentSurface.getHandle() : 0, x, dy, w, h);
-                        } else {
-                            log.debug("drawTexture[{} -> {}]: Pos: {},{}; Size: {}x{};  Src: Pos: {},{}; Size: {},{}", handle, currentSurface != null ? currentSurface.getHandle() : 0, x, dy, w, h, srcx, sy, srcwidth, srcheight);
-                        }
-
-                    }
-                } else {
-                    log.warn("We got a null texture for {}", img);
-                }
-
-                batch.setColor(batchColor);
-                batch.disableBlending();
-            }
-        });
-    }
-
-    float Y(int y, int height) {
-        return uiSize.getHeight() - y - height;
-    }
-
-    float Y(int y) {
-        return uiSize.getHeight() - y;
     }
 
     @Override
-    public ImageHolder<GdxTexture> loadImage(int width, int height) {
+    public ImageHolder<OpenGLTexture> loadImage(int width, int height) {
         log.debug("load image {}x{}", width, height);
-        Bitmap bm = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bm.setHasAlpha(true);
-        bm.prepareToDraw();
-        GdxTexture t = new GdxTexture(bm);
-        return new ImageHolder<>(t, t.width, t.height);
+        final OpenGLTexture t = new OpenGLTexture(width, height);
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                t.createTexture();
+            }
+        });
+        return new ImageHolder<>(t, width, height);
     }
 
     @Override
-    public void unloadImage(int handle, ImageHolder<GdxTexture> bi) {
+    public void unloadImage(int handle, ImageHolder<OpenGLTexture> bi) {
         if (bi != null && bi.get() != null) {
             log.debug("Unloading Image: {}", bi);
-            bi.get().dispose();
+            bi.get().delete();
             bi.dispose();
         }
     }
 
     @Override
-    public ImageHolder<GdxTexture> createSurface(int handle, int width, int height) {
-        // need to create a FrameBuffer object
-        // need to create a SpriteBatch and the set the main batch to use it
-        // need to keep a reference to the previous batch
-        // need to set the MAIN surface to be this fbo
+    public ImageHolder<OpenGLTexture> createSurface(int handle, int width, int height) {
         if (logFrameBuffer)
             log.debug("createSurface["+handle+"]: Creating Framebuffer: " + width + "x" + height);
-        final GdxTexture t = new GdxTexture(width, height);
-        final ImageHolder<GdxTexture> h = new ImageHolder<>(t, width, height);
+        final OpenGLTexture t = new OpenGLSurface(width, height);
+        final ImageHolder<OpenGLTexture> h = new ImageHolder<>(t, width, height);
         h.setHandle(handle);
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                //h.get().load();
+                OpenGLSurface.get(h.get()).createSurface();
                 setupSurface(h);
             }
         });
         return h;
     }
 
-    void setupSurface(ImageHolder<GdxTexture> t) {
+    void setupSurface(ImageHolder<OpenGLTexture> t) {
         // we are the current surface
         if (currentSurface!=null && (t == currentSurface || t.getHandle() == currentSurface.getHandle())) {
             if (logFrameBuffer) log.debug("Setting Surface to ourself: {}", t.getHandle());
@@ -559,27 +424,27 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
 
         // close the batch in prep for a new surface, flushed gl
-        batch.end();
+        // batch.end();
 
         // now we can unbind the fb..
         if (currentSurface != null) {
-            currentSurface.get().unbindFrameBuffer();
+            //currentSurface.get().unbindFrameBuffer();
         }
 
         // bind it (is, SetTargetSurface) and set it up
-        t.get().bindFrameBuffer();
+        //t.get().bindFrameBuffer();
 
         // start the batch in prep for new surface
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
+        //camera.update();
+        //batch.setProjectionMatrix(camera.combined);
+        //batch.begin();
 
         // set the current surface
         currentSurface = t;
     }
 
     @Override
-    public void setTargetSurface(final int handle, final ImageHolder<GdxTexture> image) {
+    public void setTargetSurface(final int handle, final ImageHolder<OpenGLTexture> image) {
         // info on Gdx framebufffer
         // http://stackoverflow.com/questions/24434236/libgdx-framebuffer
         // https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/glutils/FrameBuffer.html
@@ -593,14 +458,14 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
                     // we are switching to the primary surface (screen)
                     if (currentSurface != null) {
                         if (logFrameBuffer) log.debug("setTargetSurface[{}, {}]: Unbinding Old Framebuffer: {}", handle, (image!=null)?image.getHandle():null, currentSurface.getHandle());
-                        batch.end();
-                        currentSurface.get().unbindFrameBuffer();
+                        //batch.end();
+                        //currentSurface.get().unbindFrameBuffer();
                         currentSurface = null;
 //
                         // reset the camera and batch
-                        camera.update();
-                        batch.setProjectionMatrix(camera.combined);
-                        batch.begin();
+                        //camera.update();
+                        //batch.setProjectionMatrix(camera.combined);
+                        //batch.begin();
                     } else {
                         if (logFrameBuffer) log.debug("setTargetSurface[{},{}]", handle, (image!=null)?image.getHandle():null);
                         // nothing to do, we are being told to set the surface to 0, but, we are 0
@@ -614,11 +479,11 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public ImageHolder<GdxTexture> readImage(File file) throws Exception {
+    public ImageHolder<OpenGLTexture> readImage(File file) throws Exception {
         try {
             FileInputStream fis = new FileInputStream(file);
             try {
-                return readImage(fis);
+                //return readImage(fis);
             } finally {
                 fis.close();
             }
@@ -630,7 +495,7 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public ImageHolder<GdxTexture> readImage(InputStream fis) throws Exception {
+    public ImageHolder<OpenGLTexture> readImage(InputStream fis) throws Exception {
         long st = System.currentTimeMillis();
 
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -641,23 +506,24 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         totalTextureTime += time;
         longestTextureTime = Math.max(time, longestTextureTime);
 
-        final GdxTexture t = new GdxTexture(bitmap);
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                t.load();
-            }
-        });
-        return new ImageHolder<>(t, t.width, t.height);
+//        final GdxTexture t = new GdxTexture(bitmap);
+//        invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                t.load();
+//            }
+//        });
+//        return new ImageHolder<>(t, t.width, t.height);
+        return null;
     }
 
     @Override
-    public ImageHolder<GdxTexture> newImage(int destWidth, int destHeight) {
+    public ImageHolder<OpenGLTexture> newImage(int destWidth, int destHeight) {
         return loadImage(destWidth, destHeight);
     }
 
     @Override
-    public void registerTexture(ImageHolder<GdxTexture> texture) {
+    public void registerTexture(ImageHolder<OpenGLTexture> texture) {
         // not used here, but, could be used to let the UI know that this texture is being registered.
     }
 
@@ -672,7 +538,10 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
             renderQueue.addAll(frameQueue);
             frameQueue.clear();
         }
-        Gdx.graphics.requestRendering();
+
+        // request a render frame
+        ((GLSurfaceView) activity.getUIView()).requestRender();
+
         if (logFrameTime) {
             log.debug("FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis() - frameTime) + "ms");
         }
@@ -703,8 +572,8 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     void clearUI() {
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
-        Gdx.gl20.glClearColor(0, 0, 0, 0);
-        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        //Gdx.gl20.glClearColor(0, 0, 0, 0);
+        //Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 //        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT | GL20.GL_COVERAGE_BUFFER_BIT_NV);
 //        Gdx.gl.glEnable(GL10.GL_DEPTH_TEST);
 //        Gdx.gl.glEnable(GL10.GL_TEXTURE);
@@ -715,16 +584,16 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
     }
 
     @Override
-    public void loadImageLine(int handle, ImageHolder<GdxTexture> image, int line, int len2, byte[] b) {
-        Bitmap bm = image.get().bitmap;
-        int datapos, x;
-        for (datapos = 12, x = 0; x < len2 / 4; x++, datapos += 4) {
-            bm.setPixel(x, line, readInt(datapos, b));
-        }
+    public void loadImageLine(int handle, ImageHolder<OpenGLTexture> image, int line, int len2, byte[] b) {
+//        Bitmap bm = image.get().bitmap;
+//        int datapos, x;
+//        for (datapos = 12, x = 0; x < len2 / 4; x++, datapos += 4) {
+//            bm.setPixel(x, line, readInt(datapos, b));
+//        }
     }
 
     @Override
-    public void xfmImage(int srcHandle, ImageHolder<GdxTexture> srcImg, int destHandle, ImageHolder<GdxTexture> destImg, int destWidth, int destHeight, int maskCornerArc) {
+    public void xfmImage(int srcHandle, ImageHolder<OpenGLTexture> srcImg, int destHandle, ImageHolder<OpenGLTexture> destImg, int destWidth, int destHeight, int maskCornerArc) {
 
     }
 
@@ -857,7 +726,6 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         return uiAspectRatio;
     }
 
-    @Override
     public VideoInfoResponse getVideoInfo() {
         if (player==null) {
             return null;
@@ -868,5 +736,23 @@ public class MiniClientRenderer implements ApplicationListener, UIRenderer<GdxTe
         }
 
         return null;
+    }
+
+    @Override
+    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+        //GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        create();
+    }
+
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        //GLES20.glViewport(0, 0, width, height);
+        resize(width, height);
+    }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        render();
     }
 }

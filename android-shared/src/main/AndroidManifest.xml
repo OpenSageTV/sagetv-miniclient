@@ -45,6 +45,15 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
+            android:name=".opengl.MiniClientOpenGLActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:finishOnTaskLaunch="true"
+            android:hardwareAccelerated="true"
+            android:label="@string/app_name"
+            android:launchMode="standard"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.PhoneTheme"></activity>
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"

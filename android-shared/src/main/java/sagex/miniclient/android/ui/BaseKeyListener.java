@@ -1,4 +1,4 @@
-package sagex.miniclient.android.gdx;
+package sagex.miniclient.android.ui;
 
 import android.view.KeyEvent;
 import android.view.View;
@@ -38,8 +38,8 @@ public class BaseKeyListener implements View.OnKeyListener {
     protected boolean skipUp = false;
     protected int flircMeta = 0;
 
-    Map<Object, UserEvent> LONGPRESS_KEYMAP;
-    Map<Object, UserEvent> KEYMAP;
+    public Map<Object, UserEvent> LONGPRESS_KEYMAP;
+    public Map<Object, UserEvent> KEYMAP;
 
     public BaseKeyListener(MiniClient client) {
         this.client = client;
@@ -110,15 +110,6 @@ public class BaseKeyListener implements View.OnKeyListener {
         KEYMAP.put(KeyEvent.KEYCODE_VOLUME_DOWN, EventRouter.VOLUME_DOWN);
         KEYMAP.put(KeyEvent.KEYCODE_VOLUME_MUTE, EventRouter.VOLUME_MUTE);
 
-        // UI Long Presses
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, EventRouter.OPTIONS);
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.OPTIONS);
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, EventRouter.PAGE_UP);
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, EventRouter.PAGE_DOWN);
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.FORWORAD);
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.BACK);
-
         // guide and info
         KEYMAP.put(KeyEvent.KEYCODE_GUIDE, EventRouter.GUIDE);
         KEYMAP.put(KeyEvent.KEYCODE_INFO, EventRouter.INFO);
@@ -136,6 +127,15 @@ public class BaseKeyListener implements View.OnKeyListener {
         KEYMAP.put(KeyEvent.KEYCODE_F10, EventRouter.F10);
         KEYMAP.put(KeyEvent.KEYCODE_F11, EventRouter.F11);
         KEYMAP.put(KeyEvent.KEYCODE_F12, EventRouter.F12);
+
+        // UI Long Presses
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, EventRouter.OPTIONS);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, EventRouter.OPTIONS);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, EventRouter.OPTIONS);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, EventRouter.PAGE_UP);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, EventRouter.PAGE_DOWN);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, EventRouter.FORWORAD);
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, EventRouter.BACK);
     }
 
     @Override

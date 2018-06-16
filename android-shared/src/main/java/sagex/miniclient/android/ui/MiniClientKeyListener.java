@@ -1,4 +1,4 @@
-package sagex.miniclient.android.gdx;
+package sagex.miniclient.android.ui;
 
 import android.view.KeyEvent;
 import android.view.View;

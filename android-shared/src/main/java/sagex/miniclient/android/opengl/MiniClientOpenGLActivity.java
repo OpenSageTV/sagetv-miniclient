@@ -1,5 +1,6 @@
-package sagex.miniclient.android.gdx;
+package sagex.miniclient.android.opengl;
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -23,7 +24,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.squareup.otto.DeadEvent;
 import com.squareup.otto.Subscribe;
@@ -47,17 +47,16 @@ import sagex.miniclient.android.events.HideKeyboardEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.MessageEvent;
-import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
-import sagex.miniclient.android.ui.MiniClientKeyListener;
-import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.ui.MiniclientTouchListener;
+import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.android.ui.MiniClientKeyListener;
 import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
 import sagex.miniclient.events.VideoInfoShow;
-import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.util.ClientIDGenerator;
@@ -70,9 +69,9 @@ import static sagex.miniclient.android.AppUtil.message;
 /**
  * Created by seans on 20/09/15.
  */
-public class MiniClientGDXActivity extends AndroidApplication implements MACAddressResolver, AndroidUIController {
+public class MiniClientOpenGLActivity extends Activity implements MACAddressResolver, AndroidUIController {
     public static final String ARG_SERVER_INFO = "server_info";
-    private static final Logger log = LoggerFactory.getLogger(MiniClientGDXActivity.class);
+    private static final Logger log = LoggerFactory.getLogger(MiniClientOpenGLActivity.class);
     FrameLayout uiFrameHolder;
     PlayerSurfaceView videoHolder;
     ViewGroup videoHolderParent;
@@ -84,7 +83,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     ViewGroup errorContainer;
 
     MiniClient client;
-    MiniClientGDXRenderer mgr;
+    OpenGLRenderer mgr;
 
     MediaSessionCompat mediaSessionCompat;
 
@@ -92,7 +91,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     private ChangePlayerOneTime changePlayerOneTime = null;
 
-    public MiniClientGDXActivity() {
+    public MiniClientOpenGLActivity() {
     }
 
     public MiniClient getClient() {
@@ -156,7 +155,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             log.debug("Failed why attempting to pause media player");
         }
         try {
-            if (client.properties().getBoolean(PrefStore.Keys.app_destroy_on_pause)) {
+            if (client.properties().getBoolean(Keys.app_destroy_on_pause)) {
                 try {
                     client.closeConnection();
                 } catch (Throwable t) {
@@ -209,17 +208,16 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
             client = MiniclientApplication.get().getClient();
 
-            mgr = new MiniClientGDXRenderer(this, client);
-            miniClientView = initializeForView(mgr, cfg);
+            mgr = new OpenGLRenderer(this, client);
 
-            if (graphics.getView() instanceof SurfaceView) {
-                log.debug("Setting Translucent View");
-                GLSurfaceView glView = (GLSurfaceView) graphics.getView();
-                // This is needed or else we won't see OSD over video
-                glView.setZOrderOnTop(true);
-                // This is needed or else we will not see the video playing behind the OSD
-                glView.getHolder().setFormat(PixelFormat.RGBA_8888);
-            }
+            miniClientView = new OpenGLSurfaceView(this, mgr);  //initializeForView(mgr, cfg);
+
+            log.debug("Setting Translucent View");
+            GLSurfaceView glView = (GLSurfaceView) miniClientView;
+            // This is needed or else we won't see OSD over video
+            glView.setZOrderOnTop(true);
+            // This is needed or else we will not see the video playing behind the OSD
+            glView.getHolder().setFormat(PixelFormat.RGBA_8888);
 
             miniClientView.setFocusable(true);
             miniClientView.setFocusableInTouchMode(true);
@@ -298,7 +296,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             public void run() {
                 try {
                     // cannot make network connections on the main thread
-                    client.connect(si, MiniClientGDXActivity.this);
+                    client.connect(si, MiniClientOpenGLActivity.this);
                 } catch (final IOException e) {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -369,6 +367,11 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     }
 
     @Override
+    public Object getSystemService(String windowService) {
+        return null;
+    }
+
+    @Override
     public String getMACAddress() {
         // Android 6 generates the same MAC address, so let's outgenerate one
         String id = client.properties().getString(Keys.client_id);
@@ -391,6 +394,11 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
     @Override
     public View getUIView() {
         return miniClientView;
+    }
+
+    @Override
+    public Context getContext() {
+        return null;
     }
 
     @Override
@@ -549,17 +557,6 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         videoHolder.setVisibility(View.VISIBLE);
     }
 
-    public void removeVideoFrame() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                log.debug("Removing Video View");
-                //videoHolderFrame.removeAllViews();
-                videoHolder.setVisibility(View.GONE);
-            }
-        });
-    }
-
     @Subscribe
     public void onChangePlayerOneTime(ChangePlayerOneTime changePlayerOneTime) {
         this.changePlayerOneTime = changePlayerOneTime;
@@ -589,7 +586,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             @Override
             public void run() {
                 try {
-                    Toast.makeText(MiniClientGDXActivity.this, event.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MiniClientOpenGLActivity.this, event.getMessage(), Toast.LENGTH_LONG).show();
                 } catch (Throwable t) {
                     log.error("MESSAGE: {}", event.getMessage());
                 }
@@ -613,5 +610,16 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 //            startActivity(i);
 //        }
 
+    }
+
+    public void removeVideoFrame() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                log.debug("Removing Video View");
+                //videoHolderFrame.removeAllViews();
+                videoHolder.setVisibility(View.GONE);
+            }
+        });
     }
 }
