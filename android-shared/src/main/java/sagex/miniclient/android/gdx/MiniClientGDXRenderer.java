@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.os.Build;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -639,7 +640,13 @@ public class MiniClientGDXRenderer implements ApplicationListener, UIRenderer<Gd
         long st = System.currentTimeMillis();
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // this appears to work better since Android O (documentation says it's prefferred
+            // for bitmaps that are only used to render to the screen (immutable)
+            options.inPreferredConfig = Bitmap.Config.HARDWARE;
+        } else {
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        }
         final Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
 
         long time = System.currentTimeMillis() - st;
