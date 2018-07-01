@@ -223,7 +223,11 @@ public class MiniClientGDXRenderer implements ApplicationListener, UIRenderer<Gd
                 batch.begin();
                 batch.setColor(Color.BLACK);
                 for (int i=0;i<size;i++) {
-                    renderQueue.get(i).run();
+                    try {
+                        renderQueue.get(i).run();
+                    } catch (Throwable t) {
+                        log.error("Failed to Render Instruction", t);
+                    }
                 }
             } catch (Throwable t) {
                 log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
