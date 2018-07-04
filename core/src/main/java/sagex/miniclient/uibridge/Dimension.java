@@ -1,6 +1,6 @@
 package sagex.miniclient.uibridge;
 
-public class Dimension {
+public class Dimension implements Cloneable {
     public int width;
     public int height;
 
@@ -45,6 +45,10 @@ public class Dimension {
     public void update(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    public Dimension clone() {
+        return new Dimension(width, height);
     }
 
     public boolean equals(int width, int height) {

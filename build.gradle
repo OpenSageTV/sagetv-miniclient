@@ -51,14 +51,14 @@ allprojects {
 //        androidBuildToolsVersion = "25.0.1";
 
         androidExtrasVer = "27.0.0";
-        androidBuildToolsVersion = "26.0.2";
+        androidBuildToolsVersion = "27.0.0";
 
         androidMinSdkVersion = 21;
-        androidCompileSdkVersion = 26;
-        androidTargetSdkVersion = 26;
+        androidCompileSdkVersion = 27;
+        androidTargetSdkVersion = 27;
 
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
-        appVersionCode = 2101027 // v1.2.12
+        appVersionCode = 2101029 // v1.2.12
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files

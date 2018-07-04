@@ -1,3 +1,8 @@
+**1.2.13 (2018-07-01)**
+- Upgraded ExoPlayer and IJKPlaer
+- Work Around for Shield (and other 8.x versions) where UI gets completely messed up.
+
+
 **1.2.12 (2017-11-11)**
 - Fixes to Skip ahead for ExoPlayer
 - Fixed Paused Issue (ie, timeline changes when paused)

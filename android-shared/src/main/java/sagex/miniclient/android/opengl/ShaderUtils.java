@@ -109,12 +109,11 @@ public class ShaderUtils {
     public static int GRADIENT_PROGRAM_argb_br;
 
     public static Shader CURRENT_SHADER = null;
-    public static int CURRENT_MATRIX_LOCATION = -1;
-    public static OpenGLSurface CURRENT_SURFACE;
 
     static int compileShader(final int shaderType,
                                     String shaderSource)
     {
+        log.debug("Loading Shader: " + shaderType);
         int shaderHandle=GLES20.glCreateShader(shaderType);
         if (shaderHandle !=0)
         {
@@ -125,7 +124,8 @@ public class ShaderUtils {
             GLES20.glGetShaderiv(shaderHandle, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
             if (compileStatus[0] == GLES20.GL_FALSE)
             {
-                log.error("Error compiling shader: " + GLES20.glGetShaderInfoLog(shaderHandle));
+                log.error("[{}]Error compiling shader: {}", shaderHandle, GLES20.glGetShaderInfoLog(shaderHandle), new Exception(GLES20.glGetShaderInfoLog(shaderHandle)));
+                log.error("[{}]SHADER:\n{}\n", shaderHandle, shaderSource);
                 GLES20.glDeleteShader(shaderHandle);
                 shaderHandle = 0;
             }
@@ -174,9 +174,9 @@ public class ShaderUtils {
         TEXTURE_FRAGMENT_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, textureFragmentShader2d);
         FRAGMENT_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader2d);
 
-        GRADIENT_VERTEX_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, gradientVertexShader2d);
-        TEXTURE_VERTEX_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, textureVertexShader2d);
-        VERTEX_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, vertexShader2d);
+        GRADIENT_VERTEX_SHADER = compileShader(GLES20.GL_VERTEX_SHADER, gradientVertexShader2d);
+        TEXTURE_VERTEX_SHADER = compileShader(GLES20.GL_VERTEX_SHADER, textureVertexShader2d);
+        VERTEX_SHADER = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader2d);
     }
 
     public static void createPrograms() {
@@ -197,65 +197,26 @@ public class ShaderUtils {
         GRADIENT_PROGRAM_argb_br=GLES20.glGetUniformLocation(GRADIENT_PROGRAM, "u_argbBR");
     }
 
-    public static void useProgram(Shader shader) {
+    public static int useProgram(Shader shader) {
         if (shader!=CURRENT_SHADER) {
             switch (shader) {
                 case Base:
                     GLES20.glUseProgram(BASE_PROGRAM);
-                    CURRENT_MATRIX_LOCATION= BASE_PROGRAM_PMVMatrix_Location;
-                    break;
+                    return BASE_PROGRAM_PMVMatrix_Location;
                 case Texture:
                     GLES20.glUseProgram(TEXTURE_PROGRAM);
-                    CURRENT_MATRIX_LOCATION= TEXTURE_PROGRAM_PMVMatrix_Location;
-                    break;
+                    return TEXTURE_PROGRAM_PMVMatrix_Location;
                 case Gradient:
                     GLES20.glUseProgram(GRADIENT_PROGRAM);
-                    CURRENT_MATRIX_LOCATION=GRADIENT_PROGRAM_PMVMatrix_Location;
-
+                    return GRADIENT_PROGRAM_PMVMatrix_Location;
             }
         }
+        return -1;
     }
 
-    public static void setShaderParams(OpenGLSurface surface) {
-        GLES20.glUniformMatrix4fv( CURRENT_MATRIX_LOCATION, 16, false, surface.viewMatrix, 0);
+    public static void setShaderParams(Shader shader, OpenGLSurface surface) {
+        GLES20.glUniformMatrix4fv( useProgram(shader), 1, false, surface.viewMatrix, 0);
     }
-
-//    public static OpenGLSurface createSurface(OpenGLSurface surface)
-//    {
-////        if (CURRENT_SURFACE!=null && CURRENT_SURFACE.buffer!=null) {
-////            // rebind to current buffer
-////            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, CURRENT_SURFACE.buffer());
-////        }
-////
-////        return CURRENT_SURFACE;
-//
-//        return surface.createSurface(surface);
-//    }
-
-    public static OpenGLSurface setSurface(OpenGLSurface surface)
-    {
-        surface.viewMatrix[0]=2.0f/(float)surface.width;
-        surface.viewMatrix[1]=0.0f;
-        surface.viewMatrix[2]=0.0f;
-        surface.viewMatrix[3]=0.0f;
-        surface.viewMatrix[4]=0.0f;
-        surface.viewMatrix[5]=2.0f/(float)surface.height;
-        surface.viewMatrix[6]=0.0f;
-        surface.viewMatrix[7]=0.0f;
-        surface.viewMatrix[8]=0.0f;
-        surface.viewMatrix[9]=0.0f;
-        surface.viewMatrix[10]=1.0f;
-        surface.viewMatrix[11]=0.0f;
-        surface.viewMatrix[12]=-1.0f;
-        surface.viewMatrix[13]=-1.0f;
-        surface.viewMatrix[14]=0.0f;
-        surface.viewMatrix[15]=1.0f;
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, surface.buffer());
-        //gl.viewport(0,0,surface.width, surface.height);
-        CURRENT_SURFACE = surface;
-        return surface;
-    }
-
 
     public static float[] rgbToFloatArray(int red, int green, int blue, int alpha) {
         float r = red & 0xFF;
@@ -267,9 +228,9 @@ public class ShaderUtils {
     }
 
 
-    public static int glCreateBuffer() {
+    public static int[] glCreateBuffer() {
         int buffers[] = new int[1];
         GLES20.glGenBuffers(1, buffers, 0);
-        return buffers[0];
+        return buffers;
     }
 }
