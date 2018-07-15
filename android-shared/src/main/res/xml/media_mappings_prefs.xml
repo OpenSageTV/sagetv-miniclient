@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Default (Remote Controls)"
+        android:summary="Default mappings for all screens">
+
+        <ListPreference
+            android:dialogTitle="Select"
+            android:key="default_select"
+            android:summary="%s"
+            android:title="Select"/>
+
+        <ListPreference
+            android:dialogTitle="Left"
+            android:key="default_left"
+            android:summary="%s"
+            android:title="Left"/>
+
+        <ListPreference
+            android:dialogTitle="Right"
+            android:key="default_right"
+            android:summary="%s"
+            android:title="Right"/>
+
+        <ListPreference
+            android:dialogTitle="Up"
+            android:key="default_up"
+            android:summary="%s"
+            android:title="Up"/>
+
+        <ListPreference
+            android:dialogTitle="Down"
+            android:key="default_down"
+            android:summary="%s"
+            android:title="Down"/>
+
+        <SwitchPreference
+            android:key="long_press_select_for_osd_nav"
+            android:summary="Long press select shows navigation overlay"
+            android:title="Show Navigation"/>
+
+        <ListPreference
+            android:dialogTitle="Select (Long Press)"
+            android:key="default_select_long_press"
+            android:summary="%s"
+            android:title="Select (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Left (Long Press)"
+            android:key="default_left_long_press"
+            android:summary="%s"
+            android:title="Left (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Right (Long Press)"
+            android:key="default_right_long_press"
+            android:summary="%s"
+            android:title="Right (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Up (Long Press)"
+            android:key="default_up_long_press"
+            android:summary="%s"
+            android:title="Up (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Down (Long Press)"
+            android:key="default_down_long_press"
+            android:summary="%s"
+            android:title="Down (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Play"
+            android:key="default_play"
+            android:summary="%s"
+            android:title="Play"/>
+
+        <ListPreference
+            android:dialogTitle="Pause"
+            android:key="default_pause"
+            android:summary="%s"
+            android:title="Pause"/>
+
+        <ListPreference
+            android:dialogTitle="Play/Pause"
+            android:key="default_playpause"
+            android:summary="%s"
+            android:title="Play/Pause"/>
+
+        <ListPreference
+            android:dialogTitle="Stop"
+            android:key="default_stop"
+            android:summary="%s"
+            android:title="Stop"/>
+
+        <ListPreference
+            android:dialogTitle="Fast Forward"
+            android:key="default_fastforward"
+            android:summary="%s"
+            android:title="Fast Forward"/>
+
+        <ListPreference
+            android:dialogTitle="Rewind"
+            android:key="default_rewind"
+            android:summary="%s"
+            android:title="Rewind"/>
+
+        <ListPreference
+            android:dialogTitle="Next"
+            android:key="default_next_track"
+            android:summary="%s"
+            android:title="Next"/>
+
+        <ListPreference
+            android:dialogTitle="Previous"
+            android:key="default_previous_track"
+            android:summary="%s"
+            android:title="Previous"/>
+
+        <ListPreference
+            android:dialogTitle="Volume Up"
+            android:key="default_volume_up"
+            android:summary="%s"
+            android:title="Volume Up"/>
+
+        <ListPreference
+            android:dialogTitle="Volume Down"
+            android:key="default_volume_down"
+            android:summary="%s"
+            android:title="Volume Down"/>
+
+        <ListPreference
+            android:dialogTitle="Mute"
+            android:key="default_mute"
+            android:summary="%s"
+            android:title="Mute"/>
+
+        <ListPreference
+            android:dialogTitle="Channel Up"
+            android:key="default_channel_up"
+            android:summary="%s"
+            android:title="Channel Up"/>
+
+        <ListPreference
+            android:dialogTitle="Channel Down"
+            android:key="default_channel_down"
+            android:summary="%s"
+            android:title="Channel Down"/>
+
+        <ListPreference
+            android:dialogTitle="Menu"
+            android:key="default_menu"
+            android:summary="%s"
+            android:title="Menu"/>
+
+        <ListPreference
+            android:dialogTitle="Guide"
+            android:key="default_guide"
+            android:summary="%s"
+            android:title="Guide"/>
+
+        <ListPreference
+            android:dialogTitle="Info"
+            android:key="default_info"
+            android:summary="%s"
+            android:title="Info"/>
+
+        <ListPreference
+            android:dialogTitle="Search"
+            android:key="default_search"
+            android:summary="%s"
+            android:title="Search"/>
+
+        <ListPreference
+            android:dialogTitle="Delete"
+            android:key="default_delete"
+            android:summary="%s"
+            android:title="Delete"/>
+
+
+        <ListPreference
+            android:dialogTitle="Num 0"
+            android:key="default_num_0"
+            android:summary="%s"
+            android:title="Num 0"/>
+
+        <ListPreference
+            android:dialogTitle="Num 1"
+            android:key="default_num_1"
+            android:summary="%s"
+            android:title="Num 1"/>
+
+        <ListPreference
+            android:dialogTitle="Num 2"
+            android:key="default_num_2"
+            android:summary="%s"
+            android:title="Num 2"/>
+
+        <ListPreference
+            android:dialogTitle="Num 3"
+            android:key="default_num_3"
+            android:summary="%s"
+            android:title="Num 3"/>
+
+        <ListPreference
+            android:dialogTitle="Num 4"
+            android:key="default_num_4"
+            android:summary="%s"
+            android:title="Num 4"/>
+
+        <ListPreference
+            android:dialogTitle="Num 5"
+            android:key="default_num_5"
+            android:summary="%s"
+            android:title="Num 5"/>
+
+        <ListPreference
+            android:dialogTitle="Num 6"
+            android:key="default_num_6"
+            android:summary="%s"
+            android:title="Num 6"/>
+
+        <ListPreference
+            android:dialogTitle="Num 7"
+            android:key="default_num_7"
+            android:summary="%s"
+            android:title="Num 7"/>
+
+        <ListPreference
+            android:dialogTitle="Num 8"
+            android:key="default_num_8"
+            android:summary="%s"
+            android:title="Num 8"/>
+
+        <ListPreference
+            android:dialogTitle="Num 9"
+            android:key="default_num_9"
+            android:summary="%s"
+            android:title="Num 9"/>
+
+        <ListPreference
+            android:dialogTitle="Yellow"
+            android:key="default_yellow"
+            android:summary="%s"
+            android:title="Yellow"/>
+
+        <ListPreference
+            android:dialogTitle="Blue"
+            android:key="default_blue"
+            android:summary="%s"
+            android:title="Blue"/>
+
+        <ListPreference
+            android:dialogTitle="Red"
+            android:key="default_red"
+            android:summary="%s"
+            android:title="Red"/>
+
+        <ListPreference
+            android:dialogTitle="Green"
+            android:key="default_green"
+            android:summary="%s"
+            android:title="Green"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Default (Game Pads)"
+        android:summary="Default mappings for all screens">
+
+        <ListPreference
+            android:dialogTitle="A"
+            android:key="default_A"
+            android:summary="%s"
+            android:title="A"/>
+
+        <ListPreference
+            android:dialogTitle="B"
+            android:key="default_B"
+            android:summary="%s"
+            android:title="B"/>
+
+        <ListPreference
+            android:dialogTitle="X"
+            android:key="default_X"
+            android:summary="%s"
+            android:title="X"/>
+
+        <ListPreference
+            android:dialogTitle="Y"
+            android:key="default_Y"
+            android:summary="%s"
+            android:title="Y"/>
+
+        <ListPreference
+            android:dialogTitle="R1"
+            android:key="default_R1"
+            android:summary="%s"
+            android:title="R1"/>
+
+        <ListPreference
+            android:dialogTitle="R2"
+            android:key="default_R2"
+            android:summary="%s"
+            android:title="R2"/>
+
+        <ListPreference
+            android:dialogTitle="L1"
+            android:key="default_L1"
+            android:summary="%s"
+            android:title="L1"/>
+
+        <ListPreference
+            android:dialogTitle="L2"
+            android:key="default_L2"
+            android:summary="%s"
+            android:title="L2"/>
+
+        <ListPreference
+            android:dialogTitle="Select"
+            android:key="default_gp_select"
+            android:summary="%s"
+            android:title="Select"/>
+
+        <ListPreference
+            android:dialogTitle="Start"
+            android:key="default_gp_start"
+            android:summary="%s"
+            android:title="Start"/>
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

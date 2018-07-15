@@ -1,5 +1,6 @@
 package sagex.miniclient.android.ui;
 
+import android.content.Context;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -21,11 +22,11 @@ public class MiniClientKeyListener implements View.OnKeyListener {
     VideoPausedKeyListener videoPausedKeyListener;
     VideoPlaybackKeyListener videoPlaybackKeyListener;
 
-    public MiniClientKeyListener(MiniClient client) {
+    public MiniClientKeyListener(Context context, MiniClient client) {
         this.client = client;
-        normalKeyListener = new BaseKeyListener(client);
-        videoPausedKeyListener = new VideoPausedKeyListener(client);
-        videoPlaybackKeyListener = new VideoPlaybackKeyListener(client);
+        normalKeyListener = new BaseKeyListener(context, client);
+        videoPausedKeyListener = new VideoPausedKeyListener(context, client);
+        videoPlaybackKeyListener = new VideoPlaybackKeyListener(context, client);
     }
 
     @Override

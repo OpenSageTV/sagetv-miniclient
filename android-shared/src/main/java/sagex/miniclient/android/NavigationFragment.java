@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.SageCommand;
 import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ChangePlayerOneTime;
@@ -169,8 +170,13 @@ public class NavigationFragment extends DialogFragment {
                 dismiss();
             }
 
-            int sageCommand = UserEvent.getEvtCodeForName(key);
-            if (sageCommand == 0) {
+            //int sageCommand = UserEvent.getEvtCodeForName(key);
+            //TODO: JVL Look into if this is actually Pretty Name.  Might be uename
+            int sageCommand = SageCommand.parseByKey(key).getEventCode();
+
+
+            if (sageCommand == -1)
+            {
                 log.warn("Invalid SageTV Command '{}'", key);
             } else {
                 EventRouter.postCommand(client, sageCommand);

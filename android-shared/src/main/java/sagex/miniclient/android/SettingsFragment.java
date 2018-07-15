@@ -39,6 +39,32 @@ public class SettingsFragment extends PreferenceFragment {
 
             //prefs.setEnabled(this, Prefs.Key.use_log_to_sdcard, !getResources().getBoolean(R.bool.istv));
 
+            Preference touchPref = this.findPreference("touch_mappings");
+
+            touchPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+            {
+                @Override
+                public boolean onPreferenceClick(Preference preference)
+                {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), TouchMappingsActivity.class);
+                    startActivity(i);
+
+                    return true;
+                }
+            });
+
+            Preference mediaKeyPref = this.findPreference("media_key_mappings");
+
+            mediaKeyPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), MediaMappingsActivity.class);
+                    startActivity(i);
+
+                    return true;
+                }
+            });
+
             Preference p = findPreference(PrefStore.Keys.use_log_to_sdcard);
             p.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
