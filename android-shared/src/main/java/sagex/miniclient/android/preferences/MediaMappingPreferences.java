@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import sagex.miniclient.SageCommand;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.prefs.PrefStore;
 
 public class MediaMappingPreferences
 {
 
     private Context context;
-    private SharedPreferences preferences;
+    private PrefStore preferences;
     private String prefix;
 
     public MediaMappingPreferences(Context context)
@@ -21,75 +23,246 @@ public class MediaMappingPreferences
     {
         this.context = context;
         this.prefix = prefix;
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
+        preferences = MiniclientApplication.get(context).getClient().properties();
     }
 
     public SageCommand getSelect()
     {
-        String key = preferences.getString(prefix + "_select", SageCommand.SELECT.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_select", SageCommand.PLAY_PAUSE.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_select", SageCommand.SELECT.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_select", SageCommand.SELECT.getKey());
+        }
+
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getRight()
     {
-        String key = preferences.getString(prefix + "_right", SageCommand.RIGHT.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_right", SageCommand.FF.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_right", SageCommand.RIGHT.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_right", SageCommand.RIGHT.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getLeft()
     {
-        String key = preferences.getString(prefix + "_left", SageCommand.LEFT.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_left", SageCommand.REW.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_left", SageCommand.LEFT.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_left", SageCommand.LEFT.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getUp()
     {
-        String key = preferences.getString(prefix + "_up", SageCommand.UP.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_up", SageCommand.UP.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_up", SageCommand.UP.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_up", SageCommand.UP.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getDown()
     {
-        String key = preferences.getString(prefix + "_down", SageCommand.DOWN.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_down", SageCommand.DOWN.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_down", SageCommand.DOWN.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_down", SageCommand.DOWN.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getSelectLongPress()
     {
-        String key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getRightLongPress()
     {
-        String key = preferences.getString(prefix + "_right_long_press", SageCommand.RIGHT.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_right_long_press", SageCommand.RIGHT.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_right_long_press", SageCommand.RIGHT.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_right_long_press", SageCommand.RIGHT.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getLeftLongPress()
     {
-        String key = preferences.getString(prefix + "_left_long_press", SageCommand.LEFT.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_left_long_press", SageCommand.LEFT.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_left_long_press", SageCommand.LEFT.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_left_long_press", SageCommand.LEFT.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getUpLongPress()
     {
-        String key = preferences.getString(prefix + "_up_long_press", SageCommand.UP.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_up_long_press", SageCommand.UP.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_up_long_press", SageCommand.UP.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_up_long_press", SageCommand.UP.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getDownLongPress()
     {
-        String key = preferences.getString(prefix + "_down_long_press", SageCommand.DOWN.getKey());
+        String key;
+
+        switch (prefix)
+        {
+            case "videoplaying":
+
+                key = preferences.getString(prefix + "_down_long_press", SageCommand.DOWN.getKey());
+                break;
+
+            case "videopaused":
+
+                key = preferences.getString(prefix + "_down_long_press", SageCommand.DOWN.getKey());
+                break;
+
+            default:
+
+                key = preferences.getString(prefix + "_down_long_press", SageCommand.DOWN.getKey());
+        }
 
         return SageCommand.parseByKey(key);
     }

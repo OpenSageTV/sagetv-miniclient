@@ -6,16 +6,18 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import sagex.miniclient.SageCommand;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.prefs.PrefStore;
 
 public class TouchPreferences
 {
     private Context context;
-    private SharedPreferences preferences;
+    private PrefStore preferences;
 
     public TouchPreferences(Context context)
     {
         this.context = context;
-        this.preferences = PreferenceManager.getDefaultSharedPreferences(this.context);
+        preferences = MiniclientApplication.get(context).getClient().properties();
     }
 
     public SageCommand getSingleSwipeRight()

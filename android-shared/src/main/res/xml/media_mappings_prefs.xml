@@ -2,6 +2,23 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
+        android:title="General Settings">
+
+        <SwitchPreference
+            android:key="smart_remote_mappings"
+            android:summary="Changes remote mappings based on the currently active screen"
+            android:title="Enable Smart Remote Mappings"/>
+
+        <SwitchPreference
+            android:key="long_press_select_for_osd_nav"
+            android:summary="Long press select shows navigation overlay."
+            android:title="Show Navigation"/>
+
+    </PreferenceCategory>
+
+
+
+    <PreferenceCategory
         android:title="Default (Remote Controls)"
         android:summary="Default mappings for all screens">
 
@@ -34,11 +51,6 @@
             android:key="default_down"
             android:summary="%s"
             android:title="Down"/>
-
-        <SwitchPreference
-            android:key="long_press_select_for_osd_nav"
-            android:summary="Long press select shows navigation overlay"
-            android:title="Show Navigation"/>
 
         <ListPreference
             android:dialogTitle="Select (Long Press)"
@@ -262,6 +274,75 @@
             android:key="default_green"
             android:summary="%s"
             android:title="Green"/>
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="Video Playback Active (Smart Remote)"
+        android:summary="Remote mappings when video playback is active"
+        android:key="videoplaying">
+
+        <ListPreference
+            android:dialogTitle="Select"
+            android:key="videoplaying_select"
+            android:summary="%s"
+            android:title="Select"/>
+
+        <ListPreference
+            android:dialogTitle="Left"
+            android:key="videoplaying_left"
+            android:summary="%s"
+            android:title="Left"/>
+
+        <ListPreference
+            android:dialogTitle="Right"
+            android:key="videoplaying_right"
+            android:summary="%s"
+            android:title="Right"/>
+
+        <ListPreference
+            android:dialogTitle="Up"
+            android:key="videoplaying_up"
+            android:summary="%s"
+            android:title="Up"/>
+
+        <ListPreference
+            android:dialogTitle="Down"
+            android:key="videoplaying_down"
+            android:summary="%s"
+            android:title="Down"/>
+
+        <ListPreference
+            android:dialogTitle="Select (Long Press)"
+            android:key="videoplaying_select_long_press"
+            android:summary="%s"
+            android:title="Select (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Left (Long Press)"
+            android:key="videoplaying_left_long_press"
+            android:summary="%s"
+            android:title="Left (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Right (Long Press)"
+            android:key="videoplaying_right_long_press"
+            android:summary="%s"
+            android:title="Right (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Up (Long Press)"
+            android:key="videoplaying_up_long_press"
+            android:summary="%s"
+            android:title="Up (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Down (Long Press)"
+            android:key="videoplaying_down_long_press"
+            android:summary="%s"
+            android:title="Down (Long Press)"/>
+
 
     </PreferenceCategory>
 

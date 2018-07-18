@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.support.annotation.Nullable;
@@ -11,13 +12,9 @@ import android.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
-import sagex.miniclient.android.preferences.TouchPreferences;
 
 public class MediaMappingsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener
 {
@@ -29,11 +26,19 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         super.onCreate(savedInstanceState);
         log = LoggerFactory.getLogger(this.getClass());
 
-        SwitchPreference sp;
+        SwitchPreference spLongPressOSD;
+        SwitchPreference spSmartRemote;
         ListPreference lp;
 
         addPreferencesFromResource(R.xml.media_mappings_prefs);
         MediaMappingPreferences prefs = new MediaMappingPreferences(this.getActivity().getApplicationContext());
+        MediaMappingPreferences prefsVideoPlaying = new MediaMappingPreferences(this.getActivity().getApplicationContext(), "videoplaying");
+
+        /*
+        --------------------------------------------------------------------------------------------------------
+        DEFAULT MAPPINGS
+        --------------------------------------------------------------------------------------------------------
+         */
 
         //DPAD
         bindSageCommandListPreference("default_select", prefs.getSelect().getKey());
@@ -41,6 +46,13 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("default_right", prefs.getRight().getKey());
         bindSageCommandListPreference("default_up", prefs.getUp().getKey());
         bindSageCommandListPreference("default_down", prefs.getDown().getKey());
+
+        //Long Press DPAD
+        bindSageCommandListPreference("default_select_long_press", prefs.getSelect().getKey());
+        bindSageCommandListPreference("default_left_long_press", prefs.getLeftLongPress().getKey());
+        bindSageCommandListPreference("default_right_long_press", prefs.getRightLongPress().getKey());
+        bindSageCommandListPreference("default_up_long_press", prefs.getUpLongPress().getKey());
+        bindSageCommandListPreference("default_down_long_press", prefs.getDownLongPress().getKey());
 
         //Media Playback
         bindSageCommandListPreference("default_play", prefs.getPlay().getKey());
@@ -64,18 +76,13 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("default_delete", prefs.getDelete().getKey());
 
         //Disable long press select if long press select shows OSD Nav
-        sp = (SwitchPreference)this.findPreference("long_press_select_for_osd_nav");
-        sp.setOnPreferenceChangeListener(this);
-        sp.setDefaultValue(prefs.isLongPressSelectShowOSDNav());
+        spLongPressOSD = (SwitchPreference)this.findPreference("long_press_select_for_osd_nav");
+        spLongPressOSD.setOnPreferenceChangeListener(this);
+        spLongPressOSD.setDefaultValue(prefs.isLongPressSelectShowOSDNav());
         lp = (ListPreference)this.findPreference("default_select_long_press");
-        lp.setEnabled(!sp.isChecked());
+        lp.setEnabled(!spLongPressOSD.isChecked());
 
-        //Long Press DPAD
-        bindSageCommandListPreference("default_select_long_press", prefs.getSelect().getKey());
-        bindSageCommandListPreference("default_left_long_press", prefs.getLeftLongPress().getKey());
-        bindSageCommandListPreference("default_right_long_press", prefs.getRightLongPress().getKey());
-        bindSageCommandListPreference("default_up_long_press", prefs.getUpLongPress().getKey());
-        bindSageCommandListPreference("default_down_long_press", prefs.getDownLongPress().getKey());
+
 
         //Number Keys
         bindSageCommandListPreference("default_num_0", prefs.getNum0().getKey());
@@ -95,7 +102,42 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("default_red", prefs.getRed().getKey());
         bindSageCommandListPreference("default_green", prefs.getGreen().getKey());
 
-        //default game pad
+
+        /*
+        --------------------------------------------------------------------------------------------------------
+        SMART REMOTE MAPPINGS
+        --------------------------------------------------------------------------------------------------------
+        */
+
+        spSmartRemote = (SwitchPreference)this.findPreference("smart_remote_mappings");
+        spSmartRemote.setOnPreferenceChangeListener(this);
+
+        PreferenceCategory pc = (PreferenceCategory) this.findPreference("videoplaying");
+        pc.setShouldDisableView(true);
+        pc.setEnabled(spSmartRemote.isChecked());
+
+        //Video Playing
+        //DPAD
+        bindSageCommandListPreference("videoplaying_select", prefsVideoPlaying.getSelect().getKey());
+        bindSageCommandListPreference("videoplaying_left", prefsVideoPlaying.getLeft().getKey());
+        bindSageCommandListPreference("videoplaying_right", prefsVideoPlaying.getRight().getKey());
+        bindSageCommandListPreference("videoplaying_up", prefsVideoPlaying.getUp().getKey());
+        bindSageCommandListPreference("videoplaying_down", prefsVideoPlaying.getDown().getKey());
+
+        //Long Press DPAD
+        bindSageCommandListPreference("videoplaying_select_long_press", prefsVideoPlaying.getSelectLongPress().getKey());
+        bindSageCommandListPreference("videoplaying_left_long_press", prefsVideoPlaying.getLeftLongPress().getKey());
+        bindSageCommandListPreference("videoplaying_right_long_press", prefsVideoPlaying.getRightLongPress().getKey());
+        bindSageCommandListPreference("videoplaying_up_long_press", prefsVideoPlaying.getUpLongPress().getKey());
+        bindSageCommandListPreference("videoplaying_down_long_press", prefsVideoPlaying.getDownLongPress().getKey());
+
+
+        /*
+        --------------------------------------------------------------------------------------------------------
+        GAME PAD MAPPINGS
+        --------------------------------------------------------------------------------------------------------
+         */
+
         bindSageCommandListPreference("default_A", prefs.getA().getKey());
         bindSageCommandListPreference("default_B", prefs.getB().getKey());
         bindSageCommandListPreference("default_X", prefs.getX().getKey());
@@ -126,10 +168,19 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue)
     {
+
+        //smart_remote_mappings
         if(preference.getKey().equals("long_press_select_for_osd_nav"))
         {
             ListPreference lp = (ListPreference)this.findPreference("default_select_long_press");
             lp.setEnabled(!(Boolean)newValue);
+        }
+        else if(preference.getKey().equals("smart_remote_mappings"))
+        {
+            //videoplaying
+            PreferenceCategory pc = (PreferenceCategory) this.findPreference("videoplaying");
+            pc.setShouldDisableView(true);
+            pc.setEnabled((Boolean)newValue);
         }
 
         return true;
