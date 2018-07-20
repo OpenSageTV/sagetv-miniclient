@@ -26,6 +26,16 @@ public class MediaMappingPreferences
         preferences = MiniclientApplication.get(context).getClient().properties();
     }
 
+    public boolean isLongPressSelectShowOSDNav()
+    {
+        return preferences.getBoolean("long_press_select_for_osd_nav", true);
+    }
+
+    public boolean isSmartRemoteEnabled()
+    {
+        return preferences.getBoolean("smart_remote_mappings", false);
+    }
+
     public SageCommand getSelect()
     {
         String key;
@@ -39,7 +49,7 @@ public class MediaMappingPreferences
 
             case "videopaused":
 
-                key = preferences.getString(prefix + "_select", SageCommand.SELECT.getKey());
+                key = preferences.getString(prefix + "_select", SageCommand.PLAY_PAUSE.getKey());
                 break;
 
             default:
@@ -64,7 +74,7 @@ public class MediaMappingPreferences
 
             case "videopaused":
 
-                key = preferences.getString(prefix + "_right", SageCommand.RIGHT.getKey());
+                key = preferences.getString(prefix + "_right", SageCommand.FF.getKey());
                 break;
 
             default:
@@ -88,7 +98,7 @@ public class MediaMappingPreferences
 
             case "videopaused":
 
-                key = preferences.getString(prefix + "_left", SageCommand.LEFT.getKey());
+                key = preferences.getString(prefix + "_left", SageCommand.REW.getKey());
                 break;
 
             default:
@@ -420,11 +430,6 @@ public class MediaMappingPreferences
         String key = preferences.getString(prefix + "_green", SageCommand.NONE.getKey());
 
         return SageCommand.parseByKey(key);
-    }
-
-    public boolean isLongPressSelectShowOSDNav()
-    {
-        return preferences.getBoolean("long_press_select_for_osd_nav", true);
     }
 
     public SageCommand getNum0()

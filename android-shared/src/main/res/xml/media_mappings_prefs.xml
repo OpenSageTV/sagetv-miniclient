@@ -17,7 +17,6 @@
     </PreferenceCategory>
 
 
-
     <PreferenceCategory
         android:title="Default (Remote Controls)"
         android:summary="Default mappings for all screens">
@@ -344,6 +343,72 @@
             android:title="Down (Long Press)"/>
 
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Video Paused (Smart Remote)"
+        android:summary="Remote mappings when video playback is paused"
+        android:key="videopaused">
+
+        <ListPreference
+            android:dialogTitle="Select"
+            android:key="videopaused_select"
+            android:summary="%s"
+            android:title="Select"/>
+
+        <ListPreference
+            android:dialogTitle="Left"
+            android:key="videopaused_left"
+            android:summary="%s"
+            android:title="Left"/>
+
+        <ListPreference
+            android:dialogTitle="Right"
+            android:key="videopaused_right"
+            android:summary="%s"
+            android:title="Right"/>
+
+        <ListPreference
+            android:dialogTitle="Up"
+            android:key="videopaused_up"
+            android:summary="%s"
+            android:title="Up"/>
+
+        <ListPreference
+            android:dialogTitle="Down"
+            android:key="videopaused_down"
+            android:summary="%s"
+            android:title="Down"/>
+
+        <ListPreference
+            android:dialogTitle="Select (Long Press)"
+            android:key="videopaused_select_long_press"
+            android:summary="%s"
+            android:title="Select (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Left (Long Press)"
+            android:key="videopaused_left_long_press"
+            android:summary="%s"
+            android:title="Left (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Right (Long Press)"
+            android:key="videopaused_right_long_press"
+            android:summary="%s"
+            android:title="Right (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Up (Long Press)"
+            android:key="videopaused_up_long_press"
+            android:summary="%s"
+            android:title="Up (Long Press)"/>
+
+        <ListPreference
+            android:dialogTitle="Down (Long Press)"
+            android:key="videopaused_down_long_press"
+            android:summary="%s"
+            android:title="Down (Long Press)"/>
     </PreferenceCategory>
 
     <PreferenceCategory

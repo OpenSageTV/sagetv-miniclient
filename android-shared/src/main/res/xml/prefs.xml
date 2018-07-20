@@ -75,11 +75,13 @@
             android:title="@string/long_press_select_for_osd_preference"/>
         -->
 
+        <!--
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="use_stateful_remote"
             android:summary="@string/use_stateful_remote_summary"
             android:title="@string/use_stateful_remote_title"/>
+         -->
 
         <CheckBoxPreference
             android:defaultValue="true"

@@ -33,6 +33,7 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         addPreferencesFromResource(R.xml.media_mappings_prefs);
         MediaMappingPreferences prefs = new MediaMappingPreferences(this.getActivity().getApplicationContext());
         MediaMappingPreferences prefsVideoPlaying = new MediaMappingPreferences(this.getActivity().getApplicationContext(), "videoplaying");
+        MediaMappingPreferences prefsVideoPaused = new MediaMappingPreferences(this.getActivity().getApplicationContext(), "videopaused");
 
         /*
         --------------------------------------------------------------------------------------------------------
@@ -111,12 +112,12 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
 
         spSmartRemote = (SwitchPreference)this.findPreference("smart_remote_mappings");
         spSmartRemote.setOnPreferenceChangeListener(this);
-
-        PreferenceCategory pc = (PreferenceCategory) this.findPreference("videoplaying");
-        pc.setShouldDisableView(true);
-        pc.setEnabled(spSmartRemote.isChecked());
+        spSmartRemote.setDefaultValue(prefs.isSmartRemoteEnabled());
 
         //Video Playing
+        PreferenceCategory pc = (PreferenceCategory) this.findPreference("videoplaying");
+        pc.setEnabled(spSmartRemote.isChecked());
+
         //DPAD
         bindSageCommandListPreference("videoplaying_select", prefsVideoPlaying.getSelect().getKey());
         bindSageCommandListPreference("videoplaying_left", prefsVideoPlaying.getLeft().getKey());
@@ -126,11 +127,37 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
 
         //Long Press DPAD
         bindSageCommandListPreference("videoplaying_select_long_press", prefsVideoPlaying.getSelectLongPress().getKey());
+
+        lp = (ListPreference)this.findPreference("videoplaying_select_long_press");
+        lp.setEnabled(!spLongPressOSD.isChecked());
+
         bindSageCommandListPreference("videoplaying_left_long_press", prefsVideoPlaying.getLeftLongPress().getKey());
         bindSageCommandListPreference("videoplaying_right_long_press", prefsVideoPlaying.getRightLongPress().getKey());
         bindSageCommandListPreference("videoplaying_up_long_press", prefsVideoPlaying.getUpLongPress().getKey());
         bindSageCommandListPreference("videoplaying_down_long_press", prefsVideoPlaying.getDownLongPress().getKey());
 
+        //Video Paused
+        pc = (PreferenceCategory) this.findPreference("videopaused");
+        pc.setEnabled(spSmartRemote.isChecked());
+
+
+        //DPAD
+        bindSageCommandListPreference("videopaused_select", prefsVideoPaused.getSelect().getKey());
+        bindSageCommandListPreference("videopaused_left", prefsVideoPaused.getLeft().getKey());
+        bindSageCommandListPreference("videopaused_right", prefsVideoPaused.getRight().getKey());
+        bindSageCommandListPreference("videopaused_up", prefsVideoPaused.getUp().getKey());
+        bindSageCommandListPreference("videopaused_down", prefsVideoPaused.getDown().getKey());
+
+        //Long Press DPAD
+        bindSageCommandListPreference("videopaused_select_long_press", prefsVideoPaused.getSelectLongPress().getKey());
+
+        lp = (ListPreference)this.findPreference("videopaused_select_long_press");
+        lp.setEnabled(!spLongPressOSD.isChecked());
+
+        bindSageCommandListPreference("videopaused_left_long_press", prefsVideoPaused.getLeftLongPress().getKey());
+        bindSageCommandListPreference("videopaused_right_long_press", prefsVideoPaused.getRightLongPress().getKey());
+        bindSageCommandListPreference("videopaused_up_long_press", prefsVideoPaused.getUpLongPress().getKey());
+        bindSageCommandListPreference("videopaused_down_long_press", prefsVideoPaused.getDownLongPress().getKey());
 
         /*
         --------------------------------------------------------------------------------------------------------
@@ -174,12 +201,20 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         {
             ListPreference lp = (ListPreference)this.findPreference("default_select_long_press");
             lp.setEnabled(!(Boolean)newValue);
+
+            lp = (ListPreference)this.findPreference("videoplaying_select_long_press");
+            lp.setEnabled(!(Boolean)newValue);
+
+            lp = (ListPreference)this.findPreference("videopaused_select_long_press");
+            lp.setEnabled(!(Boolean)newValue);
         }
         else if(preference.getKey().equals("smart_remote_mappings"))
         {
             //videoplaying
             PreferenceCategory pc = (PreferenceCategory) this.findPreference("videoplaying");
-            pc.setShouldDisableView(true);
+            pc.setEnabled((Boolean)newValue);
+
+            pc = (PreferenceCategory) this.findPreference("videopaused");
             pc.setEnabled((Boolean)newValue);
         }
 

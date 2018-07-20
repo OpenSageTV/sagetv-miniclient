@@ -232,21 +232,25 @@ public class NavigationFragment extends DialogFragment {
 //            client.getCurrentConnection().getMenuHint().popupName = null;
 //            client.getCurrentConnection().getMenuHint().menuName = "OSD";
 //        }
-        boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
-        client.getConnectedServerInfo().use_stateful_remote =  !useRemote;
-        client.getConnectedServerInfo().save(client.properties());
-        updateSmartRemoteToggle();
+
+        //TODO: Need to update this code to pull from the right place.  Property has been moved
+        //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
+        //client.getConnectedServerInfo().use_stateful_remote =  !useRemote;
+        //client.getConnectedServerInfo().save(client.properties());
+        //updateSmartRemoteToggle();
     }
 
-    private void updateSmartRemoteToggle() {
-        boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
-        navSmartRemote.setVisibility(getResources().getBoolean(R.bool.istv) ? View.VISIBLE : View.GONE);
-        // GoogleMaterial.Icon.gmd_a
-        if (useRemote) {
-            navSmartRemote.setImageResource(R.drawable.ic_open_with_white_24dp);
-        } else {
-            navSmartRemote.setImageResource(R.drawable.ic_open_with_red_24dp);
-        }
+    private void updateSmartRemoteToggle()
+    {
+        //TODO: Need to update this code to pull from the right place
+        //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
+        //navSmartRemote.setVisibility(getResources().getBoolean(R.bool.istv) ? View.VISIBLE : View.GONE);
+
+        //if (useRemote) {
+        //    navSmartRemote.setImageResource(R.drawable.ic_open_with_white_24dp);
+        //} else {
+        //    navSmartRemote.setImageResource(R.drawable.ic_open_with_red_24dp);
+        //}
     }
 
 
