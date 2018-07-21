@@ -66,13 +66,14 @@ allprojects {
     }
 
     repositories {
-        google()
+        maven { url mavenInProject }
         mavenLocal()
+
+        google()
         mavenCentral()
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
-        maven { url mavenInProject }
     }
 }
 
