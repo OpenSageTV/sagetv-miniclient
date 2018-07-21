@@ -233,7 +233,7 @@ public class NavigationFragment extends DialogFragment {
 //            client.getCurrentConnection().getMenuHint().menuName = "OSD";
 //        }
 
-        //TODO: Need to update this code to pull from the right place.  Property has been moved
+        //TODO: JVL Need to update this code to pull from the right place.  Property has been moved
         //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
         //client.getConnectedServerInfo().use_stateful_remote =  !useRemote;
         //client.getConnectedServerInfo().save(client.properties());
@@ -242,7 +242,7 @@ public class NavigationFragment extends DialogFragment {
 
     private void updateSmartRemoteToggle()
     {
-        //TODO: Need to update this code to pull from the right place
+        //TODO: JVL Need to update this code to pull from the right place
         //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
         //navSmartRemote.setVisibility(getResources().getBoolean(R.bool.istv) ? View.VISIBLE : View.GONE);
 

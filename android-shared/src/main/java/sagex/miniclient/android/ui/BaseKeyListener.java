@@ -49,13 +49,13 @@ public class BaseKeyListener implements View.OnKeyListener
     protected int flircMeta = 0;
 
     protected Context context;
-    protected MediaMappingPreferences prefs;
+    private MediaMappingPreferences prefs;
 
     protected KeyEvent lastEvent;
 
     //TODO: Might make sense to make this configurable in the future.
-    protected long keyRepeatRateDelay = 500;
-    protected long keyInitialRepeatDelay = 2000;
+    private long keyRepeatRateDelay = 500;
+    private long keyInitialRepeatDelay = 2000;
 
     Map<Object, SageCommand> LONGPRESS_KEYMAP;
     Map<Object, SageCommand> KEYMAP;
@@ -63,6 +63,7 @@ public class BaseKeyListener implements View.OnKeyListener
     public BaseKeyListener(Context context, MiniClient client)
     {
         this.client = client;
+        this.context = context;
         this.prefs = new MediaMappingPreferences(context);
 
         LONGPRESS_KEYMAP = new HashMap<>();
@@ -97,7 +98,6 @@ public class BaseKeyListener implements View.OnKeyListener
         KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_8, prefs.getNum8());
         KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_9, prefs.getNum9());
 
-        //TODO: Add channel up and channel down
         KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY, prefs.getPlay());
         KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PAUSE, prefs.getPause());
         KEYMAP.put(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, prefs.getPlayPause());
@@ -192,7 +192,7 @@ public class BaseKeyListener implements View.OnKeyListener
 
                 skipKey = keyCode;
                 //UserEvent key = new UserEvent(LONGPRESS_KEYMAP.get(keyCode));
-                SageCommand command = KEYMAP.get(keyCode);
+                SageCommand command = LONGPRESS_KEYMAP.get(keyCode);
 
                 if (prefs.isLongPressSelectShowOSDNav() &&
                         (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER ||

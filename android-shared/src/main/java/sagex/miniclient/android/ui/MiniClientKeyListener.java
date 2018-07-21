@@ -38,6 +38,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(PrefStore.Keys.use_stateful_remote, true);
 
 
+
         if (client.getCurrentConnection()==null) return false;
 
         if (prefs.isSmartRemoteEnabled() && client.getCurrentConnection().getMenuHint()!=null) {
@@ -64,6 +65,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                 log.debug("Using Default Normal Key Listener. (No Player Visible). Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
             }
         }
+
 
         return normalKeyListener.onKey(v, keyCode, event);
     }

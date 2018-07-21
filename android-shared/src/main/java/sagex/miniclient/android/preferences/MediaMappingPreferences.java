@@ -11,7 +11,8 @@ public class MediaMappingPreferences
 {
 
     private Context context;
-    private PrefStore preferences;
+    //private PrefStore preferences;
+    private SharedPreferences preferences;
     private String prefix;
 
     public MediaMappingPreferences(Context context)
@@ -23,7 +24,11 @@ public class MediaMappingPreferences
     {
         this.context = context;
         this.prefix = prefix;
-        preferences = MiniclientApplication.get(context).getClient().properties();
+
+        //preferences = MiniclientApplication.get(context).getClient().properties();
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
     }
 
     public boolean isLongPressSelectShowOSDNav()

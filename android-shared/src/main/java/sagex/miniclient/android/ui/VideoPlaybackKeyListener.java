@@ -14,29 +14,33 @@ import sagex.miniclient.uibridge.EventRouter;
  */
 public class VideoPlaybackKeyListener extends BaseKeyListener {
 
-    public VideoPlaybackKeyListener(Context context, MiniClient client) {
+    MediaMappingPreferences prefsVideo;
+
+
+    public VideoPlaybackKeyListener(Context context, MiniClient client)
+    {
         super(context, client);
 
-        MediaMappingPreferences prefs = new MediaMappingPreferences(context, "videoplaying");
     }
 
     @Override
     protected void initializeKeyMaps()
     {
         super.initializeKeyMaps();
+        prefsVideo = new MediaMappingPreferences(context, "videoplaying");
 
         // Key Mappings when VIDEO is playing, ie, player state == PLAY
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelect());
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, prefs.getLeft());
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefs.getRight());
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefs.getUp());
-        KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, prefs.getDown());
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefsVideo.getSelect());
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, prefsVideo.getLeft());
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefsVideo.getRight());
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefsVideo.getUp());
+        KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, prefsVideo.getDown());
 
         // since we are remapping left and right, then, remap long presses to send left/right
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelectLongPress());
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, prefs.getLeftLongPress());
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefs.getRightLongPress());
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefs.getUpLongPress());
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, prefs.getDownLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefsVideo.getSelectLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, prefsVideo.getLeftLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefsVideo.getRightLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefsVideo.getUpLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, prefsVideo.getDownLongPress());
     }
 }
