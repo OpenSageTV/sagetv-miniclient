@@ -11,8 +11,8 @@ public class MediaMappingPreferences
 {
 
     private Context context;
-    //private PrefStore preferences;
-    private SharedPreferences preferences;
+    private PrefStore preferences;
+    //private SharedPreferences preferences;
     private String prefix;
 
     public MediaMappingPreferences(Context context)
@@ -25,9 +25,9 @@ public class MediaMappingPreferences
         this.context = context;
         this.prefix = prefix;
 
-        //preferences = MiniclientApplication.get(context).getClient().properties();
+        preferences = MiniclientApplication.get(context).getClient().properties();
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        //preferences = PreferenceManager.getDefaultSharedPreferences(context);
 
     }
 
@@ -36,9 +36,15 @@ public class MediaMappingPreferences
         return preferences.getBoolean("long_press_select_for_osd_nav", true);
     }
 
+
     public boolean isSmartRemoteEnabled()
     {
         return preferences.getBoolean("smart_remote_mappings", false);
+    }
+
+    public void setSmartRemoteEnabled(boolean value)
+    {
+        preferences.setBoolean("smart_remote_mappings", value);
     }
 
     public SageCommand getSelect()

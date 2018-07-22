@@ -32,6 +32,7 @@ import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
 import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
+import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.events.VideoInfoShow;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
@@ -51,9 +52,12 @@ public class NavigationFragment extends DialogFragment {
     View navPause = null;
 
     ImageView navSmartRemote;
+    MediaMappingPreferences prefs;
 
-    public NavigationFragment() {
+    public NavigationFragment()
+    {
         this.client = MiniclientApplication.get().getClient();
+
     }
 
     @Override
@@ -61,6 +65,8 @@ public class NavigationFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Theme_Dialog_DoNotDim);
         setCancelable(false);
+
+        prefs = new MediaMappingPreferences(this.getActivity().getApplicationContext());
     }
 
     @Nullable
@@ -170,10 +176,7 @@ public class NavigationFragment extends DialogFragment {
                 dismiss();
             }
 
-            //int sageCommand = UserEvent.getEvtCodeForName(key);
-            //TODO: JVL Look into if this is actually Pretty Name.  Might be uename
             int sageCommand = SageCommand.parseByKey(key).getEventCode();
-
 
             if (sageCommand == -1)
             {
@@ -233,24 +236,20 @@ public class NavigationFragment extends DialogFragment {
 //            client.getCurrentConnection().getMenuHint().menuName = "OSD";
 //        }
 
-        //TODO: JVL Need to update this code to pull from the right place.  Property has been moved
-        //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
-        //client.getConnectedServerInfo().use_stateful_remote =  !useRemote;
-        //client.getConnectedServerInfo().save(client.properties());
-        //updateSmartRemoteToggle();
+        prefs.setSmartRemoteEnabled(!prefs.isSmartRemoteEnabled());
+        updateSmartRemoteToggle();
     }
 
     private void updateSmartRemoteToggle()
     {
-        //TODO: JVL Need to update this code to pull from the right place
-        //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(Keys.use_stateful_remote, true);
-        //navSmartRemote.setVisibility(getResources().getBoolean(R.bool.istv) ? View.VISIBLE : View.GONE);
-
-        //if (useRemote) {
-        //    navSmartRemote.setImageResource(R.drawable.ic_open_with_white_24dp);
-        //} else {
-        //    navSmartRemote.setImageResource(R.drawable.ic_open_with_red_24dp);
-        //}
+        if (prefs.isSmartRemoteEnabled())
+        {
+            navSmartRemote.setImageResource(R.drawable.ic_open_with_white_24dp);
+        }
+        else
+        {
+            navSmartRemote.setImageResource(R.drawable.ic_open_with_red_24dp);
+        }
     }
 
 
