@@ -43,9 +43,9 @@ allprojects {
         ijkVersion = "0.7.5"; // NOT USED
 
         // NOTE: Exo is build from the stuckless/ExoPlayer repo (not true)
-        exoVersionStuckless = '2.8.0';
+        exoVersionStuckless = '2.8.1-SNAPSHOT';
         // NOTE: using regular exoplayer now
-        exoVersion = '2.8.0';
+        exoVersion = '2.8.1-SNAPSHOT';
 
 //        androidExtrasVer = "23.0.0";
 //        androidBuildToolsVersion = "25.0.1";
@@ -63,7 +63,6 @@ allprojects {
 
         // tell every project where to find the local project maven files
         mavenInProject = file('../mavenlocal').absoluteFile.toURI()
-
     }
 
     repositories {
@@ -74,8 +73,6 @@ allprojects {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
         maven { url mavenInProject }
-
-
     }
 }
 
