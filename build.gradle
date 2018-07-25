@@ -63,7 +63,6 @@ allprojects {
 
         // tell every project where to find the local project maven files
         mavenInProject = file('../mavenlocal').absoluteFile.toURI()
-
     }
 
     repositories {
@@ -74,7 +73,6 @@ allprojects {
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
-
     }
 }
 
