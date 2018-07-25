@@ -28,6 +28,7 @@ public class OpenGLSurface extends OpenGLTexture {
     public OpenGLSurface createSurface()
     {
         delete();
+        buffer = new int[1];
         GLES20.glGenFramebuffers(1, buffer, 0);
 
         createTexture();
@@ -45,6 +46,31 @@ public class OpenGLSurface extends OpenGLTexture {
         GLES20.glClearColor(0, 0, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         return this;
+    }
+
+    public void bind() {
+        viewMatrix[0]=2.0f/(float)width;
+        viewMatrix[1]=0.0f;
+        viewMatrix[2]=0.0f;
+        viewMatrix[3]=0.0f;
+        viewMatrix[4]=0.0f;
+        viewMatrix[5]=2.0f/(float)height;
+        viewMatrix[6]=0.0f;
+        viewMatrix[7]=0.0f;
+        viewMatrix[8]=0.0f;
+        viewMatrix[9]=0.0f;
+        viewMatrix[10]=1.0f;
+        viewMatrix[11]=0.0f;
+        viewMatrix[12]=-1.0f;
+        viewMatrix[13]=-1.0f;
+        viewMatrix[14]=0.0f;
+        viewMatrix[15]=1.0f;
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
+        GLES20.glViewport(0,0, width, height);
+    }
+
+    public void unbind() {
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
     }
 
     public static OpenGLSurface get(OpenGLTexture openGLTexture) {

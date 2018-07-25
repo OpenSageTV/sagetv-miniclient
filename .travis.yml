@@ -1,0 +1,27 @@
+language: android
+
+jdk:
+ - oraclejdk8
+
+before_install:
+  - yes | sdkmanager "platforms;android-27"
+
+android:
+  components:
+    - tools
+    - platform-tools
+    # The BuildTools version used by your project
+    - build-tools-27.0.3
+    # The SDK version used to compile your project
+    - android-27
+  licenses:
+    - 'android-sdk-preview-license-52d11cd2'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
+
+script: ./gradlew compileJava

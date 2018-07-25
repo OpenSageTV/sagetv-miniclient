@@ -180,7 +180,7 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
 
             hideSystemUI(this);
 
-            setContentView(R.layout.miniclientgdx_layout);
+            setContentView(R.layout.miniclientopengl_layout);
 
             findViewById(R.id.errorClose).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -368,11 +368,6 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
     }
 
     @Override
-    public Object getSystemService(String windowService) {
-        return null;
-    }
-
-    @Override
     public String getMACAddress() {
         // Android 6 generates the same MAC address, so let's outgenerate one
         String id = client.properties().getString(Keys.client_id);
@@ -399,7 +394,7 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
 
     @Override
     public Context getContext() {
-        return null;
+        return this;
     }
 
     @Override

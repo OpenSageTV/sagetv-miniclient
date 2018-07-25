@@ -47,6 +47,8 @@ import sagex.miniclient.video.VideoInfoResponse;
 public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.Renderer {
     private static final Logger log = LoggerFactory.getLogger(OpenGLRenderer.class);
 
+    private static final int DEF_WIDTH=1280;
+    private static final int DEF_HEIGHT=720;
 
     private final AndroidUIController activity;
     private final MiniClient client;
@@ -55,7 +57,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     int state = STATE_MENU;
 
     // logging stuff
-    boolean logFrameBuffer = VerboseLogging.DETAILED_GFX_TEXTURES;
+    boolean logFrameBuffer = true;//VerboseLogging.DETAILED_GFX_TEXTURES;
     boolean logFrameTime = false;
     boolean logTextureTime = false;
     private boolean logTexture = VerboseLogging.DETAILED_GFX_TEXTURES;
@@ -67,21 +69,23 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     boolean ready = false;
     boolean inFrame=false;
     // Current Surface (when surfaces are enabled)
-    ImageHolder<OpenGLTexture> currentSurface = null;
-    OpenGLSurface mainSurface = null;
+    ImageHolder<? extends OpenGLTexture> currentSurface = null;
+    ImageHolder<? extends OpenGLTexture> mainSurface = null;
 
     // render queues
     final private List<Runnable> renderQueue = new ArrayList<>();
     private List<Runnable> frameQueue = new ArrayList<>();
 
     private MiniPlayerPlugin player;
-    // Screen and UI resolutions
-    // Total available screan pixels that we have
-    Dimension fullScreenSize = new Dimension(0, 0);
 
     // UI size is the size of the UI that is built, will be scaled up to the screenSize
     // this is the size of the UI that sagetv will build and send to us
-    Dimension uiSize = new Dimension(0, 0);
+    Dimension uiSize = new Dimension(DEF_WIDTH, DEF_HEIGHT);
+
+    // Screen and UI resolutions
+    // Total available screan pixels that we have
+    Dimension fullScreenSize = uiSize.clone();
+
 
     // if true, the uiSize is set to the Native resolution
     boolean useNativeResolution = true;
@@ -89,8 +93,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     // the scaleAndCenterImmutable of the uiSize to the screenSize
     Scale scale = new Scale(1, 1);
 
-    private Dimension lastResize = new Dimension(0, 0);
-    private Dimension lastScreenSize = new Dimension(0, 0);
+    private Dimension lastResize = uiSize.clone();
+    private Dimension lastScreenSize = uiSize.clone();
     private boolean firstResize = true; // true until after do the first resize
 
     private float uiAspectRatio = AspectHelper.ar_16_9;
@@ -112,8 +116,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         fullScreenSize.updateFrom(getMaxScreenSize());
         lastResize.updateFrom(fullScreenSize);
 
-        uiSize.setSize(1280, 720);
-        lastScreenSize.updateFrom(uiSize);
+        // we are using static 1280x720
+        //uiSize.setSize(1280, 720);
+        //lastScreenSize.updateFrom(uiSize);
 
         scale.setScale(uiSize, fullScreenSize);
 
@@ -123,19 +128,19 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         ShaderUtils.createPrograms();
 
         // create the main surface
-        mainSurface = new OpenGLSurface(uiSize.width, uiSize.height);
-        mainSurface.createSurface();
+        OpenGLSurface mainSurfaceGL = new OpenGLSurface(uiSize.width, uiSize.height);
+        mainSurfaceGL.createSurface();
+        mainSurface = new ImageHolder<>(mainSurfaceGL, uiSize.width, uiSize.height);
+        mainSurface.setHandle(0);
+        setSurface(mainSurface);
+    }
 
-//        camera = new OrthographicCamera();
-//        viewport = new StretchViewport(uiSize.getWidth(), uiSize.getHeight(), camera);
-//        stage = new Stage(viewport);
-//        batch = stage.getBatch();
-//
-//        camera.update();
-//        batch.setProjectionMatrix(camera.combined);
-//
-//        shapeRenderer = new SageShapeRenderer();
-//        Gdx.graphics.setContinuousRendering(false);
+    OpenGLSurface setSurface(ImageHolder<? extends OpenGLTexture> surfaceHolder)
+    {
+        OpenGLSurface surface = OpenGLSurface.get(surfaceHolder.get());
+        currentSurface=surfaceHolder;
+        surface.bind();
+        return surface;
     }
 
     public void resize(int width, int height) {
@@ -145,39 +150,15 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         }
 
         fullScreenSize.update(width, height);
-        lastResize.update(width, height);
-
-// this seems right but causes a UI shift??
-//        if (!useNativeResolution) {
-//            uiSize.width = fullScreenSize.width / 2;
-//            uiSize.height = fullScreenSize.height / 2;
-//        } else {
-//            uiSize.width=fullScreenSize.width;
-//            uiSize.height=fullScreenSize.height;
-//        }
-
-        uiSize.updateFrom(getScreenSize());
-
-        lastScreenSize.updateFrom(uiSize);
-
         this.scale.setScale(uiSize, fullScreenSize);
-
-//        stage.getViewport().setWorldSize(uiSize.width, uiSize.height);
-//        stage.getViewport().update(fullScreenSize.width, fullScreenSize.height, true);
-//        log.debug("RESIZE SCREEN: width: " + fullScreenSize.width + "; height: " + fullScreenSize.height);
-//        log.debug("VIEWPORT: width: " + stage.getViewport().getScreenWidth() + "; height: " + stage.getViewport().getScreenHeight());
-//        log.debug("VIEWPORT: x: " + stage.getViewport().getScreenX() + "; y: " + stage.getViewport().getScreenY());
-//        log.debug("WORLD: width: " + stage.getViewport().getWorldWidth() + "; height: " + stage.getViewport().getWorldHeight());
-//        log.debug("SCALE: " + scale);
-//
-//        camera.update();
-//        batch.setProjectionMatrix(camera.combined);
 
         ready = true;
         notifySageTVAboutScreenSize();
     }
 
     public void notifySageTVAboutScreenSize() {
+        // NOTE: We always tell sagetv we are 1280x720, no matter our "real" size.
+
         log.debug("Notifying SageTV about the Resize Event: " + this.uiSize);
         try {
             if (!(client != null && client.getCurrentConnection() != null && client.getCurrentConnection().hasEventChannel())) {
@@ -193,7 +174,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     public void render() {
-        //if (batch==null) return;
         int size=renderQueue.size();
         if (size==0) return;
 
@@ -201,16 +181,17 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         synchronized (renderQueue) {
             try {
-                //batch.begin();
-                //batch.setColor(Color.BLACK);
                 for (int i=0;i<size;i++) {
-                    renderQueue.get(i).run();
+                    try {
+                        renderQueue.get(i).run();
+                    } catch (Throwable t) {
+                        log.error("Failed TO Render Instruction", t);
+                    }
                 }
             } catch (Throwable t) {
                 log.error("Render Failed.  This should never happen.  Developer should figure out why", t);
                 // TODO: How should we manage this.. request a re-render??
             } finally {
-                //batch.end();
                 renderQueue.clear();
             }
         }
@@ -224,46 +205,55 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     private void glFlipBuffer() {
+        log.debug("begin render frame");
+        OpenGLSurface main = OpenGLSurface.get(mainSurface.get());
+
             // Flip code...
             float viewMatrix[] =
                     {
-                            2.0f / (float)mainSurface.width, 0.0f, 0.0f, 0.0f,
-                            0.0f, -2.0f / (float)mainSurface.height, 0.0f, 0.0f,
+                            2.0f / (float)main.width, 0.0f, 0.0f, 0.0f,
+                            0.0f, -2.0f / (float)main.height, 0.0f, 0.0f,
                             0.0f, 0.0f, 1.0f, 0.0f,
                             -1.0f, 1.0f, 0.0f, 1.0f
                     };
 
-            //GLES20.viewport(0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
             GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-            ShaderUtils.useProgram(ShaderUtils.Shader.Base);
-            //GLES20.glUseProgram(baseTexturedProgram);
-            GLES20.glUniformMatrix4fv(ShaderUtils.BASE_PROGRAM_PMVMatrix_Location, viewMatrix.length, false, viewMatrix, 0);
+            GLES20.glViewport(0,0, uiSize.width, uiSize.height);
+
+            int location = ShaderUtils.useProgram(ShaderUtils.Shader.Texture);
+            GLES20.glUniformMatrix4fv(location, 1, false, viewMatrix, 0);
 
             GLES20.glDisable(GLES20.GL_BLEND);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mainSurface.texture());
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, main.texture());
 
-            float pVertices2[] = {0,0, mainSurface.width,
-                    0, mainSurface.width, mainSurface.height, mainSurface.width,
-                    mainSurface.height, 0, mainSurface.height, 0, 0};
+            GLES20.glUniform4fv(ShaderUtils.TEXTURE_PROGRAM_Color_Location, 1, ShaderUtils.rgbToFloatArray(0xff, 0xff, 0xff, 0xff), 0);
 
-            GLES20.glUniform4fv(ShaderUtils.TEXTURE_PROGRAM_Color_Location, 4, ShaderUtils.rgbToFloatArray(0xff, 0xff, 0xff, 0xff), 0);
+        float pVertices2[] = {0,0, main.width,
+                0, main.width, main.height, main.width,
+                main.height, 0, main.height, 0, 0};
 
-            int vertBuffer = ShaderUtils.glCreateBuffer();
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertBuffer);
+
+            int vertBuffer[] = ShaderUtils.glCreateBuffer();
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertBuffer[0]);
             GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, pVertices2.length, FloatBuffer.wrap(pVertices2), GLES20.GL_STATIC_DRAW);
             GLES20.glVertexAttribPointer(ShaderUtils.VERTEX_ARRAY, 2, GLES20.GL_FLOAT, false, 0, 0);
 
             float pCoords2[] = {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-            int coordBuffer = ShaderUtils.glCreateBuffer();
-            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, coordBuffer);
+            int coordBuffer[] = ShaderUtils.glCreateBuffer();
+            GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, coordBuffer[0]);
             GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, pCoords2.length, FloatBuffer.wrap(pCoords2), GLES20.GL_STATIC_DRAW);
             GLES20.glVertexAttribPointer(ShaderUtils.COORD_ARRAY, 2, GLES20.GL_FLOAT, false, 0,0);
 
             GLES20.glEnableVertexAttribArray(ShaderUtils.VERTEX_ARRAY);
             GLES20.glEnableVertexAttribArray(ShaderUtils.COORD_ARRAY);
 
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, main.texture());
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
+
+            GLES20.glDeleteBuffers(1, vertBuffer, 0);
+        GLES20.glDeleteBuffers(1, coordBuffer, 0);
+
+        log.debug("end render frame");
     }
 
 //    private Color getColor(int color) {
@@ -297,7 +287,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         // one last attempt to setup our screen
         notifySageTVAboutScreenSize();
-
     }
 
     @Override
@@ -305,6 +294,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         activity.removeVideoFrame();
         activity.finish();
 
+        // TODO: We should do some opengl clean up here
     }
 
     @Override
@@ -373,8 +363,28 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2, int argb1, int argb2) {
-
+    public void drawLine(int x1, int y1, int x2, int y2, int argbTL, int argbTR) {
+//        ShaderUtils.setShaderParams(ShaderUtils.Shader.Gradient, OpenGLSurface.get(currentSurface.get()));
+//
+//        GLES20.glEnable(GLES20.GL_BLEND);
+//        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+//
+//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tl, ShaderUtils.intToFloatArray(argbTL));
+//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tr, ShaderUtils.intToFloatArray(argbTR));
+//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_bl, ShaderUtils.intToFloatArray(argbTL));
+//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_br, ShaderUtils.intToFloatArray(argbTR));
+//
+//        GLES20.glUniform2fv(ShaderUtils.GRADIENT_PROGRAM_resolution, new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]));
+//
+//        // Sets the vertex data to this attribute index
+//        int vertBuffer[] = ShaderUtils.glCreateBuffer();
+//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertBuffer);
+//        int vertices[] = {x1,y1, x1, y1};
+//        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, Float32Array.from(vertices), GLES20.GL_STATIC_DRAW);
+//        GLES20.glVertexAttribPointer(ShaderUtils.VERTEX_ARRAY, 2, GLES20.GL_FLOAT, false, 0, 0);
+//        GLES20.glEnableVertexAttribArray(ShaderUtils.VERTEX_ARRAY);
+//
+//        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
     }
 
     @Override
@@ -416,82 +426,67 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         return h;
     }
 
-    void setupSurface(ImageHolder<OpenGLTexture> t) {
+    void setupSurface(ImageHolder<? extends OpenGLTexture> t) {
+        assert t != null;
+        assert t.get() != null;
         // we are the current surface
         if (currentSurface!=null && (t == currentSurface || t.getHandle() == currentSurface.getHandle())) {
-            if (logFrameBuffer) log.debug("Setting Surface to ourself: {}", t.getHandle());
+            if (logFrameBuffer) log.debug("Setting Surface to our self: {}", t.getHandle());
             return;
         }
 
-        // close the batch in prep for a new surface, flushed gl
-        // batch.end();
-
         // now we can unbind the fb..
         if (currentSurface != null) {
-            //currentSurface.get().unbindFrameBuffer();
+            OpenGLSurface.get(currentSurface.get()).unbind();
         }
 
         // bind it (is, SetTargetSurface) and set it up
-        //t.get().bindFrameBuffer();
-
-        // start the batch in prep for new surface
-        //camera.update();
-        //batch.setProjectionMatrix(camera.combined);
-        //batch.begin();
-
-        // set the current surface
-        currentSurface = t;
+        setSurface(t);
     }
 
     @Override
     public void setTargetSurface(final int handle, final ImageHolder<OpenGLTexture> image) {
-        // info on Gdx framebufffer
-        // http://stackoverflow.com/questions/24434236/libgdx-framebuffer
-        // https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/graphics/glutils/FrameBuffer.html
-
-        // set the main batch to be this fbo
-        // In Draw Texture, if we are asked to render to FB, then we need to get the FB texture and render that
+        final ImageHolder<? extends OpenGLTexture> surface = (handle==0 && image==null) ? mainSurface : image;
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (handle == 0) {
-                    // we are switching to the primary surface (screen)
-                    if (currentSurface != null) {
-                        if (logFrameBuffer) log.debug("setTargetSurface[{}, {}]: Unbinding Old Framebuffer: {}", handle, (image!=null)?image.getHandle():null, currentSurface.getHandle());
-                        //batch.end();
-                        //currentSurface.get().unbindFrameBuffer();
-                        currentSurface = null;
-//
-                        // reset the camera and batch
-                        //camera.update();
-                        //batch.setProjectionMatrix(camera.combined);
-                        //batch.begin();
-                    } else {
-                        if (logFrameBuffer) log.debug("setTargetSurface[{},{}]", handle, (image!=null)?image.getHandle():null);
-                        // nothing to do, we are being told to set the surface to 0, but, we are 0
-                    }
-                } else {
-                    if (logFrameBuffer) log.debug("setTargetSurface[{},{}]", handle, (image!=null)?image.getHandle():null);
-                    setupSurface(image);
-                }
+                if (logFrameBuffer) log.debug("setTargetSurface[{},{}]", handle, (surface!=null)?surface.getHandle():null);
+                setupSurface(surface);
             }
         });
     }
 
     @Override
-    public ImageHolder<OpenGLTexture> readImage(File file) throws Exception {
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            try {
-                //return readImage(fis);
-            } finally {
-                fis.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public ImageHolder<OpenGLTexture> readImage(final File file) throws Exception {
+        long st = System.currentTimeMillis();
 
-        return null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inDither=true;
+        //options.inDensity=32;
+        //options.inTargetDensity=32;
+        options.inPurgeable=true;
+
+        // TODO: we need to do a smarter decode on the image stream.  OpenGL cannot load images > 2048 pixels
+        final Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+        //bitmap.setHasAlpha(true);
+        //bitmap.setDensity(32);
+
+        //bitmap.
+
+        long time = System.currentTimeMillis() - st;
+        totalTextureTime += time;
+        longestTextureTime = Math.max(time, longestTextureTime);
+
+        final OpenGLTexture t = new OpenGLTexture(bitmap.getWidth(), bitmap.getHeight());
+
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                t.loadBitmap(bitmap, file.getName());
+            }
+        });
+        return new ImageHolder<>(t, t.width, t.height);
     }
 
     @Override
@@ -500,21 +495,23 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        // TODO: we need to do a smarter decode on the image stream.  OpenGL cannot load images > 2048 pixels
         final Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
 
         long time = System.currentTimeMillis() - st;
         totalTextureTime += time;
         longestTextureTime = Math.max(time, longestTextureTime);
 
-//        final GdxTexture t = new GdxTexture(bitmap);
-//        invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                t.load();
-//            }
-//        });
-//        return new ImageHolder<>(t, t.width, t.height);
-        return null;
+        final OpenGLTexture t = new OpenGLTexture(bitmap.getWidth(), bitmap.getHeight());
+
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                t.loadBitmap(bitmap, "stream");
+            }
+        });
+        return new ImageHolder<>(t, t.width, t.height);
     }
 
     @Override
@@ -559,6 +556,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         longestTextureTime = 0;
         state = STATE_MENU;
         if (firstFrame) {
+            setSurface(mainSurface);
             invokeLater(new Runnable() {
                 @Override
                 public void run() {
