@@ -1,5 +1,6 @@
 package sagex.miniclient.android.ui;
 
+import android.content.Context;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -20,21 +22,26 @@ public class MiniClientKeyListener implements View.OnKeyListener {
     BaseKeyListener normalKeyListener;
     VideoPausedKeyListener videoPausedKeyListener;
     VideoPlaybackKeyListener videoPlaybackKeyListener;
+    MediaMappingPreferences prefs;
 
-    public MiniClientKeyListener(MiniClient client) {
+    public MiniClientKeyListener(Context context, MiniClient client) {
         this.client = client;
-        normalKeyListener = new BaseKeyListener(client);
-        videoPausedKeyListener = new VideoPausedKeyListener(client);
-        videoPlaybackKeyListener = new VideoPlaybackKeyListener(client);
+        normalKeyListener = new BaseKeyListener(context, client);
+        videoPausedKeyListener = new VideoPausedKeyListener(context, client);
+        videoPlaybackKeyListener = new VideoPlaybackKeyListener(context, client);
+        prefs = new MediaMappingPreferences(context);
     }
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(PrefStore.Keys.use_stateful_remote, true);
+
+        //boolean useRemote = (client.getConnectedServerInfo().use_stateful_remote!=null)?client.getConnectedServerInfo().use_stateful_remote:client.properties().getBoolean(PrefStore.Keys.use_stateful_remote, true);
+
+
 
         if (client.getCurrentConnection()==null) return false;
 
-        if (useRemote && client.getCurrentConnection().getMenuHint()!=null) {
+        if (prefs.isSmartRemoteEnabled() && client.getCurrentConnection().getMenuHint()!=null) {
             // if there's a popup then just use normal keys
             if (client.getCurrentConnection().getMenuHint().popupName != null) {
                 log.debug("Using Normal Key Listener");
@@ -58,6 +65,7 @@ public class MiniClientKeyListener implements View.OnKeyListener {
                 log.debug("Using Default Normal Key Listener. (No Player Visible). Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
             }
         }
+
 
         return normalKeyListener.onKey(v, keyCode, event);
     }

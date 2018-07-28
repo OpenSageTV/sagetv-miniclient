@@ -92,7 +92,7 @@ public interface PrefStore {
         /**
          * Use remote buttons change depending on the state of the player
          */
-        String use_stateful_remote = "use_stateful_remote";
+        //String use_stateful_remote = "use_stateful_remote";
 
         /**
          * values: debug, info, warn, error
@@ -108,7 +108,7 @@ public interface PrefStore {
         /**
          * if enabled the long press select will bring up OSD
          */
-        String long_press_select_for_osd = "long_press_select_for_osd";
+        //String long_press_select_for_osd = "long_press_select_for_osd";
 
         /**
          * Debug Settings

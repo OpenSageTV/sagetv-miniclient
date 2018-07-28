@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <PreferenceCategory android:title="Single Finger">
+
+        <ListPreference
+            android:dialogTitle="Swipe Left"
+            android:summary="%s"
+            android:key="swipe_left"
+            android:title="Swipe Left"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Right"
+            android:summary="%s"
+            android:key="swipe_right"
+            android:title="Swipe Right"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Up"
+            android:summary="%s"
+            android:key="swipe_up"
+            android:title="Swipe Up"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Down"
+            android:summary="%s"
+            android:key="swipe_down"
+            android:title="Swipe Down"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Two Finger">
+
+        <ListPreference
+            android:dialogTitle="Swipe Left"
+            android:summary="%s"
+            android:key="swipe_left_2"
+            android:title="Swipe Left"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Right"
+            android:summary="%s"
+            android:key="swipe_right_2"
+            android:title="Swipe Right"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Up"
+            android:summary="%s"
+            android:key="swipe_up_2"
+            android:title="Swipe Up"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Down"
+            android:summary="%s"
+            android:key="swipe_down_2"
+            android:title="Swipe Down"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Three Finger">
+
+        <ListPreference
+            android:dialogTitle="Swipe Left"
+            android:summary="%s"
+            android:key="swipe_left_3"
+            android:title="Swipe Left"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Right"
+            android:summary="%s"
+            android:key="swipe_right_3"
+            android:title="Swipe Right"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Up"
+            android:summary="%s"
+            android:key="swipe_up_3"
+            android:title="Swipe Up"/>
+
+        <ListPreference
+            android:dialogTitle="Swipe Down"
+            android:summary="%s"
+            android:key="swipe_down_3"
+            android:title="Swipe Down"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

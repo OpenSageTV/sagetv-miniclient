@@ -63,6 +63,16 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_connecting"
             android:theme="@style/FullscreenTheme"></activity>
+        <activity
+            android:name=".TouchMappingsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
+        <activity
+            android:name=".MediaMappingsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
     </application>
 
 </manifest>

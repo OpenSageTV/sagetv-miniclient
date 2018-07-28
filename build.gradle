@@ -68,7 +68,6 @@ allprojects {
     repositories {
         maven { url mavenInProject }
         mavenLocal()
-
         google()
         mavenCentral()
         jcenter()

@@ -35,6 +35,7 @@ import java.io.IOException;
 
 import sagex.miniclient.MACAddressResolver;
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.SageCommand;
 import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.NavigationFragment;
@@ -108,7 +109,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
         // setup to handle events
         client.eventbus().register(this);
 
-        MiniClientKeyListener keyListener = new MiniClientKeyListener(client);
+        MiniClientKeyListener keyListener = new MiniClientKeyListener(this, client);
 
         try {
             miniClientView.setOnTouchListener(new MiniclientTouchListener(this, client));
@@ -149,7 +150,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
                 if (client.getCurrentConnection().getMediaCmd().getPlaya() != null) {
                     log.info("We are leaving the App, Make sure Video is stopped.");
                     client.getCurrentConnection().getMediaCmd().getPlaya().pause();
-                    EventRouter.post(client, EventRouter.MEDIA_STOP);
+                    EventRouter.postCommand(client, SageCommand.STOP);
                 }
             }
         } catch (Throwable t) {
@@ -533,7 +534,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
         if (!hideNavigationDialog()) {
             log.debug("Navigation wasn't visible so will process normal back");
-            EventRouter.post(client, EventRouter.BACK);
+            EventRouter.postCommand(client, SageCommand.BACK);
         } else {
             log.debug("Just hiding navigation");
         }
@@ -567,8 +568,8 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
 
     @Subscribe
     public void onToggleAspectRatio(ToggleAspectRatioEvent ar) {
-        log.debug("SENDING AR_TOGGLE: " + EventRouter.AR_TOGGLE);
-        EventRouter.post(client, EventRouter.AR_TOGGLE);
+        log.debug("SENDING AR_TOGGLE: " + SageCommand.AR_TOGGLE);
+        EventRouter.postCommand(client, SageCommand.AR_TOGGLE);
     }
 
     /**
