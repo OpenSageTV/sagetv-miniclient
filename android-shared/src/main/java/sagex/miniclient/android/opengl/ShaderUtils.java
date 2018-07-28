@@ -2,17 +2,10 @@ package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.intellij.lang.annotations.Language;
 
 public class ShaderUtils {
-    static final Logger log = LoggerFactory.getLogger(ShaderUtils.class);
-
     public enum Shader {Base, Texture, Gradient}
-
-    public static final int VERTEX_ARRAY = 0;
-    public static final int COLOR_ARRAY = 1;
-    public static final int COORD_ARRAY = 2;
 
     static final String gradientFragmentShader2d = "    uniform mediump vec2 u_resolution;\n" +
             "    uniform mediump vec4 u_argbTL;\n" +
@@ -43,47 +36,45 @@ public class ShaderUtils {
             "        gl_Position = myPMVMatrix * myVertex;\n" +
             "    }\n";
 
-    static final String fragmentShader2d = "    varying mediump vec4 myColorOut;\n" +
+    // @Language("GLSL")
+    static final String fragmentShader2d = ""+
+            "    uniform mediump vec4 myColor;\n" +
             "    void main(void)\n" +
             "    {\n" +
-            "        gl_FragColor = myColorOut;\n" +
+            "        gl_FragColor = myColor;\n" +
             "    }\n";
 
-    static final String vertexShader2d = "    attribute highp vec4 myVertex;\n" +
-            "    attribute mediump vec4 myColor;\n" +
-            "    uniform mediump mat4 myPMVMatrix;\n" +
-            "    varying mediump vec4 myColorOut;\n" +
-            "\n" +
-            "    void main(void)\n" +
-            "    {\n" +
-            "        gl_Position = myPMVMatrix * myVertex;\n" +
-            "        myColorOut = myColor;\n" +
-            "    }\n";
-
-    static final String textureFragmentShader2d = "    uniform sampler2D sampler2d;\n" +
-            "    varying mediump vec2 myTexCoord;\n" +
-            "    varying mediump vec4 myColorOut;\n" +
-            "    void main (void)\n" +
-            "    {\n" +
-            "        gl_FragColor = myColorOut * texture2D(sampler2d,myTexCoord);\n" +
-            "        // NOTE: webgl images use unmultipled alpha\n" +
-            "        // https://stackoverflow.com/questions/39341564/webgl-how-to-correctly-blend-alpha-channel-png/\n" +
-            "        // we could do it here, but, we'll do it when we load the texture\n" +
-            "        //gl_FragColor.rgb *= gl_FragColor.a;\n" +
-            "    }";
-
-    static final String textureVertexShader2d = "    attribute highp vec4 myVertex;\n" +
-            "    attribute mediump vec4 myUV;\n" +
-            "    uniform vec4 myColor;\n" +
-            "    uniform mediump mat4 myPMVMatrix;\n" +
-            "    varying mediump vec2 myTexCoord;\n" +
-            "    varying mediump vec4 myColorOut;\n" +
+    // @Language("GLSL")
+    static final String vertexShader2d = ""+
+            "    attribute vec4 myVertex;\n" +
+            "    uniform mat4 myPMVMatrix;\n" +
             "    void main(void)\n" +
             "    {\n" +
             "        gl_Position = myPMVMatrix * myVertex;\n" +
-            "        myTexCoord = myUV.st;\n" +
-            "        myColorOut = myColor;\n" +
             "    }\n";
+
+    // @Language("GLSL")
+    static final String textureFragmentShader2d = ""+
+            "precision mediump float;\n"+
+            "uniform sampler2D uTexture;\n" +
+            "varying vec2 vTexPos;\n" +
+            "void main(void)\n" +
+            "{\n" +
+            "  gl_FragColor = texture2D(uTexture, vTexPos);\n" +
+            "}";
+
+    // @Language("GLSL")
+    static final String textureVertexShader2d = ""+
+            "uniform mat4 uScreen;\n" +
+            "attribute vec2 aPosition;\n" +
+            "attribute vec2 aTexPos;\n" +
+            "varying vec2 vTexPos;\n" +
+            "void main() {\n" +
+            "  vTexPos = aTexPos;\n" +
+            "  gl_Position = uScreen * vec4(aPosition.xy, 0.0, 1.0);\n" +
+            "}";
+
+    static boolean initialized = false;
 
     static final String[] ALL_SHADERS = {gradientFragmentShader2d, gradientVertexShader2d, fragmentShader2d, vertexShader2d, textureFragmentShader2d, textureVertexShader2d};
 
@@ -96,9 +87,15 @@ public class ShaderUtils {
 
     public static int BASE_PROGRAM = -1;
     public static int BASE_PROGRAM_PMVMatrix_Location = -1;
+    public static int BASE_PROGRAM_MYVERTEX_Handle;
+    public static int BASE_PROGRAM_MYCOLOR_Handle;
+
     public static int TEXTURE_PROGRAM = -1;
-    public static int TEXTURE_PROGRAM_PMVMatrix_Location =-1;
-    public static int TEXTURE_PROGRAM_Color_Location = -1;
+    public static int TEXTURE_PROGRAM_uSCREEN =-1;
+    public static int TEXTURE_PROGRAM_uTEXTURE =-1;
+    public static int TEXTURE_PROGRAM_aPOSITION =-1;
+    public static int TEXTURE_PROGRAM_aTEXPOS =-1;
+    public static int TEXTURE_PROGRAM_uColor = -1;
 
     public static int GRADIENT_PROGRAM = -1;
     public static int GRADIENT_PROGRAM_PMVMatrix_Location;
@@ -109,11 +106,14 @@ public class ShaderUtils {
     public static int GRADIENT_PROGRAM_argb_br;
 
     public static Shader CURRENT_SHADER = null;
+    public static int CURRENT_USCREEN_ID = -1;
+    //public static float[] currentMatrix = new float[16];
 
     static int compileShader(final int shaderType,
                                     String shaderSource)
     {
-        log.debug("Loading Shader: " + shaderType);
+        System.out.println("compiling shader....");
+        System.out.println("Loading Shader: " + shaderType + "; " + shaderSource.hashCode());
         int shaderHandle=GLES20.glCreateShader(shaderType);
         if (shaderHandle !=0)
         {
@@ -124,8 +124,8 @@ public class ShaderUtils {
             GLES20.glGetShaderiv(shaderHandle, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
             if (compileStatus[0] == GLES20.GL_FALSE)
             {
-                log.error("[{}]Error compiling shader: {}", shaderHandle, GLES20.glGetShaderInfoLog(shaderHandle), new Exception(GLES20.glGetShaderInfoLog(shaderHandle)));
-                log.error("[{}]SHADER:\n{}\n", shaderHandle, shaderSource);
+                System.err.println("Compile Shader Failed; " + shaderSource);
+                new Exception(GLES20.glGetShaderInfoLog(shaderHandle)).printStackTrace(System.err);
                 GLES20.glDeleteShader(shaderHandle);
                 shaderHandle = 0;
             }
@@ -133,26 +133,13 @@ public class ShaderUtils {
         return shaderHandle;
     }
 
-    static int createProgram(final int vtxShader, final int pxlShader,
-                                    final String[] attributes)
+    static int createProgram(final int vtxShader, final int pxlShader)
     {
         int programHandle=GLES20.glCreateProgram();
         if (programHandle!=0)
         {
             GLES20.glAttachShader(programHandle, vtxShader);
             GLES20.glAttachShader(programHandle, pxlShader);
-            // Bind attributes
-            if (attributes != null)
-            {
-                final int size = attributes.length;
-                for (int i = 0; i < size; i++)
-                {
-                    GLES20.glBindAttribLocation(
-                            programHandle, i,
-                            attributes[i]);
-                }
-            }
-
             GLES20.glLinkProgram(programHandle);
 
             //get linking status
@@ -160,8 +147,7 @@ public class ShaderUtils {
             GLES20.glGetProgramiv(programHandle, GLES20.GL_LINK_STATUS, linkStatus, 0);
             if (linkStatus[0]==0)
             {
-                log.error("Error linking program: " +
-                        GLES20.glGetProgramInfoLog(programHandle));
+                System.err.println("Link Shader Failed; " + GLES20.glGetProgramInfoLog(programHandle));
                 GLES20.glDeleteProgram(programHandle);
                 programHandle = 0;
             }
@@ -169,7 +155,7 @@ public class ShaderUtils {
         return programHandle;
     }
 
-    static void loadShaders() {
+    private static void loadShaders() {
         GRADIENT_FRAGMENT_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, gradientFragmentShader2d);
         TEXTURE_FRAGMENT_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, textureFragmentShader2d);
         FRAGMENT_SHADER = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader2d);
@@ -180,15 +166,23 @@ public class ShaderUtils {
     }
 
     public static void createPrograms() {
+        if (initialized) return;
+        initialized=true;
+
         loadShaders();
-        BASE_PROGRAM = createProgram(VERTEX_SHADER, FRAGMENT_SHADER, new String[] {"myVertex", "myColor"});
+        BASE_PROGRAM = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         BASE_PROGRAM_PMVMatrix_Location =GLES20.glGetUniformLocation(BASE_PROGRAM, "myPMVMatrix");
+        BASE_PROGRAM_MYVERTEX_Handle = GLES20.glGetAttribLocation(BASE_PROGRAM, "myVertex");
+        BASE_PROGRAM_MYCOLOR_Handle = GLES20.glGetUniformLocation(BASE_PROGRAM, "myColor");
 
-        TEXTURE_PROGRAM = createProgram(TEXTURE_VERTEX_SHADER, TEXTURE_FRAGMENT_SHADER, new String[] {"myVertex", "myUV"});
-        TEXTURE_PROGRAM_PMVMatrix_Location =GLES20.glGetUniformLocation(TEXTURE_PROGRAM, "myPMVMatrix");
-        TEXTURE_PROGRAM_Color_Location=GLES20.glGetUniformLocation(TEXTURE_PROGRAM, "myColor");
+        TEXTURE_PROGRAM = createProgram(TEXTURE_VERTEX_SHADER, TEXTURE_FRAGMENT_SHADER);
+        TEXTURE_PROGRAM_uSCREEN =GLES20.glGetUniformLocation(TEXTURE_PROGRAM, "uScreen");
+        TEXTURE_PROGRAM_aPOSITION = GLES20.glGetAttribLocation(TEXTURE_PROGRAM, "aPosition");
+        TEXTURE_PROGRAM_aTEXPOS = GLES20.glGetAttribLocation(TEXTURE_PROGRAM, "aTexPos");
+        TEXTURE_PROGRAM_uTEXTURE =GLES20.glGetUniformLocation(TEXTURE_PROGRAM, "uTexture");
+        TEXTURE_PROGRAM_uColor=GLES20.glGetUniformLocation(TEXTURE_PROGRAM, "uColor");
 
-        GRADIENT_PROGRAM = createProgram(GRADIENT_VERTEX_SHADER, GRADIENT_FRAGMENT_SHADER, new String[] {"myVertex"});
+        GRADIENT_PROGRAM = createProgram(GRADIENT_VERTEX_SHADER, GRADIENT_FRAGMENT_SHADER);
         GRADIENT_PROGRAM_PMVMatrix_Location=GLES20.glGetUniformLocation(GRADIENT_PROGRAM, "myPMVMatrix");
         GRADIENT_PROGRAM_resolution=GLES20.glGetUniformLocation(GRADIENT_PROGRAM, "u_resolution");
         GRADIENT_PROGRAM_argb_tl=GLES20.glGetUniformLocation(GRADIENT_PROGRAM, "u_argbTL");
@@ -198,27 +192,41 @@ public class ShaderUtils {
     }
 
     public static int useProgram(Shader shader) {
-        if (shader!=CURRENT_SHADER) {
+//        if (shader!=CURRENT_SHADER) {
             switch (shader) {
                 case Base:
                     GLES20.glUseProgram(BASE_PROGRAM);
-                    return BASE_PROGRAM_PMVMatrix_Location;
+                    CURRENT_USCREEN_ID = BASE_PROGRAM_PMVMatrix_Location;
+                    System.out.println("GL USE PROGRAM " + shader + " ["+ BASE_PROGRAM +"]");
+                    break;
                 case Texture:
                     GLES20.glUseProgram(TEXTURE_PROGRAM);
-                    return TEXTURE_PROGRAM_PMVMatrix_Location;
+                    CURRENT_USCREEN_ID = TEXTURE_PROGRAM_uSCREEN;
+                    System.out.println("GL USE PROGRAM " + shader + " ["+ TEXTURE_PROGRAM +"]");
+                    break;
                 case Gradient:
                     GLES20.glUseProgram(GRADIENT_PROGRAM);
-                    return GRADIENT_PROGRAM_PMVMatrix_Location;
+                    CURRENT_USCREEN_ID = GRADIENT_PROGRAM_PMVMatrix_Location;
+                    System.out.println("GL USE PROGRAM " + shader + " ["+ GRADIENT_PROGRAM +"]");
+                    break;
             }
-        }
-        return -1;
+//        }
+        CURRENT_SHADER = shader;
+
+        return CURRENT_USCREEN_ID;
     }
 
-    public static void setShaderParams(Shader shader, OpenGLSurface surface) {
-        GLES20.glUniformMatrix4fv( useProgram(shader), 1, false, surface.viewMatrix, 0);
-    }
+//    public static void setShaderParams(Shader shader, OpenGLSurface surface) {
+//        GLES20.glUniformMatrix4fv( useProgram(shader), 1, false, surface.viewMatrix, 0);
+//    }
 
-    public static float[] rgbToFloatArray(int red, int green, int blue, int alpha) {
+//    public static void setShaderParams(Shader shader, float w, float h) {
+//        float vm[] = new float[16];
+//        Matrix.orthoM(vm, 0,0, w, h, 0, 0, 1);
+//        GLES20.glUniformMatrix4fv( useProgram(shader), 1, false, vm, 0);
+//    }
+
+    public static float[] rgbaToFloatArray(int red, int green, int blue, int alpha) {
         float r = red & 0xFF;
         float g = green & 0xFF;
         float b = blue & 0xFF;
@@ -227,6 +235,20 @@ public class ShaderUtils {
         return new float[] {r/255.0f,g/255.0f,b/255.0f,a/255.0f};
     }
 
+    public static int RGBA_to_ARGB(int red, int green, int blue, int alpha) {
+        return ((alpha&0xFF)<<24)|((red&0xFF)<<16)|
+                ((green&0xFF)<<8)|((blue&0xFF));
+    }
+
+
+    public static float[] argbToFloatArray(int argb) {
+        float r = ((argb>>16) & 0xff);
+        float g = ((argb>>8) & 0xff);
+        float b = ((argb) & 0xff);
+        float a = ((argb>>24) & 0xff);
+
+        return new float[] {r/255.0f,g/255.0f,b/255.0f,a/255.0f};
+    }
 
     public static int[] glCreateBuffer() {
         int buffers[] = new int[1];

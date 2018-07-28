@@ -1,13 +1,20 @@
 package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
+import android.util.Log;
 
 public class OpenGLSurface extends OpenGLTexture {
     public float[] viewMatrix = new float[16];
     public int[] buffer = null;
+    public int[] renderBuffer = null;
+    boolean bound=false;
 
     public OpenGLSurface(int w, int h) {
         super(w,h);
+
+        // set the view matrix for this surface
+        Matrix.orthoM(viewMatrix, 0,0, w, h, 0, 0, 1);
     }
 
 
@@ -18,63 +25,114 @@ public class OpenGLSurface extends OpenGLTexture {
 
     @Override
     public void delete() {
-        super.delete();
         if (buffer!=null) {
             GLES20.glDeleteFramebuffers(1, buffer, 0);
             buffer=null;
         }
+        super.delete();
     }
 
     public OpenGLSurface createSurface()
     {
         delete();
+
         buffer = new int[1];
         GLES20.glGenFramebuffers(1, buffer, 0);
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer[0]);
 
-        createTexture();
+        //depth renderbuffer
+        renderBuffer = new int[1];
+        GLES20.glGenRenderbuffers(1, renderBuffer, 0);
+        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, renderBuffer[0]);
+        GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER, GLES20.GL_DEPTH_COMPONENT16, width, height);
 
-        // Binds this texture handle so we can load the data into it
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture());
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA,
-                width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0);
-        GLES20.glClearColor(0, 0, 0, 0);
+
+        //texture
+        texture = new int[1];
+        GLES20.glGenTextures(1, texture, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+        GLES20.glFramebufferTexture2D( GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0 );
+
+        GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_DEPTH_ATTACHMENT, GLES20.GL_RENDERBUFFER, renderBuffer[0]);
+
+        int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
+        if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
+            Log.d("FBORenderer", "Framebuffer incomplete. Status: " + status);
+
+            throw new RuntimeException("Error creating FBO");
+        }
+
+        GLES20.glClearColor(0,0,0,0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+
+        bound=false;
+
         return this;
     }
 
     public void bind() {
-        viewMatrix[0]=2.0f/(float)width;
-        viewMatrix[1]=0.0f;
-        viewMatrix[2]=0.0f;
-        viewMatrix[3]=0.0f;
-        viewMatrix[4]=0.0f;
-        viewMatrix[5]=2.0f/(float)height;
-        viewMatrix[6]=0.0f;
-        viewMatrix[7]=0.0f;
-        viewMatrix[8]=0.0f;
-        viewMatrix[9]=0.0f;
-        viewMatrix[10]=1.0f;
-        viewMatrix[11]=0.0f;
-        viewMatrix[12]=-1.0f;
-        viewMatrix[13]=-1.0f;
-        viewMatrix[14]=0.0f;
-        viewMatrix[15]=1.0f;
+        debug("Binding Framebuffer Surface: " + buffer());
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
+        int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
+        if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
+            debug("Framebuffer Did Not Bind. Status: " + status);
+
+            throw new RuntimeException("Error creating FBO");
+        }
+
+        //GLES20.glFramebufferTexture2D( GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0 );
         GLES20.glViewport(0,0, width, height);
+        //GLES20.glClearColor(0,0,1,1);
+        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        bound=true;
     }
 
     public void unbind() {
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+//        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
+        debug("Unbinding Framebuffer Surface: " + buffer());
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        bound=false;
     }
+
+    public void draw() {
+        draw(0,0, width, height, 0, 0, width, height, 1, viewMatrix);
+    }
+
 
     public static OpenGLSurface get(OpenGLTexture openGLTexture) {
         assert openGLTexture instanceof OpenGLSurface;
         return (OpenGLSurface)openGLTexture;
     }
+
+    float[] getVertexData(int x, int y, int width, int height, int srcx, int srcy, int srcwidth, int srcheight) {
+        // INVERT the texcoords because framebuffers are upsidedown
+        float[] data =
+                {
+                        x, y,                          //V1
+                        (float) srcx / (float) width, -((float) srcy / (float) height),             //Texture coordinate for V1
+
+                        x, y + height,                   //V2
+                        (float) srcx / (float) width, -(((float) srcy + (float) srcheight) / (float) height),
+
+                        x + width, y,                          //V3
+                        ((float) srcx + (float) srcwidth) / (float) width, -((float) srcy / (float) height),
+
+                        x + width, y + height,                   //V4
+                        ((float) srcx + (float) srcwidth) / (float) width, -(((float) srcy + (float) srcheight) / (float) height)
+
+                };
+
+        return data;
+
+    }
+
 }

@@ -197,14 +197,14 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
             errorCause = (TextView) findViewById(R.id.errorCause);
             errorContainer = (ViewGroup) findViewById(R.id.errorContainer);
 
-            AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
+            //AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
             //cfg.useGL20 = false;
             // we need to change the default pixel format - since it does not include an alpha channel
             // we need the alpha channel so the camera preview will be seen behind the GL scene
-            cfg.r = 8;
-            cfg.g = 8;
-            cfg.b = 8;
-            cfg.a = 8;
+            //cfg.r = 8;
+            //cfg.g = 8;
+            //cfg.b = 8;
+            //cfg.a = 8;
 
             client = MiniclientApplication.get().getClient();
 
