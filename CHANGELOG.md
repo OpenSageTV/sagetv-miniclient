@@ -1,3 +1,6 @@
+**1.3.0 (2018-08-04)**
+- jvl711: Added configurable remote mapping ability from within the application 
+
 **1.2.13 (2018-07-01)**
 - Upgraded ExoPlayer and IJKPlaer
 - Work Around for Shield (and other 8.x versions) where UI gets completely messed up.
