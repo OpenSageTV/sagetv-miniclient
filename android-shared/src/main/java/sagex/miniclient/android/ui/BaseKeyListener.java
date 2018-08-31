@@ -162,7 +162,8 @@ public class BaseKeyListener implements View.OnKeyListener
 
         // Fkeys
         /*
-        TODO See if there is any issues with not including this
+        Made a change to try and allow these as standard keys
+
         KEYMAP.put(KeyEvent.KEYCODE_F1, SageCommand.F1);
         KEYMAP.put(KeyEvent.KEYCODE_F2, SageCommand.F2);
         KEYMAP.put(KeyEvent.KEYCODE_F3, SageCommand.F3);
@@ -176,6 +177,9 @@ public class BaseKeyListener implements View.OnKeyListener
         KEYMAP.put(KeyEvent.KEYCODE_F11, SageCommand.F11);
         KEYMAP.put(KeyEvent.KEYCODE_F12, SageCommand.F12);
         */
+
+
+
     }
 
     @Override
@@ -184,6 +188,15 @@ public class BaseKeyListener implements View.OnKeyListener
 
         if(LONGPRESS_KEYMAP.containsKey(keyCode)) //Handle long press event of mapped key
         {
+            SageCommand command = LONGPRESS_KEYMAP.get(keyCode);
+
+            if(command == SageCommand.NONE)
+            {
+                //Mapping turned off on this command.  Stop processing
+                log.debug("KEYS: LONG PRESS KEYCODE SET TO NONE: {}; {}", keyCode, event);
+                return false;
+            }
+
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.isLongPress()
                     || (this.skipUp && event.getRepeatCount() > 1 && (event.getEventTime()- lastEvent.getEventTime()) >= this.keyRepeatRateDelay
                     && (event.getEventTime() - event.getDownTime()) >= this.keyInitialRepeatDelay))
@@ -192,7 +205,7 @@ public class BaseKeyListener implements View.OnKeyListener
 
                 skipKey = keyCode;
                 //UserEvent key = new UserEvent(LONGPRESS_KEYMAP.get(keyCode));
-                SageCommand command = LONGPRESS_KEYMAP.get(keyCode);
+
 
                 if (prefs.isLongPressSelectShowOSDNav() &&
                         (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER ||
@@ -208,6 +221,8 @@ public class BaseKeyListener implements View.OnKeyListener
                 lastEvent = event;
                 skipUp = true;
 
+                return true;
+
             }
             else if(event.getAction() == KeyEvent.ACTION_UP)
             {
@@ -222,8 +237,7 @@ public class BaseKeyListener implements View.OnKeyListener
 
                 if (KEYMAP.containsKey(keyCode))
                 {
-                    SageCommand command = KEYMAP.get(keyCode);
-
+                    command = KEYMAP.get(keyCode);
 
                     log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
                     EventRouter.postCommand(client, command);
@@ -235,6 +249,14 @@ public class BaseKeyListener implements View.OnKeyListener
         }
         else if(KEYMAP.containsKey(keyCode)) //Handle standard mapped press events
         {
+            SageCommand command = KEYMAP.get(keyCode);
+
+            if(command == SageCommand.NONE)
+            {
+                //Mapping turned off on this command.  Stop processing
+                log.debug("KEYS: POST KEYCODE SET TO NONE: {}; {}", keyCode, event);
+                return false;
+            }
 
             if(event.getAction() == KeyEvent.ACTION_DOWN)
             {
@@ -247,7 +269,7 @@ public class BaseKeyListener implements View.OnKeyListener
                 }
                 else
                 {
-                    SageCommand command = KEYMAP.get(keyCode);
+
 
                     log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
                     EventRouter.postCommand(client, command);
@@ -328,6 +350,18 @@ public class BaseKeyListener implements View.OnKeyListener
                         client.getCurrentConnection().postKeyEvent(toSend, androidToSageKeyModifier(event), (char) event.getUnicodeChar());
 
                         lastEvent = event;
+                        return true;
+                    }
+
+                    if(keyCode >= KeyEvent.KEYCODE_F1 && keyCode <= KeyEvent.KEYCODE_F12)
+                    {
+                        //F1 Virtual Code = 112
+                        //F1 KeyCode = 131
+
+                        //KeyEvent.KEYCODE_PAGE_DOWN = 93
+                        //Keys.VK_PAGE_DOWN = 34
+
+                        client.getCurrentConnection().postKeyEvent((keyCode - 19), 0, (char)(keyCode - 19));
                         return true;
                     }
 
