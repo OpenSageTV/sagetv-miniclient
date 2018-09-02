@@ -390,7 +390,17 @@ public class MediaCmd {
                     playa.seek(seekTime);
                 return 0;
             case MEDIACMD_DVD_STREAMS:
+
+                int streamType = readInt(0, cmddata);
+                int streamPos = readInt(4, cmddata);
+
+                log.debug("JVL ---------------------- [MEDIACMD_DVD_STREAMS] ---------------------- ");
+                log.debug("Stream Type: {}  Stream Pos: {}", streamType, streamPos);
+
+                playa.setAudioTrack(streamType, streamPos);
+
                 writeInt(0, retbuf, 0);
+
                 return 4;
             default:
                 log.error("MEDIACMD Unhandled Media Command: {}", cmd);

@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 
+import com.google.android.exoplayer2.PlayerMessage;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
@@ -191,6 +192,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     }
 
     @Override
+    public void setAudioTrack(int streamType, int streamPos)
+    {
+        //TODO: Need to implement.  Having a hard time finding an example of how to do this
+    }
+
+    @Override
     public void flush() {
         super.flush();
         if (player == null) return;
@@ -247,6 +254,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
         player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
         //player = ExoPlayerFactory.newSimpleInstance(context, video, new DefaultLoadControl());
+
+
 
         //EventLogger eventLogger = new EventLogger();
         ///player.setInternalErrorListener(eventLogger);
