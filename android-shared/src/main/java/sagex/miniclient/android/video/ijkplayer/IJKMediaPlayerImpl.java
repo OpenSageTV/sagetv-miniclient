@@ -1,5 +1,6 @@
 package sagex.miniclient.android.video.ijkplayer;
 
+import android.media.MediaPlayer;
 import android.view.SurfaceView;
 
 import sagex.miniclient.android.MiniclientApplication;
@@ -12,6 +13,7 @@ import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 import tv.danmaku.ijk.media.player.MediaInfo;
+
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 
 /**
@@ -23,6 +25,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     long lastTime = 0;
     boolean resumeMode = false;
     long lastGetTime = 0;
+    int initialAudioStreamPos = -1;
+    int initialAudioStreamType = -1;
 
     public IJKMediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, true);
@@ -131,6 +135,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         super.play();
         if (player != null && !player.isPlaying()) {
             player.start();
+
         }
     }
 
@@ -263,6 +268,36 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                         }
                     }
 
+
+                    if(initialAudioStreamPos != -1)
+                    {
+                        setAudioTrack(initialAudioStreamType, initialAudioStreamPos);
+                    }
+
+                    /*
+                    int audioTrack = -1;
+
+                    if(player.getTrackInfo().length > 0 && !player.getTrackInfo()[0].getLanguage().equalsIgnoreCase("eng"))
+                    {
+                        for(int i = 0; i < player.getTrackInfo().length; i++)
+                        {
+                            if(player.getTrackInfo()[i].getLanguage().equalsIgnoreCase("eng"))
+                            {
+                                audioTrack = player.getTrackInfo()[i].getTrackType();
+                                log.debug("JVL 1st track was not English.  Found a new default track index {} - ", i, player.getTrackInfo()[i].getInfoInline());
+                                break;
+                            }
+                        }
+                    }
+
+                    if(audioTrack != -1)
+                    {
+                        log.debug("JVL Called set audio track");
+                        ((IjkMediaPlayer) player).selectTrack(audioTrack);
+
+                    }
+                    */
+
                 }
             });
 
@@ -294,6 +329,77 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             } else {
                 log.info("We Missed a Seek for {}: player.isPlaying {}; State: {}; playerReader: {}", timeInMS, player.isPlaying(), state, playerReady);
             }
+        }
+    }
+
+    /**
+     * This finds the correct track position in the IJKPlayer track list.  SageTV gives us a zero based index of all audio tracks.  IJKPlayer
+     * uses a track position of all tracks in the file.  Video is is track 0.  If it was an audio only file, I assume track 0 would be the audio
+     *
+     * @param sageTVPosition Track position sage has requested us to change to
+     * @return IJKPlayer track position
+     */
+    private int getAudioTrackPosition(int sageTVPosition)
+    {
+        int audioTrackCount = 0;
+
+        for(int i = 0; i < player.getTrackInfo().length; i++)
+        {
+            if(player.getTrackInfo()[i].getTrackType() == 2)
+            {
+                if(audioTrackCount == sageTVPosition)
+                {
+                    return i;
+                }
+
+                audioTrackCount++;
+            }
+        }
+
+        return -1;
+    }
+
+    @Override
+    public void setAudioTrack(int streamType, int streamPos)
+    {
+        //NOTE: Do not try to set the track position to a currently selected audio track. IJKPlayer really does not like that, and will crash.
+
+        log.debug("setAudioTrack Called StreamType: {} StreamPosition: {}", streamType, streamPos);
+
+        if(playerReady)
+        {
+            int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(2);
+            int setTrackTo = this.getAudioTrackPosition(streamPos);
+
+            log.debug("Selected Audio Track Pos: {}", currentTrack);
+
+            if(setTrackTo == -1)
+            {
+                log.warn("Unable to find audio track postion in IJKPlayer!");
+                return;
+            }
+
+            /*
+            for(int i = 0; i < player.getTrackInfo().length; i++)
+            {
+                log.debug("Audio tracks length: {}", player.getTrackInfo().length);
+                log.debug("Track pos: {}, Track Type: {}, Track Lang: {} Track Info Line {}", i, player.getTrackInfo()[i].getTrackType(), player.getTrackInfo()[i].getLanguage(), player.getTrackInfo()[i].getInfoInline());
+            }
+            */
+
+            if(currentTrack != setTrackTo)
+            {
+                log.debug("Setting audio track to IJKPlayer Track Position: {}", setTrackTo);
+                ((IjkMediaPlayer) player).selectTrack(setTrackTo);
+            }
+
+        }
+        else
+        {
+            log.debug("setAudioTrack player not ready.  Storing values for setting when player is initialized");
+
+            this.initialAudioStreamPos = streamPos;
+            this.initialAudioStreamType = streamType;
         }
     }
 
@@ -347,3 +453,4 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         super.releasePlayer();
     }
 }
+
