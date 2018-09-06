@@ -1,9 +1,11 @@
 package sagex.miniclient.android.video.exoplayer2;
 
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.SurfaceView;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -12,13 +14,17 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 
 import com.google.android.exoplayer2.PlayerMessage;
+import com.google.android.exoplayer2.Renderer;
+import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -28,6 +34,7 @@ import com.google.android.exoplayer2.video.VideoListener;
 import java.io.IOException;
 
 import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.R;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
@@ -47,6 +54,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
     long resumePos = -1;
     long logLastTime = -1;
+    int initialAudioTrackIndex = -1;
+    int initialAudioTrackType = -1;
+
+    DefaultTrackSelector trackSelector;
 
     public Exo2MediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, false);
@@ -194,7 +205,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     @Override
     public void setAudioTrack(int streamType, int streamPos)
     {
-        //TODO: Need to implement.  Having a hard time finding an example of how to do this
+
+        if(!ExoIsPlaying())
+        {
+            initialAudioTrackIndex = streamPos;
+            initialAudioTrackType = streamType;
+        }
+        else
+        {
+            initialAudioTrackIndex = -1;
+            initialAudioTrackType = -1;
+            changeTrack(C.TRACK_TYPE_AUDIO, streamPos, 0);
+        }
     }
 
     @Override
@@ -247,7 +269,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
         TrackSelection.Factory adaptiveTrackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter());
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
+        trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
 
         // EventLogger is in the demo package
         // EventLogger eventLogger = new EventLogger(trackSelector);
@@ -277,6 +299,15 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     //notifySageTVStop();
                     eos = true;
                     Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
+                }
+                if(playbackState == PlaybackState.STATE_PLAYING)
+                {
+                    //debugAvailableTracks();
+
+                    if(initialAudioTrackIndex != -1)
+                    {
+                        setAudioTrack(0, initialAudioTrackIndex);
+                    }
                 }
             }
 
@@ -384,4 +415,104 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         playerReady = true;
         state = PLAY_STATE;
     }
+
+
+    public void changeTrack(int trackType, int groupIndex, int trackIndex)
+    {
+        DefaultTrackSelector.SelectionOverride override;
+        DefaultTrackSelector.ParametersBuilder parametersBuilder;
+        MappingTrackSelector.MappedTrackInfo trackInfo = trackSelector.getCurrentMappedTrackInfo();
+
+        //parametersBuilder.setRendererDisabled(rendererIndex, isDisabled);
+
+        TrackGroupArray trackGroup = trackInfo.getTrackGroups(trackType);
+
+        if(trackInfo.getTrackSupport(trackType, groupIndex, trackIndex) == RendererCapabilities.FORMAT_HANDLED)
+        {
+            //Clear set new track selection
+            parametersBuilder = trackSelector.buildUponParameters();
+
+            override = new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex);
+            parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
+
+            trackSelector.setParameters(parametersBuilder);
+        }
+        else
+        {
+            log.debug("ExoPlayer is unable to render the track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
+        }
+    }
+
+    public void debugAvailableTracks()
+    {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+
+
+        if (mappedTrackInfo == null)
+        {
+            log.debug("JVL - No Mapped Track Info");
+            return;
+        }
+
+        for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++)
+        {
+            TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(i);
+
+            log.debug("JVL - Track Render Group {}", i);
+
+            if (trackGroups.length != 0)
+            {
+                int label;
+
+                switch (player.getRendererType(i))
+                {
+                    case C.TRACK_TYPE_AUDIO:
+
+                        log.debug("JVL - TRACK_TYPE_AUDIO");
+                        break;
+
+                    case C.TRACK_TYPE_VIDEO:
+
+                        log.debug("JVL - TRACK_TYPE_VIDEO");
+                        break;
+
+                    case C.TRACK_TYPE_TEXT:
+
+                        log.debug("JVL - TRACK_TYPE_TEXT");
+                        break;
+
+                    default:
+                        continue;
+                }
+
+                for(int j = 0; j < trackGroups.length; j++)
+                {
+                    log.debug("\t Track Group {}", j);
+
+                    for(int k = 0; k < trackGroups.get(j).length; k++)
+                    {
+                        log.debug("\t\t Track {}, Channels {}, Bitrate {}, Language {}", k, trackGroups.get(j).getFormat(k).channelCount, trackGroups.get(j).getFormat(k).bitrate, trackGroups.get(j).getFormat(k).language);
+                        if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
+                        {
+                            //Add debug info
+                            log.debug("\t\t Format is handled");
+                        }
+                        else
+                        {
+                            //Add debug info
+                            log.debug("\t\t Format IS NOT HANDLED");
+                        }
+                    }
+
+                }
+
+            }
+            else
+            {
+                log.debug("JVL - Track Group Empty");
+            }
+        }
+
+    }
+
 }
