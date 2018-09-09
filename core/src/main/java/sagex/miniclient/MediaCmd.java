@@ -57,6 +57,10 @@ public class MediaCmd {
 
     public static final int MEDIACMD_DVD_STREAMS = 36;
 
+
+    public static final int STREAM_TYPE_AUDIO = 0;
+    public static final int STREAM_TYPE_SUBTITLE = 1;
+
     public static final Map<Integer, String> CMDMAP = new HashMap<Integer, String>();
     private static final Logger log = LoggerFactory.getLogger(MediaCmd.class);
 
@@ -394,10 +398,17 @@ public class MediaCmd {
                 int streamType = readInt(0, cmddata);
                 int streamPos = readInt(4, cmddata);
 
-                log.debug("JVL ---------------------- [MEDIACMD_DVD_STREAMS] ---------------------- ");
                 log.debug("Stream Type: {}  Stream Pos: {}", streamType, streamPos);
 
-                playa.setAudioTrack(streamType, streamPos);
+                if(streamType == STREAM_TYPE_AUDIO)
+                {
+                    playa.setAudioTrack(streamPos);
+                }
+                else if(streamType == STREAM_TYPE_SUBTITLE)
+                {
+                    playa.setSubtitleTrack(streamPos);
+                }
+
 
                 writeInt(0, retbuf, 0);
 

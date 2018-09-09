@@ -55,7 +55,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     long resumePos = -1;
     long logLastTime = -1;
     int initialAudioTrackIndex = -1;
-    int initialAudioTrackType = -1;
 
     DefaultTrackSelector trackSelector;
 
@@ -203,18 +202,22 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     }
 
     @Override
-    public void setAudioTrack(int streamType, int streamPos)
+    public void setSubtitleTrack(int streamPos)
+    {
+
+    }
+
+    @Override
+    public void setAudioTrack(int streamPos)
     {
 
         if(!ExoIsPlaying())
         {
             initialAudioTrackIndex = streamPos;
-            initialAudioTrackType = streamType;
         }
         else
         {
             initialAudioTrackIndex = -1;
-            initialAudioTrackType = -1;
             changeTrack(C.TRACK_TYPE_AUDIO, streamPos, 0);
         }
     }
@@ -306,7 +309,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
                     if(initialAudioTrackIndex != -1)
                     {
-                        setAudioTrack(0, initialAudioTrackIndex);
+                        setAudioTrack(initialAudioTrackIndex);
                     }
                 }
             }

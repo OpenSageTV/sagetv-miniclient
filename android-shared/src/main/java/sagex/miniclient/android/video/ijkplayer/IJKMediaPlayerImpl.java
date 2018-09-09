@@ -3,6 +3,8 @@ package sagex.miniclient.android.video.ijkplayer;
 import android.media.MediaPlayer;
 import android.view.SurfaceView;
 
+import com.google.android.exoplayer2.text.TextRenderer;
+
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.ui.AndroidUIController;
@@ -12,21 +14,24 @@ import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+import tv.danmaku.ijk.media.player.IjkTimedText;
 import tv.danmaku.ijk.media.player.MediaInfo;
 
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
+import tv.danmaku.ijk.media.player.misc.IjkMediaFormat;
+import tv.danmaku.ijk.media.player.misc.IjkTrackInfo;
 
 /**
  * Created by seans on 06/10/15.
  */
-public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource> {
+public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource>
+{
     long preSeekPos = -1;
     long playerGetTimeOffset = -1;
     long lastTime = 0;
     boolean resumeMode = false;
     long lastGetTime = 0;
     int initialAudioStreamPos = -1;
-    int initialAudioStreamType = -1;
 
     public IJKMediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, true);
@@ -216,6 +221,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             });
 
+
+
             log.debug("Sending {} to mediaplayer", sageTVurl);
 
             if (pushMode) {
@@ -271,33 +278,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
                     if(initialAudioStreamPos != -1)
                     {
-                        setAudioTrack(initialAudioStreamType, initialAudioStreamPos);
+                        setAudioTrack(initialAudioStreamPos);
                     }
-
-                    /*
-                    int audioTrack = -1;
-
-                    if(player.getTrackInfo().length > 0 && !player.getTrackInfo()[0].getLanguage().equalsIgnoreCase("eng"))
-                    {
-                        for(int i = 0; i < player.getTrackInfo().length; i++)
-                        {
-                            if(player.getTrackInfo()[i].getLanguage().equalsIgnoreCase("eng"))
-                            {
-                                audioTrack = player.getTrackInfo()[i].getTrackType();
-                                log.debug("JVL 1st track was not English.  Found a new default track index {} - ", i, player.getTrackInfo()[i].getInfoInline());
-                                break;
-                            }
-                        }
-                    }
-
-                    if(audioTrack != -1)
-                    {
-                        log.debug("JVL Called set audio track");
-                        ((IjkMediaPlayer) player).selectTrack(audioTrack);
-
-                    }
-                    */
-
                 }
             });
 
@@ -343,9 +325,11 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     {
         int audioTrackCount = 0;
 
+
+
         for(int i = 0; i < player.getTrackInfo().length; i++)
         {
-            if(player.getTrackInfo()[i].getTrackType() == 2)
+            if(player.getTrackInfo()[i].getTrackType() == IjkTrackInfo.MEDIA_TRACK_TYPE_AUDIO)
             {
                 if(audioTrackCount == sageTVPosition)
                 {
@@ -359,16 +343,45 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         return -1;
     }
 
+    /**
+     * This finds the correct track position in the IJKPlayer track list.  SageTV gives us a zero based index of all aubtitle tracks.  IJKPlayer
+     * uses a track position of all tracks in the file.  Video is is track 0.  If it was an audio only file, I assume track 0 would be the audio
+     *
+     * @param sageTVPosition Track position sage has requested us to change to
+     * @return IJKPlayer track position
+     */
+    private int getSubtitleTrackPosition(int sageTVPosition)
+    {
+        int subtitleTrackCount = 0;
+
+        for(int i = 0; i < player.getTrackInfo().length; i++)
+        {
+            log.debug("Track Pos {}, TrackType {}, Track Info {}, Track Lang ", i, player.getTrackInfo()[i].getTrackType(), player.getTrackInfo()[i].getInfoInline(), player.getTrackInfo()[i].getLanguage());
+
+            if(player.getTrackInfo()[i].getTrackType() == IjkTrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT)
+            {
+                if(subtitleTrackCount == sageTVPosition)
+                {
+                    return i;
+                }
+
+                subtitleTrackCount++;
+            }
+        }
+
+        return -1;
+    }
+
     @Override
-    public void setAudioTrack(int streamType, int streamPos)
+    public void setAudioTrack(int streamPos)
     {
         //NOTE: Do not try to set the track position to a currently selected audio track. IJKPlayer really does not like that, and will crash.
 
-        log.debug("setAudioTrack Called StreamType: {} StreamPosition: {}", streamType, streamPos);
+        log.debug("setAudioTrack Called StreamPosition: {}", streamPos);
 
         if(playerReady)
         {
-            int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(2);
+            int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(IjkTrackInfo.MEDIA_TRACK_TYPE_AUDIO);
             int setTrackTo = this.getAudioTrackPosition(streamPos);
 
             log.debug("Selected Audio Track Pos: {}", currentTrack);
@@ -399,8 +412,24 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             log.debug("setAudioTrack player not ready.  Storing values for setting when player is initialized");
 
             this.initialAudioStreamPos = streamPos;
-            this.initialAudioStreamType = streamType;
         }
+    }
+
+    @Override
+    public void setSubtitleTrack(int streamPos)
+    {
+        //Displaying subtitle/timedtext does not appear to be supported at this time.
+        log.debug("setSubtitleTrack Called StreamPosition: {}", streamPos);
+
+        int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(IjkTrackInfo.MEDIA_TRACK_TYPE_SUBTITLE);
+        int trackPos = this.getSubtitleTrackPosition(streamPos);
+
+        if(playerReady && currentTrack != trackPos && trackPos != -1)
+        {
+            log.debug("FUNCTION NOT SUPPORTED (Setting subtitle to IJKPosition): {}", trackPos);
+            //((IjkMediaPlayer) player).selectTrack(trackPos);
+        }
+
     }
 
     protected void releasePlayer() {
