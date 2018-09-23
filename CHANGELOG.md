@@ -1,3 +1,9 @@
+**1.3.1 (2018-09-23)**
+- jvl711: Add support for SageTV server to signal Subtitle track changes.
+- jvl711: Added audio track change support to ExoPlayer.
+- jvl711: Added the ability to switch audio tracks.
+- jvl711: Allowed unmapped keys to allow system actions to occur.
+
 **1.3.0 (2018-08-04)**
 - jvl711: Added configurable remote mapping ability from within the application 
 

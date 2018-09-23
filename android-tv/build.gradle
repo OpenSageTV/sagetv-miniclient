@@ -56,12 +56,12 @@ android {
 
 
 dependencies {
-    compile project(":android-shared")
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:recyclerview-v7:${androidExtrasVer}"
-    compile "com.android.support:leanback-v17:${androidExtrasVer}"
-    compile "com.android.support:appcompat-v7:${androidExtrasVer}"
-    compile "com.github.bumptech.glide:glide:3.7.0"
+    api project(":android-shared")
+    api fileTree(dir: 'libs', include: ['*.jar'])
+    api "com.android.support:recyclerview-v7:${androidExtrasVer}"
+    api "com.android.support:leanback-v17:${androidExtrasVer}"
+    api "com.android.support:appcompat-v7:${androidExtrasVer}"
+    api "com.github.bumptech.glide:glide:3.8.0"
 }
 
 clean {

@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.3'
+        classpath 'com.android.tools.build:gradle:3.1.4'
         classpath 'org.robovm:robovm-gradle-plugin:1.6.0'
     }
 }
@@ -50,14 +50,14 @@ allprojects {
 //        androidExtrasVer = "23.0.0";
 //        androidBuildToolsVersion = "25.0.1";
 
-        androidExtrasVer = "27.0.0";
-        androidBuildToolsVersion = "27.0.0";
+        androidExtrasVer = "28.0.0";
+        androidBuildToolsVersion = "28.0.2";
 
         androidMinSdkVersion = 21;
-        androidCompileSdkVersion = 27;
-        androidTargetSdkVersion = 27;
+        androidCompileSdkVersion = 28;
+        androidTargetSdkVersion = 28;
 
-        appVersionCode = 2101030 // v1.3.00
+        appVersionCode = 2101031 // v1.3.00
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files
