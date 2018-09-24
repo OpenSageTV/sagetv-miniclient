@@ -428,21 +428,34 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
         //parametersBuilder.setRendererDisabled(rendererIndex, isDisabled);
 
-        TrackGroupArray trackGroup = trackInfo.getTrackGroups(trackType);
 
-        if(trackInfo.getTrackSupport(trackType, groupIndex, trackIndex) == RendererCapabilities.FORMAT_HANDLED)
+        //debugAvailableTracks();
+
+        //log.debug("TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
+
+        try
         {
-            //Clear set new track selection
-            parametersBuilder = trackSelector.buildUponParameters();
 
-            override = new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex);
-            parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
+            TrackGroupArray trackGroup = trackInfo.getTrackGroups(trackType);
 
-            trackSelector.setParameters(parametersBuilder);
+            if (trackInfo.getTrackSupport(trackType, groupIndex, trackIndex) == RendererCapabilities.FORMAT_HANDLED)
+            {
+                //Clear set new track selection
+                parametersBuilder = trackSelector.buildUponParameters();
+
+                override = new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex);
+                parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
+
+                trackSelector.setParameters(parametersBuilder);
+            }
+            else
+            {
+                log.debug("ExoPlayer is unable to render the track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
+            }
         }
-        else
+        catch(Exception ex)
         {
-            log.debug("ExoPlayer is unable to render the track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
+            log.debug("ExoPlayer error changing track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
         }
     }
 
