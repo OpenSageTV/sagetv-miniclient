@@ -1,3 +1,6 @@
+**1.3.2 (2018-09-24)**
+- jvl711: Fixed bug in Audio Track selection that would cause player to crash (sometimes)
+
 **1.3.1 (2018-09-23)**
 - jvl711: Add support for SageTV server to signal Subtitle track changes.
 - jvl711: Added audio track change support to ExoPlayer.
