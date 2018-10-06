@@ -32,7 +32,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion '27.0.3'
+    buildToolsVersion "${androidBuildToolsVersion}"
+
+    compileOptions {
+        sourceCompatibility defJavaVesionConst
+        targetCompatibility defJavaVesionConst
+    }
 }
 
 configurations {
@@ -63,7 +68,7 @@ dependencies {
     // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
     //compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
-    api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionStuckless}@aar"
+    api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
 
     // exoplayer 2
     // compile "sagetv:exoplayer2:${exo2Version}@aar"

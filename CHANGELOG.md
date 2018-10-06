@@ -1,3 +1,10 @@
+**1.3.3 (2018-10-05)**
+- sls: Fixed issues listed in crash reports
+- sls: removed logging on startup that can cause App to hang on some hardware
+- sls: removed code that was designed for pre android 21 devices
+- sls: Fixed NPE bug in the key listener
+- sls: Upgraded ExoPlayer to 2.8.4
+
 **1.3.2 (2018-09-24)**
 - jvl711: Fixed bug in Audio Track selection that would cause player to crash (sometimes)
 

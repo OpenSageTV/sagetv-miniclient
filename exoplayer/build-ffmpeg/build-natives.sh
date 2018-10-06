@@ -60,6 +60,9 @@ COMMON_OPTIONS="\
     --enable-decoder=opus \
     --enable-decoder=flac \
     --enable-decoder=ac3 \
+    --enable-decoder=eac3 \
+    --enable-decoder=mp2 \
+    --enable-decoder=aac \
     ${FFMPEG_EXT_ARGS} \
     " && \
 cd "${FFMPEG_EXT_PATH}/jni" && \

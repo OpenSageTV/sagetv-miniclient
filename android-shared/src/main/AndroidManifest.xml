@@ -24,12 +24,13 @@
             android:name="android.max_aspect"
             android:value="2.1" />
 
-        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
-            </intent-filter>
-        </receiver>
+        <!-- I don't think this is needed since we are targeting 21+ and it appears to cause crashes -->
+        <!--<receiver android:name="android.support.v4.media.session.MediaButtonReceiver">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MEDIA_BUTTON" />-->
+                <!--&lt;!&ndash;<action android:name="android.media.AUDIO_BECOMING_NOISY" />&ndash;&gt;-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
 
         <service
             android:name=".MiniclientService"

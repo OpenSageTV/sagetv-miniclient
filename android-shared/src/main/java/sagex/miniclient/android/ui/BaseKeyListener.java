@@ -198,7 +198,7 @@ public class BaseKeyListener implements View.OnKeyListener
             }
 
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.isLongPress()
-                    || (this.skipUp && event.getRepeatCount() > 1 && (event.getEventTime()- lastEvent.getEventTime()) >= this.keyRepeatRateDelay
+                    || (lastEvent!=null && this.skipUp && event.getRepeatCount() > 1 && (event.getEventTime()- lastEvent.getEventTime()) >= this.keyRepeatRateDelay
                     && (event.getEventTime() - event.getDownTime()) >= this.keyInitialRepeatDelay))
             {
                 log.debug("KEYS: LONG PRESS KEYCODE: {}; {}", keyCode, event);
@@ -261,7 +261,7 @@ public class BaseKeyListener implements View.OnKeyListener
             if(event.getAction() == KeyEvent.ACTION_DOWN)
             {
                 //If this is repeat event
-                if(event.getRepeatCount() > 0 && (event.getEventTime() - lastEvent.getEventTime()) < this.keyRepeatRateDelay
+                if(event.getRepeatCount() > 0 && lastEvent!=null && (event.getEventTime() - lastEvent.getEventTime()) < this.keyRepeatRateDelay
                         && (event.getEventTime() - event.getDownTime()) < this.keyInitialRepeatDelay)
                 {
                     log.debug("Repeat time since last event:" + (event.getEventTime() - lastEvent.getEventTime()));
@@ -285,7 +285,7 @@ public class BaseKeyListener implements View.OnKeyListener
             if (event.getAction() == KeyEvent.ACTION_DOWN)
             {
                 //If this is repeat event
-                if(event.getRepeatCount() > 0 && (event.getEventTime() - lastEvent.getEventTime()) < this.keyRepeatRateDelay
+                if(event.getRepeatCount() > 0 && lastEvent!=null && (event.getEventTime() - lastEvent.getEventTime()) < this.keyRepeatRateDelay
                         && (event.getEventTime() - event.getDownTime()) < this.keyInitialRepeatDelay)
                 {
                     log.debug("Repeat time since last event:" + (event.getEventTime() - lastEvent.getEventTime()));

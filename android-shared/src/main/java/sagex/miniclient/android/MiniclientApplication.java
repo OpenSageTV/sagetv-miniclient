@@ -61,7 +61,7 @@ public class MiniclientApplication extends Application {
         // by default don't use the sdcard
         try {
             AppUtil.initLogging(this, options.getPrefs().getBoolean(PrefStore.Keys.use_log_to_sdcard, false));
-            AppUtil.setLogLevel(options.getPrefs().getString(PrefStore.Keys.log_level, "debug"));
+            AppUtil.setLogLevel(options.getPrefs().getString(PrefStore.Keys.log_level, "warn"));
         } catch (Throwable t) {
             log.warn("Failed to configure logging", t);
         }
@@ -69,21 +69,22 @@ public class MiniclientApplication extends Application {
         // start the client instance
         client = new MiniClient(options);
 
-        log.debug("Creating MiniClient");
-        log.info("------ Begin CPU INFO -----");
-        log.info(getInfo());
-        log.info("------- End CPU INFO ------");
-
-        // log the media codec information
-        int count = MediaCodecList.getCodecCount();
-        log.debug("--------- DUMPING HARDWARE CODECS -----------");
-        for (int i = 0; i < count; i++) {
-            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-            if (!info.isEncoder()) {
-                log.debug("[{}] {}; supported: {}; encoder:{}", i, info.getName(), info.getSupportedTypes(), info.isEncoder());
-            }
-        }
-        log.debug("--------- END DUMPING HARDWARE CODECS -----------");
+        // we should just present this in an info dialog, since it doesn't have much use in the log
+//        log.debug("Creating MiniClient");
+//        log.info("------ Begin CPU INFO -----");
+//        log.info(getInfo());
+//        log.info("------- End CPU INFO ------");
+//
+//        // log the media codec information
+//        int count = MediaCodecList.getCodecCount();
+//        log.debug("--------- DUMPING HARDWARE CODECS -----------");
+//        for (int i = 0; i < count; i++) {
+//            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+//            if (!info.isEncoder()) {
+//                log.debug("[{}] {}; supported: {}; encoder:{}", i, info.getName(), info.getSupportedTypes(), info.isEncoder());
+//            }
+//        }
+//        log.debug("--------- END DUMPING HARDWARE CODECS -----------");
 
         try {
             Intent i = new Intent(getBaseContext(), MiniclientService.class);
