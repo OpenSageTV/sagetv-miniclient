@@ -9,6 +9,11 @@ android {
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
 
+    compileOptions {
+        sourceCompatibility defJavaVesionConst
+        targetCompatibility defJavaVesionConst
+    }
+
     defaultConfig {
         applicationId "sagex.miniclient.android.tv"
         minSdkVersion androidMinSdkVersion
@@ -50,7 +55,6 @@ android {
 //    dataBinding {
 //        enabled = true
 //    }
-    buildToolsVersion '27.0.3'
 }
 
 
