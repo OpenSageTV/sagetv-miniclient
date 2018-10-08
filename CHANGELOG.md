@@ -1,3 +1,6 @@
+**1.3.4 (2018-10-08)**
+- sls: Fixed crash when showing Help
+
 **1.3.3 (2018-10-05)**
 - sls: Fixed issues listed in crash reports
 - sls: removed logging on startup that can cause App to hang on some hardware

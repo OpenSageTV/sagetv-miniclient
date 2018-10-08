@@ -59,7 +59,7 @@ public class IOUtil {
         while ((line = reader.readLine()) != null) {
             out.append(line);
         }
-        return line;
+        return out.toString();
     }
 
     public static String toString(File f) throws IOException {
