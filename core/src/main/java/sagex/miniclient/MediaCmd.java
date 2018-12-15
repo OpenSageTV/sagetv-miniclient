@@ -394,25 +394,28 @@ public class MediaCmd {
                     playa.seek(seekTime);
                 return 0;
             case MEDIACMD_DVD_STREAMS:
+                if (playa!=null) {
+                    try {
+                        int streamType = readInt(0, cmddata);
+                        int streamPos = readInt(4, cmddata);
 
-                int streamType = readInt(0, cmddata);
-                int streamPos = readInt(4, cmddata);
+                        log.debug("Stream Type: {}  Stream Pos: {}", streamType, streamPos);
+                        if (streamType == STREAM_TYPE_AUDIO) {
+                            playa.setAudioTrack(streamPos);
+                        } else if (streamType == STREAM_TYPE_SUBTITLE) {
+                            playa.setSubtitleTrack(streamPos);
+                        }
+                    } catch (Throwable t) {
+                        log.error("Failed to set Stream Type", t);
+                        return 0;
+                    }
+                    writeInt(0, retbuf, 0);
 
-                log.debug("Stream Type: {}  Stream Pos: {}", streamType, streamPos);
-
-                if(streamType == STREAM_TYPE_AUDIO)
-                {
-                    playa.setAudioTrack(streamPos);
+                    return 4;
+                } else {
+                    return 0;
                 }
-                else if(streamType == STREAM_TYPE_SUBTITLE)
-                {
-                    playa.setSubtitleTrack(streamPos);
-                }
 
-
-                writeInt(0, retbuf, 0);
-
-                return 4;
             default:
                 log.error("MEDIACMD Unhandled Media Command: {}", cmd);
                 return -1;

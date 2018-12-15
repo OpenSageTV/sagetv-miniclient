@@ -12,30 +12,21 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
-
-import com.google.android.exoplayer2.PlayerMessage;
-import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.video.VideoListener;
 
 import java.io.IOException;
 
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.R;
-import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
@@ -135,7 +126,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         // NOTE: exoplayer will lose it's time after a seek/resume, so this ensures that it
         // will send back the last known server start time plus the player time
         if (pushMode) {
-            if (time<=0) {
+            if (time <= 0) {
                 // player is adjusting, after a push/seek.
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                     log.debug("ExoPlayer: getPlayerMediaTimeMillis(): player adjusting using 0 but lastServerTime was {}", toHHMMSS(lastServerTime, true));
@@ -143,11 +134,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                if (time!=logLastTime) {
+                if (time != logLastTime) {
                     log.debug("ExoPlayer: getPlayerMediaTimeMillis(): serverTime: {}, time: {}, total: {}", toHHMMSS(lastServerTime, true),
                             toHHMMSS(time, true), toHHMMSS(lastServerTime + time, true));
                 }
-                logLastTime=time;
+                logLastTime = time;
             }
             if (time + lastServerTime > PTS_ROLLOVER) {
                 time = time - PTS_ROLLOVER;
@@ -202,21 +193,16 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     }
 
     @Override
-    public void setSubtitleTrack(int streamPos)
-    {
+    public void setSubtitleTrack(int streamPos) {
 
     }
 
     @Override
-    public void setAudioTrack(int streamPos)
-    {
+    public void setAudioTrack(int streamPos) {
 
-        if(!ExoIsPlaying())
-        {
+        if (!ExoIsPlaying()) {
             initialAudioTrackIndex = streamPos;
-        }
-        else
-        {
+        } else {
             initialAudioTrackIndex = -1;
             changeTrack(C.TRACK_TYPE_AUDIO, streamPos, 0);
         }
@@ -231,6 +217,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
     @Override
     protected void setupPlayer(String sageTVurl) {
+        initialAudioTrackIndex = -1;
+
         if (player != null) {
             releasePlayer();
         }
@@ -244,48 +232,23 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             dataSource = new Exo2PushDataSource();
         } else {
             if (!sageTVurl.startsWith("stv://")) {
-                sageTVurl = "stv://" + context.getClient().getConnectedServerInfo().address +"/"+ sageTVurl;
+                sageTVurl = "stv://" + context.getClient().getConnectedServerInfo().address + "/" + sageTVurl;
             }
             dataSource = new Exo2PullDataSource(context.getClient().getConnectedServerInfo().address);
         }
-        // mp4 and mkv will play (but not aac audio)
-        // File file = new File("/sdcard/Movies/sample-mkv.mkv");
-        // File file = new File("/sdcard/Movies/sample-mp4.mp4");
-        // ts will not play
-        // File file = new File("/sdcard/Movies/sample-ts.ts");
-        // Uri.parse(file.toURI().toString())
-        //SageTVPlayer.RendererBuilder rendererBuilder = new SageTVExtractorRendererBuilder(context, dataSource, Uri.parse(sageTVurl));
-        //SageTVPlayer.RendererBuilder rendererBuilder = new DataSourceExtractorRendererBuilder(context, "sagetv", Uri.parse("http://192.168.1.176:8000/The%20Walking%20Dead%20S05E14%20Spend.mp4"));
-        // ExtractorRendererBuilder rendererBuilder = new ExtractorRendererBuilder(context, "sagetv", Uri.parse(file.toURI().toString()));
-        //player = new SageTVPlayer(rendererBuilder);
 
         Handler mainHandler = new Handler();
-
-        DefaultTrackSelector video = new DefaultTrackSelector();
 
         // See if we need to disable ffmpeg audio decoding
         final boolean preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
         @DefaultRenderersFactory.ExtensionRendererMode int extensionRendererMode =
-                        (preferExtensionDecoders ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
+                (preferExtensionDecoders ? DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
                         : DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
         DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context.getContext(), extensionRendererMode);
 
-        TrackSelection.Factory adaptiveTrackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(new DefaultBandwidthMeter());
-        trackSelector = new DefaultTrackSelector(adaptiveTrackSelectionFactory);
-
-        // EventLogger is in the demo package
-        // EventLogger eventLogger = new EventLogger(trackSelector);
-
+        trackSelector = new DefaultTrackSelector();
         player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
-        //player = ExoPlayerFactory.newSimpleInstance(context, video, new DefaultLoadControl());
 
-
-
-        //EventLogger eventLogger = new EventLogger();
-        ///player.setInternalErrorListener(eventLogger);
-        //player.setInfoListener(eventLogger);
-        //player.addListener(eventLogger);
         player.addListener(new Player.EventListener() {
             @Override
             public void onLoadingChanged(boolean b) {
@@ -303,12 +266,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     eos = true;
                     Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
                 }
-                if(playbackState == PlaybackState.STATE_PLAYING)
-                {
+                if (playbackState == PlaybackState.STATE_PLAYING) {
                     //debugAvailableTracks();
 
-                    if(initialAudioTrackIndex != -1)
-                    {
+                    if (initialAudioTrackIndex != -1) {
                         setAudioTrack(initialAudioTrackIndex);
                     }
                 }
@@ -361,8 +322,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, pixel ratio: {}", width, height, pixelWidthHeightRatio);
 
                 // note if pixel ratio is != 0 then calc the ar and apply it.
-                if (pixelWidthHeightRatio!=0f) {
-                    setVideoSize(width, height, pixelWidthHeightRatio * ((float)width/(float)height));
+                if (pixelWidthHeightRatio != 0f) {
+                    setVideoSize(width, height, pixelWidthHeightRatio * ((float) width / (float) height));
                 } else {
                     setVideoSize(width, height, 0);
                 }
@@ -411,7 +372,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         player.prepare(mediaSource);
 
         // start playing
-        player.setVideoSurface(((SurfaceView)context.getVideoView()).getHolder().getSurface());
+        player.setVideoSurface(((SurfaceView) context.getVideoView()).getHolder().getSurface());
         player.setPlayWhenReady(true);
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("Video Player is online");
@@ -420,26 +381,19 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     }
 
 
-    public void changeTrack(int trackType, int groupIndex, int trackIndex)
-    {
+    public void changeTrack(int trackType, int groupIndex, int trackIndex) {
+        if (trackSelector == null) return;
+
         DefaultTrackSelector.SelectionOverride override;
         DefaultTrackSelector.ParametersBuilder parametersBuilder;
         MappingTrackSelector.MappedTrackInfo trackInfo = trackSelector.getCurrentMappedTrackInfo();
+        if (trackInfo == null) return;
 
-        //parametersBuilder.setRendererDisabled(rendererIndex, isDisabled);
-
-
-        //debugAvailableTracks();
-
-        //log.debug("TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
-
-        try
-        {
+        try {
 
             TrackGroupArray trackGroup = trackInfo.getTrackGroups(trackType);
 
-            if (trackInfo.getTrackSupport(trackType, groupIndex, trackIndex) == RendererCapabilities.FORMAT_HANDLED)
-            {
+            if (trackInfo.getTrackSupport(trackType, groupIndex, trackIndex) == RendererCapabilities.FORMAT_HANDLED) {
                 //Clear set new track selection
                 parametersBuilder = trackSelector.buildUponParameters();
 
@@ -447,41 +401,32 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
 
                 trackSelector.setParameters(parametersBuilder);
-            }
-            else
-            {
+            } else {
                 log.debug("ExoPlayer is unable to render the track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
             }
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             log.debug("ExoPlayer error changing track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
         }
     }
 
-    public void debugAvailableTracks()
-    {
+    public void debugAvailableTracks() {
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
 
 
-        if (mappedTrackInfo == null)
-        {
+        if (mappedTrackInfo == null) {
             log.debug("JVL - No Mapped Track Info");
             return;
         }
 
-        for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++)
-        {
+        for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(i);
 
             log.debug("JVL - Track Render Group {}", i);
 
-            if (trackGroups.length != 0)
-            {
+            if (trackGroups.length != 0) {
                 int label;
 
-                switch (player.getRendererType(i))
-                {
+                switch (player.getRendererType(i)) {
                     case C.TRACK_TYPE_AUDIO:
 
                         log.debug("JVL - TRACK_TYPE_AUDIO");
@@ -501,20 +446,15 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                         continue;
                 }
 
-                for(int j = 0; j < trackGroups.length; j++)
-                {
+                for (int j = 0; j < trackGroups.length; j++) {
                     log.debug("\t Track Group {}", j);
 
-                    for(int k = 0; k < trackGroups.get(j).length; k++)
-                    {
+                    for (int k = 0; k < trackGroups.get(j).length; k++) {
                         log.debug("\t\t Track {}, Channels {}, Bitrate {}, Language {}", k, trackGroups.get(j).getFormat(k).channelCount, trackGroups.get(j).getFormat(k).bitrate, trackGroups.get(j).getFormat(k).language);
-                        if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
-                        {
+                        if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED) {
                             //Add debug info
                             log.debug("\t\t Format is handled");
-                        }
-                        else
-                        {
+                        } else {
                             //Add debug info
                             log.debug("\t\t Format IS NOT HANDLED");
                         }
@@ -522,9 +462,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
                 }
 
-            }
-            else
-            {
+            } else {
                 log.debug("JVL - Track Group Empty");
             }
         }
