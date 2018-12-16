@@ -1,3 +1,10 @@
+**1.3.5 (2018-12-16)**
+- sls: fix: ExoPlayer seek issues after upgrading ExoPlayer
+- sls: refactor: removed log to sdcard
+- sls: (fix): Handling Subtitle request cased NPE in IJKPlayer
+- sls: (enh): Set defaults for smart remote preferences
+- sls: (fix): Added more checking around setting audio tracks
+
 **1.3.4 (2018-10-08)**
 - sls: Fixed crash when showing Help
 
