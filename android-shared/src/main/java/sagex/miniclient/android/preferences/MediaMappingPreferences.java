@@ -39,7 +39,7 @@ public class MediaMappingPreferences
 
     public boolean isSmartRemoteEnabled()
     {
-        return preferences.getBoolean("smart_remote_mappings", false);
+        return preferences.getBoolean("smart_remote_mappings", true);
     }
 
     public void setSmartRemoteEnabled(boolean value)

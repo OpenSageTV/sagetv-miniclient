@@ -156,7 +156,7 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
             log.debug("Failed why attempting to pause media player");
         }
         try {
-            if (client.properties().getBoolean(Keys.app_destroy_on_pause)) {
+            if (client.properties().getBoolean(Keys.app_destroy_on_pause, true)) {
                 try {
                     client.closeConnection();
                 } catch (Throwable t) {

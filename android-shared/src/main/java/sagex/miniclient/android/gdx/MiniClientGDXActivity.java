@@ -157,7 +157,7 @@ public class MiniClientGDXActivity extends AndroidApplication implements MACAddr
             log.debug("Failed why attempting to pause media player");
         }
         try {
-            if (client.properties().getBoolean(PrefStore.Keys.app_destroy_on_pause)) {
+            if (client.properties().getBoolean(PrefStore.Keys.app_destroy_on_pause, true)) {
                 try {
                     client.closeConnection();
                 } catch (Throwable t) {
