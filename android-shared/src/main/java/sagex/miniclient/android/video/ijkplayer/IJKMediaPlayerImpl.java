@@ -25,6 +25,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     boolean resumeMode = false;
     long lastGetTime = 0;
     int initialAudioStreamPos = -1;
+    int initialTextStreamPos = -1;
 
     public IJKMediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, true);
@@ -398,16 +399,21 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public void setSubtitleTrack(int streamPos) {
         //Displaying subtitle/timedtext does not appear to be supported at this time.
-        log.debug("setSubtitleTrack Called StreamPosition: {}", streamPos);
+        log.debug("TODO: setSubtitleTrack Called StreamPosition: {}", streamPos);
 
-        int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(IjkTrackInfo.MEDIA_TRACK_TYPE_SUBTITLE);
-        int trackPos = this.getSubtitleTrackPosition(streamPos);
-
-        if (playerReady && currentTrack != trackPos && trackPos != -1) {
-            log.debug("FUNCTION NOT SUPPORTED (Setting subtitle to IJKPosition): {}", trackPos);
-            //((IjkMediaPlayer) player).selectTrack(trackPos);
+        if (player==null) {
+            this.initialTextStreamPos = streamPos;
+        } else {
+            // NOT IMPLEMENTED YET, let's comment out the code until it is
+            // since it's causing problems in the playback.
+//            int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(IjkTrackInfo.MEDIA_TRACK_TYPE_SUBTITLE);
+//            int trackPos = this.getSubtitleTrackPosition(streamPos);
+//
+//            if (playerReady && currentTrack != trackPos && trackPos != -1) {
+//                log.debug("FUNCTION NOT SUPPORTED (Setting subtitle to IJKPosition): {}", trackPos);
+//                //((IjkMediaPlayer) player).selectTrack(trackPos);
+//            }
         }
-
     }
 
     protected void releasePlayer() {
