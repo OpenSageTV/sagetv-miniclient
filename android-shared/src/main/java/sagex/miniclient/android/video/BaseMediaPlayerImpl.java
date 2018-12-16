@@ -1,6 +1,5 @@
 package sagex.miniclient.android.video;
 
-import android.content.Context;
 import android.widget.FrameLayout;
 
 import org.slf4j.Logger;
@@ -11,11 +10,9 @@ import java.io.IOException;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;
-import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.events.VideoInfoRefresh;
 import sagex.miniclient.events.VideoInfoShow;
-import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.net.HasPushBuffer;
 import sagex.miniclient.net.PushBufferDataSource;
 import sagex.miniclient.prefs.PrefStore;
@@ -26,6 +23,7 @@ import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.util.VideoInfo;
 import sagex.miniclient.video.HasVideoInfo;
+import sagex.miniclient.video.VideoInfoResponse;
 
 //import org.videolan.libvlc.LibVLC;
 
@@ -36,8 +34,6 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     protected static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
-    protected static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
-
 
     protected final AndroidUIController context;
 
@@ -55,7 +51,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected String lastUri;
 
-    protected long lastMediaTime = 0;
+    protected long lastMediaTime = -1;
 
     protected boolean flushed = false;
 
@@ -160,15 +156,19 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public long getMediaTimeMillis(long lastServerTime) {
-        if (!playerReady) {
+        if (lastMediaTime == -1) lastMediaTime = lastServerTime;
+
+        if (!playerReady || player == null || flushed) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("getMediaTimeMillis(): Player not ready, returning 0");
+
+            // NOTE: SageTV generally expects 0 during seek/flush calls
             return 0;
         }
         if (state == STOPPED_STATE) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("getMediaTimeMillis(): Player State Stopped");
-            return 0;
+            return lastMediaTime;
         }
 
         if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) {
@@ -183,15 +183,13 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             return lastMediaTime;
         }
         long mt = getPlayerMediaTimeMillis(lastServerTime);
-        if (flushed && mt <= 0) {
+        if (mt <= 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                 log.debug("getMediaTimeMillis() is {} after a flush/seek.  Using 0, until data shows up.", mt);
             }
             return 0;
         }
-        if (mt <= 0) return 0;
         // we have some data, so we are not flushing/seeking
-        flushed = false;
         lastMediaTime = mt;
         return mt;
     }
@@ -354,6 +352,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         if (dataSource instanceof HasPushBuffer) {
             ((HasPushBuffer) dataSource).pushBytes(cmddata, bufDataOffset, buffSize);
         }
+        flushed = false;
     }
 
     @Override

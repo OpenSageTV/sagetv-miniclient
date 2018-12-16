@@ -1,26 +1,20 @@
 package sagex.miniclient.android.video.exoplayer2;
 
-import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.SurfaceView;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.video.VideoListener;
 
@@ -40,9 +34,6 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
  */
 
 public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, DataSource> {
-    private static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
-    private static final long TWENTY_HOURS = 20 * 60 * 60 * 1000;
-
     long resumePos = -1;
     long logLastTime = -1;
     int initialAudioTrackIndex = -1;
@@ -112,21 +103,20 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
     @Override
     public long getPlayerMediaTimeMillis(long lastServerTime) {
-        if (player == null) return 0;
         long time = player.getCurrentPosition();
-
-        // happens after a seek
-        if (time == Long.MIN_VALUE) {
-            // the player is adjusting
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("ExoPlayer: getPlayerMediaTimeMillis(): player adjusting (lastServerTime was: {})", toHHMMSS(lastServerTime, true));
-            return 0;
-        }
 
         // NOTE: exoplayer will lose it's time after a seek/resume, so this ensures that it
         // will send back the last known server start time plus the player time
         if (pushMode) {
-            if (time <= 0) {
+            // happens after a seek
+            if (time == Long.MIN_VALUE || time == Long.MAX_VALUE) {
+                // the player is adjusting
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.debug("ExoPlayer: getPlayerMediaTimeMillis(): player adjusting (lastServerTime was: {})", toHHMMSS(lastServerTime, true));
+                return 0;
+            }
+
+            if (time < 0) {
                 // player is adjusting, after a push/seek.
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                     log.debug("ExoPlayer: getPlayerMediaTimeMillis(): player adjusting using 0 but lastServerTime was {}", toHHMMSS(lastServerTime, true));
@@ -145,6 +135,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
             time = lastServerTime + time;
         }
+
         return time;
     }
 
@@ -249,15 +240,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         trackSelector = new DefaultTrackSelector();
         player = ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector);
 
-        player.addListener(new Player.EventListener() {
-            @Override
-            public void onLoadingChanged(boolean b) {
-
-            }
-
+        player.addListener(new Player.DefaultEventListener() {
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                if (playbackState == ExoPlayer.STATE_ENDED) {
+                if (playbackState == Player.STATE_ENDED) {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                         log.debug("Player Has Ended, set EOS");
                     if (playWhenReady)
@@ -266,7 +252,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     eos = true;
                     Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
                 }
-                if (playbackState == PlaybackState.STATE_PLAYING) {
+                if (playbackState == Player.STATE_READY) {
                     //debugAvailableTracks();
 
                     if (initialAudioTrackIndex != -1) {
@@ -274,47 +260,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     }
                 }
             }
-
-            @Override
-            public void onRepeatModeChanged(int repeatMode) {
-
-            }
-
-            @Override
-            public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
-            }
-
-            @Override
-            public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-
-            }
-
-            @Override
-            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-            }
-
-            @Override
-            public void onPlayerError(ExoPlaybackException e) {
-
-            }
-
-            @Override
-            public void onPositionDiscontinuity(int reason) {
-
-            }
-
-            @Override
-            public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
-            }
-
-            @Override
-            public void onSeekProcessed() {
-
-            }
         });
+
         player.addVideoListener(new VideoListener() {
             @Override
             public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {

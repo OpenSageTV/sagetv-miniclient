@@ -43,8 +43,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
      */
     @Override
     public long getPlayerMediaTimeMillis(long serverStartTime) {
-        if (player == null) return 0;
-
         long time = player.getCurrentPosition();
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
@@ -84,7 +82,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                 // if the last time <0 and we now have a time, then the seek adjusted
-                if (time >= 0 && lastTime < 0) {
+                if (lastTime < 0) {
                     log.debug("IJK: getMediaTime(): After Seek;  off:{}, time: {}, startStart: {}", playerGetTimeOffset, time, serverStartTime);
                 }
             }
@@ -96,12 +94,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 time = time - PTS_ROLLOVER; // ofset will be added at the end
             }
 
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                // this is just to capture when something possible goes wrong and we
-                if (Math.abs(lastTime - time) > TWENTY_HOURS) {
-                    log.debug("IJK: big jump getMediaTime(): off:{}, time:{}, serverStartTime: {}, lastTime: {}", playerGetTimeOffset, time, serverStartTime, lastTime);
-                }
-            }
             lastTime = time;
         }
 
