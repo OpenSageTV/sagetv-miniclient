@@ -1,22 +1,24 @@
 <configuration>
-    <property name="LOG_DIR" value="/sdcard/"/>
-
     <appender name="sdcard" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <lazy>true</lazy>
-
+        <lazy>false</lazy>
+        <!-- NOTE LOG_DIR is set in AppUtil.java -->
         <file>${LOG_DIR}/sagetv-miniclient.txt</file>
 
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
 
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <!-- daily rollover period -->
-            <fileNamePattern>${LOG_DIR}/sagetv-miniclient.%d.txt</fileNamePattern>
+            <fileNamePattern>${LOG_DIR}/sagetv-miniclient.%i.txt</fileNamePattern>
 
-            <!-- keep 2 days' worth of history -->
-            <maxHistory>2</maxHistory>
+            <!-- keep 2 files -->
+            <minIndex>1</minIndex>
+            <maxIndex>2</maxIndex>
         </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>5MB</maxFileSize>
+        </triggeringPolicy>
     </appender>
 
     <root level="DEBUG">

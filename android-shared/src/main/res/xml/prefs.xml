@@ -164,10 +164,17 @@
 
     <PreferenceCategory android:title="@string/logging_preferences">
         <CheckBoxPreference
+            android:enabled="false"
             android:defaultValue="false"
             android:key="use_log_to_sdcard"
             android:summary="@string/summary_use_log_to_sdcard_acceleration_preference"
             android:title="@string/title_use_log_to_sdcard_preference"/>
+
+        <Preference
+            android:enabled="false"
+            android:key="share_log"
+            android:summary="Share log using another application on Android"
+            android:title="Share Log"/>
 
         <ListPreference
             android:defaultValue="debug"
