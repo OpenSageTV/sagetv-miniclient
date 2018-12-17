@@ -14,6 +14,20 @@
             android:summary="Long press select shows navigation overlay."
             android:title="Show Navigation"/>
 
+        <EditTextPreference
+            android:key="repeat_key_ms"
+            android:summary="@string/key_repeat_ms_summary"
+            android:title="@string/key_repeat_ms_title"
+            android:inputType="number"
+            android:defaultValue="100" />
+
+        <EditTextPreference
+            android:key="repeat_key_delay_ms"
+            android:summary="@string/key_repeat_delay_ms_summary"
+            android:title="@string/key_repeat_delay_ms_title"
+            android:inputType="number"
+            android:defaultValue="1000" />
+
     </PreferenceCategory>
 
 

@@ -163,6 +163,15 @@ public interface PrefStore {
          */
         String use_tv_ui_on_tablet = "use_tv_ui_on_tablet";
 
+        /**
+         * How mas in MS the repeated keys will repeat during a key hold
+         */
+        String repeat_key_ms = "repeat_key_ms";
+
+        /**
+         * How long a key is held before repeats will happen
+         */
+        String repeat_key_delay_ms = "repeat_key_delay_ms";
 
         /**
          * Client ID

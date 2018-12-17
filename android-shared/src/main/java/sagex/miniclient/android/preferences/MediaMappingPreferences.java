@@ -1,8 +1,7 @@
 package sagex.miniclient.android.preferences;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.prefs.PrefStore;
@@ -12,7 +11,6 @@ public class MediaMappingPreferences
 
     private Context context;
     private PrefStore preferences;
-    //private SharedPreferences preferences;
     private String prefix;
 
     public MediaMappingPreferences(Context context)
@@ -26,9 +24,6 @@ public class MediaMappingPreferences
         this.prefix = prefix;
 
         preferences = MiniclientApplication.get(context).getClient().properties();
-
-        //preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
     }
 
     public boolean isLongPressSelectShowOSDNav()
