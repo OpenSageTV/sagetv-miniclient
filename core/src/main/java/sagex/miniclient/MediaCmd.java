@@ -93,21 +93,12 @@ public class MediaCmd {
 
     private final MiniClient client;
     private MiniPlayerPlugin playa;
-    private long pushDataLeftBeforeInit;
-    private long bufferFilePushedBytes;
     private boolean pushMode;
-    private int numPushedBuffers;
     private int DESIRED_VIDEO_PREBUFFER_SIZE = 16 * 1024 * 1024;
     private int DESIRED_AUDIO_PREBUFFER_SIZE = 2 * 1024 * 1024;
     private int maxPrebufferSize;
     private MiniClientConnection myConn;
-    private int statsChannelBWKbps;
-    private int statsStreamBWKbps;
-    private int statsTargetBWKbps;
-    private long serverMuxTime;
-    private long prebufferTime;
-    private long lastServerStartTime = 0;
-    private long lastServerMuxTime = -1;
+    private long lastServerStartTime = -1;
 
     /**
      * Creates a new instance of MediaCmd
@@ -170,9 +161,9 @@ public class MediaCmd {
                 close();
                 return 4;
             case MEDIACMD_OPENURL:
+                lastServerStartTime = -1;
                 int strLen = readInt(0, cmddata);
                 String urlString = "";
-                bufferFilePushedBytes = 0;
                 maxPrebufferSize = DESIRED_VIDEO_PREBUFFER_SIZE;
                 if (strLen > 1)
                     urlString = new String(cmddata, 4, strLen - 1);
@@ -183,7 +174,6 @@ public class MediaCmd {
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         playa.setPushMode(false);
                         playa.load((byte) 0, (byte) 0, "", urlString, null, false, 0);
-                        pushDataLeftBeforeInit = 0;
                         pushMode = false;
                     } else {
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
@@ -194,17 +184,14 @@ public class MediaCmd {
                                 urlString.toLowerCase().endsWith(".flv");
                         playa.setPushMode(false);
                         playa.load((byte) 0, (byte) 0, "", urlString, myConn.getServerName(), isActive, 0);
-                        pushDataLeftBeforeInit = 0;
                         pushMode = false;
                     }
                 } else {
                     pushMode = true;
                     {
                         if (urlString.indexOf("audio") != -1 && urlString.indexOf("bf=vid") == -1) {
-                            pushDataLeftBeforeInit = 1024 * 16;
                             maxPrebufferSize = DESIRED_AUDIO_PREBUFFER_SIZE;
                         } else {
-                            pushDataLeftBeforeInit = 1024 * 64;
                             maxPrebufferSize = DESIRED_VIDEO_PREBUFFER_SIZE;
                         }
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
@@ -259,9 +246,7 @@ public class MediaCmd {
                 // so I don't think we need this numPushBuffers, we should reset always.
                 if (playa != null && pushMode) {
                     playa.flush();
-                    numPushedBuffers = 0;
-                    lastServerStartTime = 0;
-                    bufferFilePushedBytes=0;
+                    lastServerStartTime = -1;
                 }
                 return 4;
             case MEDIACMD_PUSHBUFFER:
@@ -270,35 +255,21 @@ public class MediaCmd {
                 int bufDataOffset = 8;
                 if (MiniClientConnection.detailedBufferStats && buffSize > 0 && len > buffSize + 13) {
                     bufDataOffset += 10;
-                    statsChannelBWKbps = readShort(8, cmddata);
-                    statsStreamBWKbps = readShort(10, cmddata);
-                    statsTargetBWKbps = readShort(12, cmddata);
-                    serverMuxTime = readInt(14, cmddata);
+//                    short statsChannelBWKbps = readShort(8, cmddata);
+//                    short statsStreamBWKbps = readShort(10, cmddata);
+//                    short statsTargetBWKbps = readShort(12, cmddata);
+                    int serverMuxTime = readInt(14, cmddata);
 
                     if (playa != null) {
                         // this happens after a flush, so we capture the start of where
                         // sagetv is telling us about the buffer, so we can use it later
                         // in the determining the player position
-                        if (lastServerStartTime == 0) {
-                            if (serverMuxTime == lastServerMuxTime) {
-                                // server is sending us the same last as when we flushed??
-                                // this appears to happen with ExoPlayer in that we flush,
-                                // sagetv sends up more data, but the first few times the serverMuxTime
-                                // is the same as what we had before the flush.  So this is a sanity
-                                // check to make sure we use a time that is not the same as before we flushed
-                                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                                    log.debug("PushBuffer: PUSHED ServerMUXTime is SAME as last Flush??: {}, Let's wait for it to change", Utils.toHHMMSS(serverMuxTime, true));
-                            } else {
-                                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                                    log.debug("PushBuffer: Setting ServerMUXTime: {}, last: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerMuxTime, true));
-                                // set our know server start time
+                        if (lastServerStartTime < 0) {
                                 lastServerStartTime = serverMuxTime;
-                            }
-                        } else if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                            log.debug("PushBuffer: PUSHED ServerMUXTime: {}, lastServerMuxTime: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerMuxTime, true));
                         }
-                        lastServerMuxTime = serverMuxTime;
-                        prebufferTime = serverMuxTime - getMediaTimeMillis();
+                        if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING) {
+                            log.debug("PushBuffer: PUSHED ServerMUXTime: {}, lastServerStartTime: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerStartTime, true));
+                        }
                     }
                     // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
@@ -306,8 +277,6 @@ public class MediaCmd {
                 //boolean noMoreData = flags == 0x80 && playa != null;
                 if (playa != null) {
                     if (buffSize > 0) {
-                        bufferFilePushedBytes += buffSize;
-                        numPushedBuffers++;
                         try {
                             playa.pushData(cmddata, bufDataOffset, buffSize);
                         } catch (IOException e) {
@@ -333,7 +302,7 @@ public class MediaCmd {
                     // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv);
                 }
 
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING) {
                     if (rv < 0) {
                         log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}", rv);
                     }
