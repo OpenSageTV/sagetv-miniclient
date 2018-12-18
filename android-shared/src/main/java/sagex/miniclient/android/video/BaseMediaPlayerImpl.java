@@ -20,6 +20,7 @@ import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.RectangleF;
 import sagex.miniclient.util.AspectModeManager;
+import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.util.VideoInfo;
 import sagex.miniclient.video.HasVideoInfo;
@@ -48,6 +49,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected int state;
     protected boolean eos=false;
+    protected boolean seekPending = false;
 
     protected String lastUri;
 
@@ -165,23 +167,25 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             // NOTE: SageTV generally expects 0 during seek/flush calls
             return 0;
         }
-        if (state == STOPPED_STATE) {
+        if (flushed || seekPending) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player State Stopped");
+                log.debug("getMediaTimeMillis(): Player seeking or waiting for data, returning 0");
+
+            // NOTE: SageTV generally expects 0 during seek/flush calls
+            return 0;
+        }
+        if (state == STOPPED_STATE || state == EOS_STATE || state == PAUSE_STATE) {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                log.debug("getMediaTimeMillis(): Player State {} returning last time {}", state, Utils.toHHMMSS(lastMediaTime, true));
             return lastMediaTime;
         }
 
-        if (state == EOS_STATE || state == NO_STATE || state == LOADED_STATE) {
+        if (state == NO_STATE || state == LOADED_STATE) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player State Not Ready {} returning last time {}", state, lastMediaTime);
-            return lastMediaTime;
+                log.debug("getMediaTimeMillis(): Player State Not Ready {} returning 0", state);
+            return 0;
         }
-        // when paused just keep using the last known time
-        if (state == PAUSE_STATE) {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player is paused returning last time: {}", lastMediaTime);
-            return lastMediaTime;
-        }
+
         long mt = getPlayerMediaTimeMillis(lastServerTime);
         if (mt <= 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
@@ -246,6 +250,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void seek(long timeInMS) {
         if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("SEEK: {}", timeInMS);
+        seekPending = true;
     }
 
     @Override

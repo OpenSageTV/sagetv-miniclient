@@ -69,13 +69,14 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             if (resumeMode) {
                 // when in resume mode, you go back before the start of the resume, player time
                 // seems to do a PTS rollover of sorts
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                    log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, time: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(time, true));
-                }
+                long realTime = time;
                 time = time + resumeTimeOffset;
                 if (time > PTS_ROLLOVER) {
                     // need to adjust the time
                     time = time - PTS_ROLLOVER;
+                }
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, player time: {}, total: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(realTime, true), toHHMMSS(time, true));
                 }
             } else {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
@@ -119,7 +120,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         if (player != null) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("Flush Will force a seek to clear buffers");
-            player.seekTo(Long.MAX_VALUE);
+            seekToImpl(Long.MAX_VALUE);
         }
     }
 
@@ -214,6 +215,13 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             });
 
+            player.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
+                @Override
+                public void onSeekComplete(IMediaPlayer iMediaPlayer) {
+                    seekPending = false;
+                }
+            });
+
             player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(IMediaPlayer mp) {
@@ -224,7 +232,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                         if (preSeekPos != -1) {
                             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                                 log.debug("Resuming At Position: {}", preSeekPos);
-                            player.seekTo(preSeekPos);
+                            seekToImpl(preSeekPos);
                             preSeekPos = -1;
                         } else {
                             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
@@ -257,6 +265,11 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
     }
 
+    protected void seekToImpl(long timeInMillis) {
+        seekPending = true;
+        player.seekTo(timeInMillis);
+    }
+
     @Override
     public void seek(long timeInMS) {
         super.seek(timeInMS);
@@ -273,7 +286,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     log.debug("Immediate Seek {}", timeInMS);
                 }
-                player.seekTo(timeInMS);
+                seekToImpl(timeInMS);
             } else {
                 log.info("We Missed a Seek for {}: player.isPlaying {}; State: {}; playerReader: {}", timeInMS, player.isPlaying(), state, playerReady);
             }

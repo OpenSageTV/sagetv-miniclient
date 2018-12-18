@@ -164,13 +164,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         }
     }
 
+    protected void seekToImpl(long timeInMillis) {
+        seekPending = true;
+        player.seekTo(timeInMillis);
+    }
+
     @Override
     public void seek(long timeInMS) {
         super.seek(timeInMS);
         if (playerReady) {
             if (!pushMode) {
                 if (player != null) {
-                    player.seekTo(timeInMS);
+                    seekToImpl(timeInMS);
                 } else {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                         log.debug("Seek Resume(Player is Null) {}", timeInMS);
@@ -203,7 +208,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     public void flush() {
         super.flush();
         if (player == null) return;
-        player.seekTo(Long.MIN_VALUE);
+        seekToImpl(Long.MIN_VALUE);
     }
 
     @Override
@@ -260,6 +265,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     }
                 }
             }
+
+            @Override
+            public void onSeekProcessed() {
+                seekPending = false;
+            }
         });
 
         player.addVideoListener(new VideoListener() {
@@ -294,7 +304,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         if (resumePos >= 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("Resume Seek Postion: {}", resumePos);
-            player.seekTo(resumePos);
+            seekToImpl(resumePos);
             resumePos = -1;
         } else {
             //player.seekTo(0);
