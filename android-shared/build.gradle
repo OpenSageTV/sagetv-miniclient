@@ -107,6 +107,8 @@ dependencies {
     // simple event bus
     api 'com.squareup:otto:1.3.8'
 
+    implementation 'org.jetbrains:annotations:16.0.2'
+
     // animation library
 //    compile 'com.nineoldandroids:library:2.4.0'
 //    compile 'com.daimajia.easing:library:1.0.1@aar'

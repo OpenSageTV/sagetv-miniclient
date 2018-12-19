@@ -2,16 +2,16 @@ package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
 
+import org.intellij.lang.annotations.Language;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-// import org.intellij.lang.annotations.Language;
 
 public class ShaderUtils {
     private static Logger log = LoggerFactory.getLogger(ShaderUtils.class);
 
     public enum Shader {Base, Texture, Gradient}
 
+    @Language("GLSL")
     static final String gradientFragmentShader2d = "    uniform mediump vec2 u_resolution;\n" +
             "    uniform mediump vec4 u_argbTL;\n" +
             "    uniform mediump vec4 u_argbTR;\n" +
@@ -33,6 +33,7 @@ public class ShaderUtils {
             "\n" +
             "    }";
 
+    @Language("GLSL")
     static final String gradientVertexShader2d = "    attribute highp vec4 myVertex;\n" +
             "    uniform mediump mat4 myPMVMatrix;\n" +
             "\n" +
@@ -41,7 +42,7 @@ public class ShaderUtils {
             "        gl_Position = myPMVMatrix * myVertex;\n" +
             "    }\n";
 
-    // @Language("GLSL")
+    @Language("GLSL")
     static final String fragmentShader2d = ""+
             "    uniform mediump vec4 myColor;\n" +
             "    void main(void)\n" +
@@ -49,7 +50,7 @@ public class ShaderUtils {
             "        gl_FragColor = myColor;\n" +
             "    }\n";
 
-    // @Language("GLSL")
+    @Language("GLSL")
     static final String vertexShader2d = ""+
             "    attribute vec4 myVertex;\n" +
             "    uniform mat4 myPMVMatrix;\n" +
@@ -58,7 +59,7 @@ public class ShaderUtils {
             "        gl_Position = myPMVMatrix * myVertex;\n" +
             "    }\n";
 
-    // @Language("GLSL")
+    @Language("GLSL")
     static final String textureFragmentShader2d = ""+
             "precision mediump float;\n"+
             "uniform sampler2D uTexture;\n" +
@@ -68,7 +69,7 @@ public class ShaderUtils {
             "  gl_FragColor = texture2D(uTexture, vTexPos);\n" +
             "}";
 
-    // @Language("GLSL")
+    @Language("GLSL")
     static final String textureVertexShader2d = ""+
             "uniform mat4 uScreen;\n" +
             "attribute vec2 aPosition;\n" +
