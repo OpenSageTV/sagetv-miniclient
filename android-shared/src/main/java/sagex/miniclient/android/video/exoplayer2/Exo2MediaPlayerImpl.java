@@ -270,6 +270,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             public void onSeekProcessed() {
                 seekPending = false;
             }
+
+            @Override
+            public void onPositionDiscontinuity(int reason) {
+                log.warn("ExoPlayer: Continuity Error: {}", reason);
+                seekPending = false;
+            }
         });
 
         player.addVideoListener(new VideoListener() {
