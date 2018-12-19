@@ -3,7 +3,9 @@ package sagex.miniclient.android.opengl;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.util.Log;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,7 +14,8 @@ import java.nio.FloatBuffer;
 import sagex.miniclient.uibridge.Texture;
 
 public class OpenGLTexture implements Texture {
-    static final int debug = 1;
+    private static Logger log = LoggerFactory.getLogger(OpenGLTexture.class);
+
     static final int FLOAT_SIZE = 4;
     static final int POSITION_SIZE = 2;
     static final int TEXTURE_SIZE = 2;
@@ -30,12 +33,6 @@ public class OpenGLTexture implements Texture {
         this.height = height;
     }
 
-    void debug(String msg, Object... args) {
-        if (debug>0) {
-            System.out.printf(msg + "\n", args);
-        }
-    }
-
     public int texture() {
         if (texture!=null)
             return texture[0];
@@ -44,8 +41,7 @@ public class OpenGLTexture implements Texture {
 
     public void delete() {
         if (texture!=null) {
-            debug("Deleting Texture");
-            new Exception("DELETING TEXTURE").printStackTrace();
+            log.debug("Deleting Texture: {}", texture());
             GLES20.glDeleteTextures(1, texture, 0);
             texture = null;
         }
@@ -53,8 +49,9 @@ public class OpenGLTexture implements Texture {
 
     public void createTexture() {
         if (texture==null) {
-            debug("New Texture: %d x %d", this.width, this.height);
             texture=new int[1];
+        } else {
+            log.warn("createTexture() called for existing texture {}", texture(), new Exception("Recreating Texture " + texture()));
         }
         GLES20.glGenTextures(1, texture, 0);
 
@@ -69,6 +66,7 @@ public class OpenGLTexture implements Texture {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
+        log.debug("New Texture[{}]: {} x {}", texture(), this.width, this.height);
     }
 
     public void set(Bitmap bitmap, String optName) {
@@ -77,13 +75,13 @@ public class OpenGLTexture implements Texture {
 
         if (texture==null) createTexture();
 
-        debug("Setting Bitmap: %s", optName);
+        log.debug("Setting Bitmap[{}]: {}", texture(), optName);
 
         try {
             // Load the bitmap into the bound texture.
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         } catch (Throwable t) {
-            Log.w("SAGEOPENGL", "Unable to load: " + optName);
+            log.error("[{}]: Unable to load texture from Bitmap: {}", texture(), optName, t);
             throw t;
         }
 
@@ -94,6 +92,7 @@ public class OpenGLTexture implements Texture {
     }
 
     public void draw(int x, int y, int width, int height, int srcx, int srcy, int srcwidth, int srcheight, int blend, float[] viewMatrix) {
+        log.debug("texture draw[{}]", texture());
         ShaderUtils.useProgram(ShaderUtils.Shader.Texture);
 
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);

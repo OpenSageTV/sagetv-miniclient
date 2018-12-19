@@ -125,7 +125,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         ShaderUtils.createPrograms();
 
         // create the main surface
-        OpenGLSurface mainSurfaceGL = new OpenGLSurface(uiSize.width, uiSize.height);
+        OpenGLSurface mainSurfaceGL = new MainOpenGLSurface(uiSize.width, uiSize.height);
         mainSurfaceGL.createSurface();
         mainSurface = new ImageHolder<>(mainSurfaceGL, uiSize.width, uiSize.height);
         mainSurface.setHandle(0);
@@ -169,13 +169,14 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     public void render() {
-        int size=renderQueue.size();
-        if (size==0) return;
-
-        long st = System.currentTimeMillis();
-
-        log.debug("Begin Render Frame");
         synchronized (renderQueue) {
+            int size = renderQueue.size();
+            if (size == 0) return;
+
+            long st = System.currentTimeMillis();
+
+            log.debug("Begin Render Frame {}", frame);
+
             try {
                 for (int i=0;i<size;i++) {
                     try {
@@ -190,14 +191,15 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             } finally {
                 renderQueue.clear();
             }
-        }
-        log.debug("End Render Frame");
 
-        //glFlipBuffer();
-        
-        long et = System.currentTimeMillis();
-        if (logFrameTime) {
-            log.debug("RENDER: Time: " + (et - st) + "ms; Ops: " + size);
+            log.debug("End Render Frame {}", frame);
+
+            //glFlipBuffer();
+
+            long et = System.currentTimeMillis();
+            if (logFrameTime) {
+                log.debug("RENDER: Time: " + (et - st) + "ms; Ops: " + size);
+            }
         }
     }
 
@@ -420,7 +422,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         OpenGLSurface surface = OpenGLSurface.get(t.get());
         surface.bind();
         currentSurface=t;
-        System.out.println("Binding Surface: " + currentSurface.getHandle());
+        log.debug("Set Surface: {}, Texture: {}", currentSurface.getHandle(), t.getHandle());
     }
 
     @Override
@@ -530,6 +532,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public void startFrame() {
+        synchronized (renderQueue) {
+            log.debug("Blocked Start Frame until Render Frame Complete");
+        }
         frameTime = System.currentTimeMillis();
         totalTextureTime = 0;
         longestTextureTime = 0;
@@ -540,7 +545,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
                 public void run() {
                     log.debug("Start Frame: Setting Main Surface");
                     setSurface(mainSurface);
-                    //clearUI();
+                    clearUI();
                 }
             });
         }

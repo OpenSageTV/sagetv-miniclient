@@ -2,9 +2,14 @@ package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // import org.intellij.lang.annotations.Language;
 
 public class ShaderUtils {
+    private static Logger log = LoggerFactory.getLogger(ShaderUtils.class);
+
     public enum Shader {Base, Texture, Gradient}
 
     static final String gradientFragmentShader2d = "    uniform mediump vec2 u_resolution;\n" +
@@ -112,8 +117,8 @@ public class ShaderUtils {
     static int compileShader(final int shaderType,
                                     String shaderSource)
     {
-        System.out.println("compiling shader....");
-        System.out.println("Loading Shader: " + shaderType + "; " + shaderSource.hashCode());
+        log.debug("compiling shader....");
+        log.debug("Loading Shader: " + shaderType + "; " + shaderSource.hashCode());
         int shaderHandle=GLES20.glCreateShader(shaderType);
         if (shaderHandle !=0)
         {
@@ -124,7 +129,7 @@ public class ShaderUtils {
             GLES20.glGetShaderiv(shaderHandle, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
             if (compileStatus[0] == GLES20.GL_FALSE)
             {
-                System.err.println("Compile Shader Failed; " + shaderSource);
+                log.error("Compile Shader Failed; {}", shaderSource);
                 new Exception(GLES20.glGetShaderInfoLog(shaderHandle)).printStackTrace(System.err);
                 GLES20.glDeleteShader(shaderHandle);
                 shaderHandle = 0;
@@ -192,26 +197,26 @@ public class ShaderUtils {
     }
 
     public static int useProgram(Shader shader) {
-//        if (shader!=CURRENT_SHADER) {
+        if (shader != CURRENT_SHADER) {
             switch (shader) {
                 case Base:
                     GLES20.glUseProgram(BASE_PROGRAM);
                     CURRENT_USCREEN_ID = BASE_PROGRAM_PMVMatrix_Location;
-                    System.out.println("GL USE PROGRAM " + shader + " ["+ BASE_PROGRAM +"]");
+                    log.debug("GL USE PROGRAM {} [{}] {}", shader, BASE_PROGRAM, CURRENT_USCREEN_ID);
                     break;
                 case Texture:
                     GLES20.glUseProgram(TEXTURE_PROGRAM);
                     CURRENT_USCREEN_ID = TEXTURE_PROGRAM_uSCREEN;
-                    System.out.println("GL USE PROGRAM " + shader + " ["+ TEXTURE_PROGRAM +"]");
+                    log.debug("GL USE PROGRAM {} [{}] {}", shader, TEXTURE_PROGRAM, CURRENT_USCREEN_ID);
                     break;
                 case Gradient:
                     GLES20.glUseProgram(GRADIENT_PROGRAM);
                     CURRENT_USCREEN_ID = GRADIENT_PROGRAM_PMVMatrix_Location;
-                    System.out.println("GL USE PROGRAM " + shader + " ["+ GRADIENT_PROGRAM +"]");
+                    log.debug("GL USE PROGRAM {} [{}] {}", shader, GRADIENT_PROGRAM, CURRENT_USCREEN_ID);
                     break;
             }
-//        }
-        CURRENT_SHADER = shader;
+            CURRENT_SHADER = shader;
+        }
 
         return CURRENT_USCREEN_ID;
     }

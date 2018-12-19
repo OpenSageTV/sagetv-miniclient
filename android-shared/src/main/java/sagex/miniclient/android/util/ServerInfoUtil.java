@@ -3,7 +3,6 @@ package sagex.miniclient.android.util;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -66,8 +65,8 @@ public class ServerInfoUtil {
             MiniclientApplication.get().getClient().getServers().setLastConnectedServer(si);
 
             // connect to server
-            Intent i = new Intent(ctx, MiniClientGDXActivity.class);
-            //Intent i = new Intent(ctx, MiniClientOpenGLActivity.class);
+            //Intent i = new Intent(ctx, MiniClientGDXActivity.class);
+            Intent i = new Intent(ctx, MiniClientOpenGLActivity.class);
             i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
 
             if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {

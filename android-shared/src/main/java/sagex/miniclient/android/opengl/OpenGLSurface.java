@@ -4,7 +4,12 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class OpenGLSurface extends OpenGLTexture {
+    private static Logger log = LoggerFactory.getLogger(OpenGLSurface.class);
+
     public float[] viewMatrix = new float[16];
     public int[] buffer = null;
     public int[] renderBuffer = null;
@@ -79,11 +84,11 @@ public class OpenGLSurface extends OpenGLTexture {
     }
 
     public void bind() {
-        debug("Binding Framebuffer Surface: " + buffer());
+        log.debug("Binding Framebuffer Surface: {}, {}x{}", buffer(), width, height);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
         int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
-            debug("Framebuffer Did Not Bind. Status: " + status);
+            log.debug("Framebuffer Did Not Bind. Status: {}", status);
 
             throw new RuntimeException("Error creating FBO");
         }
@@ -98,7 +103,7 @@ public class OpenGLSurface extends OpenGLTexture {
     public void unbind() {
 //        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 //        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
-        debug("Unbinding Framebuffer Surface: " + buffer());
+        log.debug("Unbinding Framebuffer Surface: {}", buffer());
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         bound=false;
     }

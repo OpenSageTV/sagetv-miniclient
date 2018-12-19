@@ -165,8 +165,14 @@ public class GFXCMD2 {
             if (cmd == GFXCMD_SETVIDEOPROP) {
                 log.debug("GFXCMD=GFXCMD_SETVIDEOPROP");
             } else {
-                if (VerboseLogging.DETAILED_GFX_TEXTURES || cmd != GFXCMD_DRAWTEXTURED) {
-                    log.debug("GFXCMD={}", ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+                if (cmd == GFXCMD_CREATESURFACE
+                        || cmd == GFXCMD_SETTARGETSURFACE
+                        || cmd == GFXCMD_PREPIMAGE) {
+                    // we will log these later
+                } else {
+                    if (VerboseLogging.DETAILED_GFX_TEXTURES || cmd != GFXCMD_DRAWTEXTURED) {
+                        log.debug("GFXCMD={}", ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)));
+                    }
                 }
             }
         }
@@ -470,6 +476,11 @@ public class GFXCMD2 {
                     int imghandle = handleCount++;
                     width = readInt(0, cmddata);
                     height = readInt(4, cmddata);
+
+                    if (VerboseLogging.DETAILED_GFX) {
+                        log.debug("GFXCMD={}, handle:{}, {}x{}", ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)), imghandle, width, height);
+                    }
+
                     sagex.miniclient.uibridge.ImageHolder<?> img = windowManager.createSurface(imghandle, width, height);
                     img.setHandle(imghandle);
                     client.getImageCache().put(imghandle, img, width, height);
@@ -523,8 +534,8 @@ public class GFXCMD2 {
                                         // so we want it for sure!
                                     } else {
                                         imghandle = handleCount++;
-
-                                        log.debug("PREPIMAGE[{}]: Loading Loading From Cache: {}", imghandle, cachedFile);
+                                        if (VerboseLogging.DETAILED_GFX)
+                                            log.debug("PREPIMAGE[{}]: Loading Loading From Cache: {}", imghandle, cachedFile);
                                         bi.setHandle(imghandle);
                                         client.getImageCache().put(imghandle, bi, width, height);
                                         windowManager.registerTexture(bi);
@@ -645,6 +656,11 @@ public class GFXCMD2 {
                 if (len == 4) {
                     int handle;
                     handle = readInt(0, cmddata);
+
+                    if (VerboseLogging.DETAILED_GFX) {
+                        log.debug("GFXCMD={}, surface:{}", ((cmd >= 0 && cmd < CMD_NAMES.length) ? CMD_NAMES[cmd] : ("UnknownCmd " + cmd)), handle);
+                    }
+
                     windowManager.setTargetSurface(handle, (handle != 0) ? client.getImageCache().get(handle) : null);
                 } else {
                     log.error("Invalid len for GFXCMD_SETTARGETSURFACE: {}", len);
