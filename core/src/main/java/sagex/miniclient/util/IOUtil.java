@@ -1,8 +1,6 @@
 package sagex.miniclient.util;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -57,7 +54,7 @@ public class IOUtil {
         StringBuilder out = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
-            out.append(line);
+            out.append(line).append("\n");
         }
         return out.toString();
     }

@@ -1,7 +1,6 @@
 package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
-import android.opengl.Matrix;
 import android.util.Log;
 
 import org.slf4j.Logger;
@@ -14,12 +13,27 @@ public class OpenGLSurface extends OpenGLTexture {
     public int[] buffer = null;
     public int[] renderBuffer = null;
     boolean bound=false;
+    int id;
 
-    public OpenGLSurface(int w, int h) {
+    public OpenGLSurface(int id, int w, int h) {
         super(w,h);
-
-        // set the view matrix for this surface
-        Matrix.orthoM(viewMatrix, 0,0, w, h, 0, 0, 1);
+        this.id = id;
+        viewMatrix[0] = 2.0f / (float) w;
+        viewMatrix[1] = 0.0f;
+        viewMatrix[2] = 0.0f;
+        viewMatrix[3] = 0.0f;
+        viewMatrix[4] = 0.0f;
+        viewMatrix[5] = 2.0f / (float) h;
+        viewMatrix[6] = 0.0f;
+        viewMatrix[7] = 0.0f;
+        viewMatrix[8] = 0.0f;
+        viewMatrix[9] = 0.0f;
+        viewMatrix[10] = 1.0f;
+        viewMatrix[11] = 0.0f;
+        viewMatrix[12] = -1.0f;
+        viewMatrix[13] = -1.0f;
+        viewMatrix[14] = 0.0f;
+        viewMatrix[15] = 1.0f;
     }
 
 
@@ -78,13 +92,16 @@ public class OpenGLSurface extends OpenGLTexture {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
+        ShaderUtils.logGLErrors("Create Surface");
+
         bound=false;
 
         return this;
     }
 
     public void bind() {
-        log.debug("Binding Framebuffer Surface: {}, {}x{}", buffer(), width, height);
+        log.debug("Binding Framebuffer Surface: ({}), {}x{}", id, width, height);
+
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
         int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
@@ -93,51 +110,20 @@ public class OpenGLSurface extends OpenGLTexture {
             throw new RuntimeException("Error creating FBO");
         }
 
-        //GLES20.glFramebufferTexture2D( GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0 );
-        GLES20.glViewport(0,0, width, height);
-        //GLES20.glClearColor(0,0,1,1);
-        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        //GLES20.glViewport(0,0, width, height);
+
+        ShaderUtils.logGLErrors("Surface.bind()");
         bound=true;
     }
 
     public void unbind() {
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-//        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
-        log.debug("Unbinding Framebuffer Surface: {}", buffer());
-//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+        log.debug("Unbinding Framebuffer Surface: ({})", id);
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         bound=false;
     }
-
-    public void draw() {
-        draw(0,0, width, height, 0, 0, width, height, 1, viewMatrix);
-    }
-
 
     public static OpenGLSurface get(OpenGLTexture openGLTexture) {
         assert openGLTexture instanceof OpenGLSurface;
         return (OpenGLSurface)openGLTexture;
     }
-
-    float[] getVertexData(int x, int y, int width, int height, int srcx, int srcy, int srcwidth, int srcheight) {
-        // INVERT the texcoords because framebuffers are upsidedown
-        float[] data =
-                {
-                        x, y,                          //V1
-                        (float) srcx / (float) width, -((float) srcy / (float) height),             //Texture coordinate for V1
-
-                        x, y + height,                   //V2
-                        (float) srcx / (float) width, -(((float) srcy + (float) srcheight) / (float) height),
-
-                        x + width, y,                          //V3
-                        ((float) srcx + (float) srcwidth) / (float) width, -((float) srcy / (float) height),
-
-                        x + width, y + height,                   //V4
-                        ((float) srcx + (float) srcwidth) / (float) width, -(((float) srcy + (float) srcheight) / (float) height)
-
-                };
-
-        return data;
-
-    }
-
 }

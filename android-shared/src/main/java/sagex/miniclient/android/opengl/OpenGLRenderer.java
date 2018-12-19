@@ -13,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,20 +124,29 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         log.debug("CREATE: UI SIZE: {}, SCREEN SIZE: {}", uiSize, fullScreenSize);
 
         // load shaders and programs
-        ShaderUtils.createPrograms();
+        try {
+            ShaderUtils.loadShaders(this.activity.getContext());
+        } catch (IOException e) {
+            log.error("Failed to Load Shaders.  UI will not work", e);
+        }
 
         // create the main surface
         OpenGLSurface mainSurfaceGL = new MainOpenGLSurface(uiSize.width, uiSize.height);
         mainSurfaceGL.createSurface();
         mainSurface = new ImageHolder<>(mainSurfaceGL, uiSize.width, uiSize.height);
         mainSurface.setHandle(0);
+
         setSurface(mainSurface);
+
+        GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
 
         clearUI();
 
-//        GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
-//        // we just set a green color so that we know something is happening
-//        GLES20.glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+        //drawLine(0,0, uiSize.width/2, uiSize.height/2, 0, 0);
+
+////        // we just set a green color so that we know something is happening
+//        GLES20.glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
+//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
     }
 
     public void resize(int width, int height) {
@@ -203,21 +214,21 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         }
     }
 
-    private void glFlipBuffer() {
-        log.debug("begin render frame");
-
-        OpenGLSurface main = OpenGLSurface.get(mainSurface.get());
-        main.unbind();
-
-        // bind to main UI
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        GLES20.glViewport(0,0, uiSize.width, uiSize.height);
-
-        // render this surface to the main UI
-        main.draw();
-
-        log.debug("end render frame");
-    }
+//    private void glFlipBuffer() {
+//        log.debug("begin render frame");
+//
+//        OpenGLSurface main = OpenGLSurface.get(mainSurface.get());
+//        main.unbind();
+//
+//        // bind to main UI
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+//        GLES20.glViewport(0,0, uiSize.width, uiSize.height);
+//
+//        // render this surface to the main UI
+//        main.draw();
+//
+//        log.debug("end render frame");
+//    }
 
 //    private Color getColor(int color) {
 //        if (lastColor != null && color == lastColorInt) return lastColor;
@@ -326,27 +337,43 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             @Override
             public void run() {
                 try {
-                    img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, OpenGLSurface.get(currentSurface.get()).viewMatrix);
+                    img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, (OpenGLSurface) currentSurface.get(), currentSurface.getHandle());
                 } catch (Throwable t) {
-                    log.error("Failed to Render Texture {}", handle);
+                    log.error("Failed to Render Texture {}", handle, t);
                 }
             }
         });
     }
 
+    OpenGLSurface currentSurface() {
+        return OpenGLSurface.get(currentSurface.get());
+    }
+
     @Override
     public void drawLine(int x1, int y1, int x2, int y2, int argbTL, int argbTR) {
-//        ShaderUtils.setShaderParams(ShaderUtils.Shader.Gradient, OpenGLSurface.get(currentSurface.get()));
-//
-//        GLES20.glEnable(GLES20.GL_BLEND);
-//        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-//
-//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tl, ShaderUtils.intToFloatArray(argbTL));
-//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tr, ShaderUtils.intToFloatArray(argbTR));
-//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_bl, ShaderUtils.intToFloatArray(argbTL));
-//        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_br, ShaderUtils.intToFloatArray(argbTR));
-//
-//        GLES20.glUniform2fv(ShaderUtils.GRADIENT_PROGRAM_resolution, new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]));
+        ShaderUtils.useProgram(ShaderUtils.defaultShader);
+        GLES20.glUniformMatrix4fv(ShaderUtils.defaultShader.u_myPMVMatrix, 1, false, currentSurface().viewMatrix, 0);
+
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        int buffer[] = new int[1];
+        GLES20.glGenBuffers(1, buffer, 0);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer[0]);
+        //float vertices[] = {x1, y1, x1, y1};
+        float vertices[] = {0, 0, .5f, .5f};
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * 4, FloatBuffer.wrap(vertices), GLES20.GL_STATIC_DRAW);
+        GLES20.glVertexAttribPointer(ShaderUtils.defaultShader.a_myVertex, 2, GLES20.GL_FLOAT, false, 0, 0);
+        GLES20.glEnableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);
+
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
+
+////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tl, ShaderUtils.intToFloatArray(argbTL));
+////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tr, ShaderUtils.intToFloatArray(argbTR));
+////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_bl, ShaderUtils.intToFloatArray(argbTL));
+////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_br, ShaderUtils.intToFloatArray(argbTR));
+////
+////        GLES20.glUniform2fv(ShaderUtils.GRADIENT_PROGRAM_resolution, new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]));
 //
 //        // Sets the vertex data to this attribute index
 //        int vertBuffer[] = ShaderUtils.glCreateBuffer();
@@ -388,7 +415,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             log.error("WE ALREADY CREATED 0", new Exception("CREATED 0 AGAIN"));
         }
 
-        final OpenGLTexture t = new OpenGLSurface(width, height);
+        final OpenGLTexture t = new OpenGLSurface(handle, width, height);
         final ImageHolder<OpenGLTexture> h = new ImageHolder<>(t, width, height);
         h.setHandle(handle);
         invokeLater(new Runnable() {
@@ -422,7 +449,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         OpenGLSurface surface = OpenGLSurface.get(t.get());
         surface.bind();
         currentSurface=t;
-        log.debug("Set Surface: {}, Texture: {}", currentSurface.getHandle(), t.getHandle());
+        log.debug("Set Surface: {}", currentSurface.getHandle());
     }
 
     @Override
@@ -431,7 +458,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                //log.debug("setTargetSurface[{},{}]", handle, (surface!=null)?surface.getHandle():null);
                 setSurface(surface);
             }
         });
@@ -540,14 +566,14 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         longestTextureTime = 0;
         state = STATE_MENU;
         if (firstFrame) {
-            invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    log.debug("Start Frame: Setting Main Surface");
-                    setSurface(mainSurface);
-                    clearUI();
-                }
-            });
+//            invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    log.debug("Start Frame: Setting Main Surface");
+//                    setSurface(mainSurface);
+//                    clearUI();
+//                }
+//            });
         }
         inFrame=true;
     }
@@ -555,15 +581,23 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     void clearUI() {
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
-        GLES20.glClearColor(1, 1, 0, 0);
+        ShaderUtils.logGLErrors("before clearUI");
+        GLES20.glClearColor(1, 0, 0, 0);
+        ShaderUtils.logGLErrors("clearUI 0");
+
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
+        ShaderUtils.logGLErrors("clearUI 1");
         GLES20.glEnable(GL10.GL_DEPTH_TEST);
-        GLES20.glEnable(GL10.GL_TEXTURE);
+        ShaderUtils.logGLErrors("clearUI 2");
         GLES20.glEnable(GL10.GL_TEXTURE_2D);
+        ShaderUtils.logGLErrors("clearUI 4");
         GLES20.glEnable(GL10.GL_LINE_SMOOTH);
+        ShaderUtils.logGLErrors("clearUI 5");
         GLES20.glDepthFunc(GL10.GL_LEQUAL);
+        ShaderUtils.logGLErrors("clearUI 6");
         GLES20.glClearDepthf(1.0F);
+        ShaderUtils.logGLErrors("clearUI 7");
     }
 
     @Override
