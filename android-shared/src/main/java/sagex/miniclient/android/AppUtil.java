@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -15,9 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +29,11 @@ import java.util.TreeSet;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.rolling.RollingFileAppender;
 import sagex.miniclient.android.events.MessageEvent;
 
 /**
@@ -171,6 +178,10 @@ public class AppUtil {
         }
     }
 
+    public static File getLogDir() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    }
+
     private static void configureLogging(Context ctx, String output) {
         // reset the default context (which may already have been initialized)
         // since we want to reconfigure it
@@ -179,6 +190,8 @@ public class AppUtil {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         lc.reset();
 
+        lc.putProperty("LOG_DIR", getLogDir().getAbsolutePath());
+
         JoranConfigurator config = new JoranConfigurator();
         config.setContext(lc);
 
@@ -186,6 +199,23 @@ public class AppUtil {
             config.doConfigure(ctx.getAssets().open("logback-" + output + ".xml"));
             Log.i(TAG, "Log to " + output + " Configured");
             LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).info("Logging Configured for " + output);
+            if ("sdcard".equalsIgnoreCase(output)) {
+                Log.i(TAG, "Log Dir: " + lc.getProperty("LOG_DIR"));
+                for (ch.qos.logback.classic.Logger logger : lc.getLoggerList()) {
+                    for (Iterator<Appender<ILoggingEvent>> index = logger.iteratorForAppenders(); index.hasNext(); ) {
+                        Appender<ILoggingEvent> appender = index.next();
+                        if (appender instanceof FileAppender) {
+//                            File f = ctx.getCacheDir();
+//                            if (!f.exists()) f.mkdirs();
+//                            File logFile = new File(f, "miniclient.log");
+//                            Log.i(TAG, "External Log File set to " + logFile.getAbsolutePath());
+//                            ((FileAppender) appender).setFile(logFile.getAbsolutePath());
+//                            appender.start();
+                            Log.i(TAG, "Logging File set to " + ((FileAppender) appender).getFile());
+                        }
+                    }
+                }
+            }
         } catch (JoranException e) {
             e.printStackTrace(System.err);
         } catch (IOException e) {

@@ -3,6 +3,7 @@ package sagex.miniclient.android;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -10,8 +11,12 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+
+import java.io.File;
+import java.io.FilenameFilter;
 
 import sagex.miniclient.Version;
 import sagex.miniclient.android.prefs.CodecDialogFragment;
@@ -39,11 +44,46 @@ public class SettingsFragment extends PreferenceFragment {
 
             //prefs.setEnabled(this, Prefs.Key.use_log_to_sdcard, !getResources().getBoolean(R.bool.istv));
 
+            Preference touchPref = this.findPreference("touch_mappings");
+
+            touchPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+            {
+                @Override
+                public boolean onPreferenceClick(Preference preference)
+                {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), TouchMappingsActivity.class);
+                    startActivity(i);
+
+                    return true;
+                }
+            });
+
+            Preference mediaKeyPref = this.findPreference("media_key_mappings");
+
+            mediaKeyPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), MediaMappingsActivity.class);
+                    startActivity(i);
+
+                    return true;
+                }
+            });
+
             Preference p = findPreference(PrefStore.Keys.use_log_to_sdcard);
             p.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     AppUtil.initLogging(SettingsFragment.this.getActivity(), (Boolean) newValue);
+                    return true;
+                }
+            });
+
+            Preference share_log = findPreference("share_log");
+            share_log.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    shareLog();
                     return true;
                 }
             });
@@ -58,7 +98,7 @@ public class SettingsFragment extends PreferenceFragment {
                 }
             });
 
-            final Preference streammode = findPreference(PrefStore.Keys.log_level);
+            final Preference streammode = findPreference(Keys.streaming_mode);
             streammode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -186,4 +226,34 @@ public class SettingsFragment extends PreferenceFragment {
         return new Dimension(size.x, size.y);
     }
 
+    private void shareLog() {
+        Intent intentShareFile = new Intent(Intent.ACTION_SEND);
+        File logDir = AppUtil.getLogDir();
+
+        File[] files = logDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return (name.endsWith(".txt"));
+            }
+        });
+
+        if (files==null || files.length==0) {
+            Log.i("MINICLIENT_LOG", "No Files to share in " + logDir.getAbsolutePath());
+            return;
+        }
+
+        File fileToShare = files[0];
+        Log.i("MINICLIENT_LOG", "Sharing " + fileToShare.getAbsolutePath());
+
+        if(fileToShare.exists()) {
+            intentShareFile.setType("application/text");
+            intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse(fileToShare.toURI().toString()));
+
+            intentShareFile.putExtra(Intent.EXTRA_SUBJECT,
+                    "Sharing MiniClient Log File...");
+            intentShareFile.putExtra(Intent.EXTRA_TEXT, "Sharing MiniClient Log File...");
+
+            startActivity(Intent.createChooser(intentShareFile, "Share MiniClient Log File"));
+        }
+    }
 }

@@ -98,6 +98,18 @@ public interface MiniPlayerPlugin extends Runnable {
 
     int setVolume(float v);
 
+    /**
+     * Set the audio track to be played back.
+     * @param streamPos The audio track position (zero based) in the file
+     */
+    void setAudioTrack(int streamPos);
+
+    /**
+     * Set the subtitle track to be played back.
+     * @param streamPos The audio track position (zero based) in the file
+     */
+    void setSubtitleTrack(int streamPos);
+
     void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor);
 
     Dimension getVideoDimensions();

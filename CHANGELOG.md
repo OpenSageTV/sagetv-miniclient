@@ -1,3 +1,32 @@
+**1.3.5 (2018-12-16)**
+- sls: fix: ExoPlayer seek issues after upgrading ExoPlayer
+- sls: refactor: removed log to sdcard
+- sls: (fix): Handling Subtitle request cased NPE in IJKPlayer
+- sls: (enh): Set defaults for smart remote preferences
+- sls: (fix): Added more checking around setting audio tracks
+
+**1.3.4 (2018-10-08)**
+- sls: Fixed crash when showing Help
+
+**1.3.3 (2018-10-05)**
+- sls: Fixed issues listed in crash reports
+- sls: removed logging on startup that can cause App to hang on some hardware
+- sls: removed code that was designed for pre android 21 devices
+- sls: Fixed NPE bug in the key listener
+- sls: Upgraded ExoPlayer to 2.8.4
+
+**1.3.2 (2018-09-24)**
+- jvl711: Fixed bug in Audio Track selection that would cause player to crash (sometimes)
+
+**1.3.1 (2018-09-23)**
+- jvl711: Add support for SageTV server to signal Subtitle track changes.
+- jvl711: Added audio track change support to ExoPlayer.
+- jvl711: Added the ability to switch audio tracks.
+- jvl711: Allowed unmapped keys to allow system actions to occur.
+
+**1.3.0 (2018-08-04)**
+- jvl711: Added configurable remote mapping ability from within the application 
+
 **1.2.13 (2018-07-01)**
 - Upgraded ExoPlayer and IJKPlaer
 - Work Around for Shield (and other 8.x versions) where UI gets completely messed up.

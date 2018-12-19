@@ -57,6 +57,10 @@ public class MediaCmd {
 
     public static final int MEDIACMD_DVD_STREAMS = 36;
 
+
+    public static final int STREAM_TYPE_AUDIO = 0;
+    public static final int STREAM_TYPE_SUBTITLE = 1;
+
     public static final Map<Integer, String> CMDMAP = new HashMap<Integer, String>();
     private static final Logger log = LoggerFactory.getLogger(MediaCmd.class);
 
@@ -390,8 +394,28 @@ public class MediaCmd {
                     playa.seek(seekTime);
                 return 0;
             case MEDIACMD_DVD_STREAMS:
-                writeInt(0, retbuf, 0);
-                return 4;
+                if (playa!=null) {
+                    try {
+                        int streamType = readInt(0, cmddata);
+                        int streamPos = readInt(4, cmddata);
+
+                        log.debug("Stream Type: {}  Stream Pos: {}", streamType, streamPos);
+                        if (streamType == STREAM_TYPE_AUDIO) {
+                            playa.setAudioTrack(streamPos);
+                        } else if (streamType == STREAM_TYPE_SUBTITLE) {
+                            playa.setSubtitleTrack(streamPos);
+                        }
+                    } catch (Throwable t) {
+                        log.error("Failed to set Stream Type", t);
+                        return 0;
+                    }
+                    writeInt(0, retbuf, 0);
+
+                    return 4;
+                } else {
+                    return 0;
+                }
+
             default:
                 log.error("MEDIACMD Unhandled Media Command: {}", cmd);
                 return -1;

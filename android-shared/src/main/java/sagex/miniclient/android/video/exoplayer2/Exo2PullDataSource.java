@@ -4,11 +4,15 @@ import android.net.Uri;
 
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.android.exoplayer2.upstream.TransferListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import sagex.miniclient.net.BufferedPullDataSource;
 import sagex.miniclient.net.HasClose;
@@ -57,4 +61,13 @@ public class Exo2PullDataSource implements DataSource, HasClose {
     public Uri getUri() {
         return uri;
     }
+
+//    @Override
+//    public Map<String, List<String>> getResponseHeaders() {
+//        return Collections.emptyMap();
+//    }
+//
+//    @Override
+//    public void addTransferListener(TransferListener transferListener) {
+//    }
 }

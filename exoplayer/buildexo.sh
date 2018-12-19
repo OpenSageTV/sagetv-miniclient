@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 
-VERSION='r2.8.1-SNAPSHOT'
+# BUILD NOTES
+# Edit ExoPlayer constants.gradle and add set the version
+
+# Edit build.gradle allprojects and add
+#tasks.withType(Javadoc).all { enabled = false }
+
+# in the ffmpeg extension build.gradle add
+#ext {
+#    releaseArtifact = 'extension-ffmpeg'
+#    releaseDescription = 'FFMpeg extension for ExoPlayer.'
+#}
+#apply from: '../../publish.gradle'
 
 if [ "$ANDROID_SDK" = "" ] ; then
     echo "Set ANDROID_SDK to be the location of your Sdk, USING DEFAULT"
@@ -33,9 +44,11 @@ cd ../build-ffmpeg/
 ./build-natives.sh || exit 1
 popd
 
+VERSION=`cat constants.gradle | grep releaseVersion | grep -v Code | tr '=' '\n' | grep -v 'release'`
+
 echo "Building..."
 echo "Setting BUILD RELEASE $VERSION"
-./gradlew -Dexoplayer.version="${VERSION}" assemble publishToMavenLocal || exit 1
+./gradlew assemble publishToMavenLocal || exit 1
 cd ..
 
 echo "Gradle Dependency is 'com.google.android.exoplayer:exoplayer:$VERSION'"

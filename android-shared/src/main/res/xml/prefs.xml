@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="Touch Mappings" android:key="TouchMappingsCategory">
+
+        <Preference android:title="Touch Mappings"
+            android:summary="Change the default mappings touch screen actions"
+            android:key="touch_mappings"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Media Key Mappings" android:key="MediaKeyMappingsCategory">
+
+        <Preference android:title="Media Key Mappings"
+            android:summary="Change the default mappings for remote controls and game pads"
+            android:key="media_key_mappings"/>
+
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/media_player_preferences">
 
         <ListPreference
@@ -51,17 +67,21 @@
 
     <PreferenceCategory android:title="@string/application_settings">
 
+        <!--
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="long_press_select_for_osd"
             android:summary="@string/long_press_select_for_osd_preference_summary"
             android:title="@string/long_press_select_for_osd_preference"/>
+        -->
 
+        <!--
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="use_stateful_remote"
             android:summary="@string/use_stateful_remote_summary"
             android:title="@string/use_stateful_remote_title"/>
+         -->
 
         <CheckBoxPreference
             android:defaultValue="true"
@@ -99,9 +119,7 @@
             android:summary="@string/summary_list_disk_cache_preference"
             android:title="@string/title_list_disk_cache_preference"/>
 
-
     </PreferenceCategory>
-
 
     <PreferenceCategory android:title="@string/auto_connect_settings">
 
@@ -144,13 +162,19 @@
 
     </PreferenceCategory>
 
-
     <PreferenceCategory android:title="@string/logging_preferences">
         <CheckBoxPreference
+            android:enabled="false"
             android:defaultValue="false"
             android:key="use_log_to_sdcard"
             android:summary="@string/summary_use_log_to_sdcard_acceleration_preference"
             android:title="@string/title_use_log_to_sdcard_preference"/>
+
+        <Preference
+            android:enabled="false"
+            android:key="share_log"
+            android:summary="Share log using another application on Android"
+            android:title="Share Log"/>
 
         <ListPreference
             android:defaultValue="debug"
@@ -164,6 +188,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="About">
+
         <Preference
             android:key="version"
             android:summary=""
@@ -191,8 +216,6 @@
             android:summary=""
             android:title="Application Available Memory"/>
 
-
     </PreferenceCategory>
-
 
 </PreferenceScreen>

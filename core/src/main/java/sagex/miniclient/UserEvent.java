@@ -15,7 +15,13 @@
  */
 package sagex.miniclient;
 
+
+/*
+TODO: Evaluate if it makes sense to remove this class.  I have added SageCommand which I feel is a more simplistic implementation of this.  Sean, what do you think?
+*/
 public class UserEvent {
+
+
     public static final int LEFT = 2;
     public static final int RIGHT = 3;
     public static final int UP = 4;
@@ -555,4 +561,6 @@ public class UserEvent {
     private char keyChar;
     private Object payloads; // extra data for extensibility purposes
     private boolean discardable = true;
+
+
 }

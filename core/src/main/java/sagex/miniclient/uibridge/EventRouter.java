@@ -1,21 +1,26 @@
 package sagex.miniclient.uibridge;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.SageCommand;
 import sagex.miniclient.UserEvent;
 
-/**
- * Created by seans on 31/10/15.
- */
-public class EventRouter {
-    // see EventRouter and UserEvent in SageTV Sources
 
-    // media keys
+public class EventRouter
+{
+
+    /*
     public static final UserEvent MEDIA_PAUSE = new UserEvent(UserEvent.PAUSE);
     public static final UserEvent MEDIA_PLAY = new UserEvent(UserEvent.PLAY);
     public static final UserEvent MEDIA_PLAY_PAUSE = new UserEvent(UserEvent.PLAY_PAUSE);
     public static final UserEvent MEDIA_STOP = new UserEvent(UserEvent.STOP);
-    public static final UserEvent MEDIA_FF = new UserEvent(UserEvent.FF);
-    public static final UserEvent MEDIA_REW = new UserEvent(UserEvent.REW);
+    public static final UserEvent MEDIA_FF = new UserEvent(UserEvent.SMOOTH_FF);
+    public static final UserEvent MEDIA_REW = new UserEvent(UserEvent.SMOOTH_REW);
+    public static final UserEvent MEDIA_FF_2 = new UserEvent(UserEvent.FF);
+    public static final UserEvent MEDIA_REW_2 = new UserEvent(UserEvent.REW);
+    public static final UserEvent MEDIA_NEXT = new UserEvent(UserEvent.FF_2);
+    public static final UserEvent MEDIA_PREVIOUS = new UserEvent(UserEvent.REW_2);
+
+
 
     public static final UserEvent VOLUME_UP = new UserEvent(UserEvent.VOLUME_UP);
     public static final UserEvent VOLUME_DOWN = new UserEvent(UserEvent.VOLUME_DOWN);
@@ -67,28 +72,39 @@ public class EventRouter {
     public static final UserEvent F10 = new UserEvent(-1, -1, -1, Keys.VK_F10, 0, (char)Keys.VK_F10);
     public static final UserEvent F11 = new UserEvent(-1, -1, -1, Keys.VK_F11, 0, (char)Keys.VK_F11);
     public static final UserEvent F12 = new UserEvent(-1, -1, -1, Keys.VK_F12, 0, (char)Keys.VK_F12);
-
     public static final UserEvent AR_TOGGLE = new UserEvent(UserEvent.AR_TOGGLE);
+    */
 
-    /**
-     * Post the UserEvent event to the server using the given MiniClient connection
-     *
-     * @param client
-     * @param event
-     */
-    public static void post(MiniClient client, UserEvent event) {
-        if (client == null || client.getCurrentConnection() == null || event == null) return;
+    /*
+    public static void post(MiniClient client, UserEvent event)
+    {
+        if (client == null || client.getCurrentConnection() == null || event == null)
+        {
+            return;
+        }
 
-        if (event.isKB()) {
+        if (event.isKB())
+        {
             client.getCurrentConnection().postKeyEvent(event.getKeyCode(), event.getKeyModifiers(), event.getKeyChar());
-        } else if (event.isIR()) {
-            //client.getCurrentConnection().postIREvent(event.getIRCode());
-        } else {
-            client.getCurrentConnection().postSageCommandEvent(event.getType());
+        }
+        else
+        {
+            client.getCurrentConnection().postSageCommandEvent(event.getCommand().getEventCode());
         }
     }
+    */
 
-    public static void postCommand(MiniClient client, int command) {
+    public static void postCommand(MiniClient client, int command)
+    {
+
         client.getCurrentConnection().postSageCommandEvent(command);
+    }
+
+    public static void postCommand(MiniClient client, SageCommand command)
+    {
+        if(command != SageCommand.UNKNOWN && command != SageCommand.NONE)
+        {
+            client.getCurrentConnection().postSageCommandEvent(command.getEventCode());
+        }
     }
 }

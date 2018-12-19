@@ -1267,6 +1267,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         if (performingReconnect)
             return;
 
+        if (eventRouterThread == null || eventRouterThread.queue == null) {
+            return;
+        }
+
         eventRouterThread.queue.add(new Runnable() {
             @Override
             public void run() {
@@ -1305,6 +1309,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         if (performingReconnect)
             return;
 
+        if (eventRouterThread == null || eventRouterThread.queue == null) {
+            return;
+        }
+
         eventRouterThread.queue.add(new Runnable() {
             @Override
             public void run() {
@@ -1341,6 +1349,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
+
+        if (eventRouterThread == null || eventRouterThread.queue == null) {
+            return;
+        }
 
         eventRouterThread.queue.add(new Runnable() {
             @Override
@@ -1389,6 +1401,10 @@ public class MiniClientConnection implements SageTVInputCallback {
         if (performingReconnect)
             return;
 
+        if (eventChannel == null) {
+            return;
+        }
+
         // NOTE: not sure this needs to use the eventRouterThread... resize events normally happen
         // in the background thread, so I think we are safe to leave this
 
@@ -1427,6 +1443,10 @@ public class MiniClientConnection implements SageTVInputCallback {
     public void postRepaintEvent(int x, int y, int w, int h) {
         if (performingReconnect)
             return;
+
+        if (eventChannel == null) {
+            return;
+        }
 
         // We should be good to NOT use the eventRouterThread, since repaints happen in the background
         // thread, usually.
@@ -1477,6 +1497,9 @@ public class MiniClientConnection implements SageTVInputCallback {
     public void postImageUnload(int handle) {
         if (performingReconnect)
             return;
+
+        if (eventChannel==null) return;
+
         synchronized (eventChannel) {
 
             try {
@@ -1508,6 +1531,9 @@ public class MiniClientConnection implements SageTVInputCallback {
     public void postOfflineCacheChange(boolean addedToCache, String rezID) {
         if (performingReconnect)
             return;
+
+        if (eventChannel==null) return;
+
         synchronized (eventChannel) {
             try {
                 int strlen = rezID.length();
@@ -1546,6 +1572,11 @@ public class MiniClientConnection implements SageTVInputCallback {
         // MiniClientPowerManagement.getInstance().kick();
         if (performingReconnect)
             return;
+
+        if (eventRouterThread==null || eventRouterThread.queue == null) {
+            // ignore this, since we haven't fully started up yet.
+            return;
+        }
 
         eventRouterThread.queue.add(new Runnable() {
             @Override
