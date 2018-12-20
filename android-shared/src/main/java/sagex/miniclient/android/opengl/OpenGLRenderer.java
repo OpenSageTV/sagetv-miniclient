@@ -138,7 +138,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         setSurface(mainSurface);
 
-        GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
+        //GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
 
         clearUI();
 
@@ -361,7 +361,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         GLES20.glGenBuffers(1, buffer, 0);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer[0]);
         //float vertices[] = {x1, y1, x1, y1};
-        float vertices[] = {0, 0, .5f, .5f};
+        float vertices[] = {0, 0, 100, 100};
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * 4, FloatBuffer.wrap(vertices), GLES20.GL_STATIC_DRAW);
         GLES20.glVertexAttribPointer(ShaderUtils.defaultShader.a_myVertex, 2, GLES20.GL_FLOAT, false, 0, 0);
         GLES20.glEnableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);

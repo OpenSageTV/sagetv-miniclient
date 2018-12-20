@@ -1,6 +1,7 @@
 package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import org.slf4j.Logger;
@@ -18,22 +19,25 @@ public class OpenGLSurface extends OpenGLTexture {
     public OpenGLSurface(int id, int w, int h) {
         super(w,h);
         this.id = id;
-        viewMatrix[0] = 2.0f / (float) w;
-        viewMatrix[1] = 0.0f;
-        viewMatrix[2] = 0.0f;
-        viewMatrix[3] = 0.0f;
-        viewMatrix[4] = 0.0f;
-        viewMatrix[5] = 2.0f / (float) h;
-        viewMatrix[6] = 0.0f;
-        viewMatrix[7] = 0.0f;
-        viewMatrix[8] = 0.0f;
-        viewMatrix[9] = 0.0f;
-        viewMatrix[10] = 1.0f;
-        viewMatrix[11] = 0.0f;
-        viewMatrix[12] = -1.0f;
-        viewMatrix[13] = -1.0f;
-        viewMatrix[14] = 0.0f;
-        viewMatrix[15] = 1.0f;
+        // https://www.learnopengles.com/tag/orthographic-projection/
+        float scale = (float) w / (float) h;
+        Matrix.orthoM(viewMatrix, 0, -scale, scale, -1, 1, -1, 1);
+//        viewMatrix[0] = 2.0f / (float) w;
+//        viewMatrix[1] = 0.0f;
+//        viewMatrix[2] = 0.0f;
+//        viewMatrix[3] = 0.0f;
+//        viewMatrix[4] = 0.0f;
+//        viewMatrix[5] = 2.0f / (float) h;
+//        viewMatrix[6] = 0.0f;
+//        viewMatrix[7] = 0.0f;
+//        viewMatrix[8] = 0.0f;
+//        viewMatrix[9] = 0.0f;
+//        viewMatrix[10] = 1.0f;
+//        viewMatrix[11] = 0.0f;
+//        viewMatrix[12] = -1.0f;
+//        viewMatrix[13] = -1.0f;
+//        viewMatrix[14] = 0.0f;
+//        viewMatrix[15] = 1.0f;
     }
 
 
@@ -110,7 +114,7 @@ public class OpenGLSurface extends OpenGLTexture {
             throw new RuntimeException("Error creating FBO");
         }
 
-        //GLES20.glViewport(0,0, width, height);
+        GLES20.glViewport(0, 0, width, height);
 
         ShaderUtils.logGLErrors("Surface.bind()");
         bound=true;

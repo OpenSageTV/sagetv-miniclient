@@ -110,7 +110,7 @@ public class OpenGLTexture implements Texture {
         //GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
         ShaderUtils.logGLErrors("Texture.draw() bind texture");
-        //GLES20.glUniform1i(ShaderUtils.textureShader.u_sampler2d, 0);
+        GLES20.glUniform1i(ShaderUtils.textureShader.u_sampler2d, 0);
 
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         if (height < 0) {
