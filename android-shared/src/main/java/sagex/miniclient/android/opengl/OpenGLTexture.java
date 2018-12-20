@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 import sagex.miniclient.uibridge.Texture;
 
@@ -103,6 +102,8 @@ public class OpenGLTexture implements Texture {
         GLES20.glUniformMatrix4fv(ShaderUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
         ShaderUtils.logGLErrors("Texture.draw() matrix");
 
+        GLES20.glUniform4fv(ShaderUtils.textureShader.u_myColor, 1, ShaderUtils.argbToFloatArray(blend), 0);
+
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_TEXTURE_2D);
@@ -120,18 +121,24 @@ public class OpenGLTexture implements Texture {
 
         if (width < 0) width *= -1;
 
-        int pColor[] = {blend, blend, blend, blend, blend};
-        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        bb.put(pColor);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 4, GLES20.GL_UNSIGNED_BYTE, true, 0, bb);
-        ShaderUtils.logGLErrors("Texture.draw() colors1");
-        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
-        ShaderUtils.logGLErrors("Texture.draw() colors2");
+//        int pColor[] = {blend, blend, blend, blend, blend};
+//        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+//        bb.put(pColor);
+//        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 4, GLES20.GL_UNSIGNED_BYTE, true, 0, bb);
+//        ShaderUtils.logGLErrors("Texture.draw() colors1");
+//        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
+//        ShaderUtils.logGLErrors("Texture.draw() colors2");
 
-        short pVertices2[] = {(short) x, (short) y, (short) (x + width), (short) y, (short) (x + width), (short) (y + height), (short) (x + width), (short) (y + height), (short) x, (short) (y + height), (short) x, (short) y};
-        ShortBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
+        int pVertices2[] = {
+                x, y,
+                (x + width), y,
+                (x + width), (y + height),
+                (x + width), (y + height),
+                x, (y + height),
+                x, y};
+        IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myVertex, POSITION_SIZE, GLES20.GL_SHORT, false, 0, b);
+        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myVertex, POSITION_SIZE, GLES20.GL_INT, false, 0, b);
         ShaderUtils.logGLErrors("Texture.draw() verticies1");
         GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
         ShaderUtils.logGLErrors("Texture.draw() verticies2");

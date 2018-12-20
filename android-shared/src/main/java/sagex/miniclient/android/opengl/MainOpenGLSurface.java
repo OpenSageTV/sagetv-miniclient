@@ -47,7 +47,7 @@ public class MainOpenGLSurface extends OpenGLSurface {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         ShaderUtils.logGLErrors("Main ViewPort Bind Framebuffer");
 
-        GLES20.glViewport(0, 0, width, height);
+        //GLES20.glViewport(0, 0, width, height);
         ShaderUtils.logGLErrors("Main ViewPort Bind");
         this.bound = true;
     }

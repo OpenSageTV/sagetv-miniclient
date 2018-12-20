@@ -27,6 +27,7 @@ import sagex.miniclient.MenuHint;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.R;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
@@ -66,6 +67,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     boolean firstFrame = true;
     boolean ready = false;
     boolean inFrame=false;
+
+    boolean disableRenderQueue = true;
 
     // Current Surface (when surfaces are enabled)
     ImageHolder<? extends OpenGLTexture> currentSurface = null;
@@ -138,9 +141,19 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         setSurface(mainSurface);
 
-        //GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
+        GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
 
-        clearUI();
+        //clearUI();
+        GLES20.glClearColor(0, 1, 0, 0);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
+
+        Bitmap b = BitmapFactory.decodeResource(activity.getContext().getResources(), R.drawable.sage_logo_256);
+        OpenGLTexture t = new OpenGLTexture(256, 89);
+        t.set(b, "test");
+        t.draw(0, 0, 256, 89, 0, 0, 256, 89, 0, mainSurfaceGL, 0);
+
+        log.debug("* RENDERED BITMAP *");
+        flipBuffer();
 
         //drawLine(0,0, uiSize.width/2, uiSize.height/2, 0, 0);
 
@@ -183,6 +196,12 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         synchronized (renderQueue) {
             int size = renderQueue.size();
             if (size == 0) return;
+
+            if (disableRenderQueue) {
+                log.warn("********* RENDER QUEUE DISABLED *********");
+                renderQueue.clear();
+                return;
+            }
 
             long st = System.currentTimeMillis();
 
