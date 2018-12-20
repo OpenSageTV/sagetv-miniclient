@@ -35,7 +35,6 @@ import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
-import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.AspectHelper;
@@ -141,16 +140,27 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         setSurface(mainSurface);
 
-        GLES20.glViewport(0, 0, uiSize.width, uiSize.height);
-
         //clearUI();
         GLES20.glClearColor(0, 1, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
 
+        Triangle tr = new Triangle();
+        tr.draw(uiSize.width / 2, 0,
+                0, uiSize.height,
+                uiSize.width, uiSize.height, ShaderUtils.RGBA_to_ARGB(255, 0, 0, 255), mainSurfaceGL);
+
+        Rectangle sq = new Rectangle();
+        sq.draw(100, 100, uiSize.width - 200, uiSize.height - 200, ShaderUtils.RGBA_to_ARGB(0, 0, 255, 255), mainSurfaceGL);
+
         Bitmap b = BitmapFactory.decodeResource(activity.getContext().getResources(), R.drawable.sage_logo_256);
-        OpenGLTexture t = new OpenGLTexture(256, 89);
+        System.out.println("BITMAP: " + b.getWidth());
+        OpenGLTexture t = new OpenGLTexture(b.getWidth(), b.getHeight());
         t.set(b, "test");
-        t.draw(0, 0, 256, 89, 0, 0, 256, 89, 0, mainSurfaceGL, 0);
+        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), 0, mainSurfaceGL, 0);
+
+        // draw a partial
+        t.draw(uiSize.width / 2, uiSize.height / 2, 50, 50, 0, 0, 50, 50, 0, mainSurfaceGL, 0);
+
 
         log.debug("* RENDERED BITMAP *");
         flipBuffer();
@@ -719,7 +729,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public void setVideoBounds(Rectangle o, Rectangle o1) {
+    public void setVideoBounds(sagex.miniclient.uibridge.Rectangle o, sagex.miniclient.uibridge.Rectangle o1) {
         log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
         state = STATE_VIDEO;
     }

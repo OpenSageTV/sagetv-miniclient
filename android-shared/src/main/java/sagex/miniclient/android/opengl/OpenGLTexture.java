@@ -89,9 +89,6 @@ public class OpenGLTexture implements Texture {
             throw t;
         }
 
-        // GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-
-        // Recycle the bitmap, since its data has been loaded into OpenGL.
         bitmap.recycle();
     }
 
@@ -102,7 +99,7 @@ public class OpenGLTexture implements Texture {
         GLES20.glUniformMatrix4fv(ShaderUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
         ShaderUtils.logGLErrors("Texture.draw() matrix");
 
-        GLES20.glUniform4fv(ShaderUtils.textureShader.u_myColor, 1, ShaderUtils.argbToFloatArray(blend), 0);
+        //GLES20.glUniform4fv(ShaderUtils.textureShader.u_myColor, 1, ShaderUtils.argbToFloatArray(blend), 0);
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_BLEND);
@@ -121,13 +118,14 @@ public class OpenGLTexture implements Texture {
 
         if (width < 0) width *= -1;
 
-//        int pColor[] = {blend, blend, blend, blend, blend};
-//        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-//        bb.put(pColor);
-//        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 4, GLES20.GL_UNSIGNED_BYTE, true, 0, bb);
-//        ShaderUtils.logGLErrors("Texture.draw() colors1");
-//        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
-//        ShaderUtils.logGLErrors("Texture.draw() colors2");
+        int pColor[] = {blend, blend, blend, blend, blend};
+        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+        bb.put(pColor);
+        bb.position(0);
+        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 1, GLES20.GL_UNSIGNED_BYTE, true, 4, bb);
+        ShaderUtils.logGLErrors("Texture.draw() colors1");
+        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
+        ShaderUtils.logGLErrors("Texture.draw() colors2");
 
         int pVertices2[] = {
                 x, y,
@@ -138,7 +136,12 @@ public class OpenGLTexture implements Texture {
                 x, y};
         IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myVertex, POSITION_SIZE, GLES20.GL_INT, false, 0, b);
+        b.position(0);
+        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myVertex,
+                2 /* # of elements per vertex*/,
+                GLES20.GL_INT,
+                false,
+                8 /* # bytes per vertex (2 * 4 bytes) */, b);
         ShaderUtils.logGLErrors("Texture.draw() verticies1");
         GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
         ShaderUtils.logGLErrors("Texture.draw() verticies2");
@@ -160,7 +163,8 @@ public class OpenGLTexture implements Texture {
         // Again, a FloatBuffer will be used to pass the values
         FloatBuffer fb = ByteBuffer.allocateDirect(data.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
         fb.put(data);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myUV, TEXTURE_SIZE, GLES20.GL_FLOAT, false, 0, fb);
+        fb.position(0);
+        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myUV, 2, GLES20.GL_FLOAT, false, 8, fb);
         ShaderUtils.logGLErrors("Texture.draw() myUV1");
         GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.a_myUV);
         ShaderUtils.logGLErrors("Texture.draw() myUV2");
@@ -168,78 +172,8 @@ public class OpenGLTexture implements Texture {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
         ShaderUtils.logGLErrors("Texture.draw() triangles");
 
-//        GLES20.glDisable(GLES20.GL_BLEND);
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myUV);
+        GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
 
-        // Position of our image
-//        b.position(POSITION_OFFSET);
-//        GLES20.glVertexAttribPointer(ShaderUtils.TEXTURE_PROGRAM_aPOSITION, POSITION_SIZE, GLES20.GL_FLOAT, false, TOTAL_SIZE * FLOAT_SIZE, b);
-//        GLES20.glEnableVertexAttribArray(ShaderUtils.TEXTURE_PROGRAM_aPOSITION);
-
-        // Positions of the texture
-//        b.position(TEXTURE_OFFSET);
-//        GLES20.glVertexAttribPointer(ShaderUtils.TEXTURE_PROGRAM_aTEXPOS, TEXTURE_SIZE, GLES20.GL_FLOAT, false, TOTAL_SIZE * FLOAT_SIZE, b);
-//        GLES20.glEnableVertexAttribArray(ShaderUtils.TEXTURE_PROGRAM_aTEXPOS);
-
-        // Pass the projection and view transformation to the shader
-        // GLES20.glUniformMatrix4fv(ShaderUtils.TEXTURE_PROGRAM_uSCREEN, 1, false, viewMatrix , 0);
-
-        // Clear the screen and draw the rectangle
-        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        //GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-
-//        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-//        if(height<0)
-//        {
-//            GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);
-//            height*=-1;
-//        }
-//
-//        if(width<0) width*=-1;
-//        // Images
-//        GLshort pVertices2[] = {x, y, x+width, y, x+width, y+height,
-//                x+width, y+height, x, y+height, x, y};
-//        GLuint pColors2[] = {blend, blend, blend, blend, blend, blend};
-//        GLfloat pCoords2[] = {
-//                1.0f*srcx/srcimage->uWidth, 1.0f*srcy/srcimage->uHeight,
-//                1.0f*(srcx+srcwidth)/srcimage->uWidth, 1.0f*srcy/srcimage->uHeight,
-//                1.0f*(srcx+srcwidth)/srcimage->uWidth, 1.0f*(srcy+srcheight)/srcimage->uHeight,
-//                1.0f*(srcx+srcwidth)/srcimage->uWidth, 1.0f*(srcy+srcheight)/srcimage->uHeight,
-//                1.0f*srcx/srcimage->uWidth, 1.0f*(srcy+srcheight)/srcimage->uHeight,
-//                1.0f*srcx/srcimage->uWidth, 1.0f*srcy/srcimage->uHeight};
-//        glEnableVertexAttribArray(VERTEX_ARRAY);
-//        glEnableVertexAttribArray(COLOR_ARRAY);
-//        glEnableVertexAttribArray(COORD_ARRAY);
-//
-//        // Sets the vertex data to this attribute index
-//        glVertexAttribPointer(VERTEX_ARRAY, 2, GL_SHORT, GL_FALSE, 0, pVertices2);
-//        glVertexAttribPointer(COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, pColors2);
-//        glVertexAttribPointer(COORD_ARRAY, 2, GL_FLOAT, GL_FALSE, 0, pCoords2);
-//        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
-
-//    float[] getVertexData(int x, int y, int width, int height, int srcx, int srcy, int srcwidth, int srcheight) {
-//        float[] data =
-//                {
-//                        x, y,                          //V1
-//                        (float) srcx / (float) width, (float) srcy / (float) height,             //Texture coordinate for V1
-//
-//                        x, y + height,                   //V2
-//                        (float) srcx / (float) width, ((float) srcy + (float) srcheight) / (float) height,
-//
-//                        x + width, y,                          //V3
-//                        ((float) srcx + (float) srcwidth) / (float) width, (float) srcy / (float) height,
-//
-//                        x + width, y + height,                   //V4
-//                        ((float) srcx + (float) srcwidth) / (float) width, ((float) srcy + (float) srcheight) / (float) height
-//
-//                };
-//
-//        return data;
-//
-//    }
-//
-//    public void draw(float viewMatrix[]) {
-//        this.draw(0,0, width, height, 0, 0, width, height, 1, viewMatrix);
-//    }
 }
