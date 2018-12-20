@@ -20,8 +20,9 @@ public class OpenGLSurface extends OpenGLTexture {
         super(w,h);
         this.id = id;
         // https://www.learnopengles.com/tag/orthographic-projection/
-        float scale = (float) w / (float) h;
-        Matrix.orthoM(viewMatrix, 0, -scale, scale, -1, 1, -1, 1);
+        Matrix.orthoM(viewMatrix, 0, 0, w, h, 0, 0, 1);
+//        float scale = (float) w / (float) h;
+//        Matrix.orthoM(viewMatrix, 0, -scale, scale, -1, 1, -1, 1);
 //        viewMatrix[0] = 2.0f / (float) w;
 //        viewMatrix[1] = 0.0f;
 //        viewMatrix[2] = 0.0f;
