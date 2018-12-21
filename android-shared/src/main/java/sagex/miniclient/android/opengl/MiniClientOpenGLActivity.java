@@ -9,14 +9,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.view.MotionEvent;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -24,7 +22,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.squareup.otto.DeadEvent;
 import com.squareup.otto.Subscribe;
 
@@ -51,9 +48,9 @@ import sagex.miniclient.android.events.MessageEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.events.ToggleAspectRatioEvent;
-import sagex.miniclient.android.ui.MiniclientTouchListener;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.ui.MiniClientKeyListener;
+import sagex.miniclient.android.ui.MiniclientTouchListener;
 import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
@@ -216,9 +213,10 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
             log.debug("Setting Translucent View");
             GLSurfaceView glView = (GLSurfaceView) miniClientView;
             // This is needed or else we won't see OSD over video
-            glView.setZOrderOnTop(true);
+            //glView.setZOrderOnTop(true);
             // This is needed or else we will not see the video playing behind the OSD
-            glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+            //glView.getHolder().setFormat(PixelFormat.RGBA_8888);
+            //glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
             miniClientView.setFocusable(true);
             miniClientView.setFocusableInTouchMode(true);

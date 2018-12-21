@@ -69,7 +69,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     boolean ready = false;
     boolean inFrame=false;
 
-    boolean disableRenderQueue = true;
+    boolean disableRenderQueue = false;
 
     // Current Surface (when surfaces are enabled)
     ImageHolder<? extends OpenGLTexture> currentSurface = null;
@@ -143,9 +143,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         mainSurfaceGL.createSurface();
         mainSurface = new ImageHolder<>(mainSurfaceGL, uiSize.width, uiSize.height);
         mainSurface.setHandle(0);
-
         setSurface(mainSurface);
 
+        debugShapes(mainSurfaceGL);
+
+    }
+
+    private void debugShapes(OpenGLSurface mainSurfaceGL) {
         GLES20.glClearColor(0, 1, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
 
@@ -275,6 +279,14 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 //        return lastColor;
 //    }
 
+    float Y(int y, int height) {
+        return uiSize.getHeight() - y - height;
+    }
+
+    float Y(int y) {
+        return uiSize.getHeight() - y;
+    }
+
     @Override
     public void GFXCMD_INIT() {
         // block until the UI is ready
@@ -346,8 +358,21 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public void clearRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+    public void clearRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        state = STATE_VIDEO;
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+//                GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+//                // not sure if we need to flip
+//                GLES20.glScissor(x, (int)Y(y, height), width, height);
+//                //GLES20.glScissor(x, y, width, height);
+//                //Gdx.gl20.glClearColor(0,0,0,0);
+//                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+//                GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
+                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
+            }
+        });
     }
 
     @Override
@@ -595,6 +620,12 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
                 }
             });
         }
+//        invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                clearUI();
+//            }
+//        });
         inFrame=true;
     }
 
