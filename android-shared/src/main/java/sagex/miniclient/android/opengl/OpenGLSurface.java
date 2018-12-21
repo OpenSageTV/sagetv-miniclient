@@ -79,7 +79,7 @@ public class OpenGLSurface extends OpenGLTexture {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
-        ShaderUtils.logGLErrors("Create Surface");
+        OpenGLUtils.logGLErrors("Create Surface");
 
         bound=false;
 
@@ -99,7 +99,7 @@ public class OpenGLSurface extends OpenGLTexture {
 
         GLES20.glViewport(0, 0, width, height);
 
-        ShaderUtils.logGLErrors("Surface.bind()");
+        OpenGLUtils.logGLErrors("Surface.bind()");
         bound=true;
     }
 

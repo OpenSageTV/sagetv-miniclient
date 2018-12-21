@@ -10,17 +10,22 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
+import sagex.miniclient.android.opengl.shaders.DefaultShader;
+import sagex.miniclient.android.opengl.shaders.GradientShader;
+import sagex.miniclient.android.opengl.shaders.Shader;
+import sagex.miniclient.android.opengl.shaders.TextureShader;
 import sagex.miniclient.util.IOUtil;
 import sagex.miniclient.util.VerboseLogging;
 
-public class ShaderUtils {
-    private static Logger log = LoggerFactory.getLogger(ShaderUtils.class);
+public class OpenGLUtils {
+    private static Logger log = LoggerFactory.getLogger(OpenGLUtils.class);
 
     static boolean initialized = false;
 
     public static Shader CURRENT_SHADER = null;
 
     public static DefaultShader defaultShader = null;
+    public static GradientShader gradientShader = null;
     public static TextureShader textureShader = null;
 
     public static void loadShaders(Context context) throws IOException {
@@ -28,6 +33,8 @@ public class ShaderUtils {
             initialized = true;
             defaultShader = new DefaultShader(loadShaderSource(context, "default-fragment"), loadShaderSource(context, "default-vertex"));
             defaultShader.load();
+            gradientShader = new GradientShader(loadShaderSource(context, "gradient-fragment"), loadShaderSource(context, "gradient-vertex"));
+            gradientShader.load();
             textureShader = new TextureShader(loadShaderSource(context, "texture-fragment"), loadShaderSource(context, "texture-vertex"));
             textureShader.load();
         }

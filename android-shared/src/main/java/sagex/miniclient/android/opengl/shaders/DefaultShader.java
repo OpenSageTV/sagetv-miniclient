@@ -1,4 +1,4 @@
-package sagex.miniclient.android.opengl;
+package sagex.miniclient.android.opengl.shaders;
 
 public class DefaultShader extends Shader {
     public int a_myVertex;
@@ -12,7 +12,7 @@ public class DefaultShader extends Shader {
     }
 
     @Override
-    void load() {
+    public void load() {
         super.load();
         a_myVertex = attribute("myVertex");
         u_myColor = uniform("myColor");

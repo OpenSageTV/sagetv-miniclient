@@ -41,14 +41,14 @@ public class MainOpenGLSurface extends OpenGLSurface {
         log.debug("Binding MAIN Framebuffer Surface: {}, {}x{}", buffer(), width, height);
 
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
-        ShaderUtils.logGLErrors("Main ViewPort RENDERBUFFER");
+        OpenGLUtils.logGLErrors("Main ViewPort RENDERBUFFER");
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-        ShaderUtils.logGLErrors("Main ViewPort TEXTURE");
+        OpenGLUtils.logGLErrors("Main ViewPort TEXTURE");
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        ShaderUtils.logGLErrors("Main ViewPort Bind Framebuffer");
+        OpenGLUtils.logGLErrors("Main ViewPort Bind Framebuffer");
 
         GLES20.glViewport(0, 0, width, height);
-        ShaderUtils.logGLErrors("Main ViewPort Bind");
+        OpenGLUtils.logGLErrors("Main ViewPort Bind");
         this.bound = true;
     }
 

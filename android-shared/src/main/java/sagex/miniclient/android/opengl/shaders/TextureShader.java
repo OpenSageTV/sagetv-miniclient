@@ -1,4 +1,4 @@
-package sagex.miniclient.android.opengl;
+package sagex.miniclient.android.opengl.shaders;
 
 public class TextureShader extends Shader {
     public int a_myUV;
@@ -14,7 +14,7 @@ public class TextureShader extends Shader {
     }
 
     @Override
-    void load() {
+    public void load() {
         super.load();
         a_myUV = attribute("myUV");
         a_myVertex = attribute("myVertex");

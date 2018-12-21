@@ -71,7 +71,7 @@ public class OpenGLTexture implements Texture {
 
         log.debug("New Texture[{}]: {} x {}", texture(), this.width, this.height);
 
-        ShaderUtils.logGLErrors("createTexture()");
+        OpenGLUtils.logGLErrors("createTexture()");
     }
 
     public void set(Bitmap bitmap, String optName) {
@@ -85,7 +85,7 @@ public class OpenGLTexture implements Texture {
         try {
             // Load the bitmap into the bound texture.
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-            ShaderUtils.logGLErrors("bad texture");
+            OpenGLUtils.logGLErrors("bad texture");
         } catch (Throwable t) {
             log.error("[{}]: Unable to load texture from Bitmap: {}", texture(), optName, t);
             throw t;
@@ -94,20 +94,20 @@ public class OpenGLTexture implements Texture {
         bitmap.recycle();
     }
 
-    public void draw(int x, int y, int w, int h, int sx, int sy, int sw, int sh, int blend, OpenGLSurface toSurface, int toSurfaceHandle) {
+    public void draw(int x, int y, int w, int h, int sx, int sy, int sw, int sh, int blend, OpenGLSurface toSurface) {
         //log.debug("texture draw[{}] on surface {}", texture(), toSurfaceHandle);
-        ShaderUtils.useProgram(ShaderUtils.textureShader);
-        ShaderUtils.logGLErrors("Texture.draw() useProgram");
-        GLES20.glUniformMatrix4fv(ShaderUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
-        ShaderUtils.logGLErrors("Texture.draw() matrix");
+        OpenGLUtils.useProgram(OpenGLUtils.textureShader);
+        OpenGLUtils.logGLErrors("Texture.draw() useProgram");
+        GLES20.glUniformMatrix4fv(OpenGLUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
+        OpenGLUtils.logGLErrors("Texture.draw() matrix");
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_TEXTURE_2D);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        ShaderUtils.logGLErrors("Texture.draw() bind texture");
-        GLES20.glUniform1i(ShaderUtils.textureShader.u_sampler2d, 0);
+        OpenGLUtils.logGLErrors("Texture.draw() bind texture");
+        GLES20.glUniform1i(OpenGLUtils.textureShader.u_sampler2d, 0);
 
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         if (h < 0) {
@@ -117,7 +117,7 @@ public class OpenGLTexture implements Texture {
 
         if (w < 0) w *= -1;
 
-        GLES20.glUniform4fv(ShaderUtils.defaultShader.u_myColor, 1, ShaderUtils.argbToFloatArray(blend), 0);
+        GLES20.glUniform4fv(OpenGLUtils.defaultShader.u_myColor, 1, OpenGLUtils.argbToFloatArray(blend), 0);
 
         int pVertices2[] = {
                 x, y,
@@ -140,14 +140,14 @@ public class OpenGLTexture implements Texture {
         IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
         b.position(0);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myVertex,
+        GLES20.glVertexAttribPointer(OpenGLUtils.textureShader.a_myVertex,
                 2 /* # of elements per vertex*/,
                 GLES20.GL_INT,
                 false,
                 8 /* # bytes per vertex (2 * 4 bytes) */, b);
-        ShaderUtils.logGLErrors("Texture.draw() verticies1");
-        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
-        ShaderUtils.logGLErrors("Texture.draw() verticies2");
+        OpenGLUtils.logGLErrors("Texture.draw() verticies1");
+        GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
+        OpenGLUtils.logGLErrors("Texture.draw() verticies2");
 
         float[] data = {
                 (float) sx / (float) width, (float) sy / (float) height,
@@ -164,16 +164,16 @@ public class OpenGLTexture implements Texture {
         FloatBuffer fb = ByteBuffer.allocateDirect(data.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
         fb.put(data);
         fb.position(0);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.a_myUV, 2, GLES20.GL_FLOAT, false, 8, fb);
-        ShaderUtils.logGLErrors("Texture.draw() myUV1");
-        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.a_myUV);
-        ShaderUtils.logGLErrors("Texture.draw() myUV2");
+        GLES20.glVertexAttribPointer(OpenGLUtils.textureShader.a_myUV, 2, GLES20.GL_FLOAT, false, 8, fb);
+        OpenGLUtils.logGLErrors("Texture.draw() myUV1");
+        GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myUV);
+        OpenGLUtils.logGLErrors("Texture.draw() myUV2");
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-        ShaderUtils.logGLErrors("Texture.draw() triangles");
+        OpenGLUtils.logGLErrors("Texture.draw() triangles");
 
-        GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myUV);
-        GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
+        GLES20.glDisableVertexAttribArray(OpenGLUtils.textureShader.a_myUV);
+        GLES20.glDisableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
 
         GLES20.glDisable(GLES20.GL_BLEND);
         GLES20.glDisable(GLES20.GL_TEXTURE_2D);

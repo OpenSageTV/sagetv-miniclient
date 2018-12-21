@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +27,10 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.opengl.shapes.FillRectangle;
+import sagex.miniclient.android.opengl.shapes.Line;
+import sagex.miniclient.android.opengl.shapes.LineRectangle;
+import sagex.miniclient.android.opengl.shapes.Triangle;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
@@ -66,7 +69,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     boolean ready = false;
     boolean inFrame=false;
 
-    boolean disableRenderQueue = false;
+    boolean disableRenderQueue = true;
 
     // Current Surface (when surfaces are enabled)
     ImageHolder<? extends OpenGLTexture> currentSurface = null;
@@ -99,6 +102,10 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     private float uiAspectRatio = AspectHelper.ar_16_9;
 
+    FillRectangle fillRectShape = new FillRectangle();
+    LineRectangle lineRectShape = new LineRectangle();
+    Line lineShape = new Line();
+
     public OpenGLRenderer(AndroidUIController parent, MiniClient client) {
         this.activity = parent;
         this.client = client;
@@ -126,7 +133,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         // load shaders and programs
         try {
-            ShaderUtils.loadShaders(this.activity.getContext());
+            OpenGLUtils.loadShaders(this.activity.getContext());
         } catch (IOException e) {
             log.error("Failed to Load Shaders.  UI will not work", e);
         }
@@ -145,19 +152,30 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         Triangle tr = new Triangle();
         tr.draw(uiSize.width / 2, 0,
                 0, uiSize.height,
-                uiSize.width, uiSize.height, ShaderUtils.RGBA_to_ARGB(255, 0, 0, 255), mainSurfaceGL);
+                uiSize.width, uiSize.height, OpenGLUtils.RGBA_to_ARGB(255, 0, 0, 255), mainSurfaceGL);
 
-        Rectangle sq = new Rectangle();
-        sq.draw(100, 100, uiSize.width - 200, uiSize.height - 200, ShaderUtils.RGBA_to_ARGB(0, 0, 255, 255), mainSurfaceGL);
+        int color = OpenGLUtils.RGBA_to_ARGB(0, 0, 255, 255);
+        fillRectShape.draw(100, 100, uiSize.width - 200, uiSize.height - 200, color, color, color, color, mainSurfaceGL);
+
+        int color1 = OpenGLUtils.RGBA_to_ARGB(255, 0, 0, 255);
+        int color2 = OpenGLUtils.RGBA_to_ARGB(175, 0, 0, 255);
+        fillRectShape.draw(200, 200, 100, 100, color1, color2, color1, color2, mainSurfaceGL);
+        fillRectShape.draw(uiSize.width - 300, uiSize.height - 300, 100, 100, color1, color1, color2, color2, mainSurfaceGL);
+
+        int color3 = OpenGLUtils.RGBA_to_ARGB(0, 200, 0, 255);
+        lineRectShape.draw(200, 200, 100, 100, color3, color3, color3, color3, 1, mainSurfaceGL);
+        lineRectShape.draw(uiSize.width - 300, uiSize.height - 300, 100, 100, color3, color3, color3, color3, 10, mainSurfaceGL);
+
+        lineShape.draw(100, 100, uiSize.width - 100, uiSize.height - 100, color1, color3, 1, mainSurfaceGL);
 
         Bitmap b = BitmapFactory.decodeResource(activity.getContext().getResources(), R.drawable.sage_logo_256);
         System.out.println("BITMAP: " + b.getWidth());
         OpenGLTexture t = new OpenGLTexture(b.getWidth(), b.getHeight());
         t.set(b, "test");
-        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), ShaderUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL, 0);
+        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
 
         // draw a partial
-        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, ShaderUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL, 0);
+        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
 
         log.debug("* RENDERED BITMAP *");
         ((GLSurfaceView) activity.getUIView()).requestRender();
@@ -257,15 +275,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 //        return lastColor;
 //    }
 
-    float Y(int y, int height) {
-        return uiSize.getHeight() - y - height;
-    }
-
-    float Y(int y) {
-        return uiSize.getHeight() - y;
-    }
-
-
     @Override
     public void GFXCMD_INIT() {
         // block until the UI is ready
@@ -317,13 +326,23 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public void drawRect(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+    public void drawRect(final int x, final int y, final int width, final int height, final int thickness, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                lineRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, thickness, currentSurface());
+            }
+        });
     }
 
     @Override
-    public void fillRect(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL) {
-
+    public void fillRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
+            }
+        });
     }
 
     @Override
@@ -342,13 +361,23 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public void drawRoundRect(int x, int y, int width, int height, int thickness, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+    public void drawRoundRect(final int x, final int y, final int width, final int height, final int thickness, int arcRadius, final int argbTL, final int argbTR, final int argbBR, final int argbBL, int clipX, int clipY, int clipW, int clipH) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                lineRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, thickness, currentSurface());
+            }
+        });
     }
 
     @Override
-    public void fillRoundRect(int x, int y, int width, int height, int arcRadius, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+    public void fillRoundRect(final int x, final int y, final int width, final int height, int arcRadius, final int argbTL, final int argbTR, final int argbBR, final int argbBL, int clipX, int clipY, int clipW, int clipH) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
+            }
+        });
     }
 
     @Override
@@ -358,7 +387,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             public void run() {
                 try {
                     //log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
-                    img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, (OpenGLSurface) currentSurface.get(), currentSurface.getHandle());
+                    img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, currentSurface());
                 } catch (Throwable t) {
                     log.error("Failed to Render Texture {}", handle, t);
                 }
@@ -371,40 +400,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public void drawLine(int x1, int y1, int x2, int y2, int argbTL, int argbTR) {
-        ShaderUtils.useProgram(ShaderUtils.defaultShader);
-        GLES20.glUniformMatrix4fv(ShaderUtils.defaultShader.u_myPMVMatrix, 1, false, currentSurface().viewMatrix, 0);
-
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-
-        int buffer[] = new int[1];
-        GLES20.glGenBuffers(1, buffer, 0);
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, buffer[0]);
-        //float vertices[] = {x1, y1, x1, y1};
-        float vertices[] = {0, 0, 100, 100};
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.length * 4, FloatBuffer.wrap(vertices), GLES20.GL_STATIC_DRAW);
-        GLES20.glVertexAttribPointer(ShaderUtils.defaultShader.a_myVertex, 2, GLES20.GL_FLOAT, false, 0, 0);
-        GLES20.glEnableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);
-
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
-
-////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tl, ShaderUtils.intToFloatArray(argbTL));
-////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_tr, ShaderUtils.intToFloatArray(argbTR));
-////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_bl, ShaderUtils.intToFloatArray(argbTL));
-////        GLES20.glUniform4fv(ShaderUtils.GRADIENT_PROGRAM_argb_br, ShaderUtils.intToFloatArray(argbTR));
-////
-////        GLES20.glUniform2fv(ShaderUtils.GRADIENT_PROGRAM_resolution, new Float32Array([WINDOW_WIDTH, WINDOW_HEIGHT]));
-//
-//        // Sets the vertex data to this attribute index
-//        int vertBuffer[] = ShaderUtils.glCreateBuffer();
-//        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertBuffer);
-//        int vertices[] = {x1,y1, x1, y1};
-//        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, Float32Array.from(vertices), GLES20.GL_STATIC_DRAW);
-//        GLES20.glVertexAttribPointer(ShaderUtils.VERTEX_ARRAY, 2, GLES20.GL_FLOAT, false, 0, 0);
-//        GLES20.glEnableVertexAttribArray(ShaderUtils.VERTEX_ARRAY);
-//
-//        GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
+    public void drawLine(final int x1, final int y1, final int x2, final int y2, final int argbTL, final int argbTR) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                lineShape.draw(x1, y1, x2, y2, argbTL, argbTR, 1, currentSurface());
+            }
+        });
     }
 
     @Override
@@ -599,23 +601,23 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     void clearUI() {
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
-        ShaderUtils.logGLErrors("before clearUI");
+        OpenGLUtils.logGLErrors("before clearUI");
         GLES20.glClearColor(0, 0, 0, 0);
-        ShaderUtils.logGLErrors("clearUI 0");
+        OpenGLUtils.logGLErrors("clearUI 0");
 
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
-        ShaderUtils.logGLErrors("clearUI 1");
+        OpenGLUtils.logGLErrors("clearUI 1");
         GLES20.glEnable(GL10.GL_DEPTH_TEST);
-        ShaderUtils.logGLErrors("clearUI 2");
+        OpenGLUtils.logGLErrors("clearUI 2");
         GLES20.glEnable(GL10.GL_TEXTURE_2D);
-        ShaderUtils.logGLErrors("clearUI 4");
+        OpenGLUtils.logGLErrors("clearUI 4");
         GLES20.glEnable(GL10.GL_LINE_SMOOTH);
-        ShaderUtils.logGLErrors("clearUI 5");
+        OpenGLUtils.logGLErrors("clearUI 5");
         GLES20.glDepthFunc(GL10.GL_LEQUAL);
-        ShaderUtils.logGLErrors("clearUI 6");
+        OpenGLUtils.logGLErrors("clearUI 6");
         GLES20.glClearDepthf(1.0F);
-        ShaderUtils.logGLErrors("clearUI 7");
+        OpenGLUtils.logGLErrors("clearUI 7");
     }
 
     @Override

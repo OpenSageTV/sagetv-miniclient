@@ -1,10 +1,13 @@
-package sagex.miniclient.android.opengl;
+package sagex.miniclient.android.opengl.shapes;
 
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
+import sagex.miniclient.android.opengl.OpenGLSurface;
+import sagex.miniclient.android.opengl.OpenGLUtils;
 
 public class Triangle {
     /**
@@ -42,7 +45,7 @@ public class Triangle {
     }
 
     public void draw(int topX, int topY, int leftX, int leftY, int rightX, int rightY, int color, OpenGLSurface surface) {
-        ShaderUtils.useProgram(ShaderUtils.defaultShader);
+        OpenGLUtils.useProgram(OpenGLUtils.defaultShader);
 
         // add the coordinates to the FloatBuffer
         vertexBuffer.put(new float[]{
@@ -53,25 +56,25 @@ public class Triangle {
         vertexBuffer.position(0);
 
         // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);
+        GLES20.glEnableVertexAttribArray(OpenGLUtils.defaultShader.a_myVertex);
 
         // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(ShaderUtils.defaultShader.a_myVertex, COORDS_PER_VERTEX,
+        GLES20.glVertexAttribPointer(OpenGLUtils.defaultShader.a_myVertex, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 
         // Set color for drawing the triangle
         // GLES20.glVertexAttrib4fv(ShaderUtils.BASE_PROGRAM_MYCOLOR_Handle, color, 0);
-        GLES20.glUniform4fv(ShaderUtils.defaultShader.u_myColor, 1, ShaderUtils.argbToFloatArray(color), 0);
+        GLES20.glUniform4fv(OpenGLUtils.defaultShader.u_myColor, 1, OpenGLUtils.argbToFloatArray(color), 0);
 
         // Pass the projection and view transformation to the shader
-        GLES20.glUniformMatrix4fv(ShaderUtils.defaultShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
+        GLES20.glUniformMatrix4fv(OpenGLUtils.defaultShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
 
         // Draw the triangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
 
         // Disable vertex array
-        GLES20.glDisableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);
-        ShaderUtils.logGLErrors("Triangle");
+        GLES20.glDisableVertexAttribArray(OpenGLUtils.defaultShader.a_myVertex);
+        OpenGLUtils.logGLErrors("Triangle");
     }
 }

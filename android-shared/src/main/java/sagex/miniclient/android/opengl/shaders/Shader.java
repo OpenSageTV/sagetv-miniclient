@@ -1,4 +1,4 @@
-package sagex.miniclient.android.opengl;
+package sagex.miniclient.android.opengl.shaders;
 
 import android.opengl.GLES20;
 
@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import sagex.miniclient.android.opengl.OpenGLUtils;
 
 public class Shader {
     private static Logger log = LoggerFactory.getLogger(Shader.class);
@@ -33,7 +35,7 @@ public class Shader {
         this.name = name;
     }
 
-    void load() {
+    public void load() {
         this.fragment = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
         this.vertex = compileShader(GLES20.GL_VERTEX_SHADER, vertexSource);
         this.program = createProgram(vertex, fragment);
@@ -97,11 +99,11 @@ public class Shader {
         int programHandle = GLES20.glCreateProgram();
         if (programHandle != 0) {
             GLES20.glAttachShader(programHandle, vtxShader);
-            ShaderUtils.logGLErrors("attach vertex shader");
+            OpenGLUtils.logGLErrors("attach vertex shader");
             GLES20.glAttachShader(programHandle, pxlShader);
-            ShaderUtils.logGLErrors("attach frag shader");
+            OpenGLUtils.logGLErrors("attach frag shader");
             GLES20.glLinkProgram(programHandle);
-            ShaderUtils.logGLErrors("link");
+            OpenGLUtils.logGLErrors("link");
 
             //get linking status
             final int[] linkStatus = new int[1];
@@ -128,8 +130,8 @@ public class Shader {
     }
 
     public void use() {
-        ShaderUtils.logGLErrors(String.format("BEFORE Using Program Shader: %d - %s", program(), name()));
+        OpenGLUtils.logGLErrors(String.format("BEFORE Using Program Shader: %d - %s", program(), name()));
         GLES20.glUseProgram(program());
-        ShaderUtils.logGLErrors(String.format("Using Program Shader: %d - %s", program(), name()));
+        OpenGLUtils.logGLErrors(String.format("Using Program Shader: %d - %s", program(), name()));
     }
 }

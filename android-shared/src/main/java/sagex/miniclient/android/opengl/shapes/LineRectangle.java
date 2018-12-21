@@ -1,4 +1,4 @@
-package sagex.miniclient.android.opengl;
+package sagex.miniclient.android.opengl.shapes;
 
 import android.opengl.GLES20;
 
@@ -7,7 +7,10 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-public class Rectangle {
+import sagex.miniclient.android.opengl.OpenGLSurface;
+import sagex.miniclient.android.opengl.OpenGLUtils;
+
+public class LineRectangle {
 
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
@@ -15,7 +18,7 @@ public class Rectangle {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
 
-    private short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
+    private short drawOrder[] = {0, 1, 2, 3, 0}; // order to draw vertices
 
     static float squareCoords[] = {
             0, 0, 0,   // top left
@@ -27,7 +30,7 @@ public class Rectangle {
     static private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
 
 
-    public Rectangle() {
+    public LineRectangle() {
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
@@ -47,12 +50,12 @@ public class Rectangle {
         drawListBuffer.position(0);
     }
 
-    public void draw(int x1, int y1, int width, int height, int color, OpenGLSurface surface) {
+    public void draw(int x1, int y1, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int thickness, OpenGLSurface surface) {
         // Add program to OpenGL ES environment
-        ShaderUtils.useProgram(ShaderUtils.defaultShader);
+        OpenGLUtils.useProgram(OpenGLUtils.gradientShader);
 
         // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);
+        GLES20.glEnableVertexAttribArray(OpenGLUtils.gradientShader.a_myVertex);
 
         // top/left
         squareCoords[0] = x1;
@@ -78,25 +81,30 @@ public class Rectangle {
         vertexBuffer.position(0);
 
         // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(ShaderUtils.defaultShader.a_myVertex, COORDS_PER_VERTEX,
+        GLES20.glVertexAttribPointer(OpenGLUtils.gradientShader.a_myVertex, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 
-        // Set color for drawing the triangle
-        GLES20.glUniform4fv(ShaderUtils.defaultShader.u_myColor, 1, ShaderUtils.argbToFloatArray(color), 0);
+        // Set colors
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTL, 1, OpenGLUtils.argbToFloatArray(argbTL), 0);
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTR, 1, OpenGLUtils.argbToFloatArray(argbTR), 0);
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBL, 1, OpenGLUtils.argbToFloatArray(argbBL), 0);
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBR, 1, OpenGLUtils.argbToFloatArray(argbBR), 0);
+
+        // set resolution for gradients
+        GLES20.glUniform2fv(OpenGLUtils.gradientShader.u_resolution, 1, new float[]{width, height}, 0);
 
         // Pass the projection and view transformation to the shader
-        GLES20.glUniformMatrix4fv(ShaderUtils.defaultShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
+        GLES20.glUniformMatrix4fv(OpenGLUtils.gradientShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
 
-        // Draw the triangle without drawlist buffer
-        // GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount);
+        GLES20.glLineWidth(thickness);
 
-        // Draw the triangles with a draw list buffer
-        // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length,
+        GLES20.glDrawElements(GLES20.GL_LINE_STRIP, drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         // Disable vertex array
-        GLES20.glDisableVertexAttribArray(ShaderUtils.defaultShader.a_myVertex);
+        GLES20.glDisableVertexAttribArray(OpenGLUtils.gradientShader.a_myVertex);
+
+        GLES20.glLineWidth(1);
     }
 }
