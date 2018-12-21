@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 
 import sagex.miniclient.uibridge.Texture;
 
@@ -92,47 +93,44 @@ public class OpenGLTexture implements Texture {
         bitmap.recycle();
     }
 
-    public void draw(int x, int y, int width, int height, int sx, int sy, int sw, int sh, int blend, OpenGLSurface toSurface, int toSurfaceHandle) {
+    public void draw(int x, int y, int w, int h, int sx, int sy, int sw, int sh, int blend, OpenGLSurface toSurface, int toSurfaceHandle) {
         log.debug("texture draw[{}] on surface {}", texture(), toSurfaceHandle);
         ShaderUtils.useProgram(ShaderUtils.textureShader);
         ShaderUtils.logGLErrors("Texture.draw() useProgram");
         GLES20.glUniformMatrix4fv(ShaderUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
         ShaderUtils.logGLErrors("Texture.draw() matrix");
 
-        //GLES20.glUniform4fv(ShaderUtils.textureShader.u_myColor, 1, ShaderUtils.argbToFloatArray(blend), 0);
-
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_TEXTURE_2D);
 
-        //GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
         ShaderUtils.logGLErrors("Texture.draw() bind texture");
         GLES20.glUniform1i(ShaderUtils.textureShader.u_sampler2d, 0);
 
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        if (height < 0) {
+        if (h < 0) {
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);
-            height *= -1;
+            h *= -1;
         }
 
-        if (width < 0) width *= -1;
+        if (w < 0) w *= -1;
 
-        int pColor[] = {blend, blend, blend, blend, blend};
-        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-        bb.put(pColor);
-        bb.position(0);
-        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 1, GLES20.GL_UNSIGNED_BYTE, true, 4, bb);
-        ShaderUtils.logGLErrors("Texture.draw() colors1");
-        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
-        ShaderUtils.logGLErrors("Texture.draw() colors2");
+//        int pColor[] = {blend, blend, blend, blend, blend};
+//        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+//        bb.put(pColor);
+//        bb.position(0);
+//        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 1, GLES20.GL_UNSIGNED_BYTE, true, 4, bb);
+//        ShaderUtils.logGLErrors("Texture.draw() colors1");
+//        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
+//        ShaderUtils.logGLErrors("Texture.draw() colors2");
 
         int pVertices2[] = {
                 x, y,
-                (x + width), y,
-                (x + width), (y + height),
-                (x + width), (y + height),
-                x, (y + height),
+                (x + w), y,
+                (x + w), (y + h),
+                (x + w), (y + h),
+                x, (y + h),
                 x, y};
         IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
@@ -147,19 +145,16 @@ public class OpenGLTexture implements Texture {
         ShaderUtils.logGLErrors("Texture.draw() verticies2");
 
         float[] data = {
-                (float) sx / (float) width,
-                (float) sy / (float) height,
-                (float) (sx + sw) / (float) width,
-                (float) sy / (float) height,
-                (float) (sx + sw) / (float) width,
-                (float) (sy + sh) / (float) height,
-                (float) (sx + sw) / (float) width,
-                (float) (sy + sh) / (float) height,
-                (float) sx / (float) width,
-                (float) (sy + sh) / (float) height,
-                (float) sx / (float) width,
-                (float) sy / (float) height
+                (float) sx / (float) width, (float) sy / (float) height,
+                (float) (sx + sw) / (float) width, (float) sy / (float) height,
+                (float) (sx + sw) / (float) width, (float) (sy + sh) / (float) height,
+                (float) (sx + sw) / (float) width, (float) (sy + sh) / (float) height,
+                (float) sx / (float) width, (float) (sy + sh) / (float) height,
+                (float) sx / (float) width, (float) sy / (float) height
         };
+
+        log.debug("Texture: Data: {}", Arrays.toString(data));
+
         // Again, a FloatBuffer will be used to pass the values
         FloatBuffer fb = ByteBuffer.allocateDirect(data.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
         fb.put(data);
@@ -174,6 +169,5 @@ public class OpenGLTexture implements Texture {
 
         GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myUV);
         GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
-
     }
 }

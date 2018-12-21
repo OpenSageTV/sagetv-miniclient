@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import sagex.miniclient.util.IOUtil;
+import sagex.miniclient.util.VerboseLogging;
 
 public class ShaderUtils {
     private static Logger log = LoggerFactory.getLogger(ShaderUtils.class);
@@ -74,9 +75,11 @@ public class ShaderUtils {
     }
 
     public static void logGLErrors(String op) {
-        int error;
-        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            log.error("{}: glError: {}; {}", op, error, GLUtils.getEGLErrorString(error));
+        if (VerboseLogging.LOG_GL_ERRORS) {
+            int error;
+            while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+                log.error("{}: glError: {}; {}", op, error, GLUtils.getEGLErrorString(error));
+            }
         }
     }
 }

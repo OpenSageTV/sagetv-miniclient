@@ -55,8 +55,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     int state = STATE_MENU;
 
     // logging stuff
-    boolean logFrameBuffer = true;//VerboseLogging.DETAILED_GFX_TEXTURES;
-    boolean logFrameTime = false;
+    boolean logFrameTime = true;
     boolean logTextureTime = false;
     private boolean logTexture = VerboseLogging.DETAILED_GFX_TEXTURES;
     long longestTextureTime = 0;
@@ -67,7 +66,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     boolean ready = false;
     boolean inFrame=false;
 
-    boolean disableRenderQueue = true;
+    boolean disableRenderQueue = false;
 
     // Current Surface (when surfaces are enabled)
     ImageHolder<? extends OpenGLTexture> currentSurface = null;
@@ -159,11 +158,11 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), 0, mainSurfaceGL, 0);
 
         // draw a partial
-        t.draw(uiSize.width / 2, uiSize.height / 2, 50, 50, 0, 0, 50, 50, 0, mainSurfaceGL, 0);
+        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, 0, mainSurfaceGL, 0);
 
 
         log.debug("* RENDERED BITMAP *");
-        flipBuffer();
+        ((GLSurfaceView) activity.getUIView()).requestRender();
 
         //drawLine(0,0, uiSize.width/2, uiSize.height/2, 0, 0);
 
@@ -366,6 +365,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             @Override
             public void run() {
                 try {
+                    log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
                     img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, (OpenGLSurface) currentSurface.get(), currentSurface.getHandle());
                 } catch (Throwable t) {
                     log.error("Failed to Render Texture {}", handle, t);
@@ -587,9 +587,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public void startFrame() {
-        synchronized (renderQueue) {
-            log.debug("Blocked Start Frame until Render Frame Complete");
-        }
+//        synchronized (renderQueue) {
+//            log.debug("Blocked Start Frame until Render Frame Complete");
+//        }
         frameTime = System.currentTimeMillis();
         totalTextureTime = 0;
         longestTextureTime = 0;
