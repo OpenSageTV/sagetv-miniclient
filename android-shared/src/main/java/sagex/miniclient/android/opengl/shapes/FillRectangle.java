@@ -92,7 +92,9 @@ public class FillRectangle {
         GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBR, 1, OpenGLUtils.argbToFloatArray(argbBR), 0);
 
         // set resolution for gradients
-        GLES20.glUniform2fv(OpenGLUtils.gradientShader.u_resolution, 1, new float[]{width, height}, 0);
+        //GLES20.glUniform2fv(OpenGLUtils.gradientShader.u_resolution, 1, new float[]{width, height}, 0);
+        // not sure why we need to use the surface instead of our h and w, but, using out h,w appears to render black and white
+        GLES20.glUniform2fv(OpenGLUtils.gradientShader.u_resolution, 1, new float[]{surface.width, surface.height}, 0);
 
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(OpenGLUtils.gradientShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);

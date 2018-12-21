@@ -72,7 +72,7 @@ public class OpenGLSurface extends OpenGLTexture {
             throw new RuntimeException("Error creating FBO");
         }
 
-        GLES20.glClearColor(0,0,0,0);
+        GLES20.glClearColor(0, 0, 0, 1);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);

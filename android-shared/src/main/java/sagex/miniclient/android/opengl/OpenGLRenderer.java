@@ -352,6 +352,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!(argbBL == argbBR && argbBL == argbTL && argbBL == argbTR)) {
+                    log.debug("FILLRECT: {},{} {}x{} - TL:{},TR:{} BR:{},BL:{}", x, y, width, height, argbTL, argbTR, argbBR, argbBL);
+                }
                 fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
             }
         });
@@ -633,22 +636,22 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
         OpenGLUtils.logGLErrors("before clearUI");
-        GLES20.glClearColor(0, 0, 0, 0);
+        GLES20.glClearColor(0, 0, 0, 1);
         OpenGLUtils.logGLErrors("clearUI 0");
 
-//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
-        OpenGLUtils.logGLErrors("clearUI 1");
-        GLES20.glEnable(GL10.GL_DEPTH_TEST);
-        OpenGLUtils.logGLErrors("clearUI 2");
-        GLES20.glEnable(GL10.GL_TEXTURE_2D);
-        OpenGLUtils.logGLErrors("clearUI 4");
-        GLES20.glEnable(GL10.GL_LINE_SMOOTH);
-        OpenGLUtils.logGLErrors("clearUI 5");
-        GLES20.glDepthFunc(GL10.GL_LEQUAL);
-        OpenGLUtils.logGLErrors("clearUI 6");
-        GLES20.glClearDepthf(1.0F);
-        OpenGLUtils.logGLErrors("clearUI 7");
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
+//        OpenGLUtils.logGLErrors("clearUI 1");
+//        GLES20.glEnable(GL10.GL_DEPTH_TEST);
+//        OpenGLUtils.logGLErrors("clearUI 2");
+//        GLES20.glEnable(GL10.GL_TEXTURE_2D);
+//        OpenGLUtils.logGLErrors("clearUI 4");
+//        GLES20.glEnable(GL10.GL_LINE_SMOOTH);
+//        OpenGLUtils.logGLErrors("clearUI 5");
+//        GLES20.glDepthFunc(GL10.GL_LEQUAL);
+//        OpenGLUtils.logGLErrors("clearUI 6");
+//        GLES20.glClearDepthf(1.0F);
+//        OpenGLUtils.logGLErrors("clearUI 7");
     }
 
     @Override

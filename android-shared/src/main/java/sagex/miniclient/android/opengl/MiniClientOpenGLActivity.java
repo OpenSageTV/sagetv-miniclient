@@ -9,7 +9,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.support.v4.media.session.MediaButtonReceiver;
@@ -210,8 +209,8 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
 
             miniClientView = new OpenGLSurfaceView(this, mgr);  //initializeForView(mgr, cfg);
 
-            log.debug("Setting Translucent View");
-            GLSurfaceView glView = (GLSurfaceView) miniClientView;
+            // log.debug("Setting Translucent View");
+            // GLSurfaceView glView = (GLSurfaceView) miniClientView;
             // This is needed or else we won't see OSD over video
             //glView.setZOrderOnTop(true);
             // This is needed or else we will not see the video playing behind the OSD

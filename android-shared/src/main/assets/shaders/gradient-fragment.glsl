@@ -17,11 +17,10 @@ void main(void)
 //        gl_FragColor = vec4(colorX,1.0);
 //    }
 
-
-    if (u_argbTR != u_argbTL) {
-        gl_FragColor = mix(u_argbTL, u_argbTR, st.x);
-    } else if (u_argbTL != u_argbBL) {
+    if (u_argbTL == u_argbTR && u_argbBL == u_argbBR) {
         gl_FragColor = mix(u_argbTL, u_argbBL, st.y);
+    } else if(u_argbTL == u_argbBL && u_argbTR == u_argbBR) {
+        gl_FragColor = mix(u_argbTL, u_argbTR, st.x);
     } else {
         gl_FragColor = u_argbTL;
     }
