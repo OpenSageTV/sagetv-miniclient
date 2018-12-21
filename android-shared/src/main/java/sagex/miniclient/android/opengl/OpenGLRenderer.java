@@ -139,7 +139,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         setSurface(mainSurface);
 
-        //clearUI();
         GLES20.glClearColor(0, 1, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
 
@@ -155,20 +154,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         System.out.println("BITMAP: " + b.getWidth());
         OpenGLTexture t = new OpenGLTexture(b.getWidth(), b.getHeight());
         t.set(b, "test");
-        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), 0, mainSurfaceGL, 0);
+        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), ShaderUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL, 0);
 
         // draw a partial
-        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, 0, mainSurfaceGL, 0);
-
+        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, ShaderUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL, 0);
 
         log.debug("* RENDERED BITMAP *");
         ((GLSurfaceView) activity.getUIView()).requestRender();
-
-        //drawLine(0,0, uiSize.width/2, uiSize.height/2, 0, 0);
-
-////        // we just set a green color so that we know something is happening
-//        GLES20.glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
-//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
     }
 
     public void resize(int width, int height) {
@@ -365,7 +357,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             @Override
             public void run() {
                 try {
-                    log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
+                    //log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
                     img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, (OpenGLSurface) currentSurface.get(), currentSurface.getHandle());
                 } catch (Throwable t) {
                     log.error("Failed to Render Texture {}", handle, t);
@@ -587,22 +579,19 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public void startFrame() {
-//        synchronized (renderQueue) {
-//            log.debug("Blocked Start Frame until Render Frame Complete");
-//        }
         frameTime = System.currentTimeMillis();
         totalTextureTime = 0;
         longestTextureTime = 0;
         state = STATE_MENU;
         if (firstFrame) {
-//            invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-//                    log.debug("Start Frame: Setting Main Surface");
-//                    setSurface(mainSurface);
-//                    clearUI();
-//                }
-//            });
+            invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    log.debug("Start Frame: Setting Main Surface");
+                    setSurface(mainSurface);
+                    clearUI();
+                }
+            });
         }
         inFrame=true;
     }
@@ -611,7 +600,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 //        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
         // must be set to 0,0,0,0 or else overlay on video does not work
         ShaderUtils.logGLErrors("before clearUI");
-        GLES20.glClearColor(1, 0, 0, 0);
+        GLES20.glClearColor(0, 0, 0, 0);
         ShaderUtils.logGLErrors("clearUI 0");
 
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
@@ -797,29 +786,5 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     @Override
     public void onDrawFrame(GL10 gl) {
         render();
-
-// this is just for testing static drawing...
-//        GLES20.glViewport(0,0, uiSize.width, uiSize.height);
-//
-//        GLES20.glClearColor(1.0f, 0.0f, 0f, 1.0f);
-//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-//
-//        float viewMatrix[] = new float[16];
-//        Matrix.orthoM(viewMatrix, 0,0, uiSize.width, uiSize.height, 0, 0, 1);
-//        float triangleCoords[] = {   // in counterclockwise order:
-//                uiSize.width/2,  0f, 0.0f, // top
-//                0f, uiSize.height, 0.0f, // bottom left
-//                uiSize.width, uiSize.height, 0.0f  // bottom right
-//        };
-//        Triangle tr=  new Triangle(triangleCoords);
-//        tr.draw(viewMatrix);
-//
-//        Bitmap bmp = BitmapFactory.decodeResource(activity.getContext().getResources(), R.drawable.sage_logo_256);
-//
-//        OpenGLTexture t = new OpenGLTexture(0,0);
-//        t.set(bmp, "sage64");
-//        t.draw(viewMatrix);
-//
-//        System.out.println("Frame Rendered: " + uiSize);
     }
 }

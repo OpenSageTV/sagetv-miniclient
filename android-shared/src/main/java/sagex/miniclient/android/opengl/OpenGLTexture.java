@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Arrays;
 
 import sagex.miniclient.uibridge.Texture;
 
@@ -29,6 +28,8 @@ public class OpenGLTexture implements Texture {
     public int height;
 
     int texture[] = null;
+
+    boolean flip = false;
 
     public OpenGLTexture(int width, int height) {
         this.width = width;
@@ -94,7 +95,7 @@ public class OpenGLTexture implements Texture {
     }
 
     public void draw(int x, int y, int w, int h, int sx, int sy, int sw, int sh, int blend, OpenGLSurface toSurface, int toSurfaceHandle) {
-        log.debug("texture draw[{}] on surface {}", texture(), toSurfaceHandle);
+        //log.debug("texture draw[{}] on surface {}", texture(), toSurfaceHandle);
         ShaderUtils.useProgram(ShaderUtils.textureShader);
         ShaderUtils.logGLErrors("Texture.draw() useProgram");
         GLES20.glUniformMatrix4fv(ShaderUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
@@ -116,14 +117,7 @@ public class OpenGLTexture implements Texture {
 
         if (w < 0) w *= -1;
 
-//        int pColor[] = {blend, blend, blend, blend, blend};
-//        IntBuffer bb = ByteBuffer.allocateDirect(pColor.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-//        bb.put(pColor);
-//        bb.position(0);
-//        GLES20.glVertexAttribPointer(ShaderUtils.textureShader.u_myColor, 1, GLES20.GL_UNSIGNED_BYTE, true, 4, bb);
-//        ShaderUtils.logGLErrors("Texture.draw() colors1");
-//        GLES20.glEnableVertexAttribArray(ShaderUtils.textureShader.u_myColor);
-//        ShaderUtils.logGLErrors("Texture.draw() colors2");
+        GLES20.glUniform4fv(ShaderUtils.defaultShader.u_myColor, 1, ShaderUtils.argbToFloatArray(blend), 0);
 
         int pVertices2[] = {
                 x, y,
@@ -132,6 +126,17 @@ public class OpenGLTexture implements Texture {
                 (x + w), (y + h),
                 x, (y + h),
                 x, y};
+
+        // framebuffers are flipped
+        if (flip) {
+            pVertices2[1] = -1 * pVertices2[1];
+            pVertices2[3] = -1 * pVertices2[3];
+            pVertices2[5] = -1 * pVertices2[5];
+            pVertices2[7] = -1 * pVertices2[7];
+            pVertices2[9] = -1 * pVertices2[9];
+            pVertices2[11] = -1 * pVertices2[11];
+        }
+
         IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
         b.position(0);
@@ -153,7 +158,7 @@ public class OpenGLTexture implements Texture {
                 (float) sx / (float) width, (float) sy / (float) height
         };
 
-        log.debug("Texture: Data: {}", Arrays.toString(data));
+        //log.debug("Texture: Data: {}", Arrays.toString(data));
 
         // Again, a FloatBuffer will be used to pass the values
         FloatBuffer fb = ByteBuffer.allocateDirect(data.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -169,5 +174,9 @@ public class OpenGLTexture implements Texture {
 
         GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myUV);
         GLES20.glDisableVertexAttribArray(ShaderUtils.textureShader.a_myVertex);
+
+        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES20.glDisable(GLES20.GL_TEXTURE_2D);
+
     }
 }

@@ -20,6 +20,7 @@ public class OpenGLSurface extends OpenGLTexture {
         super(w,h);
         this.id = id;
         Matrix.orthoM(viewMatrix, 0, 0, w, h, 0, 0, 1);
+        flip = true;
     }
 
 
