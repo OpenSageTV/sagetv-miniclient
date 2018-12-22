@@ -43,7 +43,6 @@ import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.AspectHelper;
-import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.video.HasVideoInfo;
 import sagex.miniclient.video.VideoInfoResponse;
 
@@ -60,9 +59,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     int state = STATE_MENU;
 
     // logging stuff
-    boolean logFrameTime = true;
+    boolean logFrameTime = false;
     boolean logTextureTime = false;
-    private boolean logTexture = VerboseLogging.DETAILED_GFX_TEXTURES;
+    private boolean logDetails = false;
     long longestTextureTime = 0;
     long totalTextureTime = 0;
     long frameTime = 0;
@@ -245,7 +244,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
             long st = System.currentTimeMillis();
 
-            log.debug("Begin Render Frame {}", frame);
+            if (logDetails)
+                log.debug("Begin Render Frame {}", frame);
 
             try {
                 for (int i=0;i<size;i++) {
@@ -261,8 +261,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             } finally {
                 renderQueue.clear();
             }
-
-            log.debug("End Render Frame {}", frame);
+            if (logDetails)
+                log.debug("End Render Frame {}", frame);
 
             long et = System.currentTimeMillis();
             if (logFrameTime) {
@@ -357,12 +357,12 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public void drawOval(int x, int y, int width, int height, int thickness, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+        log.warn("Draw Oval not supported");
     }
 
     @Override
     public void fillOval(int x, int y, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int clipX, int clipY, int clipW, int clipH) {
-
+        log.warn("Fill Oval not supported");
     }
 
     @Override
@@ -416,7 +416,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public ImageHolder<OpenGLTexture> loadImage(int width, int height) {
-        log.debug("load image {}x{}", width, height);
+        if (logDetails)
+            log.debug("load image {}x{}", width, height);
         final OpenGLTexture t = new OpenGLTexture(width, height);
         invokeLater(new Runnable() {
             @Override
@@ -450,7 +451,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             @Override
             public void run() {
                 /*if (logFrameBuffer)*/
-                log.debug("createSurface["+handle+"]: Creating Framebuffer: " + width + "x" + height);
+                if (logDetails)
+                    log.debug("createSurface[" + handle + "]: Creating Framebuffer: " + width + "x" + height);
                 OpenGLSurface.get(h.get()).createSurface();
                 setSurface(currentSurface);
             }
@@ -466,7 +468,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         OpenGLSurface surface = OpenGLSurface.get(t.get());
         surface.bind();
         currentSurface=t;
-        log.debug("Current Surface is now: {}", currentSurface.getHandle());
+        if (logDetails)
+            log.debug("Current Surface is now: {}", currentSurface.getHandle());
     }
 
     @Override
@@ -685,7 +688,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public void setVideoBounds(sagex.miniclient.uibridge.Rectangle o, sagex.miniclient.uibridge.Rectangle o1) {
-        log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
+        if (logDetails)
+            log.debug("Set Video Bounds: SRC:{}, DEST:{}", o, o1);
         state = STATE_VIDEO;
     }
 

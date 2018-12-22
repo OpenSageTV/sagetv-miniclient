@@ -69,7 +69,7 @@ public class OpenGLTexture implements Texture {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
-        log.debug("New Texture[{}]: {} x {}", texture(), this.width, this.height);
+        //log.debug("New Texture[{}]: {} x {}", texture(), this.width, this.height);
 
         OpenGLUtils.logGLErrors("createTexture()");
     }
