@@ -168,5 +168,6 @@ public interface PrefStore {
          * Client ID
          */
         String client_id = "clientid";
+        String use_opengl_ui = "use_opengl_ui";
     }
 }

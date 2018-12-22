@@ -5,11 +5,15 @@ import android.opengl.GLES20;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sagex.miniclient.uibridge.Dimension;
+
 public class MainOpenGLSurface extends OpenGLSurface {
     private static Logger log = LoggerFactory.getLogger(MainOpenGLSurface.class);
+    private Dimension fullScreen;
 
-    public MainOpenGLSurface(int w, int h) {
-        super(0, w, h);
+    public MainOpenGLSurface(Dimension uiSize, Dimension fullScreenSize) {
+        super(0, uiSize.width, uiSize.height);
+        this.fullScreen = fullScreenSize;
     }
 
     public int buffer() {
@@ -42,7 +46,7 @@ public class MainOpenGLSurface extends OpenGLSurface {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
-        GLES20.glViewport(0, 0, width, height);
+        GLES20.glViewport(0, 0, fullScreen.width, fullScreen.height);
         this.bound = true;
     }
 

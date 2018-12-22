@@ -65,8 +65,11 @@ public class ServerInfoUtil {
             MiniclientApplication.get().getClient().getServers().setLastConnectedServer(si);
 
             // connect to server
-            //Intent i = new Intent(ctx, MiniClientGDXActivity.class);
-            Intent i = new Intent(ctx, MiniClientOpenGLActivity.class);
+            Class start = MiniClientGDXActivity.class;
+            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.use_opengl_ui, true)) {
+                start = MiniClientOpenGLActivity.class;
+            }
+            Intent i = new Intent(ctx, start);
             i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
 
             if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {

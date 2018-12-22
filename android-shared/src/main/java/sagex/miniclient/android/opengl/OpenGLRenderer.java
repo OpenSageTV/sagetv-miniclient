@@ -124,9 +124,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         fullScreenSize.updateFrom(getMaxScreenSize());
         lastResize.updateFrom(fullScreenSize);
 
-        // we are using static 1280x720
-        //uiSize.setSize(1280, 720);
-        //lastScreenSize.updateFrom(uiSize);
+        if (useNativeResolution) {
+            uiSize.updateFrom(fullScreenSize);
+        }
 
         scale.setScale(uiSize, fullScreenSize);
 
@@ -140,13 +140,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         }
 
         // create the main surface
-        OpenGLSurface mainSurfaceGL = new MainOpenGLSurface(uiSize.width, uiSize.height);
+        OpenGLSurface mainSurfaceGL = new MainOpenGLSurface(uiSize, fullScreenSize);
         mainSurfaceGL.createSurface();
-        mainSurface = new ImageHolder<>(mainSurfaceGL, uiSize.width, uiSize.height);
+        mainSurface = new ImageHolder<>(mainSurfaceGL, mainSurfaceGL.width, mainSurfaceGL.height);
         mainSurface.setHandle(0);
         setSurface(mainSurface);
 
-        debugShapes(mainSurfaceGL);
+        //debugShapes(mainSurfaceGL);
     }
 
     private void debugShapes(OpenGLSurface mainSurfaceGL) {
@@ -205,6 +205,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             return;
         }
 
+        log.debug("Got a Canvas Resize Event: {}x{}", width, height);
         fullScreenSize.update(width, height);
         this.scale.setScale(uiSize, fullScreenSize);
 
@@ -628,13 +629,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     @Override
     public Dimension getScreenSize() {
-        if (!useNativeResolution) {
-            Dimension real = getMaxScreenSize();
-            return new Dimension(real.width / 2, real.height / 2);
-        } else {
-            Dimension newSize = new Dimension(getMaxScreenSize());
-            return newSize;
-        }
+        Dimension newSize = new Dimension(getMaxScreenSize());
+        return newSize;
     }
 
     @Override
