@@ -20,7 +20,7 @@ import sagex.miniclient.util.VerboseLogging;
 public class OpenGLUtils {
     private static Logger log = LoggerFactory.getLogger(OpenGLUtils.class);
 
-    static boolean initialized = false;
+    //static boolean initialized = false;
 
     public static Shader CURRENT_SHADER = null;
 
@@ -29,15 +29,15 @@ public class OpenGLUtils {
     public static TextureShader textureShader = null;
 
     public static void loadShaders(Context context) throws IOException {
-        if (!initialized) {
-            initialized = true;
+//        if (!initialized) {
+//            initialized = true;
             defaultShader = new DefaultShader(loadShaderSource(context, "default-fragment"), loadShaderSource(context, "default-vertex"));
             defaultShader.load();
             gradientShader = new GradientShader(loadShaderSource(context, "gradient-fragment"), loadShaderSource(context, "gradient-vertex"));
             gradientShader.load();
             textureShader = new TextureShader(loadShaderSource(context, "texture-fragment"), loadShaderSource(context, "texture-vertex"));
             textureShader.load();
-        }
+//        }
     }
 
     private static String loadShaderSource(Context context, String basename) throws IOException {

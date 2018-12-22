@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -479,36 +481,19 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public ImageHolder<OpenGLTexture> readImage(final File file) throws Exception {
-        long st = System.currentTimeMillis();
-
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        options.inDither=true;
-        //options.inDensity=32;
-        //options.inTargetDensity=32;
-        options.inPurgeable=true;
-
-        // TODO: we need to do a smarter decode on the image stream.  OpenGL cannot load images > 2048 pixels
-        final Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-        //bitmap.setHasAlpha(true);
-        //bitmap.setDensity(32);
-
-        //bitmap.
-
-        long time = System.currentTimeMillis() - st;
-        totalTextureTime += time;
-        longestTextureTime = Math.max(time, longestTextureTime);
-
-        final OpenGLTexture t = new OpenGLTexture(bitmap.getWidth(), bitmap.getHeight());
-
-        invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                t.set(bitmap, file.getName());
+    public ImageHolder<OpenGLTexture> readImage(File file) throws Exception {
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            try {
+                return readImage(fis);
+            } finally {
+                fis.close();
             }
-        });
-        return new ImageHolder<>(t, t.width, t.height);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override
@@ -516,10 +501,19 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         long st = System.currentTimeMillis();
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-        // TODO: we need to do a smarter decode on the image stream.  OpenGL cannot load images > 2048 pixels
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // this appears to work better since Android O (documentation says it's prefferred
+            // for bitmaps that are only used to render to the screen (immutable)
+            options.inPreferredConfig = Bitmap.Config.HARDWARE;
+        } else {
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        }
+        options.inDither = true;
+        options.inDensity = 32;
+        options.inTargetDensity = 32;
+        options.inPurgeable = true;
         final Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
+
 
         long time = System.currentTimeMillis() - st;
         totalTextureTime += time;
@@ -530,7 +524,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                t.set(bitmap, "stream");
+                t.set(bitmap, "");
             }
         });
         return new ImageHolder<>(t, t.width, t.height);
