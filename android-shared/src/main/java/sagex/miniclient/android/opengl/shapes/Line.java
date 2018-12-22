@@ -76,7 +76,9 @@ public class Line {
 
         // Set colors
         GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTL, 1, OpenGLUtils.argbToFloatArray(argbTL), 0);
-        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTR, 1, OpenGLUtils.argbToFloatArray(argbTR), 0);
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTR, 1, OpenGLUtils.argbToFloatArray(argbTL), 0);
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBR, 1, OpenGLUtils.argbToFloatArray(argbTR), 0);
+        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBL, 1, OpenGLUtils.argbToFloatArray(argbTR), 0);
 
         // set resolution for gradients
         GLES20.glUniform2fv(OpenGLUtils.gradientShader.u_resolution, 1, new float[]{Math.abs(x2 - x1), Math.abs(y2 - y1)}, 0);
