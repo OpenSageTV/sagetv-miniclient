@@ -31,24 +31,18 @@ public class MainOpenGLSurface extends OpenGLSurface {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
-        GLES20.glClearColor(0, 0, 0, 1);
+        GLES20.glClearColor(0, 0, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         return this;
     }
 
     public void bind() {
-        log.debug("Binding MAIN Framebuffer Surface: {}, {}x{}", buffer(), width, height);
-
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
-        OpenGLUtils.logGLErrors("Main ViewPort RENDERBUFFER");
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-        OpenGLUtils.logGLErrors("Main ViewPort TEXTURE");
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-        OpenGLUtils.logGLErrors("Main ViewPort Bind Framebuffer");
 
         GLES20.glViewport(0, 0, width, height);
-        OpenGLUtils.logGLErrors("Main ViewPort Bind");
         this.bound = true;
     }
 
