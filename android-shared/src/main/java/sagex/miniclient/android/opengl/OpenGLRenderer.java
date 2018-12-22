@@ -147,7 +147,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         setSurface(mainSurface);
 
         debugShapes(mainSurfaceGL);
-
     }
 
     private void debugShapes(OpenGLSurface mainSurfaceGL) {
@@ -236,7 +235,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             if (size == 0) return;
 
             if (disableRenderQueue) {
-                log.warn("********* RENDER QUEUE DISABLED *********");
+                log.warn("********* RENDER QUEUE DISABLED for TESTING *********");
                 renderQueue.clear();
                 return;
             }
@@ -262,44 +261,11 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
             log.debug("End Render Frame {}", frame);
 
-            //glFlipBuffer();
-
             long et = System.currentTimeMillis();
             if (logFrameTime) {
                 log.debug("RENDER: Time: " + (et - st) + "ms; Ops: " + size);
             }
         }
-    }
-
-//    private void glFlipBuffer() {
-//        log.debug("begin render frame");
-//
-//        OpenGLSurface main = OpenGLSurface.get(mainSurface.get());
-//        main.unbind();
-//
-//        // bind to main UI
-//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-//        GLES20.glViewport(0,0, uiSize.width, uiSize.height);
-//
-//        // render this surface to the main UI
-//        main.draw();
-//
-//        log.debug("end render frame");
-//    }
-
-//    private Color getColor(int color) {
-//        if (lastColor != null && color == lastColorInt) return lastColor;
-//        lastColorInt = color;
-//        lastColor = new Color(((color >> 16) & 0xFF) / 255f, ((color >> 8) & 0xFF) / 255f, ((color) & 0xFF) / 255f, ((color >> 24) & 0xFF) / 255f);
-//        return lastColor;
-//    }
-
-    float Y(int y, int height) {
-        return uiSize.getHeight() - y - height;
-    }
-
-    float Y(int y) {
-        return uiSize.getHeight() - y;
     }
 
     @Override
@@ -367,9 +333,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (!(argbBL == argbBR && argbBL == argbTL && argbBL == argbTR)) {
-                    log.debug("FILLRECT: {},{} {}x{} - TL:{},TR:{} BR:{},BL:{}", x, y, width, height, argbTL, argbTR, argbBR, argbBL);
-                }
+//                if (!(argbBL == argbBR && argbBL == argbTL && argbBL == argbTR)) {
+//                    log.debug("FILLRECT: {},{} {}x{} - TL:{},TR:{} BR:{},BL:{}", x, y, width, height, argbTL, argbTR, argbBR, argbBL);
+//                }
                 fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
             }
         });
@@ -381,13 +347,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         invokeLater(new Runnable() {
             @Override
             public void run() {
-//                GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
-//                // not sure if we need to flip
-//                GLES20.glScissor(x, (int)Y(y, height), width, height);
-//                //GLES20.glScissor(x, y, width, height);
-//                //Gdx.gl20.glClearColor(0,0,0,0);
-//                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-//                GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
                 fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
             }
         });
@@ -429,7 +388,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             @Override
             public void run() {
                 try {
-                    log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
+                    //log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
                     img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, currentSurface());
                 } catch (Throwable t) {
                     log.error("Failed to Render Texture {}", handle, t);
@@ -499,17 +458,6 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     void setSurface(ImageHolder<? extends OpenGLTexture> t) {
         assert t != null;
         assert t.get() != null;
-        // we are the current surface
-//        if (currentSurface!=null && (t == currentSurface || t.getHandle() == currentSurface.getHandle())) {
-//            if (logFrameBuffer) log.debug("Setting Surface to our self: {}", t.getHandle());
-//            return;
-//        }
-
-        // now we can unbind the fb..
-//        if (currentSurface != null) {
-//            System.out.println("Unbinding Surface: " + currentSurface.getHandle());
-//            OpenGLSurface.get(currentSurface.get()).unbind();
-//        }
 
         // bind it (is, SetTargetSurface) and set it up
         OpenGLSurface surface = OpenGLSurface.get(t.get());
@@ -633,40 +581,17 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
                 @Override
                 public void run() {
                     log.debug("Start Frame: Setting Main Surface");
-                    //setSurface(mainSurface);
+                    setSurface(mainSurface);
                     clearUI();
                 }
             });
         }
-//        invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                clearUI();
-//            }
-//        });
         inFrame=true;
     }
 
     void clearUI() {
-//        Gdx.gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-        // must be set to 0,0,0,0 or else overlay on video does not work
-        OpenGLUtils.logGLErrors("before clearUI");
-        GLES20.glClearColor(0, 0, 0, 1);
-        OpenGLUtils.logGLErrors("clearUI 0");
-
+        GLES20.glClearColor(0, 0, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
-//        OpenGLUtils.logGLErrors("clearUI 1");
-//        GLES20.glEnable(GL10.GL_DEPTH_TEST);
-//        OpenGLUtils.logGLErrors("clearUI 2");
-//        GLES20.glEnable(GL10.GL_TEXTURE_2D);
-//        OpenGLUtils.logGLErrors("clearUI 4");
-//        GLES20.glEnable(GL10.GL_LINE_SMOOTH);
-//        OpenGLUtils.logGLErrors("clearUI 5");
-//        GLES20.glDepthFunc(GL10.GL_LEQUAL);
-//        OpenGLUtils.logGLErrors("clearUI 6");
-//        GLES20.glClearDepthf(1.0F);
-//        OpenGLUtils.logGLErrors("clearUI 7");
     }
 
     @Override

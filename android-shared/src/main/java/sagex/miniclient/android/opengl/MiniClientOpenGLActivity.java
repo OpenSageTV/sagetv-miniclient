@@ -194,28 +194,11 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
             errorCause = (TextView) findViewById(R.id.errorCause);
             errorContainer = (ViewGroup) findViewById(R.id.errorContainer);
 
-            //AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
-            //cfg.useGL20 = false;
-            // we need to change the default pixel format - since it does not include an alpha channel
-            // we need the alpha channel so the camera preview will be seen behind the GL scene
-            //cfg.r = 8;
-            //cfg.g = 8;
-            //cfg.b = 8;
-            //cfg.a = 8;
-
             client = MiniclientApplication.get().getClient();
 
             mgr = new OpenGLRenderer(this, client);
 
             miniClientView = new OpenGLSurfaceView(this, mgr);  //initializeForView(mgr, cfg);
-
-            // log.debug("Setting Translucent View");
-            // GLSurfaceView glView = (GLSurfaceView) miniClientView;
-            // This is needed or else we won't see OSD over video
-            //glView.setZOrderOnTop(true);
-            // This is needed or else we will not see the video playing behind the OSD
-            //glView.getHolder().setFormat(PixelFormat.RGBA_8888);
-            //glView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
             miniClientView.setFocusable(true);
             miniClientView.setFocusableInTouchMode(true);
@@ -227,9 +210,7 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
             miniClientView.setOnGenericMotionListener(null);
             miniClientView.setOnHoverListener(null);
             miniClientView.setOnTouchListener(null);
-            //miniClientView.setBackgroundColor(Color.TRANSPARENT);
             uiFrameHolder.addView(miniClientView);
-            //uiFrameHolder.setBackgroundColor(Color.TRANSPARENT);
             miniClientView.requestFocus();
 
             ServerInfo si = (ServerInfo) getIntent().getSerializableExtra(ARG_SERVER_INFO);

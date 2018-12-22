@@ -127,16 +127,6 @@ public class OpenGLTexture implements Texture {
                 x, (y + h),
                 x, y};
 
-        // framebuffers are flipped
-//        if (flip) {
-//            pVertices2[1] = -y;
-//            pVertices2[3] = -y;
-//            pVertices2[5] = (-y+h);
-//            pVertices2[7] = (-y+h);
-//            pVertices2[9] = (-y+h);
-//            pVertices2[11] = -y;
-//        }
-
         IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
         b.position(0);
@@ -186,6 +176,5 @@ public class OpenGLTexture implements Texture {
 
         GLES20.glDisable(GLES20.GL_BLEND);
         GLES20.glDisable(GLES20.GL_TEXTURE_2D);
-
     }
 }

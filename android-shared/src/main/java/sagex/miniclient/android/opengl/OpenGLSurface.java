@@ -66,7 +66,7 @@ public class OpenGLSurface extends OpenGLTexture {
             throw new RuntimeException("Error creating FBO");
         }
 
-        GLES20.glClearColor(0, 0, 0, 1);
+        GLES20.glClearColor(0, 0, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
@@ -81,22 +81,16 @@ public class OpenGLSurface extends OpenGLTexture {
     }
 
     public void bind() {
-        log.debug("Binding Framebuffer Surface: ({}), {}x{}", id, width, height);
-
+        //log.debug("Binding Framebuffer Surface: ({}), {}x{}", id, width, height);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
-        OpenGLUtils.logGLErrors("Surface.bind()");
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0);
-        OpenGLUtils.logGLErrors("Surface.bind()");
         int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
             log.debug("Framebuffer Did Not Bind. Status: {}", status);
-
             throw new RuntimeException("Error creating FBO");
         }
 
         GLES20.glViewport(0, 0, width, height);
-
-        OpenGLUtils.logGLErrors("Surface.bind()");
         bound=true;
     }
 
