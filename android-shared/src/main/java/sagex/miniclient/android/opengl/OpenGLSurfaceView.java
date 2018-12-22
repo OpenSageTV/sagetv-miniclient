@@ -8,6 +8,9 @@ public class OpenGLSurfaceView extends GLSurfaceView {
     public OpenGLSurfaceView(Context context, OpenGLRenderer renderer) {
         super(context);
 
+        renderer.setView(this);
+        //setDebugFlags(GLSurfaceView.DEBUG_CHECK_GL_ERROR | GLSurfaceView.DEBUG_LOG_GL_CALLS);
+
         // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2);
         getHolder().setFormat(PixelFormat.TRANSLUCENT);

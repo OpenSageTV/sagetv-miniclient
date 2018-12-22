@@ -105,6 +105,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     FillRectangle fillRectShape = new FillRectangle();
     LineRectangle lineRectShape = new LineRectangle();
     Line lineShape = new Line();
+    private OpenGLSurfaceView glView;
 
     public OpenGLRenderer(AndroidUIController parent, MiniClient client) {
         this.activity = parent;
@@ -174,6 +175,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
         Bitmap b = BitmapFactory.decodeResource(activity.getContext().getResources(), R.drawable.sage_logo_256);
         System.out.println("BITMAP: " + b.getWidth());
+
         OpenGLTexture t = new OpenGLTexture(b.getWidth(), b.getHeight());
         t.set(b, "test");
         t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
@@ -181,6 +183,19 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         // draw a partial
         t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
 
+
+        OpenGLSurface s = new OpenGLSurface(0, 100, 100);
+        s.createSurface();
+        s.bind();
+        GLES20.glClearColor(1, 0, 0, 255);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        int c1 = OpenGLUtils.RGBA_to_ARGB(0, 0, 255, 255);
+        lineShape.draw(0, 0, 100, 100, c1, c1, 1, s);
+
+        mainSurfaceGL.bind();
+
+        s.draw(0, 0, s.width, s.height, 0, 0, s.width, s.width, OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
+        lineShape.draw(0, 100, 100, 200, c1, c1, 3, mainSurfaceGL);
         log.debug("* RENDERED BITMAP *");
         ((GLSurfaceView) activity.getUIView()).requestRender();
     }
@@ -414,7 +429,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             @Override
             public void run() {
                 try {
-                    //log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
+                    log.debug("{},{},{},{} => {},{},{},{}", x, y, width, height, srcx, srcy, srcwidth, srcheight);
                     img.get().draw(x, y, width, height, srcx, srcy, srcwidth, srcheight, blend, currentSurface());
                 } catch (Throwable t) {
                     log.error("Failed to Render Texture {}", handle, t);
@@ -475,7 +490,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
                 /*if (logFrameBuffer)*/
                 log.debug("createSurface["+handle+"]: Creating Framebuffer: " + width + "x" + height);
                 OpenGLSurface.get(h.get()).createSurface();
-                setSurface(h);
+                setSurface(currentSurface);
             }
         });
         return h;
@@ -500,7 +515,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         OpenGLSurface surface = OpenGLSurface.get(t.get());
         surface.bind();
         currentSurface=t;
-        log.debug("Set Surface: {}", currentSurface.getHandle());
+        log.debug("Current Surface is now: {}", currentSurface.getHandle());
     }
 
     @Override
@@ -595,7 +610,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         }
 
         // request a render frame
-        ((GLSurfaceView) activity.getUIView()).requestRender();
+        glView.requestRender();
 
         if (logFrameTime) {
             log.debug("FRAME: " + (frame) + "; Time: " + (System.currentTimeMillis() - frameTime) + "ms");
@@ -618,7 +633,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
                 @Override
                 public void run() {
                     log.debug("Start Frame: Setting Main Surface");
-                    setSurface(mainSurface);
+                    //setSurface(mainSurface);
                     clearUI();
                 }
             });
@@ -822,5 +837,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     @Override
     public void onDrawFrame(GL10 gl) {
         render();
+    }
+
+    public void setView(OpenGLSurfaceView openGLSurfaceView) {
+        this.glView = openGLSurfaceView;
     }
 }

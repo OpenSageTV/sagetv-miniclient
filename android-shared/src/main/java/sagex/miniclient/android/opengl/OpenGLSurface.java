@@ -12,7 +12,6 @@ public class OpenGLSurface extends OpenGLTexture {
 
     public float[] viewMatrix = new float[16];
     public int[] buffer = null;
-    public int[] renderBuffer = null;
     boolean bound=false;
     int id;
 
@@ -45,25 +44,20 @@ public class OpenGLSurface extends OpenGLTexture {
         buffer = new int[1];
         GLES20.glGenFramebuffers(1, buffer, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer[0]);
-
-        //depth renderbuffer
-        renderBuffer = new int[1];
-        GLES20.glGenRenderbuffers(1, renderBuffer, 0);
-        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, renderBuffer[0]);
-        GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER, GLES20.GL_DEPTH_COMPONENT16, width, height);
-
+        OpenGLUtils.logGLErrors("Surface.bind()");
 
         //texture
         texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+        OpenGLUtils.logGLErrors("Surface.bind()");
 
         GLES20.glFramebufferTexture2D( GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0 );
-
-        GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_DEPTH_ATTACHMENT, GLES20.GL_RENDERBUFFER, renderBuffer[0]);
+        OpenGLUtils.logGLErrors("Surface.bind()");
 
         int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
@@ -90,6 +84,9 @@ public class OpenGLSurface extends OpenGLTexture {
         log.debug("Binding Framebuffer Surface: ({}), {}x{}", id, width, height);
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
+        OpenGLUtils.logGLErrors("Surface.bind()");
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0);
+        OpenGLUtils.logGLErrors("Surface.bind()");
         int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
             log.debug("Framebuffer Did Not Bind. Status: {}", status);

@@ -128,14 +128,14 @@ public class OpenGLTexture implements Texture {
                 x, y};
 
         // framebuffers are flipped
-        if (flip) {
-            pVertices2[1] = -1 * pVertices2[1];
-            pVertices2[3] = -1 * pVertices2[3];
-            pVertices2[5] = -1 * pVertices2[5];
-            pVertices2[7] = -1 * pVertices2[7];
-            pVertices2[9] = -1 * pVertices2[9];
-            pVertices2[11] = -1 * pVertices2[11];
-        }
+//        if (flip) {
+//            pVertices2[1] = -y;
+//            pVertices2[3] = -y;
+//            pVertices2[5] = (-y+h);
+//            pVertices2[7] = (-y+h);
+//            pVertices2[9] = (-y+h);
+//            pVertices2[11] = -y;
+//        }
 
         IntBuffer b = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
         b.put(pVertices2);
@@ -157,6 +157,15 @@ public class OpenGLTexture implements Texture {
                 (float) sx / (float) width, (float) (sy + sh) / (float) height,
                 (float) sx / (float) width, (float) sy / (float) height
         };
+
+        if (flip) {
+            data[1] = -1f * data[1];
+            data[3] = -1f * data[3];
+            data[5] = -1f * data[5];
+            data[7] = -1f * data[7];
+            data[9] = -1f * data[9];
+            data[11] = -1f * data[11];
+        }
 
         //log.debug("Texture: Data: {}", Arrays.toString(data));
 
