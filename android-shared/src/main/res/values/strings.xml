@@ -97,6 +97,12 @@
     <string name="title_activity_connecting">ConnectingActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+
     <string name="use_opengl_ui_title">Use OpenGL UI</string>
     <string name="use_opengl_ui_summary">OpenGL UI is a new version of the UI that should perform better</string>
+
+    <string name="key_repeat_ms_title">Key Repeat Speed (ms)</string>
+    <string name="key_repeat_ms_summary">How long, in Milliseconds, each key will repeat when held</string>
+    <string name="key_repeat_delay_ms_summary">How long, in Milliseconds, a key is held before it will start repeating</string>
+    <string name="key_repeat_delay_ms_title">Key Repeat Delay (ms)</string>
 </resources>

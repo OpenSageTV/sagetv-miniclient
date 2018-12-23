@@ -15,15 +15,15 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 import tv.danmaku.ijk.media.player.misc.IjkTrackInfo;
 
+import static sagex.miniclient.util.Utils.toHHMMSS;
+
 /**
  * Created by seans on 06/10/15.
  */
 public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource> {
     long preSeekPos = -1;
-    long playerGetTimeOffset = -1;
-    long lastTime = 0;
+    long resumeTimeOffset = -1;
     boolean resumeMode = false;
-    long lastGetTime = 0;
     int initialAudioStreamPos = -1;
     int initialTextStreamPos = -1;
 
@@ -32,11 +32,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     /**
-     * IJK's getMediaTime() is a little quirky for PS/TS streams.  Basically, when you start
-     * from 0, then seeking works fine.  But, when you resume from some other time, the
-     * players internal clock is reset to 0.  So, the stream plays at the right position, but
-     * the timescale is reset to 0.  For that reason, when pushMode is enabled, you can follow
-     * the logic to see what has to happen to ensure the correct media time.
      *
      * @param serverStartTime
      * @return
@@ -45,63 +40,52 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     public long getPlayerMediaTimeMillis(long serverStartTime) {
         long time = player.getCurrentPosition();
 
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-            if (System.currentTimeMillis() - lastGetTime > 1000) {
-                lastGetTime = System.currentTimeMillis();
-                if (time + playerGetTimeOffset > PTS_ROLLOVER) {
-                    log.debug("IJK: getMediaTime(): Tick Rollver; serverStart: {}, time: {}, real: {}", serverStartTime, time, time + playerGetTimeOffset - PTS_ROLLOVER);
-                } else {
-                    log.debug("IJK: getMediaTime(): Tick; serverStart: {}, time: {}", serverStartTime, time);
-                }
-            }
-        }
-
         if (pushMode) {
-            if (playerGetTimeOffset < 0) {
-                // initial start/resume time that IJK will use as it's time base
-                log.debug("IJK: getMediaTime(): Setting initial player offset {}", serverStartTime);
-                playerGetTimeOffset = serverStartTime;
+            // we haven't determined the "resume" time yet
+            if (resumeTimeOffset < 0) {
                 if (serverStartTime < 500) {
                     // this is start from beginning
                     resumeMode = false;
-                    playerGetTimeOffset = 0;
+                    resumeTimeOffset = 0;
                 } else {
-                    log.debug("IJK: getMediaTime(): RESUME from {}", serverStartTime);
+                    // IJK's getMediaTime() is a little quirky for PS/TS streams.  Basically, when you start
+                    // from 0, then seeking works fine.  But, when you resume from some other time, the
+                    // players internal clock is reset to 0.  So, the stream plays at the right position, but
+                    // the timescale is reset to 0.  For that reason, when pushMode is enabled, you can follow
+                    // the logic to see what has to happen to ensure the correct media time.
                     resumeMode = true;
+                    resumeTimeOffset = serverStartTime;
+                    log.debug("IJK: getMediaTime(): RESUME from {}", resumeTimeOffset);
                 }
             }
 
             if (time < 0) {
-                // push mode seeking, we are adjusting
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                    log.debug("IJK: getMediaTime(): seeking/adjusting... {}, serverTime: {}", time, serverStartTime);
-                }
-                lastTime = time;
+                // player is adjusting, after a push/seek.
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    log.debug("IJK: getPlayerMediaTimeMillis(): player adjusting using 0 but time was {}", toHHMMSS(time, true));
                 return time;
             }
 
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                // if the last time <0 and we now have a time, then the seek adjusted
-                if (lastTime < 0) {
-                    log.debug("IJK: getMediaTime(): After Seek;  off:{}, time: {}, startStart: {}", playerGetTimeOffset, time, serverStartTime);
+            if (resumeMode) {
+                // when in resume mode, you go back before the start of the resume, player time
+                // seems to do a PTS rollover of sorts
+                long realTime = time;
+                time = time + resumeTimeOffset;
+                if (time > PTS_ROLLOVER) {
+                    // need to adjust the time
+                    time = time - PTS_ROLLOVER;
+                }
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, player time: {}, total: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(realTime, true), toHHMMSS(time, true));
+                }
+            } else {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    log.debug("IJK: getPlayerMediaTimeMillis(): time: {}", toHHMMSS(time, true));
                 }
             }
-
-            // when in resume mode, you go back before the start of the resume, player time
-            // seems to do a PTS rollover of sorts
-            if (resumeMode && time + playerGetTimeOffset > PTS_ROLLOVER) {
-                // need to adjust the time
-                time = time - PTS_ROLLOVER; // ofset will be added at the end
-            }
-
-            lastTime = time;
         }
 
-        // return the time adjusted by the player's time offset
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-            log.debug("IJK: getMediaTime(): Time: {}", time + ((pushMode) ? playerGetTimeOffset : 0));
-        }
-        return time + ((pushMode) ? playerGetTimeOffset : 0);
+        return time;
     }
 
     @Override
@@ -136,7 +120,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         if (player != null) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("Flush Will force a seek to clear buffers");
-            player.seekTo(Long.MAX_VALUE);
+            seekToImpl(Long.MAX_VALUE);
         }
     }
 
@@ -152,10 +136,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
-        lastTime = -1;
-        playerGetTimeOffset = -1;
+        resumeTimeOffset = -1;
         resumeMode = false;
-        lastGetTime = 0;
         initialAudioStreamPos = -1;
         releasePlayer();
         try {
@@ -233,6 +215,13 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             });
 
+            player.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
+                @Override
+                public void onSeekComplete(IMediaPlayer iMediaPlayer) {
+                    seekPending = false;
+                }
+            });
+
             player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(IMediaPlayer mp) {
@@ -243,7 +232,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                         if (preSeekPos != -1) {
                             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                                 log.debug("Resuming At Position: {}", preSeekPos);
-                            player.seekTo(preSeekPos);
+                            seekToImpl(preSeekPos);
                             preSeekPos = -1;
                         } else {
                             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
@@ -276,6 +265,11 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
     }
 
+    protected void seekToImpl(long timeInMillis) {
+        seekPending = true;
+        player.seekTo(timeInMillis);
+    }
+
     @Override
     public void seek(long timeInMS) {
         super.seek(timeInMS);
@@ -292,7 +286,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     log.debug("Immediate Seek {}", timeInMS);
                 }
-                player.seekTo(timeInMS);
+                seekToImpl(timeInMS);
             } else {
                 log.info("We Missed a Seek for {}: player.isPlaying {}; State: {}; playerReader: {}", timeInMS, player.isPlaying(), state, playerReady);
             }

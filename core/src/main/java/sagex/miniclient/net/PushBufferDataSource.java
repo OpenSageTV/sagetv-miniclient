@@ -171,8 +171,16 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
         }
         if (len > 0) {
             if (eos) {
-                log.warn("We are getting data, even after EOS has been set");
-                return;
+                log.warn("We are getting data, even after EOS has been set.  Resetting EOS");
+                if (state != State.Closed && out != null) {
+                    // we are not closed, so reset the eos, and then continue to receive the data
+                    // this might happen if we were close to finishing the file, but, then
+                    // we reseeked to an earlier position
+                    eos = false;
+                } else {
+                    // we are closed so ignore the data
+                    return;
+                }
             }
             if (VerboseLogging.DATASOURCE_LOGGING) {
                 if (bufferAvailable() < len) {

@@ -12,14 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import sagex.miniclient.MiniClient;
-import sagex.miniclient.UserEvent;
+import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.AndroidKeyEventMapper;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
-import sagex.miniclient.SageCommand;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.Keys;
 
@@ -53,9 +52,9 @@ public class BaseKeyListener implements View.OnKeyListener
 
     protected KeyEvent lastEvent;
 
-    //TODO: Might make sense to make this configurable in the future.
-    private long keyRepeatRateDelay = 500;
-    private long keyInitialRepeatDelay = 2000;
+    // These are overridden by prefs
+    private long keyRepeatRateDelay;
+    private long keyInitialRepeatDelay;
 
     Map<Object, SageCommand> LONGPRESS_KEYMAP;
     Map<Object, SageCommand> KEYMAP;
@@ -68,6 +67,10 @@ public class BaseKeyListener implements View.OnKeyListener
 
         LONGPRESS_KEYMAP = new HashMap<>();
         KEYMAP = new HashMap<>();
+
+        // set our repeats from the configuration
+        keyRepeatRateDelay = client.properties().getInt(PrefStore.Keys.repeat_key_ms, 100);
+        keyInitialRepeatDelay = client.properties().getInt(PrefStore.Keys.repeat_key_delay_ms, 1000);
 
         initializeKeyMaps();
     }
@@ -159,27 +162,6 @@ public class BaseKeyListener implements View.OnKeyListener
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, prefs.getSelect());
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelect());
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, prefs.getSelect());
-
-        // Fkeys
-        /*
-        Made a change to try and allow these as standard keys
-
-        KEYMAP.put(KeyEvent.KEYCODE_F1, SageCommand.F1);
-        KEYMAP.put(KeyEvent.KEYCODE_F2, SageCommand.F2);
-        KEYMAP.put(KeyEvent.KEYCODE_F3, SageCommand.F3);
-        KEYMAP.put(KeyEvent.KEYCODE_F4, SageCommand.F4);
-        KEYMAP.put(KeyEvent.KEYCODE_F5, SageCommand.F5);
-        KEYMAP.put(KeyEvent.KEYCODE_F6, SageCommand.F6);
-        KEYMAP.put(KeyEvent.KEYCODE_F7, SageCommand.F7);
-        KEYMAP.put(KeyEvent.KEYCODE_F8, SageCommand.F8);
-        KEYMAP.put(KeyEvent.KEYCODE_F9, SageCommand.F9);
-        KEYMAP.put(KeyEvent.KEYCODE_F10, SageCommand.F10);
-        KEYMAP.put(KeyEvent.KEYCODE_F11, SageCommand.F11);
-        KEYMAP.put(KeyEvent.KEYCODE_F12, SageCommand.F12);
-        */
-
-
-
     }
 
     @Override
