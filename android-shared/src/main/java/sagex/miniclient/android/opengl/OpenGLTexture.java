@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 import sagex.miniclient.uibridge.Texture;
 
@@ -24,10 +25,25 @@ public class OpenGLTexture implements Texture {
 
     int texture[] = null;
 
-    int pVertices2[] = new int[12];
+    int pVertices2[] = new int[8];
     IntBuffer pVerticiesByteBuff = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
-    float[] uvData = new float[12];
+
+    float[] uvData = new float[8];
     FloatBuffer uvDataBuff = ByteBuffer.allocateDirect(uvData.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+    private static ShortBuffer drawListBuffer;
+    protected static short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
+
+    static {
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(
+                // (# of coordinate values * 2 bytes per short)
+                drawOrder.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
+    }
 
     boolean flip = false;
 
@@ -116,18 +132,19 @@ public class OpenGLTexture implements Texture {
 
         GLES20.glUniform4fv(OpenGLUtils.textureShader.u_myColor, 1, OpenGLUtils.argbToFloatArray(blend), 0);
 
+
+//  // top left
         pVertices2[0] = x;
         pVertices2[1] = y;
-        pVertices2[2] = x + w;
-        pVertices2[3] = y;
+//  // bottom left
+        pVertices2[2] = x;
+        pVertices2[3] = y + h;
+//  // bottom right
         pVertices2[4] = x + w;
         pVertices2[5] = y + h;
+//  // top right
         pVertices2[6] = x + w;
-        pVertices2[7] = y + h;
-        pVertices2[8] = x;
-        pVertices2[9] = y + h;
-        pVertices2[10] = x;
-        pVertices2[11] = y;
+        pVertices2[7] = y;
 
         pVerticiesByteBuff.put(pVertices2);
         pVerticiesByteBuff.position(0);
@@ -138,18 +155,18 @@ public class OpenGLTexture implements Texture {
                 0 /* # bytes per vertex (2 * 4 bytes) */, pVerticiesByteBuff);
         GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
 
+//  // top left
         uvData[0] = (float) sx / (float) width;
         uvData[1] = (float) sy / (float) height;
-        uvData[2] = (float) (sx + sw) / (float) width;
-        uvData[3] = (float) sy / (float) height;
+//  // bottom left
+        uvData[2] = (float) sx / (float) width;
+        uvData[3] = (float) (sy + sh) / (float) height;
+//  // bottom right
         uvData[4] = (float) (sx + sw) / (float) width;
         uvData[5] = (float) (sy + sh) / (float) height;
+//  // top right
         uvData[6] = (float) (sx + sw) / (float) width;
-        uvData[7] = (float) (sy + sh) / (float) height;
-        uvData[8] = (float) sx / (float) width;
-        uvData[9] = (float) (sy + sh) / (float) height;
-        uvData[10] = (float) sx / (float) width;
-        uvData[11] = (float) sy / (float) height;
+        uvData[7] = (float) sy / (float) height;
 
         // framebuffers need to be flipped
         if (flip) {
@@ -157,8 +174,6 @@ public class OpenGLTexture implements Texture {
             uvData[3] = -1f * uvData[3];
             uvData[5] = -1f * uvData[5];
             uvData[7] = -1f * uvData[7];
-            uvData[9] = -1f * uvData[9];
-            uvData[11] = -1f * uvData[11];
         }
 
         // Again, a FloatBuffer will be used to pass the values
@@ -168,7 +183,8 @@ public class OpenGLTexture implements Texture {
                 GLES20.GL_FLOAT, false, 0, uvDataBuff);
         GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myUV);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length,
+                GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         GLES20.glDisableVertexAttribArray(OpenGLUtils.textureShader.a_myUV);
         GLES20.glDisableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);

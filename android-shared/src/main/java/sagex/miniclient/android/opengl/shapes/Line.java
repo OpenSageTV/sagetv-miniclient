@@ -13,17 +13,29 @@ import sagex.miniclient.android.opengl.OpenGLUtils;
 public class Line {
 
     private FloatBuffer vertexBuffer;
-    private ShortBuffer drawListBuffer;
+    private static ShortBuffer drawListBuffer;
     private FloatBuffer colorBuffer;
 
     // number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3;
+    static final int COORDS_PER_VERTEX = 2;
 
-    private short drawOrder[] = {0, 1}; // order to draw vertices
+    private static short drawOrder[] = {0, 1}; // order to draw vertices
 
-    static float lineCoords[] = {
-            0, 0, 0,   // top left
-            0, 0, 0,   // bottom right
+    static {
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(
+                // (# of coordinate values * 2 bytes per short)
+                drawOrder.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
+
+    }
+
+    float lineCoords[] = {
+            0, 0,   // top left
+            0, 0,   // bottom right
     }; // top right
 
     public Line() {
@@ -35,15 +47,6 @@ public class Line {
         vertexBuffer = bb.asFloatBuffer();
         vertexBuffer.put(lineCoords);
         vertexBuffer.position(0);
-
-        // initialize byte buffer for the draw list
-        ByteBuffer dlb = ByteBuffer.allocateDirect(
-                // (# of coordinate values * 2 bytes per short)
-                drawOrder.length * 2);
-        dlb.order(ByteOrder.nativeOrder());
-        drawListBuffer = dlb.asShortBuffer();
-        drawListBuffer.put(drawOrder);
-        drawListBuffer.position(0);
 
         // note we use normalized float values because using
         // normalized compact rgba ints caused color issues
@@ -62,12 +65,10 @@ public class Line {
         // top/left
         lineCoords[0] = x1;
         lineCoords[1] = y1;
-        lineCoords[2] = 0;
 
         // bottom/left
-        lineCoords[3] = x2;
-        lineCoords[4] = y2;
-        lineCoords[5] = 0;
+        lineCoords[2] = x2;
+        lineCoords[3] = y2;
 
         vertexBuffer.put(lineCoords);
         vertexBuffer.position(0);

@@ -13,19 +13,30 @@ import sagex.miniclient.android.opengl.OpenGLUtils;
 public class LineRectangle {
 
     private FloatBuffer vertexBuffer;
-    private ShortBuffer drawListBuffer;
+    private static ShortBuffer drawListBuffer;
     private FloatBuffer colorBuffer;
 
     // number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3;
+    static final int COORDS_PER_VERTEX = 2;
 
-    private short drawOrder[] = {0, 1, 2, 3, 0}; // order to draw vertices
+    private static short drawOrder[] = {0, 1, 2, 3, 0}; // order to draw vertices
 
-    static float squareCoords[] = {
-            0, 0, 0,   // top left
-            0, 0, 0,   // bottom left
-            0, 0, 0,   // bottom right
-            0, 0, 0}; // top right
+    static {
+        // initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(
+                // (# of coordinate values * 2 bytes per short)
+                drawOrder.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(drawOrder);
+        drawListBuffer.position(0);
+    }
+
+    float squareCoords[] = {
+            0, 0,   // top left
+            0, 0,   // bottom left
+            0, 0,   // bottom right
+            0, 0}; // top right
 
     public LineRectangle() {
         // initialize vertex byte buffer for shape coordinates
@@ -36,15 +47,6 @@ public class LineRectangle {
         vertexBuffer = bb.asFloatBuffer();
         vertexBuffer.put(squareCoords);
         vertexBuffer.position(0);
-
-        // initialize byte buffer for the draw list
-        ByteBuffer dlb = ByteBuffer.allocateDirect(
-                // (# of coordinate values * 2 bytes per short)
-                drawOrder.length * 2);
-        dlb.order(ByteOrder.nativeOrder());
-        drawListBuffer = dlb.asShortBuffer();
-        drawListBuffer.put(drawOrder);
-        drawListBuffer.position(0);
 
         colorBuffer = ByteBuffer.allocateDirect(squareCoords.length * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
         colorBuffer.position(0);
@@ -61,22 +63,18 @@ public class LineRectangle {
         // top/left
         squareCoords[0] = x1;
         squareCoords[1] = y1;
-        squareCoords[2] = 0;
 
         // bottom/left
-        squareCoords[3] = x1;
-        squareCoords[4] = y1 + height;
-        squareCoords[5] = 0;
+        squareCoords[2] = x1;
+        squareCoords[3] = y1 + height;
 
         // bottom/right
-        squareCoords[6] = x1 + width;
-        squareCoords[7] = y1 + height;
-        squareCoords[8] = 0;
+        squareCoords[4] = x1 + width;
+        squareCoords[5] = y1 + height;
 
         // top/right
-        squareCoords[9] = x1 + width;
-        squareCoords[10] = y1;
-        squareCoords[11] = 0;
+        squareCoords[6] = x1 + width;
+        squareCoords[7] = y1;
 
         vertexBuffer.put(squareCoords);
         vertexBuffer.position(0);
