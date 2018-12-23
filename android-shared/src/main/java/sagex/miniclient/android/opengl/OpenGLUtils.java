@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.FloatBuffer;
 
 import sagex.miniclient.android.opengl.shaders.DefaultShader;
-import sagex.miniclient.android.opengl.shaders.GradientShader;
 import sagex.miniclient.android.opengl.shaders.Shader;
 import sagex.miniclient.android.opengl.shaders.TextureShader;
 import sagex.miniclient.util.IOUtil;
@@ -25,19 +25,13 @@ public class OpenGLUtils {
     public static Shader CURRENT_SHADER = null;
 
     public static DefaultShader defaultShader = null;
-    public static GradientShader gradientShader = null;
     public static TextureShader textureShader = null;
 
     public static void loadShaders(Context context) throws IOException {
-//        if (!initialized) {
-//            initialized = true;
             defaultShader = new DefaultShader(loadShaderSource(context, "default-fragment"), loadShaderSource(context, "default-vertex"));
             defaultShader.load();
-            gradientShader = new GradientShader(loadShaderSource(context, "gradient-fragment"), loadShaderSource(context, "gradient-vertex"));
-            gradientShader.load();
             textureShader = new TextureShader(loadShaderSource(context, "texture-fragment"), loadShaderSource(context, "texture-vertex"));
             textureShader.load();
-//        }
     }
 
     private static String loadShaderSource(Context context, String basename) throws IOException {
@@ -71,6 +65,36 @@ public class OpenGLUtils {
                 ((green&0xFF)<<8)|((blue&0xFF));
     }
 
+    public static int rgba8888(int r, int g, int b, int a) {
+        return ((r & 0xff) << 24) | ((g & 0xff) << 16) | ((b & 0xFF) << 8) | (a & 0xff);
+    }
+
+    public static int flipRGBA(int argb) {
+        int r = ((argb >> 16) & 0xff);
+        int g = ((argb >> 8) & 0xff);
+        int b = ((argb) & 0xff);
+        int a = ((argb >> 24) & 0xff);
+
+        return rgba8888(r, g, b, a);
+
+
+//        return  (argb << 8) | (argb >> 24);
+
+        //return ((argb >> 16) & 0xFF) | ((argb >> 8) & 0xFF) | ((argb) & 0xFF) | ((argb >> 24) & 0xFF);
+    }
+
+    public static void putToFloatBuffer(int argb, FloatBuffer buffer) {
+        float r = ((argb >> 16) & 0xff);
+        float g = ((argb >> 8) & 0xff);
+        float b = ((argb) & 0xff);
+        float a = ((argb >> 24) & 0xff);
+
+        buffer.put(r / 255f);
+        buffer.put(g / 255f);
+        buffer.put(b / 255f);
+        buffer.put(a / 255f);
+    }
+
 
     public static float[] argbToFloatArray(int argb) {
         float r = ((argb>>16) & 0xff);
@@ -89,4 +113,5 @@ public class OpenGLUtils {
             }
         }
     }
+
 }

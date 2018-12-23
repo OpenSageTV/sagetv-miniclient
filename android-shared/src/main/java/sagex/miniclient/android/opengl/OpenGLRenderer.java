@@ -32,7 +32,6 @@ import sagex.miniclient.android.R;
 import sagex.miniclient.android.opengl.shapes.FillRectangle;
 import sagex.miniclient.android.opengl.shapes.Line;
 import sagex.miniclient.android.opengl.shapes.LineRectangle;
-import sagex.miniclient.android.opengl.shapes.Triangle;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
@@ -92,7 +91,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
 
     // if true, the uiSize is set to the Native resolution
-    boolean useNativeResolution = true;
+    boolean useNativeResolution = false;
 
     // the scaleAndCenterImmutable of the uiSize to the screenSize
     Scale scale = new Scale(1, 1);
@@ -120,12 +119,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     public void create() {
-        useNativeResolution = client.properties().getBoolean(PrefStore.Keys.use_native_resolution, true);
+        useNativeResolution = client.properties().getBoolean(PrefStore.Keys.use_native_resolution, false);
 
         fullScreenSize.updateFrom(getMaxScreenSize());
         lastResize.updateFrom(fullScreenSize);
 
         if (useNativeResolution) {
+            log.warn("Using native resolution.  Should consider using smaller resolution.");
             uiSize.updateFrom(fullScreenSize);
         }
 
@@ -147,41 +147,47 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         mainSurface.setHandle(0);
         setSurface(mainSurface);
 
-        //debugShapes(mainSurfaceGL);
+        if (disableRenderQueue)
+            debugShapes(mainSurfaceGL);
     }
 
     private void debugShapes(OpenGLSurface mainSurfaceGL) {
         GLES20.glClearColor(0, 1, 0, 0);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_STENCIL_BUFFER_BIT);
 
-        Triangle tr = new Triangle();
-        tr.draw(uiSize.width / 2, 0,
-                0, uiSize.height,
-                uiSize.width, uiSize.height, OpenGLUtils.RGBA_to_ARGB(255, 0, 0, 255), mainSurfaceGL);
+        int blue = OpenGLUtils.RGBA_to_ARGB(0, 0, 255, 255);
+        int red = OpenGLUtils.RGBA_to_ARGB(255, 0, 0, 255);
+        int green = OpenGLUtils.RGBA_to_ARGB(0, 255, 0, 255);
+        int white = OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255);
 
-        int color = OpenGLUtils.RGBA_to_ARGB(0, 0, 255, 255);
-        fillRectShape.draw(100, 100, uiSize.width - 200, uiSize.height - 200, color, color, color, color, mainSurfaceGL);
+        fillRectShape.draw(100, 100, uiSize.width - 200, uiSize.height - 200,
+                blue, blue, green, green, mainSurfaceGL);
 
-        int color1 = OpenGLUtils.RGBA_to_ARGB(255, 0, 0, 255);
-        int color2 = OpenGLUtils.RGBA_to_ARGB(175, 0, 0, 255);
-        fillRectShape.draw(200, 200, 100, 100, color1, color2, color1, color2, mainSurfaceGL);
-        fillRectShape.draw(uiSize.width - 300, uiSize.height - 300, 100, 100, color1, color1, color2, color2, mainSurfaceGL);
+        fillRectShape.draw(200, 200, 100, 100,
+                red, red, red, red, mainSurfaceGL);
+        fillRectShape.draw(uiSize.width / 2 - 50, uiSize.height / 2 - 50, 100, 100,
+                green, green, green, green, mainSurfaceGL);
+        fillRectShape.draw(uiSize.width - 300, uiSize.height - 300, 100, 100,
+                blue, blue, blue, blue, mainSurfaceGL);
 
-        int color3 = OpenGLUtils.RGBA_to_ARGB(0, 200, 0, 255);
-        lineRectShape.draw(200, 200, 100, 100, color3, color3, color3, color3, 1, mainSurfaceGL);
-        lineRectShape.draw(uiSize.width - 300, uiSize.height - 300, 100, 100, color3, color3, color3, color3, 10, mainSurfaceGL);
+        lineRectShape.draw(200, 200, 100, 100, green, green, green, green, 1, mainSurfaceGL);
+        lineRectShape.draw(uiSize.width - 300, uiSize.height - 300, 100, 100, green, green, green, green, 10, mainSurfaceGL);
 
-        lineShape.draw(100, 100, uiSize.width - 100, uiSize.height - 100, color1, color3, 1, mainSurfaceGL);
+        lineShape.draw(100, 100, uiSize.width - 100, uiSize.height - 100,
+                green
+                , red, 10, mainSurfaceGL);
 
         Bitmap b = BitmapFactory.decodeResource(activity.getContext().getResources(), R.drawable.sage_logo_256);
         System.out.println("BITMAP: " + b.getWidth());
 
         OpenGLTexture t = new OpenGLTexture(b.getWidth(), b.getHeight());
         t.set(b, "test");
-        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(), OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
+        t.draw(0, 0, b.getWidth(), b.getHeight(), 0, 0, b.getWidth(), b.getHeight(),
+                white, mainSurfaceGL);
 
         // draw a partial
-        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50, OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
+        t.draw(0, uiSize.height / 2, 50, 50, 0, 0, 50, 50,
+                white, mainSurfaceGL);
 
 
         OpenGLSurface s = new OpenGLSurface(0, 100, 100);
@@ -189,13 +195,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         s.bind();
         GLES20.glClearColor(1, 0, 0, 255);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        int c1 = OpenGLUtils.RGBA_to_ARGB(0, 0, 255, 255);
-        lineShape.draw(0, 0, 100, 100, c1, c1, 1, s);
+        lineShape.draw(0, 0, 100, 100, blue, blue, 1, s);
 
         mainSurfaceGL.bind();
 
-        s.draw(0, 0, s.width, s.height, 0, 0, s.width, s.width, OpenGLUtils.RGBA_to_ARGB(255, 255, 255, 255), mainSurfaceGL);
-        lineShape.draw(0, 100, 100, 200, c1, c1, 3, mainSurfaceGL);
+        s.draw(0, 0, s.width, s.height, 0, 0, s.width, s.width,
+                white, mainSurfaceGL);
+        lineShape.draw(0, 100, 100, 200, blue, blue, 3, mainSurfaceGL);
         log.debug("* RENDERED BITMAP *");
         ((GLSurfaceView) activity.getUIView()).requestRender();
     }

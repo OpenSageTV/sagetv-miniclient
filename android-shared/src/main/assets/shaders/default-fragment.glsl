@@ -1,5 +1,5 @@
-uniform mediump vec4 myColor;
+varying mediump vec4 myColorOut;
 void main(void)
 {
-    gl_FragColor = myColor;
+    gl_FragColor = myColorOut;
 }

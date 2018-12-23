@@ -114,7 +114,7 @@ public class OpenGLTexture implements Texture {
 
         if (w < 0) w *= -1;
 
-        GLES20.glUniform4fv(OpenGLUtils.defaultShader.u_myColor, 1, OpenGLUtils.argbToFloatArray(blend), 0);
+        GLES20.glUniform4fv(OpenGLUtils.textureShader.u_myColor, 1, OpenGLUtils.argbToFloatArray(blend), 0);
 
         pVertices2[0] = x;
         pVertices2[1] = y;
@@ -135,7 +135,7 @@ public class OpenGLTexture implements Texture {
                 2 /* # of elements per vertex*/,
                 GLES20.GL_INT,
                 false,
-                8 /* # bytes per vertex (2 * 4 bytes) */, pVerticiesByteBuff);
+                0 /* # bytes per vertex (2 * 4 bytes) */, pVerticiesByteBuff);
         GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
 
         uvData[0] = (float) sx / (float) width;

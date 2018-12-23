@@ -85,6 +85,12 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="use_opengl_ui"
+            android:summary="@string/use_opengl_ui_summary"
+            android:title="@string/use_opengl_ui_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="use_native_resolution"
             android:summary="@string/use_native_resolution_summary"
             android:title="@string/use_native_resolution_title"/>
@@ -94,12 +100,6 @@
             android:key="exit_to_home_screen"
             android:summary="@string/exit_to_home_screen_summary"
             android:title="@string/exit_to_home_screen_title"/>
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="use_opengl_ui"
-            android:summary="@string/use_opengl_ui_summary"
-            android:title="@string/use_opengl_ui_title" />
 
         <CheckBoxPreference
             android:defaultValue="false"

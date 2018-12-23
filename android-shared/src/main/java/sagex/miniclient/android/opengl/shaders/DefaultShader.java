@@ -2,20 +2,20 @@ package sagex.miniclient.android.opengl.shaders;
 
 public class DefaultShader extends Shader {
     public int a_myVertex;
-    public int u_myColor;
+    public int a_myColor;
     public int u_myPMVMatrix;
 
     public DefaultShader(String fragmentSource, String vertexSource) {
         super("default", fragmentSource, vertexSource,
-                new String[]{"myPMVMatrix", "myColor"},
-                new String[]{"myVertex"});
+                new String[]{"myPMVMatrix"},
+                new String[]{"myVertex", "myColor"});
     }
 
     @Override
     public void load() {
         super.load();
         a_myVertex = attribute("myVertex");
-        u_myColor = uniform("myColor");
+        a_myColor = attribute("myColor");
         u_myPMVMatrix = uniform("myPMVMatrix");
     }
 }

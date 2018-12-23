@@ -14,6 +14,7 @@ public class LineRectangle {
 
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
+    private FloatBuffer colorBuffer;
 
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
@@ -25,10 +26,6 @@ public class LineRectangle {
             0, 0, 0,   // bottom left
             0, 0, 0,   // bottom right
             0, 0, 0}; // top right
-
-    static private final int vertexCount = squareCoords.length / COORDS_PER_VERTEX;
-    static private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
-
 
     public LineRectangle() {
         // initialize vertex byte buffer for shape coordinates
@@ -48,14 +45,18 @@ public class LineRectangle {
         drawListBuffer = dlb.asShortBuffer();
         drawListBuffer.put(drawOrder);
         drawListBuffer.position(0);
+
+        colorBuffer = ByteBuffer.allocateDirect(squareCoords.length * 4 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        colorBuffer.position(0);
     }
 
     public void draw(int x1, int y1, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int thickness, OpenGLSurface surface) {
         // Add program to OpenGL ES environment
-        OpenGLUtils.useProgram(OpenGLUtils.gradientShader);
+        OpenGLUtils.useProgram(OpenGLUtils.defaultShader);
 
         // Enable a handle to the triangle vertices
-        GLES20.glEnableVertexAttribArray(OpenGLUtils.gradientShader.a_myVertex);
+        GLES20.glEnableVertexAttribArray(OpenGLUtils.defaultShader.a_myVertex);
+        GLES20.glEnableVertexAttribArray(OpenGLUtils.defaultShader.a_myColor);
 
         // top/left
         squareCoords[0] = x1;
@@ -81,21 +82,24 @@ public class LineRectangle {
         vertexBuffer.position(0);
 
         // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(OpenGLUtils.gradientShader.a_myVertex, COORDS_PER_VERTEX,
+        GLES20.glVertexAttribPointer(OpenGLUtils.defaultShader.a_myVertex, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                vertexStride, vertexBuffer);
+                0, vertexBuffer);
 
-        // Set colors
-        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTL, 1, OpenGLUtils.argbToFloatArray(argbTL), 0);
-        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbTR, 1, OpenGLUtils.argbToFloatArray(argbTR), 0);
-        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBL, 1, OpenGLUtils.argbToFloatArray(argbBL), 0);
-        GLES20.glUniform4fv(OpenGLUtils.gradientShader.u_argbBR, 1, OpenGLUtils.argbToFloatArray(argbBR), 0);
+        // set the colors per vertex
+        colorBuffer.position(0);
+        OpenGLUtils.putToFloatBuffer(argbTL, colorBuffer);
+        OpenGLUtils.putToFloatBuffer(argbBL, colorBuffer);
+        OpenGLUtils.putToFloatBuffer(argbBR, colorBuffer);
+        OpenGLUtils.putToFloatBuffer(argbTR, colorBuffer);
+        colorBuffer.position(0);
+        GLES20.glVertexAttribPointer(
+                OpenGLUtils.defaultShader.a_myColor, 4,
+                GLES20.GL_FLOAT, true, 0, colorBuffer);
 
-        // set resolution for gradients
-        GLES20.glUniform2fv(OpenGLUtils.gradientShader.u_resolution, 1, new float[]{width, height}, 0);
 
         // Pass the projection and view transformation to the shader
-        GLES20.glUniformMatrix4fv(OpenGLUtils.gradientShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
+        GLES20.glUniformMatrix4fv(OpenGLUtils.defaultShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
 
         GLES20.glLineWidth(thickness);
 
@@ -103,7 +107,8 @@ public class LineRectangle {
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         // Disable vertex array
-        GLES20.glDisableVertexAttribArray(OpenGLUtils.gradientShader.a_myVertex);
+        GLES20.glDisableVertexAttribArray(OpenGLUtils.defaultShader.a_myVertex);
+        GLES20.glDisableVertexAttribArray(OpenGLUtils.defaultShader.a_myColor);
 
         GLES20.glLineWidth(1);
     }
