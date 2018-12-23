@@ -26,9 +26,9 @@ import org.slf4j.LoggerFactory;
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.events.VideoInfoRefresh;
-import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.util.AspectHelper;
 import sagex.miniclient.video.HasVideoInfo;
+import sagex.miniclient.video.VideoInfoResponse;
 
 /**
  * Created by seans on 05/12/15.
@@ -105,15 +105,19 @@ public class VideoInfoFragment extends DialogFragment {
         VideoInfoResponse resp = ((HasVideoInfo) client.getUIRenderer()).getVideoInfo();
         log.debug("Got a Request for Video Info", resp);
         if (resp!=null) {
-            setText(R.id.vi_videoSize, resp.videoInfo.size);
-            setText(R.id.vi_aspectMode, resp.videoInfo.aspectMode);
-            setText(R.id.vi_videoPixelAspect, resp.videoInfo.size.getAR());
-            setText(R.id.vi_aspectRatio, resp.videoInfo.aspectRatio);
-            setText(R.id.vi_sagetvDestRect, resp.videoInfo.destRect);
+            if (resp.videoInfo != null) {
+                setText(R.id.vi_videoSize, resp.videoInfo.size);
+                setText(R.id.vi_aspectMode, resp.videoInfo.aspectMode);
+                setText(R.id.vi_videoPixelAspect, resp.videoInfo.size.getAR());
+                setText(R.id.vi_aspectRatio, resp.videoInfo.aspectRatio);
+                setText(R.id.vi_sagetvDestRect, resp.videoInfo.destRect);
+            }
             setText(R.id.vi_sagetvScreenAspect, resp.uiAspectRatio);
-            setText(R.id.vi_screenAdjustedSize, resp.uiScreenSizePixels.copy().updateHeightUsingAspectRatio(resp.uiAspectRatio));
-            setText(R.id.vi_screenPixelAR, resp.uiScreenSizePixels.getAR());
-            setText(R.id.vi_screenPixelSize, resp.uiScreenSizePixels);
+            if (resp.uiScreenSizePixels != null) {
+                setText(R.id.vi_screenAdjustedSize, resp.uiScreenSizePixels.copy().updateHeightUsingAspectRatio(resp.uiAspectRatio));
+                setText(R.id.vi_screenPixelAR, resp.uiScreenSizePixels.getAR());
+                setText(R.id.vi_screenPixelSize, resp.uiScreenSizePixels);
+            }
             setText(R.id.vi_uri, resp.uri);
         }
     }

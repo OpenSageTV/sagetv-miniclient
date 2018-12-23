@@ -164,7 +164,8 @@ public class OpenGLTexture implements Texture {
         // Again, a FloatBuffer will be used to pass the values
         uvDataBuff.put(uvData);
         uvDataBuff.position(0);
-        GLES20.glVertexAttribPointer(OpenGLUtils.textureShader.a_myUV, 2, GLES20.GL_FLOAT, false, 8, uvDataBuff);
+        GLES20.glVertexAttribPointer(OpenGLUtils.textureShader.a_myUV, 2,
+                GLES20.GL_FLOAT, false, 0, uvDataBuff);
         GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myUV);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);

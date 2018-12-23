@@ -10,9 +10,12 @@ import sagex.miniclient.util.VideoInfo;
 public class VideoInfoResponse {
     public VideoInfo videoInfo;
     public float uiAspectRatio;
+    // size of our screen native size
     public RectangleF uiScreenSizePixels;
     public String uri;
     public long mediaTime;
     public int state;
     public boolean pushMode;
+    // size of sagetv surface
+    public RectangleF renderScreenSize;
 }

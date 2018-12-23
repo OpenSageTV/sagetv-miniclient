@@ -39,13 +39,14 @@ import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
+import sagex.miniclient.uibridge.RectangleF;
 import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.AspectHelper;
 import sagex.miniclient.video.HasVideoInfo;
 import sagex.miniclient.video.VideoInfoResponse;
 
-public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.Renderer {
+public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.Renderer, HasVideoInfo {
     private static final Logger log = LoggerFactory.getLogger(OpenGLRenderer.class);
 
     private static final int DEF_WIDTH=1280;
@@ -736,7 +737,11 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     public VideoInfoResponse getVideoInfo() {
         if (player==null) {
-            return null;
+            VideoInfoResponse r = new VideoInfoResponse();
+            r.uiScreenSizePixels = new RectangleF(0, 0, fullScreenSize.width, fullScreenSize.height);
+            r.uiAspectRatio = 1.0f;
+            r.renderScreenSize = new RectangleF(0, 0, uiSize.width, uiSize.height);
+            return r;
         }
 
         if (player instanceof HasVideoInfo) {

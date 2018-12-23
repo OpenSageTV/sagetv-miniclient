@@ -24,18 +24,16 @@ import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
-import sagex.miniclient.UserEvent;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ChangePlayerOneTime;
 import sagex.miniclient.android.events.CloseAppEvent;
 import sagex.miniclient.android.events.HideNavigationEvent;
 import sagex.miniclient.android.events.HideSystemUIEvent;
-import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
+import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.events.VideoInfoShow;
 import sagex.miniclient.prefs.PrefStore;
-import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
 
 /**
@@ -157,6 +155,7 @@ public class NavigationFragment extends DialogFragment {
     }
 
     private void onVideoInfo() {
+        log.debug("Showing Video Info View");
         client.eventbus().post(new VideoInfoShow());
     }
 
