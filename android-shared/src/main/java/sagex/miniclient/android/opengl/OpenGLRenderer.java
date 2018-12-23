@@ -574,16 +574,13 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         totalTextureTime = 0;
         longestTextureTime = 0;
         state = STATE_MENU;
-        if (firstFrame) {
-            invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    log.debug("Start Frame: Setting Main Surface");
-                    setSurface(mainSurface);
-                    clearUI();
-                }
-            });
-        }
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setSurface(mainSurface);
+                clearUI();
+            }
+        });
         inFrame=true;
     }
 
