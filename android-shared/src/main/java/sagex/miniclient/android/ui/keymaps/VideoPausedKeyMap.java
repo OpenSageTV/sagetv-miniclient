@@ -1,35 +1,22 @@
-package sagex.miniclient.android.ui;
+package sagex.miniclient.android.ui.keymaps;
 
-import android.content.Context;
 import android.view.KeyEvent;
 
-import sagex.miniclient.MiniClient;
-import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
-import sagex.miniclient.android.ui.BaseKeyListener;
-import sagex.miniclient.uibridge.EventRouter;
 
-/**
- * Created by seans on 26/09/15.
- */
-public class VideoPlaybackKeyListener extends BaseKeyListener {
+public class VideoPausedKeyMap extends KeyMap {
+    private MediaMappingPreferences prefsVideo;
 
-    MediaMappingPreferences prefsVideo;
-
-
-    public VideoPlaybackKeyListener(Context context, MiniClient client)
-    {
-        super(context, client);
-
+    public VideoPausedKeyMap(KeyMap parent, MediaMappingPreferences prefsVideo) {
+        super(parent);
+        this.prefsVideo = prefsVideo;
     }
 
     @Override
-    protected void initializeKeyMaps()
-    {
+    public void initializeKeyMaps() {
         super.initializeKeyMaps();
-        prefsVideo = new MediaMappingPreferences(context, "videoplaying");
 
-        // Key Mappings when VIDEO is playing, ie, player state == PLAY
+        // Key Mappings when VIDEO is playing, ie, player state == PAUSED
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefsVideo.getSelect());
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, prefsVideo.getLeft());
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefsVideo.getRight());

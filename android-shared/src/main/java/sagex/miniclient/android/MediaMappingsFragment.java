@@ -1,6 +1,5 @@
 package sagex.miniclient.android;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -12,9 +11,9 @@ import android.support.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
+import sagex.miniclient.prefs.PrefStore;
 
 public class MediaMappingsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener
 {
@@ -31,9 +30,10 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         ListPreference lp;
 
         addPreferencesFromResource(R.xml.media_mappings_prefs);
-        MediaMappingPreferences prefs = new MediaMappingPreferences(this.getActivity().getApplicationContext());
-        MediaMappingPreferences prefsVideoPlaying = new MediaMappingPreferences(this.getActivity().getApplicationContext(), "videoplaying");
-        MediaMappingPreferences prefsVideoPaused = new MediaMappingPreferences(this.getActivity().getApplicationContext(), "videopaused");
+        PrefStore store = MiniclientApplication.get(getActivity().getApplicationContext()).getClient().properties();
+        MediaMappingPreferences prefs = new MediaMappingPreferences(store);
+        MediaMappingPreferences prefsVideoPlaying = new MediaMappingPreferences("videoplaying", store);
+        MediaMappingPreferences prefsVideoPaused = new MediaMappingPreferences("videopaused", store);
 
         /*
         --------------------------------------------------------------------------------------------------------

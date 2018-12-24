@@ -2,7 +2,6 @@ package sagex.miniclient.android.ui;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -12,12 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.events.ShowKeyboardEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.preferences.TouchPreferences;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.MouseEvent;
-import sagex.miniclient.SageCommand;
 
 /**
  * Created by seans on 20/09/15.
@@ -77,7 +76,7 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
         final float density = activity.getResources().getDisplayMetrics().density;
         edgeSize = (int) (EDGE_SIZE * density + 0.5f);
 
-        prefs = new TouchPreferences(this.activity);
+        prefs = new TouchPreferences(client.properties());
     }
 
 

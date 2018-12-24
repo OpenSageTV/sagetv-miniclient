@@ -5,8 +5,6 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
 import android.os.Build;
 
 import org.slf4j.Logger;
@@ -34,14 +32,17 @@ public class MiniclientApplication extends Application {
     }
 
     public static MiniclientApplication get(Activity ctx) {
+        if (ctx == null) return get();
         return (MiniclientApplication) ctx.getApplication();
     }
 
     public static MiniclientApplication get(Service ctx) {
+        if (ctx == null) return get();
         return (MiniclientApplication) ctx.getApplication();
     }
 
     public static MiniclientApplication get(Context ctx) {
+        if (ctx == null) return get();
         return (MiniclientApplication) ctx.getApplicationContext();
     }
 

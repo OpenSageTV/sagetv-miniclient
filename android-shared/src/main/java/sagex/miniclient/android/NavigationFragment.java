@@ -64,7 +64,7 @@ public class NavigationFragment extends DialogFragment {
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Theme_Dialog_DoNotDim);
         setCancelable(false);
 
-        prefs = new MediaMappingPreferences(this.getActivity().getApplicationContext());
+        prefs = new MediaMappingPreferences(this.client.properties());
     }
 
     @Nullable

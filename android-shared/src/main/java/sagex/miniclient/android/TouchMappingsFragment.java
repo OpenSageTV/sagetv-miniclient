@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
+
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.preferences.TouchPreferences;
 
@@ -26,7 +27,7 @@ public class TouchMappingsFragment extends PreferenceFragment
         super.onCreate(savedInstanceState);
         ListPreference lp;
         addPreferencesFromResource(R.xml.touch_mappings_prefs);
-        TouchPreferences prefs = new TouchPreferences(this.getActivity().getApplicationContext());
+        TouchPreferences prefs = new TouchPreferences(MiniclientApplication.get(this.getActivity().getApplicationContext()).getClient().properties());
 
 
         //One finger
