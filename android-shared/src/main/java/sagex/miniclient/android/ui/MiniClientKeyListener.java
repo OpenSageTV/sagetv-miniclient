@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
-import sagex.miniclient.prefs.PrefStore;
 
 /**
  * Created by seans on 26/09/15.
@@ -23,12 +22,16 @@ public class MiniClientKeyListener implements View.OnKeyListener {
     VideoPausedKeyListener videoPausedKeyListener;
     VideoPlaybackKeyListener videoPlaybackKeyListener;
     MediaMappingPreferences prefs;
+    PluginListKeyListener pluginListKeyListener;
+    GuideKeyListener guideKeyListener;
 
     public MiniClientKeyListener(Context context, MiniClient client) {
         this.client = client;
         normalKeyListener = new BaseKeyListener(context, client);
         videoPausedKeyListener = new VideoPausedKeyListener(context, client);
         videoPlaybackKeyListener = new VideoPlaybackKeyListener(context, client);
+        pluginListKeyListener = new PluginListKeyListener(context, client);
+        guideKeyListener = new GuideKeyListener(context, client);
         prefs = new MediaMappingPreferences(context);
     }
 
@@ -62,6 +65,13 @@ public class MiniClientKeyListener implements View.OnKeyListener {
             if (client.isVideoVisible()) {
                 log.debug("Using Default Normal Key Listener. MenuPlayerState: {}, Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMediaCmd().getPlaya().getState(), client.getCurrentConnection().getMenuHint(), event);
             } else {
+                if (client.getCurrentConnection().getMenuHint().isPluginMenu()) {
+                    log.debug("Using Plugin Key Listener");
+                    return pluginListKeyListener.onKey(v, keyCode, event);
+                } else if (client.getCurrentConnection().getMenuHint().isGuideMenu()) {
+                    log.debug("Using Guide Key Listener");
+                    return guideKeyListener.onKey(v, keyCode, event);
+                }
                 log.debug("Using Default Normal Key Listener. (No Player Visible). Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
             }
         }

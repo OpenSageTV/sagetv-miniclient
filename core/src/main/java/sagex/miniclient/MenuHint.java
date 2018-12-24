@@ -83,4 +83,12 @@ public class MenuHint {
     public boolean isOSDMenuNoPopup() {
         return popupName == null && isOSDMenu();
     }
+
+    public boolean isPluginMenu() {
+        return popupName == null && hasMenuLike("Plugin List");
+    }
+
+    public boolean isGuideMenu() {
+        return popupName == null && hasMenuLike("TVGuide");
+    }
 }

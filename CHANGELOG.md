@@ -1,3 +1,10 @@
+**1.3.6 ()**
+- sls: new UI renderer
+- sls: configure key repeat speeds
+- sls: smart remote for Plugin List (right/left navigates top tabs)
+- sls: smart remote for Guide (long press right/left page right/left)
+- sls: long press 'back' goes home 
+
 **1.3.5 (2018-12-16)**
 - sls: fix: ExoPlayer seek issues after upgrading ExoPlayer
 - sls: refactor: removed log to sdcard

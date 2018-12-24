@@ -78,6 +78,9 @@ public class BaseKeyListener implements View.OnKeyListener
 
     protected void initializeKeyMaps()
     {
+        // easy to get home
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_BACK, SageCommand.HOME);
+
         // navivation native keymap
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP,  prefs.getUp());
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN,  prefs.getDown());
