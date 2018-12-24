@@ -346,7 +346,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 //                if (!(argbBL == argbBR && argbBL == argbTL && argbBL == argbTR)) {
 //                    log.debug("FILLRECT: {},{} {}x{} - TL:{},TR:{} BR:{},BL:{}", x, y, width, height, argbTL, argbTR, argbBR, argbBL);
 //                }
-                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
+                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface(), true);
             }
         });
     }
@@ -354,10 +354,11 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     @Override
     public void clearRect(final int x, final int y, final int width, final int height, final int argbTL, final int argbTR, final int argbBR, final int argbBL) {
         state = STATE_VIDEO;
+        if (width < 0 || height < 0) return;
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
+                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface(), false);
             }
         });
     }
@@ -387,7 +388,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         invokeLater(new Runnable() {
             @Override
             public void run() {
-                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface());
+                fillRectShape.draw(x, y, width, height, argbTL, argbTR, argbBR, argbBL, currentSurface(), true);
             }
         });
     }

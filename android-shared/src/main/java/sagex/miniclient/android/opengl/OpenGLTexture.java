@@ -116,12 +116,34 @@ public class OpenGLTexture implements Texture {
         GLES20.glUniformMatrix4fv(OpenGLUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glEnable(GLES20.GL_TEXTURE_2D);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
         GLES20.glUniform1i(OpenGLUtils.textureShader.u_sampler2d, 0);
 
+        // the Quartz renderer does use -w and -h values, so this is here for reference.
+//        boolean doBlend = true;
+//        if(h < 0) {
+//            doBlend = false;
+//            h *= -1;
+//        }
+//
+//        if(w < 0) {
+//            w *= -1;
+//        } else {
+//            if(doBlend)
+//                blend |= 0x00ffffff; // only use alpha
+//        }
+//
+//
+//        if (doBlend) {
+//            GLES20.glEnable(GLES20.GL_BLEND);
+//            GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+//        } else {
+//            GLES20.glDisable(GLES20.GL_BLEND);
+//        }
+
+        GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         if (h < 0) {
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ZERO);

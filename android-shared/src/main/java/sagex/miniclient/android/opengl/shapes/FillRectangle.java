@@ -53,6 +53,10 @@ public class FillRectangle {
     }
 
     public void draw(int x1, int y1, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, OpenGLSurface surface) {
+        draw(x1, y1, width, height, argbTL, argbTR, argbBR, argbBL, surface, true);
+    }
+
+    public void draw(int x1, int y1, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, OpenGLSurface surface, boolean blend) {
         // Add program to OpenGL ES environment
         OpenGLUtils.useProgram(OpenGLUtils.defaultShader);
 
@@ -99,6 +103,14 @@ public class FillRectangle {
         GLES20.glUniformMatrix4fv(OpenGLUtils.defaultShader.u_myPMVMatrix,
                 1, false, surface.viewMatrix, 0);
 
+
+        if (blend) {
+            GLES20.glEnable(GLES20.GL_BLEND);
+            GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        } else {
+            GLES20.glDisable(GLES20.GL_BLEND);
+        }
+
         // Draw the triangles with a draw list buffer
         // Draw the square
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, drawOrder.length,
@@ -107,5 +119,7 @@ public class FillRectangle {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(OpenGLUtils.defaultShader.a_myVertex);
         GLES20.glDisableVertexAttribArray(OpenGLUtils.defaultShader.a_myColor);
+
+        GLES20.glDisable(GLES20.GL_BLEND);
     }
 }

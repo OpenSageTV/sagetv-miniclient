@@ -92,8 +92,13 @@ public class Line {
 
         GLES20.glLineWidth(thickness);
 
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
         GLES20.glDrawElements(GLES20.GL_LINES, drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
+
+        GLES20.glDisable(GLES20.GL_BLEND);
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(OpenGLUtils.defaultShader.a_myVertex);
