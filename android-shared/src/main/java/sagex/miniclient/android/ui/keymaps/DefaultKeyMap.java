@@ -4,6 +4,7 @@ import android.view.KeyEvent;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
+import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
 
@@ -124,5 +125,20 @@ public class DefaultKeyMap extends KeyMap {
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, prefs.getSelect());
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelect());
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, prefs.getSelect());
+    }
+
+    @Override
+    public boolean hasSageCommandOverride(int keyCode) {
+        return keyCode == KeyEvent.KEYCODE_BACK;
+    }
+
+    @Override
+    public void performSageCommandOverride(int keyCode, MiniClient client) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // bit of hack to handle hiding system UI when keyboard is visible
+            client.eventbus().post(BackPressedEvent.INSTANCE);
+        } else {
+            super.performSageCommandOverride(keyCode, client);
+        }
     }
 }

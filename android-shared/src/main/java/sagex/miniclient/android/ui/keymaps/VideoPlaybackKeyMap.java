@@ -2,7 +2,10 @@ package sagex.miniclient.android.ui.keymaps;
 
 import android.view.KeyEvent;
 
+import sagex.miniclient.MiniClient;
+import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
+import sagex.miniclient.uibridge.EventRouter;
 
 public class VideoPlaybackKeyMap extends KeyMap {
     private MediaMappingPreferences prefsVideo;
@@ -29,5 +32,38 @@ public class VideoPlaybackKeyMap extends KeyMap {
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefsVideo.getRightLongPress());
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefsVideo.getUpLongPress());
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, prefsVideo.getDownLongPress());
+    }
+
+    @Override
+    public int getKeyRepeatRateMS(int keyCode) {
+        // if the right/left is held then wait a full second before doing it again
+        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            return 2000;
+        }
+        return super.getKeyRepeatRateMS(keyCode);
+    }
+
+    @Override
+    public int getKeyRepeatDelayMS(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            // only wait 400ms before triggering the long press action
+            return 400;
+        }
+        return super.getKeyRepeatDelayMS(keyCode);
+    }
+
+    @Override
+    public boolean hasSageCommandOverride(int keyCode) {
+        return keyCode == KeyEvent.KEYCODE_BACK;
+    }
+
+    @Override
+    public void performSageCommandOverride(int keyCode, MiniClient client) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // if video is playing, then, stop it.
+            EventRouter.postCommand(client, SageCommand.STOP);
+        } else {
+            super.performSageCommandOverride(keyCode, client);
+        }
     }
 }

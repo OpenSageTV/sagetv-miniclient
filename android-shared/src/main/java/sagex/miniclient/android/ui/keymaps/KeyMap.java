@@ -3,6 +3,7 @@ package sagex.miniclient.android.ui.keymaps;
 import java.util.HashMap;
 import java.util.Map;
 
+import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
 
 public class KeyMap {
@@ -19,10 +20,14 @@ public class KeyMap {
     }
 
     public int getKeyRepeatRateMS(int keyCode) {
+        if (parent != null) return parent.getKeyRepeatRateMS(keyCode);
+        // should never get here
         return -1;
     }
 
     public int getKeyRepeatDelayMS(int keyCode) {
+        if (parent != null) return parent.getKeyRepeatDelayMS(keyCode);
+        // should never get here
         return -1;
     }
 
@@ -58,4 +63,14 @@ public class KeyMap {
         if (parent != null) return parent.getNormalPressCommand(keyCode);
         return null;
     }
+
+    public boolean hasSageCommandOverride(int keyCode) {
+        if (parent != null) return parent.hasSageCommandOverride(keyCode);
+        return false;
+    }
+
+    public void performSageCommandOverride(int keyCode, MiniClient client) {
+        if (parent != null) parent.performSageCommandOverride(keyCode, client);
+    }
+
 }

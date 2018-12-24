@@ -11,7 +11,6 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.AndroidKeyEventMapper;
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
@@ -105,6 +104,12 @@ public class KeyMapProcessor {
                     return true;
                 }
 
+                if (keyMap.hasSageCommandOverride(keyCode)) {
+                    lastEvent = event;
+                    keyMap.performSageCommandOverride(keyCode, client);
+                    return true;
+                }
+
                 if (keyMap.hasNormalPress(keyCode))
                 {
                     command = keyMap.getNormalPressCommand(keyCode);
@@ -127,22 +132,32 @@ public class KeyMapProcessor {
                 return false;
             }
 
-            if(event.getAction() == KeyEvent.ACTION_DOWN)
-            {
+            if(event.getAction() == KeyEvent.ACTION_DOWN) {
                 //If this is repeat event
                 if (event.getRepeatCount() > 0 && lastEvent != null && (event.getEventTime() - lastEvent.getEventTime()) < keyMap.getKeyRepeatRateMS(keyCode)
-                        && (event.getEventTime() - event.getDownTime()) < keyMap.getKeyRepeatDelayMS(keyCode))
-                {
+                        && (event.getEventTime() - event.getDownTime()) < keyMap.getKeyRepeatDelayMS(keyCode)) {
                     log.debug("Repeat time since last event:" + (event.getEventTime() - lastEvent.getEventTime()));
                     log.debug("Repeat time since keydown event:" + (event.getEventTime() - event.getDownTime()));
-                }
-                else
-                {
+                } else {
 
 
                     log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
                     EventRouter.postCommand(client, command);
                     lastEvent = event;
+                }
+            } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                if (skipUp && skipKey == keyCode) {
+                    // After a Long Press
+                    skipUp = false;
+                    skipKey = -1;
+                    log.debug("KEYS: Skipping Key {}", keyCode);
+                    return true;
+                }
+
+                if (keyMap.hasSageCommandOverride(keyCode)) {
+                    lastEvent = event;
+                    keyMap.performSageCommandOverride(keyCode, client);
+                    return true;
                 }
             }
 
@@ -151,19 +166,14 @@ public class KeyMapProcessor {
         else //Hanlde other events if they are keyboard or flirc.  Otherwise it is unmapped and will not be executed
         {
 
-            if (event.getAction() == KeyEvent.ACTION_DOWN)
-            {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 //If this is repeat event
                 if (event.getRepeatCount() > 0 && lastEvent != null && (event.getEventTime() - lastEvent.getEventTime()) < keyMap.getKeyRepeatRateMS(keyCode)
-                        && (event.getEventTime() - event.getDownTime()) < keyMap.getKeyRepeatDelayMS(keyCode))
-                {
+                        && (event.getEventTime() - event.getDownTime()) < keyMap.getKeyRepeatDelayMS(keyCode)) {
                     log.debug("Repeat time since last event:" + (event.getEventTime() - lastEvent.getEventTime()));
-                }
-                else
-                {
+                } else {
 
-                    if (keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT)
-                    {
+                    if (keyCode == KeyEvent.KEYCODE_CTRL_LEFT || keyCode == KeyEvent.KEYCODE_CTRL_RIGHT) {
                         flircMeta += Keys.CTRL_MASK;
                         log.debug("FLIRC Meta Ctrl");
 
@@ -171,8 +181,7 @@ public class KeyMapProcessor {
                         return true;
                     }
 
-                    if (keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT)
-                    {
+                    if (keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
                         flircMeta += Keys.SHIFT_MASK;
                         log.debug("FLIRC Meta Shift");
 
@@ -180,8 +189,7 @@ public class KeyMapProcessor {
                         return true;
                     }
 
-                    if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT)
-                    {
+                    if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT) {
                         flircMeta += Keys.ALT_MASK;
                         log.debug("FLIRC Meta Alt");
 
@@ -189,17 +197,13 @@ public class KeyMapProcessor {
                         return true;
                     }
 
-                    if (flircMeta > 0)
-                    {
-                        try
-                        {
+                    if (flircMeta > 0) {
+                        try {
                             processFlircKeyMetaKey(keyCode, event);
 
                             lastEvent = event;
                             return true;
-                        }
-                        finally
-                        {
+                        } finally {
                             log.debug("Resetting Flirc Meta");
                             flircMeta = 0;
                         }
@@ -207,12 +211,10 @@ public class KeyMapProcessor {
 
                     // Check to see if this is a keyboard command
                     if ((keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) || (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
-                            || keyCode == KeyEvent.KEYCODE_SPACE || keyCode == KeyEvent.KEYCODE_TAB || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1)
-                    {
+                            || keyCode == KeyEvent.KEYCODE_SPACE || keyCode == KeyEvent.KEYCODE_TAB || PUNCTUATION.indexOf(event.getUnicodeChar()) != -1) {
                         char toSend = (char) event.getUnicodeChar();
 
-                        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z)
-                        {
+                        if (keyCode >= KeyEvent.KEYCODE_A && keyCode <= KeyEvent.KEYCODE_Z) {
                             toSend = (char) event.getUnicodeChar(KeyEvent.META_SHIFT_LEFT_ON);
                         }
 
@@ -222,34 +224,25 @@ public class KeyMapProcessor {
                         return true;
                     }
 
-                    if(keyCode >= KeyEvent.KEYCODE_F1 && keyCode <= KeyEvent.KEYCODE_F12)
-                    {
+                    if (keyCode >= KeyEvent.KEYCODE_F1 && keyCode <= KeyEvent.KEYCODE_F12) {
                         //F1 Virtual Code = 112
                         //F1 KeyCode = 131
 
                         //KeyEvent.KEYCODE_PAGE_DOWN = 93
                         //Keys.VK_PAGE_DOWN = 34
 
-                        client.getCurrentConnection().postKeyEvent((keyCode - 19), 0, (char)(keyCode - 19));
+                        client.getCurrentConnection().postKeyEvent((keyCode - 19), 0, (char) (keyCode - 19));
                         return true;
                     }
 
-                    if (client.properties().getBoolean(PrefStore.Keys.debug_log_unmapped_keypresses, false))
-                    {
+                    if (client.properties().getBoolean(PrefStore.Keys.debug_log_unmapped_keypresses, false)) {
                         log.debug("KEYS: Unmapped Key Code: {}", event);
 
-                        try
-                        {
+                        try {
                             Toast.makeText(MiniclientApplication.get(), "UNMAPPED KEY: " + keyEventMapper.getFieldName(event.getKeyCode()), Toast.LENGTH_LONG).show();
+                        } catch (Throwable t) {
                         }
-                        catch (Throwable t) { }
 
-                    }
-
-                    // bit of hack to handle hiding system UI when keyboard is visible
-                    if (event.getKeyCode() == KeyEvent.KEYCODE_BACK)
-                    {
-                        client.eventbus().post(BackPressedEvent.INSTANCE);
                     }
 
                     lastEvent = event;
