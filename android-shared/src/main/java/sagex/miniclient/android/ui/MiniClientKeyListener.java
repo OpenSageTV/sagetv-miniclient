@@ -16,6 +16,7 @@ import sagex.miniclient.android.ui.keymaps.KeyMapProcessor;
 import sagex.miniclient.android.ui.keymaps.PluginListKeyMap;
 import sagex.miniclient.android.ui.keymaps.VideoPausedKeyMap;
 import sagex.miniclient.android.ui.keymaps.VideoPlaybackKeyMap;
+import sagex.miniclient.util.VerboseLogging;
 
 /**
  * Created by seans on 26/09/15.
@@ -66,32 +67,39 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         if (prefs.isSmartRemoteEnabled() && client.getCurrentConnection().getMenuHint()!=null) {
             // if there's a popup then just use normal keys
             if (client.getCurrentConnection().getMenuHint().popupName != null) {
-                log.debug("Using Normal Key Listener for {} - {}", keyCode, event);
+                if (VerboseLogging.LOG_KEYS)
+                    log.debug("Using Normal Key Listener for {} - {}", keyCode, event);
                 return keyProcessor.onKey(defaultKeyMap, keyCode, event);
             }
 
             // if we are playing a video, then check pause/play
             if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
-                log.debug("Using Video Stateful Key Listener");
+                if (VerboseLogging.LOG_KEYS)
+                    log.debug("Using Video Stateful Key Listener");
                 if (client.isVideoPaused()) {
-                    log.debug("Using Paused Key Listener for {} - {}", keyCode, event);
+                    if (VerboseLogging.LOG_KEYS)
+                        log.debug("Using Paused Key Listener for {} - {}", keyCode, event);
                     return keyProcessor.onKey(videoPausedKeyMap, keyCode, event);
                 } else if (client.isVideoPlaying()) {
-                    log.debug("Using Playback Key Listener for {} - {}", keyCode, event);
+                    if (VerboseLogging.LOG_KEYS)
+                        log.debug("Using Playback Key Listener for {} - {}", keyCode, event);
                     return keyProcessor.onKey(videoPlaybackKeyMap, keyCode, event);
                 }
             }
 
             if (client.getCurrentConnection().getMenuHint().isPluginMenu()) {
-                log.debug("Using Plugin Key Listener for {} - {}", keyCode, event);
+                if (VerboseLogging.LOG_KEYS)
+                    log.debug("Using Plugin Key Listener for {} - {}", keyCode, event);
                 return keyProcessor.onKey(pluginKeyMap, keyCode, event);
             } else if (client.getCurrentConnection().getMenuHint().isGuideMenu()) {
-                log.debug("Using Guide Key Listener for {} = {}", keyCode, event);
+                if (VerboseLogging.LOG_KEYS)
+                    log.debug("Using Guide Key Listener for {} = {}", keyCode, event);
                 return keyProcessor.onKey(guideKeyMap, keyCode, event);
             }
         }
 
-        log.debug("Using Default Normal Key Listener. Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
+        if (VerboseLogging.LOG_KEYS)
+            log.debug("Using Default Normal Key Listener. Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
         return keyProcessor.onKey(defaultKeyMap, keyCode, event);
     }
 }

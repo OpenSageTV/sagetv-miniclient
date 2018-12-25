@@ -35,6 +35,14 @@ public class VideoPlaybackKeyMap extends KeyMap {
     }
 
     @Override
+    public boolean shouldCancelLongPress(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            return true;
+        }
+        return super.shouldCancelLongPress(keyCode);
+    }
+
+    @Override
     public int getKeyRepeatRateMS(int keyCode) {
         // if the right/left is held then wait a full second before doing it again
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -53,17 +61,17 @@ public class VideoPlaybackKeyMap extends KeyMap {
     }
 
     @Override
-    public boolean hasSageCommandOverride(int keyCode) {
+    public boolean hasSageCommandOverride(int keyCode, boolean longPress) {
         return keyCode == KeyEvent.KEYCODE_BACK;
     }
 
     @Override
-    public void performSageCommandOverride(int keyCode, MiniClient client) {
+    public void performSageCommandOverride(int keyCode, MiniClient client, boolean longPress) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // if video is playing, then, stop it.
             EventRouter.postCommand(client, SageCommand.STOP);
         } else {
-            super.performSageCommandOverride(keyCode, client);
+            super.performSageCommandOverride(keyCode, client, longPress);
         }
     }
 }

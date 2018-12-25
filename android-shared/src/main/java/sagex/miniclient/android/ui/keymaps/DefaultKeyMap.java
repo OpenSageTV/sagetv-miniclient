@@ -128,17 +128,17 @@ public class DefaultKeyMap extends KeyMap {
     }
 
     @Override
-    public boolean hasSageCommandOverride(int keyCode) {
+    public boolean hasSageCommandOverride(int keyCode, boolean longPress) {
         return keyCode == KeyEvent.KEYCODE_BACK;
     }
 
     @Override
-    public void performSageCommandOverride(int keyCode, MiniClient client) {
+    public void performSageCommandOverride(int keyCode, MiniClient client, boolean longPress) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // bit of hack to handle hiding system UI when keyboard is visible
             client.eventbus().post(BackPressedEvent.INSTANCE);
         } else {
-            super.performSageCommandOverride(keyCode, client);
+            super.performSageCommandOverride(keyCode, client, longPress);
         }
     }
 }

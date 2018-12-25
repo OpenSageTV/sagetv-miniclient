@@ -64,13 +64,16 @@ public class KeyMap {
         return null;
     }
 
-    public boolean hasSageCommandOverride(int keyCode) {
-        if (parent != null) return parent.hasSageCommandOverride(keyCode);
+    public boolean hasSageCommandOverride(int keyCode, boolean longPress) {
+        if (parent != null) return parent.hasSageCommandOverride(keyCode, longPress);
         return false;
     }
 
-    public void performSageCommandOverride(int keyCode, MiniClient client) {
-        if (parent != null) parent.performSageCommandOverride(keyCode, client);
+    public void performSageCommandOverride(int keyCode, MiniClient client, boolean longPress) {
+        if (parent != null) parent.performSageCommandOverride(keyCode, client, longPress);
     }
 
+    public boolean shouldCancelLongPress(int keyCode) {
+        return false;
+    }
 }

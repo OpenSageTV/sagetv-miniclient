@@ -35,17 +35,17 @@ public class VideoPausedKeyMap extends KeyMap {
     }
 
     @Override
-    public boolean hasSageCommandOverride(int keyCode) {
+    public boolean hasSageCommandOverride(int keyCode, boolean longPress) {
         return keyCode == KeyEvent.KEYCODE_BACK;
     }
 
     @Override
-    public void performSageCommandOverride(int keyCode, MiniClient client) {
+    public void performSageCommandOverride(int keyCode, MiniClient client, boolean longPress) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             // if video is playing, then, stop it.
             EventRouter.postCommand(client, SageCommand.STOP);
         } else {
-            super.performSageCommandOverride(keyCode, client);
+            super.performSageCommandOverride(keyCode, client, longPress);
         }
     }
 }

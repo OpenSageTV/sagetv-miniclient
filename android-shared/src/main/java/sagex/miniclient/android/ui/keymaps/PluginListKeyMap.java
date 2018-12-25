@@ -20,4 +20,12 @@ public class PluginListKeyMap extends KeyMap {
         // bring up options on a long press left
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, SageCommand.OPTIONS);
     }
+
+    @Override
+    public boolean shouldCancelLongPress(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            return true;
+        }
+        return parent.shouldCancelLongPress(keyCode);
+    }
 }
