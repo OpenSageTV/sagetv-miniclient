@@ -1,6 +1,7 @@
 package sagex.miniclient.android.ui.keymaps;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
@@ -27,6 +28,8 @@ import sagex.miniclient.util.VerboseLogging;
 public class KeyMapProcessor {
     // hack from the onBackPressed so that we don't process it twice
     public static boolean skipBackOneTime = false;
+    private final AudioManager am;
+    private final boolean soundEffects;
 
     /**
      * NOTE:
@@ -50,10 +53,12 @@ public class KeyMapProcessor {
     protected Context context;
     private MediaMappingPreferences prefs;
 
-    public KeyMapProcessor(MiniClient client, MediaMappingPreferences prefs)
+    public KeyMapProcessor(MiniClient client, MediaMappingPreferences prefs, AudioManager am)
     {
         this.client = client;
         this.prefs = prefs;
+        this.am = am;
+        this.soundEffects = prefs.isSoundEffectsEnabled();
     }
 
     public boolean onKey(KeyMap keyMap, int keyCode, KeyEvent event) {
@@ -132,6 +137,8 @@ public class KeyMapProcessor {
                 return;
             }
         }
+
+        playClickSound();
 
         SageCommand command = null;
 
@@ -275,5 +282,12 @@ public class KeyMapProcessor {
         }
 
         return modifiers;
+    }
+
+    void playClickSound() {
+        if (soundEffects) {
+            float vol = 0.3f; //This will be half of the default system sound
+            am.playSoundEffect(AudioManager.FX_KEY_CLICK, vol);
+        }
     }
 }

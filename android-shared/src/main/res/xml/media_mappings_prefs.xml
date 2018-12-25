@@ -7,12 +7,14 @@
         <SwitchPreference
             android:key="smart_remote_mappings"
             android:summary="Changes remote mappings based on the currently active screen"
-            android:title="Enable Smart Remote Mappings"/>
+            android:title="Enable Smart Remote Mappings"
+            android:defaultValue="true" />
 
         <SwitchPreference
             android:key="long_press_select_for_osd_nav"
             android:summary="Long press select shows navigation overlay."
-            android:title="Show Navigation"/>
+            android:title="Show Navigation"
+            android:defaultValue="true" />
 
         <EditTextPreference
             android:key="repeat_key_ms"
@@ -27,6 +29,12 @@
             android:title="@string/key_repeat_delay_ms_title"
             android:inputType="number"
             android:defaultValue="1000" />
+
+        <SwitchPreference
+            android:key="sound_effects_enabled"
+            android:summary="Enable Sound Effects"
+            android:title="Sound Effects"
+            android:defaultValue="true" />
 
     </PreferenceCategory>
 

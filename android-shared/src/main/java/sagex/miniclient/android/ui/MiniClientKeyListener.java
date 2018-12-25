@@ -1,6 +1,7 @@
 package sagex.miniclient.android.ui;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -44,7 +45,9 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         prefsVideoPlaying = new MediaMappingPreferences("videoplaying", client.properties());
         prefs = new MediaMappingPreferences(client.properties());
 
-        keyProcessor = new KeyMapProcessor(client, prefs);
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+        keyProcessor = new KeyMapProcessor(client, prefs, am);
 
         defaultKeyMap = new DefaultKeyMap(null, client);
         defaultKeyMap.initializeKeyMaps();

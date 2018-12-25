@@ -24,6 +24,9 @@ public class MediaMappingPreferences
         return preferences.getBoolean("long_press_select_for_osd_nav", true);
     }
 
+    public boolean isSoundEffectsEnabled() {
+        return preferences.getBoolean("sound_effects_enabled", true);
+    }
 
     public boolean isSmartRemoteEnabled()
     {
