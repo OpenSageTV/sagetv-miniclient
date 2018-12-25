@@ -44,7 +44,7 @@ public class OpenGLUtils {
     public static int useProgram(Shader shader) {
         if (shader != CURRENT_SHADER) {
             CURRENT_SHADER = shader;
-            log.debug("Using Shader Program: {} - name {}", shader.program(), shader.name());
+            // log.debug("Using Shader Program: {} - name {}", shader.program(), shader.name());
             shader.use();
         }
 

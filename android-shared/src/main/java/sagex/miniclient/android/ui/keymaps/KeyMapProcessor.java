@@ -73,8 +73,6 @@ public class KeyMapProcessor {
                 log.debug("KEYS: LONG PRESS KEYCODE: {}; {}", keyCode, event);
 
                 skipKey = keyCode;
-                //UserEvent key = new UserEvent(LONGPRESS_KEYMAP.get(keyCode));
-
 
                 if (prefs.isLongPressSelectShowOSDNav() &&
                         (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER ||
@@ -91,7 +89,6 @@ public class KeyMapProcessor {
                 skipUp = true;
 
                 return true;
-
             }
             else if(event.getAction() == KeyEvent.ACTION_UP)
             {
@@ -105,7 +102,6 @@ public class KeyMapProcessor {
                 }
 
                 if (keyMap.hasSageCommandOverride(keyCode)) {
-                    lastEvent = event;
                     keyMap.performSageCommandOverride(keyCode, client);
                     return true;
                 }
@@ -116,13 +112,14 @@ public class KeyMapProcessor {
 
                     log.debug("KEYS: POST KEYCODE: {}; {}; longpress?: {}", keyCode, event, event.isLongPress());
                     EventRouter.postCommand(client, command);
+                    return true;
                 }
-
             }
 
+            log.warn("Unhandled Key in Long Press: {} - {}", keyCode, event);
             return true;
-        } else if (keyMap.hasNormalPress(keyCode)) //Handle standard mapped press events
-        {
+        } else if (keyMap.hasNormalPress(keyCode)) {
+            //Handle standard mapped press events
             SageCommand command = keyMap.getNormalPressCommand(keyCode);
 
             if(command == SageCommand.NONE)

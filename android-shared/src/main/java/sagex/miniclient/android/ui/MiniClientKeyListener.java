@@ -66,36 +66,32 @@ public class MiniClientKeyListener implements View.OnKeyListener {
         if (prefs.isSmartRemoteEnabled() && client.getCurrentConnection().getMenuHint()!=null) {
             // if there's a popup then just use normal keys
             if (client.getCurrentConnection().getMenuHint().popupName != null) {
-                log.debug("Using Normal Key Listener");
+                log.debug("Using Normal Key Listener for {} - {}", keyCode, event);
                 return keyProcessor.onKey(defaultKeyMap, keyCode, event);
             }
 
             // if we are playing a video, then check pause/play
             if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
-                log.debug("Using Stateful Key Listener");
+                log.debug("Using Video Stateful Key Listener");
                 if (client.isVideoPaused()) {
-                    log.debug("Using Paused Key Listener");
+                    log.debug("Using Paused Key Listener for {} - {}", keyCode, event);
                     return keyProcessor.onKey(videoPausedKeyMap, keyCode, event);
                 } else if (client.isVideoPlaying()) {
-                    log.debug("Using Playback Key Listener");
+                    log.debug("Using Playback Key Listener for {} - {}", keyCode, event);
                     return keyProcessor.onKey(videoPlaybackKeyMap, keyCode, event);
                 }
             }
 
-            if (client.isVideoVisible()) {
-                log.debug("Using Default Normal Key Listener. MenuPlayerState: {}, Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMediaCmd().getPlaya().getState(), client.getCurrentConnection().getMenuHint(), event);
-            } else {
-                if (client.getCurrentConnection().getMenuHint().isPluginMenu()) {
-                    log.debug("Using Plugin Key Listener");
-                    return keyProcessor.onKey(pluginKeyMap, keyCode, event);
-                } else if (client.getCurrentConnection().getMenuHint().isGuideMenu()) {
-                    log.debug("Using Guide Key Listener");
-                    return keyProcessor.onKey(guideKeyMap, keyCode, event);
-                }
-                log.debug("Using Default Normal Key Listener. (No Player Visible). Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
+            if (client.getCurrentConnection().getMenuHint().isPluginMenu()) {
+                log.debug("Using Plugin Key Listener for {} - {}", keyCode, event);
+                return keyProcessor.onKey(pluginKeyMap, keyCode, event);
+            } else if (client.getCurrentConnection().getMenuHint().isGuideMenu()) {
+                log.debug("Using Guide Key Listener for {} = {}", keyCode, event);
+                return keyProcessor.onKey(guideKeyMap, keyCode, event);
             }
         }
 
+        log.debug("Using Default Normal Key Listener. Menu Hint was {}, Key Event was {}", client.getCurrentConnection().getMenuHint(), event);
         return keyProcessor.onKey(defaultKeyMap, keyCode, event);
     }
 }

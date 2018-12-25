@@ -3,8 +3,6 @@ package sagex.miniclient.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sagex.miniclient.uibridge.Dimension;
-import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.RectangleF;
 
 /**
@@ -51,7 +49,7 @@ public class AspectModeManager {
             vidFinal.translate(ui, uiSize);
         }
 
-        log.debug("doMeasure(): vid: {}, vidFinal: {}, projected screen: {}, actual screen: {}, vidInfo: {}", vid, vidFinal, ui, uiSize, info);
+        // log.debug("doMeasure(): vid: {}, vidFinal: {}, projected screen: {}, actual screen: {}, vidInfo: {}", vid, vidFinal, ui, uiSize, info);
         return vidFinal;
     }
 
