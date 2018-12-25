@@ -25,6 +25,9 @@ import sagex.miniclient.util.VerboseLogging;
  * Created by seans on 26/09/15.
  */
 public class KeyMapProcessor {
+    // hack from the onBackPressed so that we don't process it twice
+    public static boolean skipBackOneTime = false;
+
     /**
      * NOTE:
      * HOME cannot be easily mapped to another Event.  Used to be able to do that, not any more.
@@ -39,6 +42,7 @@ public class KeyMapProcessor {
 
     protected final MiniClient client;
     protected int flircMeta = 0;
+    boolean skipUp = false;
     boolean longPress = false;
     boolean longPressCancel = false;
     long longPressTime = 0;
@@ -58,19 +62,28 @@ public class KeyMapProcessor {
 
             if (VerboseLogging.LOG_KEYS)
                 log.debug("LONG DOWN: {} - {} -- {}", event.getEventTime(), event.getDownTime(), event);
+
+            // check for longpress
             if (!longPress && event.getEventTime() - event.getDownTime() > keyMap.getKeyRepeatDelayMS(keyCode)) {
                 longPress = true;
                 longPressTime = event.getEventTime();
+
                 if (VerboseLogging.LOG_KEYS)
                     log.debug("FIRE: LongPress {} {}", longPressTime, event);
+
                 handleKeyPress(keyMap, keyCode, event, longPress);
+
+                // some long press actions might only want to be processed once, like, back, or select
                 if (keyMap.shouldCancelLongPress(keyCode)) {
                     if (VerboseLogging.LOG_KEYS)
                         log.debug("Cancel LongPress Repeats {}", event);
                     longPressCancel = true;
                 }
+
                 return true;
             }
+
+            // if longpress has started, check for repeats
             if (longPress && event.getEventTime() - longPressTime > keyMap.getKeyRepeatRateMS(keyCode)) {
                 if (VerboseLogging.LOG_KEYS)
                     log.debug("FIRE: LongPress {} Repeat {} - {}", longPressTime, event.getEventTime(), event);
@@ -78,19 +91,30 @@ public class KeyMapProcessor {
                 handleKeyPress(keyMap, keyCode, event, longPress);
                 return true;
             } else {
-                // waiting for repeat
-                return true;
+                // for navigation keys we fire them once, and then start the delay/repeat loops
+                // ie, down will move down, but when held it will start repeating after the delay
+                if (!skipUp && keyMap.isNavigationKey(keyCode)) {
+                    skipUp = true;
+                    handleKeyPress(keyMap, keyCode, event, false);
+                    return true;
+                } else {
+                    // waiting for longpress/repeat
+                    return true;
+                }
             }
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
-            if (longPress) {
+            if (longPress || skipUp) {
                 if (VerboseLogging.LOG_KEYS)
                     log.debug("Long Press UP: Do Nothing.");
                 longPressTime = 0;
                 longPress = false;
                 longPressCancel = false;
+                skipUp = false;
             } else {
                 if (VerboseLogging.LOG_KEYS)
                     log.debug("UP: {}", event);
+
+                // pretty much all normal keyboard keys will get handled here
                 handleKeyPress(keyMap, keyCode, event, false);
             }
         }
@@ -99,6 +123,16 @@ public class KeyMapProcessor {
     }
 
     private void handleKeyPress(KeyMap keyMap, int keyCode, KeyEvent event, boolean longPress) {
+        // this is really a hack because of the on screen controls
+        // when we close them, we don't want to process the "back"
+        if (skipBackOneTime) {
+            skipBackOneTime = false;
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                log.debug("Skipping Back Event one time.");
+                return;
+            }
+        }
+
         SageCommand command = null;
 
         if (longPress && prefs.isLongPressSelectShowOSDNav() &&
@@ -130,6 +164,7 @@ public class KeyMapProcessor {
             return;
         }
 
+        // this is normal keys like a,b,c, etc.
         handleDefaultEvent(keyCode, event);
     }
 

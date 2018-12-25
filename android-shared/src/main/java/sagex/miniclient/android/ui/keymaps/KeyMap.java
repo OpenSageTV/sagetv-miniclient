@@ -76,4 +76,8 @@ public class KeyMap {
     public boolean shouldCancelLongPress(int keyCode) {
         return false;
     }
+
+    public boolean isNavigationKey(int keyCode) {
+        return false;
+    }
 }

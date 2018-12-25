@@ -23,9 +23,20 @@ public class PluginListKeyMap extends KeyMap {
 
     @Override
     public boolean shouldCancelLongPress(int keyCode) {
-        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
             return true;
         }
         return parent.shouldCancelLongPress(keyCode);
     }
+
+    @Override
+    public boolean isNavigationKey(int keyCode) {
+        if (
+                keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
+                        keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            return false;
+        }
+        return parent.isNavigationKey(keyCode);
+    }
+
 }

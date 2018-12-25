@@ -50,6 +50,7 @@ import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.ui.MiniClientKeyListener;
 import sagex.miniclient.android.ui.MiniclientTouchListener;
+import sagex.miniclient.android.ui.keymaps.KeyMapProcessor;
 import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
@@ -302,8 +303,6 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
     public void onBackPressed() {
         // hide system ui, in case keyboard is visible
         hideSystemUI(this);
-        //EventRouter.post(client, EventRouter.BACK);
-        //confirmExit(this);
     }
 
     @Override
@@ -511,13 +510,15 @@ public class MiniClientOpenGLActivity extends Activity implements MACAddressReso
     public void handleOnBackPressed(BackPressedEvent event) {
         hideSystemUI(this);
 
-        log.debug("on back pressed");
+        // prevents multiple back events from firing form different key handlers
+        log.debug("on back pressed event");
 
-        if (!hideNavigationDialog()) {
-            log.debug("Navigation wasn't visible so will process normal back");
-            EventRouter.postCommand(client, SageCommand.BACK);
-        } else {
+        if (hideNavigationDialog()) {
             log.debug("Just hiding navigation");
+            KeyMapProcessor.skipBackOneTime = true;
+        } else {
+            // log.debug("Navigation wasn't visible so will process normal back");
+            //EventRouter.postCommand(client, SageCommand.BACK);
         }
     }
 

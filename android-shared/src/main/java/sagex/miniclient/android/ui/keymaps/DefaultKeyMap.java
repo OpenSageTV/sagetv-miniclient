@@ -7,6 +7,7 @@ import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.uibridge.EventRouter;
 
 public class DefaultKeyMap extends KeyMap {
     private final int keyRepeatRateDelay;
@@ -30,6 +31,10 @@ public class DefaultKeyMap extends KeyMap {
 
     @Override
     public int getKeyRepeatDelayMS(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && prefs.isLongPressSelectShowOSDNav()) {
+            // only wait 500ms to show the OSD
+            return 500;
+        }
         return keyInitialRepeatDelay;
     }
 
@@ -128,17 +133,37 @@ public class DefaultKeyMap extends KeyMap {
     }
 
     @Override
+    public boolean isNavigationKey(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP ||
+                keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
+                keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
+                keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            return true;
+        }
+        return super.isNavigationKey(keyCode);
+    }
+
+    @Override
     public boolean hasSageCommandOverride(int keyCode, boolean longPress) {
-        return keyCode == KeyEvent.KEYCODE_BACK;
+        return !longPress && keyCode == KeyEvent.KEYCODE_BACK;
     }
 
     @Override
     public void performSageCommandOverride(int keyCode, MiniClient client, boolean longPress) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
+        if (!longPress && keyCode == KeyEvent.KEYCODE_BACK) {
             // bit of hack to handle hiding system UI when keyboard is visible
             client.eventbus().post(BackPressedEvent.INSTANCE);
+            // note this might get cancelled if the OSD was visible and we closed it in the previous line above
+            EventRouter.postCommand(client, SageCommand.BACK);
         } else {
             super.performSageCommandOverride(keyCode, client, longPress);
         }
+    }
+
+    @Override
+    public boolean shouldCancelLongPress(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)
+            return true;
+        return super.shouldCancelLongPress(keyCode);
     }
 }

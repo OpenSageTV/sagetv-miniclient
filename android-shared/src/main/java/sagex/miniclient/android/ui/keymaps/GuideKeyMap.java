@@ -29,4 +29,14 @@ public class GuideKeyMap extends KeyMap {
         // should never get here
         return 0;
     }
+
+    @Override
+    public boolean isNavigationKey(int keyCode) {
+        if (
+                keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
+                        keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            return false;
+        }
+        return parent.isNavigationKey(keyCode);
+    }
 }
