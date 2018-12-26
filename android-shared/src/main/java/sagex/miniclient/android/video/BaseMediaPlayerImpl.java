@@ -163,7 +163,7 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     public long getMediaTimeMillis(long lastServerTime) {
         if (lastMediaTime == -1) lastMediaTime = lastServerTime;
 
-        if (!playerReady || player == null || flushed) {
+        if (!playerReady || player == null) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("getMediaTimeMillis(): Player not ready, returning 0");
 

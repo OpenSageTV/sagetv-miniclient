@@ -75,15 +75,18 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                     time = time - PTS_ROLLOVER;
                 }
                 time = time + resumeTimeOffset;
-                if (logTime != realTime / 1000) {
-                    logTime = realTime / 1000;
-                    if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                    if (logTime != realTime / 1000) {
+                        logTime = realTime / 1000;
                         log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, player time: {}, total: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(realTime, true), toHHMMSS(time, true));
                     }
                 }
             } else {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                    log.debug("IJK: getPlayerMediaTimeMillis(): time: {}", toHHMMSS(time, true));
+                    if (logTime != time / 1000) {
+                        logTime = time / 1000;
+                        log.debug("IJK: getPlayerMediaTimeMillis(): time: {}", toHHMMSS(time, true));
+                    }
                 }
             }
         }
