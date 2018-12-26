@@ -701,6 +701,10 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     @Override
     public void onMenuHint(MenuHint hint) {
         activity.showHideKeyboard(hint.hasTextInput);
+        if (client.properties().getBoolean(PrefStore.Keys.exit_on_standby, true) && hint.isScreenSaver()) {
+            log.warn("Exiting SageTV because of Screen Saver being activated.");
+            activity.finish();
+        }
     }
 
     @Override

@@ -178,5 +178,7 @@ public interface PrefStore {
          */
         String client_id = "clientid";
         String use_opengl_ui = "use_opengl_ui";
+
+        String exit_on_standby = "exit_on_standby";
     }
 }

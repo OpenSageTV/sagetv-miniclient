@@ -9,8 +9,6 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
-import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
@@ -44,6 +42,11 @@ public class SettingsFragment extends PreferenceFragment {
 
             //prefs.setEnabled(this, Prefs.Key.use_log_to_sdcard, !getResources().getBoolean(R.bool.istv));
 
+            Preference p = this.findPreference(Keys.exit_on_standby);
+            if (p != null) {
+                p.setDefaultValue(true);
+            }
+
             Preference touchPref = this.findPreference("touch_mappings");
 
             touchPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
@@ -70,7 +73,7 @@ public class SettingsFragment extends PreferenceFragment {
                 }
             });
 
-            Preference p = findPreference(PrefStore.Keys.use_log_to_sdcard);
+            p = findPreference(PrefStore.Keys.use_log_to_sdcard);
             p.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {

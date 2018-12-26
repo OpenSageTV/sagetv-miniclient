@@ -91,4 +91,8 @@ public class MenuHint {
     public boolean isGuideMenu() {
         return popupName == null && hasMenuLike("TVGuide");
     }
+
+    public boolean isScreenSaver() {
+        return popupName == null && hasMenuLike("Screen Saver");
+    }
 }

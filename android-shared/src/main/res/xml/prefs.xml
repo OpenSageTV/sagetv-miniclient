@@ -97,6 +97,12 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="exit_on_standby"
+            android:summary="@string/exit_on_standby_summary"
+            android:title="@string/exit_on_standby_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="exit_to_home_screen"
             android:summary="@string/exit_to_home_screen_summary"
             android:title="@string/exit_to_home_screen_title"/>

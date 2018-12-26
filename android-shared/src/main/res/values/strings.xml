@@ -105,4 +105,6 @@
     <string name="key_repeat_ms_summary">How long, in Milliseconds, each key will repeat when held</string>
     <string name="key_repeat_delay_ms_summary">How long, in Milliseconds, a key is held before it will start repeating</string>
     <string name="key_repeat_delay_ms_title">Key Repeat Delay (ms)</string>
+    <string name="exit_on_standby_summary">Exits SageTV when the SageTV screensaver kicks in.  This is generally a good thing to do to save memory on the Android Device.</string>
+    <string name="exit_on_standby_title">Exit App when on Stand By</string>
 </resources>
