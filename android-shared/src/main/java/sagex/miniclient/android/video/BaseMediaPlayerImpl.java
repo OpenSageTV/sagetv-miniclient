@@ -95,8 +95,11 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     @Override
     public void load(byte majorHint, byte minorHint, String encodingHint, final String urlString, String hostname, boolean timeshifted, long buffersize) {
         lastUri = urlString;
-        lastMediaTime = 0;
+        lastMediaTime = -1;
         eos=false;
+        seekPending = false;
+        flushed = false;
+
         log.debug("load(): url: {}", urlString);
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
@@ -167,7 +170,10 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
             // NOTE: SageTV generally expects 0 during seek/flush calls
             return 0;
         }
-        if (flushed || seekPending) {
+
+        // NOTE: when using seekPending check here, ijkplayer tends to send back
+        // wrong values, so we removed seekPending checks.
+        if (flushed) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("getMediaTimeMillis(): Player seeking or waiting for data, returning 0");
 

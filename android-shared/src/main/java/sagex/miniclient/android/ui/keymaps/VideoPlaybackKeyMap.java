@@ -46,7 +46,7 @@ public class VideoPlaybackKeyMap extends KeyMap {
     public int getKeyRepeatRateMS(int keyCode) {
         // if the right/left is held then wait a full second before doing it again
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-            return 2000;
+            return 1000;
         }
         return super.getKeyRepeatRateMS(keyCode);
     }

@@ -26,7 +26,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     boolean resumeMode = false;
     int initialAudioStreamPos = -1;
     int initialTextStreamPos = -1;
-
+    long logTime = -1;
     public IJKMediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, true);
     }
@@ -70,13 +70,16 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 // when in resume mode, you go back before the start of the resume, player time
                 // seems to do a PTS rollover of sorts
                 long realTime = time;
-                time = time + resumeTimeOffset;
-                if (time > PTS_ROLLOVER) {
+                if (time + resumeTimeOffset > PTS_ROLLOVER) {
                     // need to adjust the time
                     time = time - PTS_ROLLOVER;
                 }
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                    log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, player time: {}, total: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(realTime, true), toHHMMSS(time, true));
+                time = time + resumeTimeOffset;
+                if (logTime != realTime / 1000) {
+                    logTime = realTime / 1000;
+                    if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+                        log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, player time: {}, total: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(realTime, true), toHHMMSS(time, true));
+                    }
                 }
             } else {
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
@@ -136,9 +139,14 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
     protected void setupPlayer(String sageTVurl) {
         log.debug("Creating Player");
+
+        preSeekPos = -1;
         resumeTimeOffset = -1;
         resumeMode = false;
         initialAudioStreamPos = -1;
+        initialTextStreamPos = -1;
+        logTime = -1;
+
         releasePlayer();
         try {
             if (player == null) {
