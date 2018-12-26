@@ -102,6 +102,12 @@
             android:title="@string/exit_on_standby_title" />
 
         <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="app_destroy_on_pause"
+            android:summary="@string/terminate_onpause_summary"
+            android:title="@string/terminate_onpause_title" />
+
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="exit_to_home_screen"
             android:summary="@string/exit_to_home_screen_summary"
@@ -150,12 +156,6 @@
             android:key="auto_connect_delay"
             android:summary="@string/summary_auto_connect_delay_preference"
             android:title="@string/title_auto_connect_delay_preference"/>
-
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="app_destroy_on_pause"
-            android:summary="@string/terminate_onpause_summary"
-            android:title="@string/terminate_onpause_title"/>
 
     </PreferenceCategory>
 

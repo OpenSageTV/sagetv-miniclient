@@ -47,6 +47,11 @@ public class SettingsFragment extends PreferenceFragment {
                 p.setDefaultValue(true);
             }
 
+            p = this.findPreference(Keys.app_destroy_on_pause);
+            if (p != null) {
+                p.setDefaultValue(true);
+            }
+
             Preference touchPref = this.findPreference("touch_mappings");
 
             touchPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
