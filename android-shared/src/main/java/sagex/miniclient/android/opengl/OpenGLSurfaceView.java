@@ -14,7 +14,7 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2);
         getHolder().setFormat(PixelFormat.TRANSLUCENT);
-        setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+        setEGLConfigChooser(8, 8, 8, 8, 0, 0);
         setRenderer(renderer);
         setZOrderOnTop(true);
         setZOrderMediaOverlay(true);

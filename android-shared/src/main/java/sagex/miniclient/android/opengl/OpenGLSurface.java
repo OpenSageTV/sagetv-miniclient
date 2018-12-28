@@ -67,7 +67,7 @@ public class OpenGLSurface extends OpenGLTexture {
         }
 
         GLES20.glClearColor(0, 0, 0, 1);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
