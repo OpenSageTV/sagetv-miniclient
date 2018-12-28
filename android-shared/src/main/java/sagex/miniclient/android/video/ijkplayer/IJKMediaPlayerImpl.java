@@ -67,6 +67,11 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             }
 
             if (resumeMode) {
+                if (time == 0) {
+                    // weird mode where time goes to 0 for a period of time.
+                    // IJK has this happen for a considerable amount of time... sometimes for minutes.
+                    return time;
+                }
                 // when in resume mode, you go back before the start of the resume, player time
                 // seems to do a PTS rollover of sorts
                 long realTime = time;
