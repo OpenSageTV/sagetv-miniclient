@@ -2,6 +2,9 @@ package sagex.miniclient.android.opengl.shapes;
 
 import android.opengl.GLES20;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -11,6 +14,7 @@ import sagex.miniclient.android.opengl.OpenGLSurface;
 import sagex.miniclient.android.opengl.OpenGLUtils;
 
 public class LineRectangle {
+    static final Logger log = LoggerFactory.getLogger(FillRectangle.class);
 
     private FloatBuffer vertexBuffer;
     private static ShortBuffer drawListBuffer;
@@ -19,7 +23,7 @@ public class LineRectangle {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 2;
 
-    private static short drawOrder[] = {0, 1, 2, 3, 0}; // order to draw vertices
+    private static short drawOrder[] = {0, 1, 2, 3}; // order to draw vertices
 
     static {
         // initialize byte buffer for the draw list
@@ -53,6 +57,11 @@ public class LineRectangle {
     }
 
     public void draw(int x1, int y1, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, int thickness, OpenGLSurface surface) {
+//        log.debug("RECT: {},{} {},{} - TL:{}, BL:{}, TR: {}, BR: {}",
+//                x1,y1,width,height, OpenGLUtils.hexColor(argbTL), OpenGLUtils.hexColor(argbBL), OpenGLUtils.hexColor(argbTR),
+//                OpenGLUtils.hexColor(argbBR)
+//        );
+
         // Add program to OpenGL ES environment
         OpenGLUtils.useProgram(OpenGLUtils.defaultShader);
 
@@ -99,12 +108,14 @@ public class LineRectangle {
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(OpenGLUtils.defaultShader.u_myPMVMatrix, 1, false, surface.viewMatrix, 0);
 
-        GLES20.glLineWidth(thickness);
+        //GLES20.glLineWidth(thickness);
+        // thick lines look bad
+        GLES20.glLineWidth(1.5f);
 
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-        GLES20.glDrawElements(GLES20.GL_LINE_STRIP, drawOrder.length,
+        GLES20.glDrawElements(GLES20.GL_LINE_LOOP, drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         GLES20.glDisable(GLES20.GL_BLEND);

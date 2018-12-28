@@ -50,8 +50,8 @@ public class OpenGLSurface extends OpenGLTexture {
         texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, TEXTURE_FILTER);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, TEXTURE_FILTER);
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
         GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         OpenGLUtils.logGLErrors("Surface.bind()");
@@ -66,7 +66,7 @@ public class OpenGLSurface extends OpenGLTexture {
             throw new RuntimeException("Error creating FBO");
         }
 
-        GLES20.glClearColor(0, 0, 0, 0);
+        GLES20.glClearColor(0, 0, 0, 1);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
@@ -83,7 +83,7 @@ public class OpenGLSurface extends OpenGLTexture {
     public void bind() {
         //log.debug("Binding Framebuffer Surface: ({}), {}x{}", id, width, height);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, buffer());
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0);
+        //GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, texture(), 0);
         int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
         if(status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
             log.debug("Framebuffer Did Not Bind. Status: {}", status);

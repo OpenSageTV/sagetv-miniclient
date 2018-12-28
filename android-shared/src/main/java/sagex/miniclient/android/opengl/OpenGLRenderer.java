@@ -88,7 +88,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
 
     // Screen and UI resolutions
     // Total available screan pixels that we have
-    Dimension fullScreenSize = uiSize.clone();
+    // will will calculate this later
+    Dimension fullScreenSize = new Dimension(-1, -1);
 
 
     // if true, the uiSize is set to the Native resolution
@@ -123,12 +124,18 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         useNativeResolution = client.properties().getBoolean(PrefStore.Keys.use_native_resolution, false);
 
         fullScreenSize.updateFrom(getMaxScreenSize());
-        lastResize.updateFrom(fullScreenSize);
 
         if (useNativeResolution) {
             log.warn("Using native resolution.  Should consider using smaller resolution.");
             uiSize.updateFrom(fullScreenSize);
+            // sagetv will scale on the server
+            //OpenGLTexture.TEXTURE_FILTER = GLES20.GL_NEAREST;
+        } else {
+            // since we are scaling, let's use smooth scaling
+            //OpenGLTexture.TEXTURE_FILTER = GLES20.GL_LINEAR;
         }
+
+        lastResize.updateFrom(fullScreenSize);
 
         scale.setScale(uiSize, fullScreenSize);
 
@@ -204,6 +211,22 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
                 white, mainSurfaceGL);
         lineShape.draw(0, 100, 100, 200, blue, blue, 3, mainSurfaceGL);
         log.debug("* RENDERED BITMAP *");
+
+        // gradient rectagle with just opacity
+
+        int shade = OpenGLUtils.RGBA_to_ARGB(0, 0, 0, 0xa5);
+        fillRectShape.draw(0, 106, 319, 84,
+                shade, shade, shade, shade, mainSurfaceGL);
+
+//        0,106 319,84 - TL: 0 0 0.a5, BL: 0 0 0.a5, TR:  0 0 0.a5, BR:  0 0 0.a5
+//        2018-12-28 08:50:16.114 23328-23382 D: [GLThread 458] DEBUG - RECT: 0,106 7,84 - TL:f5a623.ff, BL:f5a623.ff, TR: f5a623.ff, BR: f5a623.ff
+//        2018-12-28 08:50:16.115 23328-23382 D: [GLThread 458] DEBUG - RECT: 310,70 8,579 - TL:333333.ff, BL:333333.ff, TR: 333333.ff, BR: 333333.ff
+//        2018-12-28 08:50:16.115 23328-23382 D: [GLThread 458] DEBUG - RECT: 311,70 6,579 - TL:333333.ff, BL:333333.ff, TR: 333333.ff, BR: 333333.ff
+//        2018-12-28 08:50:16.115 23328-23382 D: [GLThread 458] DEBUG - RECT: 311,70 6,496 - TL:c0821b.c8, BL:c0821b.c8, TR: c0821b.c8, BR: c0821b.c8
+//        2018-12-28 08:50:16.115 23328-23382 D: [GLThread 458] DEBUG - RECT: 342,66 292,157 - TL: 0 0 0.ff, BL:666666.ff, TR:  0 0 0.ff, BR: 666666.ff
+//        2018-12-28 08:50:16.115 23328-23382 D: [GLThread 458] DEBUG - RECT: 653,66 292,157 - TL: 0 0 0.ff, BL:666666.ff, TR:  0 0 0.ff, BR: 666666.ff
+//        2018-12-28 08:50:16.115 23328-23382 D: [GLThread 458] DEBUG - RECT: 965,66 292,157 - TL: 0 0 0.ff, BL:666666.ff, TR:  0 0 0.ff, BR: 666666.ff
+
         ((GLSurfaceView) activity.getUIView()).requestRender();
     }
 
@@ -593,7 +616,7 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     void clearUI() {
-        GLES20.glClearColor(0, 0, 0, 0);
+        GLES20.glClearColor(0, 0, 0, 1);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
     }
 

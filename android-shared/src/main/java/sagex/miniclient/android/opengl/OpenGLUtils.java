@@ -83,6 +83,16 @@ public class OpenGLUtils {
         //return ((argb >> 16) & 0xFF) | ((argb >> 8) & 0xFF) | ((argb) & 0xFF) | ((argb >> 24) & 0xFF);
     }
 
+    public static String hexColor(int argb) {
+        int r = ((argb >> 16) & 0xff);
+        int g = ((argb >> 8) & 0xff);
+        int b = ((argb) & 0xff);
+        int a = ((argb >> 24) & 0xff);
+
+        return String.format("%2x%2x%2x.%2x", r, g, b, a);
+    }
+
+
     public static void putToFloatBuffer(int argb, FloatBuffer buffer) {
         float r = ((argb >> 16) & 0xff);
         float g = ((argb >> 8) & 0xff);

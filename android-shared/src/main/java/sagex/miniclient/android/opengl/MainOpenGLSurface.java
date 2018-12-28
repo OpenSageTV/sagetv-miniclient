@@ -35,7 +35,7 @@ public class MainOpenGLSurface extends OpenGLSurface {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
-        GLES20.glClearColor(0, 0, 0, 0);
+        GLES20.glClearColor(0, 0, 0, 1);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         return this;

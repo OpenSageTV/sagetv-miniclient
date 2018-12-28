@@ -2,6 +2,9 @@ package sagex.miniclient.android.opengl.shapes;
 
 import android.opengl.GLES20;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -11,6 +14,7 @@ import sagex.miniclient.android.opengl.OpenGLSurface;
 import sagex.miniclient.android.opengl.OpenGLUtils;
 
 public class FillRectangle {
+    static final Logger log = LoggerFactory.getLogger(FillRectangle.class);
 
     private FloatBuffer vertexBuffer;
     static private ShortBuffer drawListBuffer;
@@ -19,7 +23,7 @@ public class FillRectangle {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 2;
 
-    static short drawOrder[] = {0, 1, 2, 3, 0}; // order to draw vertices
+    static short drawOrder[] = {0, 1, 2, 0, 3, 2}; // order to draw vertices
 
     static {
         // initialize byte buffer for the draw list
@@ -57,6 +61,10 @@ public class FillRectangle {
     }
 
     public void draw(int x1, int y1, int width, int height, int argbTL, int argbTR, int argbBR, int argbBL, OpenGLSurface surface, boolean blend) {
+//        log.debug("FILL: {},{} {},{} - TL:{}, BL:{}, TR: {}, BR: {}",
+//            x1,y1,width,height, OpenGLUtils.hexColor(argbTL), OpenGLUtils.hexColor(argbBL), OpenGLUtils.hexColor(argbTR),
+//                OpenGLUtils.hexColor(argbBR)
+//        );
         // Add program to OpenGL ES environment
         OpenGLUtils.useProgram(OpenGLUtils.defaultShader);
 

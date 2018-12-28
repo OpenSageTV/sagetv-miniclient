@@ -16,6 +16,8 @@ import java.nio.ShortBuffer;
 import sagex.miniclient.uibridge.Texture;
 
 public class OpenGLTexture implements Texture {
+    public static int TEXTURE_FILTER = GLES20.GL_LINEAR;
+
     private static Logger log = LoggerFactory.getLogger(OpenGLTexture.class);
 
     static final int FLOAT_SIZE = 4;
@@ -32,7 +34,7 @@ public class OpenGLTexture implements Texture {
     FloatBuffer uvDataBuff = ByteBuffer.allocateDirect(uvData.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
     private static ShortBuffer drawListBuffer;
-    protected static short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
+    protected static short drawOrder[] = {0, 1, 2, 0, 3, 2}; // order to draw vertices
 
     static {
         // initialize byte buffer for the draw list
@@ -78,8 +80,8 @@ public class OpenGLTexture implements Texture {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
 
         // Set filtering
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, TEXTURE_FILTER);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, TEXTURE_FILTER);
 
         // Set wrapping mode
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
