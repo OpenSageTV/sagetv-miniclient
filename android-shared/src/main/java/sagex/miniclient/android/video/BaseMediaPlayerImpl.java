@@ -161,34 +161,25 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public long getMediaTimeMillis(long lastServerTime) {
-        if (lastServerTime == -1) {
-            // this might happen because we FLUSH which resets lastServerTime and then
-            // get mediatime is called, but, we don't have time because PUSHBUFFER hasn't arrived yet.
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): lastServerTime was -1, using lastMediaTime: {}", Utils.toHHMMSS(lastMediaTime, true));
-            return lastMediaTime;
-        }
-
         if (lastMediaTime == -1) lastMediaTime = lastServerTime;
 
         if (!playerReady || player == null) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player not ready, returning lastMediaTime: {}", Utils.toHHMMSS(lastMediaTime, true));
+                log.debug("getMediaTimeMillis(): Player not ready, returning 0");
 
-            // NOTE: SageTV generally expects 0 during seek/flush calls (maybe)
-            return lastMediaTime;
+            // NOTE: SageTV generally expects 0 during seek/flush calls
+            return 0;
         }
 
         // NOTE: when using seekPending check here, ijkplayer tends to send back
         // wrong values, so we removed seekPending checks.
         if (flushed) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player seeking or waiting for data, returning lastServerTime: {}", Utils.toHHMMSS(lastServerTime, true));
+                log.debug("getMediaTimeMillis(): Player seeking or waiting for data, returning 0");
 
-            // NOTE: SageTV generally expects 0 during seek/flush calls (maybe)
-            return lastMediaTime;
+            // NOTE: SageTV generally expects 0 during seek/flush calls
+            return 0;
         }
-
         if (state == STOPPED_STATE || state == EOS_STATE || state == PAUSE_STATE) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 log.debug("getMediaTimeMillis(): Player State {} returning last time {}", state, Utils.toHHMMSS(lastMediaTime, true));
@@ -197,17 +188,16 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
         if (state == NO_STATE || state == LOADED_STATE) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                log.debug("getMediaTimeMillis(): Player State Not Ready {} returning lastServerTime: {}", state, Utils.toHHMMSS(lastServerTime));
-            return lastServerTime;
+                log.debug("getMediaTimeMillis(): Player State Not Ready {} returning 0", state);
+            return 0;
         }
 
         long mt = getPlayerMediaTimeMillis(lastServerTime);
         if (mt <= 0) {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                log.debug("getMediaTimeMillis() is {} after a flush/seek.  Using lastServerTime: {}, until data shows up.", mt, Utils.toHHMMSS(lastServerTime, true));
+                log.debug("getMediaTimeMillis() is {} after a flush/seek.  Using 0, until data shows up.", mt);
             }
-            // note: last server time is as good as a guess.
-            return lastServerTime;
+            return 0;
         }
         // we have some data, so we are not flushing/seeking
         lastMediaTime = mt;
@@ -303,8 +293,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     @Override
     public void setVideoRectangles(final Rectangle srcRect, final Rectangle destRect, boolean hideCursor) {
-//        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-//            log.debug("setVideoRectangles: SRC: {}, DEST: {}", srcRect, destRect);
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            log.debug("setVideoRectangles: SRC: {}, DEST: {}", srcRect, destRect);
         if (srcRect==null||destRect==null) return;
 
         if (debug_ar) {
