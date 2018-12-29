@@ -47,8 +47,6 @@ public class OpenGLTexture implements Texture {
         drawListBuffer.position(0);
     }
 
-    boolean flip = false;
-
     public OpenGLTexture(int width, int height) {
         this.width = width;
         this.height = height;
@@ -191,14 +189,6 @@ public class OpenGLTexture implements Texture {
 //  // top right
         uvData[6] = (float) (sx + sw) / (float) width;
         uvData[7] = (float) sy / (float) height;
-
-        // framebuffers need to be flipped
-        if (flip) {
-            uvData[1] = -1f * uvData[1];
-            uvData[3] = -1f * uvData[3];
-            uvData[5] = -1f * uvData[5];
-            uvData[7] = -1f * uvData[7];
-        }
 
         // Again, a FloatBuffer will be used to pass the values
         uvDataBuff.put(uvData);

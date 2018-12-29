@@ -18,8 +18,8 @@ public class OpenGLSurface extends OpenGLTexture {
     public OpenGLSurface(int id, int w, int h) {
         super(w,h);
         this.id = id;
-        Matrix.orthoM(viewMatrix, 0, 0, w, h, 0, 0, 1);
-        flip = true;
+        // NOTE: Surfaces are flipped in OpenGL so we swap the y axis
+        Matrix.orthoM(viewMatrix, 0, 0, w, 0, h, 0, 1);
     }
 
 

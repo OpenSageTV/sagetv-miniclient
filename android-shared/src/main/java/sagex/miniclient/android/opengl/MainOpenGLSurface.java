@@ -1,6 +1,7 @@
 package sagex.miniclient.android.opengl;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,8 @@ public class MainOpenGLSurface extends OpenGLSurface {
 
     public MainOpenGLSurface(Dimension uiSize, Dimension fullScreenSize) {
         super(0, uiSize.width, uiSize.height);
+        // need to set the propper y axis on the main surface
+        Matrix.orthoM(viewMatrix, 0, 0, uiSize.width, uiSize.height, 0, 0, 1);
         this.fullScreen = fullScreenSize;
     }
 
