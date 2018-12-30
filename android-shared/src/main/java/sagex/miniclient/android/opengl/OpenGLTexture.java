@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import sagex.miniclient.uibridge.Texture;
@@ -27,8 +26,8 @@ public class OpenGLTexture implements Texture {
 
     int texture[] = null;
 
-    int pVertices2[] = new int[8];
-    IntBuffer pVerticiesByteBuff = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asIntBuffer();
+    float pVertices2[] = new float[8];
+    FloatBuffer pVerticiesByteBuff = ByteBuffer.allocateDirect(pVertices2.length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
     float[] uvData = new float[8];
     FloatBuffer uvDataBuff = ByteBuffer.allocateDirect(uvData.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -116,7 +115,6 @@ public class OpenGLTexture implements Texture {
         GLES20.glUniformMatrix4fv(OpenGLUtils.textureShader.u_myPMVMatrix, 1, false, toSurface.viewMatrix, 0);
 
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
-        GLES20.glEnable(GLES20.GL_TEXTURE_2D);
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
         GLES20.glUniform1i(OpenGLUtils.textureShader.u_sampler2d, 0);
@@ -172,7 +170,7 @@ public class OpenGLTexture implements Texture {
         pVerticiesByteBuff.position(0);
         GLES20.glVertexAttribPointer(OpenGLUtils.textureShader.a_myVertex,
                 2 /* # of elements per vertex*/,
-                GLES20.GL_INT,
+                GLES20.GL_FLOAT,
                 false,
                 0, pVerticiesByteBuff);
         GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
@@ -204,6 +202,5 @@ public class OpenGLTexture implements Texture {
         GLES20.glDisableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
 
         GLES20.glDisable(GLES20.GL_BLEND);
-        GLES20.glDisable(GLES20.GL_TEXTURE_2D);
     }
 }
