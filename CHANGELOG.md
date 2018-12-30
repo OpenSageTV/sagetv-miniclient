@@ -1,9 +1,11 @@
-**1.3.6 ()**
+**1.4.0 (2018-12-30)**
 - sls: new UI renderer
 - sls: configure key repeat speeds
 - sls: smart remote for Plugin List (right/left navigates top tabs)
 - sls: smart remote for Guide (long press right/left page right/left)
 - sls: long press 'back' goes home 
+- sls: option to exit MiniClient when it goes into Standby mode
+- sls: key sound effects (can be turned off in settings)
 
 **1.3.5 (2018-12-16)**
 - sls: fix: ExoPlayer seek issues after upgrading ExoPlayer

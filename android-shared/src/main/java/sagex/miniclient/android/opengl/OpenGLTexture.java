@@ -174,7 +174,7 @@ public class OpenGLTexture implements Texture {
                 2 /* # of elements per vertex*/,
                 GLES20.GL_INT,
                 false,
-                0 /* # bytes per vertex (2 * 4 bytes) */, pVerticiesByteBuff);
+                0, pVerticiesByteBuff);
         GLES20.glEnableVertexAttribArray(OpenGLUtils.textureShader.a_myVertex);
 
 //  // top left
