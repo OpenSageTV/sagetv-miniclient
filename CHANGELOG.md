@@ -1,3 +1,6 @@
+**1.4.1 (2018-12-30)**
+- sls: fix: Amazon Fire TV and MiBox could not use OpenGL renderer due to using some invalid GL calls for those devices.
+
 **1.4.0 (2018-12-30)**
 - sls: new UI renderer
 - sls: configure key repeat speeds
