@@ -1,3 +1,7 @@
+**1.4.1 (2018-12-31)**
+- sls: fix: Back when playing video should not stop the video
+- sls: feat: Added ability to map insert key
+
 **1.4.1 (2018-12-30)**
 - sls: fix: Amazon Fire TV and MiBox could not use OpenGL renderer due to using some invalid GL calls for those devices.
 
