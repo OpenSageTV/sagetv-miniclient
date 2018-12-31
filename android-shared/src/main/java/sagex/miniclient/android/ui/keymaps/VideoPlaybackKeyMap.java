@@ -2,10 +2,7 @@ package sagex.miniclient.android.ui.keymaps;
 
 import android.view.KeyEvent;
 
-import sagex.miniclient.MiniClient;
-import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
-import sagex.miniclient.uibridge.EventRouter;
 
 public class VideoPlaybackKeyMap extends KeyMap {
     private MediaMappingPreferences prefsVideo;
@@ -58,20 +55,5 @@ public class VideoPlaybackKeyMap extends KeyMap {
             return 400;
         }
         return super.getKeyRepeatDelayMS(keyCode);
-    }
-
-    @Override
-    public boolean hasSageCommandOverride(int keyCode, boolean longPress) {
-        return keyCode == KeyEvent.KEYCODE_BACK;
-    }
-
-    @Override
-    public void performSageCommandOverride(int keyCode, MiniClient client, boolean longPress) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            // if video is playing, then, stop it.
-            EventRouter.postCommand(client, SageCommand.STOP);
-        } else {
-            super.performSageCommandOverride(keyCode, client, longPress);
-        }
     }
 }
