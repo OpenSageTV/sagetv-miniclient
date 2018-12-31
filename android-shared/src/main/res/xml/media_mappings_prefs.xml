@@ -211,6 +211,17 @@
             android:summary="%s"
             android:title="Delete"/>
 
+        <ListPreference
+            android:dialogTitle="Forward Delete"
+            android:key="default_forward_delete"
+            android:summary="%s"
+            android:title="Forward Delete" />
+
+        <ListPreference
+            android:dialogTitle="Insert"
+            android:key="default_insert"
+            android:summary="%s"
+            android:title="Insert" />
 
         <ListPreference
             android:dialogTitle="Num 0"

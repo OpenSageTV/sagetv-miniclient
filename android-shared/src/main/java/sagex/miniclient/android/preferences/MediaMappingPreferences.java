@@ -406,6 +406,18 @@ public class MediaMappingPreferences
         return SageCommand.parseByKey(key);
     }
 
+    public SageCommand getForwardDelete() {
+        String key = preferences.getString(prefix + "_forward_delete", SageCommand.DELETE.getKey());
+
+        return SageCommand.parseByKey(key);
+    }
+
+    public SageCommand getInsert() {
+        String key = preferences.getString(prefix + "_insert", SageCommand.NONE.getKey());
+
+        return SageCommand.parseByKey(key);
+    }
+
     public SageCommand getYellow()
     {
         String key = preferences.getString(prefix + "_yellow", SageCommand.NONE.getKey());

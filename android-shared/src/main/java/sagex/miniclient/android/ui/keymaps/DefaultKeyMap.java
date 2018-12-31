@@ -93,7 +93,8 @@ public class DefaultKeyMap extends KeyMap {
         KEYMAP.put(KeyEvent.KEYCODE_GUIDE, prefs.getGuide());
         KEYMAP.put(KeyEvent.KEYCODE_INFO, prefs.getInfo());
         KEYMAP.put(KeyEvent.KEYCODE_DEL, prefs.getDelete());
-        KEYMAP.put(KeyEvent.KEYCODE_FORWARD_DEL, prefs.getDelete());
+        KEYMAP.put(KeyEvent.KEYCODE_INSERT, prefs.getInsert());
+        KEYMAP.put(KeyEvent.KEYCODE_FORWARD_DEL, prefs.getForwardDelete());
         KEYMAP.put(KeyEvent.KEYCODE_SEARCH, prefs.getSearch());
 
         //These look to be gamepad buttons

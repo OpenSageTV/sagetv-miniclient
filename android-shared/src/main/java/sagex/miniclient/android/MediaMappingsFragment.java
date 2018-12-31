@@ -75,6 +75,8 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("default_info", prefs.getInfo().getKey());
         bindSageCommandListPreference("default_search", prefs.getSearch().getKey());
         bindSageCommandListPreference("default_delete", prefs.getDelete().getKey());
+        bindSageCommandListPreference("default_forward_delete", prefs.getForwardDelete().getKey());
+        bindSageCommandListPreference("default_insert", prefs.getInsert().getKey());
 
         //Disable long press select if long press select shows OSD Nav
         spLongPressOSD = (SwitchPreference)this.findPreference("long_press_select_for_osd_nav");
@@ -82,8 +84,6 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         spLongPressOSD.setDefaultValue(prefs.isLongPressSelectShowOSDNav());
         lp = (ListPreference)this.findPreference("default_select_long_press");
         lp.setEnabled(!spLongPressOSD.isChecked());
-
-
 
         //Number Keys
         bindSageCommandListPreference("default_num_0", prefs.getNum0().getKey());
