@@ -67,6 +67,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     boolean debug_ar=false;
 
+    protected boolean httpls = false;
+
     public BaseMediaPlayerImpl(AndroidUIController activity, boolean createPlayerOnUI, boolean waitForPlayer) {
         this.context = activity;
         //this.mSurface = activity.getVideoView();
@@ -100,7 +102,19 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         seekPending = false;
         flushed = false;
 
-        log.debug("load(): url: {}", urlString);
+        String url = urlString;
+        httpls = urlString.startsWith("http://");
+        if (httpls) {
+            if (url.contains("HOSTNAME")) {
+                url = url.replace("HOSTNAME", context.getClient().getConnectedServerInfo().address + ":" + context.getClient().getConnectedServerInfo().port);
+            }
+        } else {
+            if (!urlString.startsWith("stv://")) {
+                url = "stv://" + context.getClient().getConnectedServerInfo().address + "/" + urlString;
+            }
+        }
+        final String finalUrl = url;
+        log.debug("load(): url: {}", url);
         if (createPlayerOnUI) {
             context.runOnUiThread(new Runnable() {
                 @Override
@@ -110,16 +124,16 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
                     context.setupVideoFrame();
 
-                    setupPlayer(urlString);
-                    if (dataSource == null)
+                    setupPlayer(finalUrl);
+                    if (dataSource == null && !httpls)
                         throw new RuntimeException("setupPlayer must create a datasource");
                 }
             });
         } else {
             releasePlayer();
             state = LOADED_STATE;
-            setupPlayer(urlString);
-            if (dataSource == null)
+            setupPlayer(finalUrl);
+            if (dataSource == null && !httpls)
                 throw new RuntimeException("setupPlayer must create a datasource");
         }
 

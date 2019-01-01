@@ -180,5 +180,10 @@ public interface PrefStore {
         String use_opengl_ui = "use_opengl_ui";
 
         String exit_on_standby = "exit_on_standby";
+
+        /**
+         * used for testing only.  Do not enable this.
+         */
+        String use_httpls = "use_httpls";
     }
 }
