@@ -55,7 +55,6 @@ public class DefaultKeyMap extends KeyMap {
         KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, prefs.getSelect()); // for harmony remote
         KEYMAP.put(KeyEvent.KEYCODE_ENTER, prefs.getSelect());
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelect());
-        KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, prefs.getSelect());
 
         KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_0, prefs.getNum0());
         KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_1, prefs.getNum1());
