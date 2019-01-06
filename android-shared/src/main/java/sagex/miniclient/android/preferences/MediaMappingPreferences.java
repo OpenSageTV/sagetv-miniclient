@@ -19,11 +19,6 @@ public class MediaMappingPreferences
         preferences = store;
     }
 
-    public boolean isLongPressSelectShowOSDNav()
-    {
-        return preferences.getBoolean("long_press_select_for_osd_nav", true);
-    }
-
     public boolean debugKeyPresses() {
         return preferences.getBoolean("debug_key_presses", false);
     }
@@ -171,17 +166,17 @@ public class MediaMappingPreferences
         {
             case "videoplaying":
 
-                key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+                key = preferences.getString(prefix + "_select_long_press", SageCommand.NAV_OSD.getKey());
                 break;
 
             case "videopaused":
 
-                key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+                key = preferences.getString(prefix + "_select_long_press", SageCommand.NAV_OSD.getKey());
                 break;
 
             default:
 
-                key = preferences.getString(prefix + "_select_long_press", SageCommand.SELECT.getKey());
+                key = preferences.getString(prefix + "_select_long_press", SageCommand.NAV_OSD.getKey());
         }
 
         return SageCommand.parseByKey(key);

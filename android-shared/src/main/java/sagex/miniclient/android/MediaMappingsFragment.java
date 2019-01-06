@@ -25,7 +25,6 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         super.onCreate(savedInstanceState);
         log = LoggerFactory.getLogger(this.getClass());
 
-        SwitchPreference spLongPressOSD;
         SwitchPreference spSmartRemote;
         ListPreference lp;
 
@@ -49,7 +48,7 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("default_down", prefs.getDown().getKey());
 
         //Long Press DPAD
-        bindSageCommandListPreference("default_select_long_press", prefs.getSelect().getKey());
+        bindSageCommandListPreference("default_select_long_press", prefs.getSelectLongPress().getKey());
         bindSageCommandListPreference("default_left_long_press", prefs.getLeftLongPress().getKey());
         bindSageCommandListPreference("default_right_long_press", prefs.getRightLongPress().getKey());
         bindSageCommandListPreference("default_up_long_press", prefs.getUpLongPress().getKey());
@@ -77,13 +76,6 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("default_delete", prefs.getDelete().getKey());
         bindSageCommandListPreference("default_forward_delete", prefs.getForwardDelete().getKey());
         bindSageCommandListPreference("default_insert", prefs.getInsert().getKey());
-
-        //Disable long press select if long press select shows OSD Nav
-        spLongPressOSD = (SwitchPreference)this.findPreference("long_press_select_for_osd_nav");
-        spLongPressOSD.setOnPreferenceChangeListener(this);
-        spLongPressOSD.setDefaultValue(prefs.isLongPressSelectShowOSDNav());
-        lp = (ListPreference)this.findPreference("default_select_long_press");
-        lp.setEnabled(!spLongPressOSD.isChecked());
 
         //Number Keys
         bindSageCommandListPreference("default_num_0", prefs.getNum0().getKey());
@@ -129,7 +121,7 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("videoplaying_select_long_press", prefsVideoPlaying.getSelectLongPress().getKey());
 
         lp = (ListPreference)this.findPreference("videoplaying_select_long_press");
-        lp.setEnabled(!spLongPressOSD.isChecked());
+        lp.setEnabled(true);
 
         bindSageCommandListPreference("videoplaying_left_long_press", prefsVideoPlaying.getLeftLongPress().getKey());
         bindSageCommandListPreference("videoplaying_right_long_press", prefsVideoPlaying.getRightLongPress().getKey());
@@ -152,7 +144,7 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
         bindSageCommandListPreference("videopaused_select_long_press", prefsVideoPaused.getSelectLongPress().getKey());
 
         lp = (ListPreference)this.findPreference("videopaused_select_long_press");
-        lp.setEnabled(!spLongPressOSD.isChecked());
+        lp.setEnabled(true);
 
         bindSageCommandListPreference("videopaused_left_long_press", prefsVideoPaused.getLeftLongPress().getKey());
         bindSageCommandListPreference("videopaused_right_long_press", prefsVideoPaused.getRightLongPress().getKey());
@@ -197,18 +189,7 @@ public class MediaMappingsFragment extends PreferenceFragment implements Prefere
     {
 
         //smart_remote_mappings
-        if(preference.getKey().equals("long_press_select_for_osd_nav"))
-        {
-            ListPreference lp = (ListPreference)this.findPreference("default_select_long_press");
-            lp.setEnabled(!(Boolean)newValue);
-
-            lp = (ListPreference)this.findPreference("videoplaying_select_long_press");
-            lp.setEnabled(!(Boolean)newValue);
-
-            lp = (ListPreference)this.findPreference("videopaused_select_long_press");
-            lp.setEnabled(!(Boolean)newValue);
-        }
-        else if(preference.getKey().equals("smart_remote_mappings"))
+        if (preference.getKey().equals("smart_remote_mappings"))
         {
             //videoplaying
             PreferenceCategory pc = (PreferenceCategory) this.findPreference("videoplaying");

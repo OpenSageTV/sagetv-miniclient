@@ -12,7 +12,6 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.AndroidKeyEventMapper;
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
@@ -145,15 +144,6 @@ public class KeyMapProcessor {
         playClickSound();
 
         SageCommand command = null;
-
-        if (longPress && prefs.isLongPressSelectShowOSDNav() &&
-                (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER ||
-                        event.getKeyCode() == KeyEvent.KEYCODE_ENTER ||
-                        event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER ||
-                        event.getKeyCode() == KeyEvent.KEYCODE_BUTTON_A)) {
-            client.eventbus().post(ShowNavigationEvent.INSTANCE);
-            return;
-        }
 
         if (keyMap.hasSageCommandOverride(keyCode, longPress)) {
             keyMap.performSageCommandOverride(keyCode, client, longPress);

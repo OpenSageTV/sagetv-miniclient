@@ -31,7 +31,7 @@ public class DefaultKeyMap extends KeyMap {
 
     @Override
     public int getKeyRepeatDelayMS(int keyCode) {
-        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && prefs.isLongPressSelectShowOSDNav()) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && LONGPRESS_KEYMAP.containsKey(keyCode)) {
             // only wait 500ms to show the OSD
             return 500;
         }
@@ -126,10 +126,10 @@ public class DefaultKeyMap extends KeyMap {
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_LEFT, prefs.getLeftLongPress());
 
         //I am going to treat these all as [SELECT].  This is to make this less confusing.
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, prefs.getSelect()); // for harmony remote
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, prefs.getSelect());
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelect());
-        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, prefs.getSelect());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_NUMPAD_ENTER, prefs.getSelectLongPress()); // for harmony remote
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_ENTER, prefs.getSelectLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefs.getSelectLongPress());
+        LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_BUTTON_A, prefs.getSelectLongPress());
     }
 
     @Override

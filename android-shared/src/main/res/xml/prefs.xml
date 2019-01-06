@@ -67,22 +67,6 @@
 
     <PreferenceCategory android:title="@string/application_settings">
 
-        <!--
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="long_press_select_for_osd"
-            android:summary="@string/long_press_select_for_osd_preference_summary"
-            android:title="@string/long_press_select_for_osd_preference"/>
-        -->
-
-        <!--
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="use_stateful_remote"
-            android:summary="@string/use_stateful_remote_summary"
-            android:title="@string/use_stateful_remote_title"/>
-         -->
-
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="use_opengl_ui"

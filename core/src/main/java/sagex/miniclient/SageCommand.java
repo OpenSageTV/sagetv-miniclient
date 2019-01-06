@@ -10,7 +10,9 @@ import java.util.ArrayList;
 
 public enum SageCommand
 {
-
+    FORCE_QUIT(-5, "FORCE_QUIT", "FORCE_QUIT", "FORCE_QUIT", -1, false),
+    KEYBOARD_OSD(-4, "KEYBOARD_OSD", "KEYBOARD_OSD", "Show Keyboard", -1, true),
+    NAV_OSD(-3, "NAV_OSD", "NAV_OSD", "Show OSD Navigation", -1, true),
     NONE(-2, "NONE", "NONE", "NONE", -1, true),
     UNKNOWN(-1, "?", "?", "?", -1, false),
     RAW_KEYBOARD(0, "RAW_KEYBOARD", "RAW_KEYBOARD", "RAW_KEYBOARD", -1, false), //Command is raw keyboard

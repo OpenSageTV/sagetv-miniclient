@@ -10,12 +10,6 @@
             android:title="Enable Smart Remote Mappings"
             android:defaultValue="true" />
 
-        <SwitchPreference
-            android:key="long_press_select_for_osd_nav"
-            android:summary="Long press select shows navigation overlay."
-            android:title="Show Navigation"
-            android:defaultValue="true" />
-
         <EditTextPreference
             android:key="repeat_key_ms"
             android:summary="@string/key_repeat_ms_summary"
