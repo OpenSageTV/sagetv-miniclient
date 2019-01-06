@@ -138,6 +138,10 @@ public class KeyMapProcessor {
             }
         }
 
+        if (prefs.debugKeyPresses()) {
+            client.eventbus().post(new DebugKeyEvent(keyCode, event, longPress, keyEventMapper.getFieldName(event.getKeyCode())));
+        }
+
         playClickSound();
 
         SageCommand command = null;

@@ -45,10 +45,13 @@ import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.ui.MiniClientKeyListener;
 import sagex.miniclient.android.ui.MiniclientTouchListener;
+import sagex.miniclient.android.ui.keymaps.DebugKeyEvent;
+import sagex.miniclient.android.ui.keymaps.DebugKeyPressWindow;
 import sagex.miniclient.android.ui.keymaps.KeyMapProcessor;
 import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.PlayerSurfaceView;
 import sagex.miniclient.events.ConnectionLost;
+import sagex.miniclient.events.DebugSageCommandEvent;
 import sagex.miniclient.events.VideoInfoShow;
 import sagex.miniclient.prefs.PrefStore.Keys;
 import sagex.miniclient.uibridge.EventRouter;
@@ -560,6 +563,32 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
                 }
             }
         });
+    }
+
+    DebugKeyPressWindow debugKeyWindow;
+
+    @Subscribe
+    public void onDebugKey(final DebugKeyEvent event) {
+        log.debug("DEBUG KEY: {}", event.fieldName);
+        if (debugKeyWindow == null) {
+            log.debug("Creating debugKeyWindow");
+            debugKeyWindow = new DebugKeyPressWindow();
+        }
+
+        debugKeyWindow.show(activity);
+        debugKeyWindow.showKey(event.fieldName, event.longPress, event.keyCode);
+    }
+
+    @Subscribe
+    public void onDebugKey(final DebugSageCommandEvent event) {
+        log.debug("DEBUG SageCommand: {}", event.command.getDisplayName());
+        if (debugKeyWindow == null) {
+            log.debug("Creating debugKeyWindow");
+            debugKeyWindow = new DebugKeyPressWindow();
+        }
+
+        debugKeyWindow.show(activity);
+        debugKeyWindow.showSageCommand(event.command);
     }
 
     public ViewGroup getVideoViewParent() {

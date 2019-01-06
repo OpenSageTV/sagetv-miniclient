@@ -185,5 +185,10 @@ public interface PrefStore {
          * used for testing only.  Do not enable this.
          */
         String use_httpls = "use_httpls";
+
+        /**
+         * Send DebugSageCommandEvent before sending SageCommand to SageTV
+         */
+        String debug_sage_commands = "debug_sage_commands";
     }
 }

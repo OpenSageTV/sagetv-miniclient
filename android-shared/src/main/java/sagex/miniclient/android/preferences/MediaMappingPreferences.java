@@ -24,6 +24,10 @@ public class MediaMappingPreferences
         return preferences.getBoolean("long_press_select_for_osd_nav", true);
     }
 
+    public boolean debugKeyPresses() {
+        return preferences.getBoolean("debug_key_presses", false);
+    }
+
     public boolean isSoundEffectsEnabled() {
         return preferences.getBoolean("sound_effects_enabled", true);
     }
@@ -587,4 +591,5 @@ public class MediaMappingPreferences
 
         return SageCommand.parseByKey(key);
     }
+
 }

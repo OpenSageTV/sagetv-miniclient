@@ -2,7 +2,8 @@ package sagex.miniclient.uibridge;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
-import sagex.miniclient.UserEvent;
+import sagex.miniclient.events.DebugSageCommandEvent;
+import sagex.miniclient.prefs.PrefStore;
 
 
 public class EventRouter
@@ -96,12 +97,19 @@ public class EventRouter
 
     public static void postCommand(MiniClient client, int command)
     {
+        if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false)) {
+            client.eventbus().post(new DebugSageCommandEvent(SageCommand.parseByID(command)));
+        }
 
         client.getCurrentConnection().postSageCommandEvent(command);
     }
 
     public static void postCommand(MiniClient client, SageCommand command)
     {
+        if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false)) {
+            client.eventbus().post(new DebugSageCommandEvent(command));
+        }
+
         if(command != SageCommand.UNKNOWN && command != SageCommand.NONE)
         {
             client.getCurrentConnection().postSageCommandEvent(command.getEventCode());

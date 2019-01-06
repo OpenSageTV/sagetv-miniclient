@@ -36,6 +36,18 @@
             android:title="Sound Effects"
             android:defaultValue="true" />
 
+        <SwitchPreference
+            android:key="debug_key_presses"
+            android:summary="Debug Key Presses"
+            android:title="Debug Key Presses"
+            android:defaultValue="false" />
+
+        <SwitchPreference
+            android:key="debug_sage_commands"
+            android:summary="Debug Sage Commands"
+            android:title="Debug Sage Commands"
+            android:defaultValue="false" />
+
     </PreferenceCategory>
 
 
