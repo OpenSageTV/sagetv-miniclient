@@ -16,6 +16,7 @@ import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.UIActivityLifeCycleHandler;
 import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 import sagex.miniclient.android.opengl.MiniClientOpenGLActivity;
 import sagex.miniclient.prefs.PrefStore;
@@ -70,7 +71,7 @@ public class ServerInfoUtil {
                 start = MiniClientOpenGLActivity.class;
             }
             Intent i = new Intent(ctx, start);
-            i.putExtra(MiniClientGDXActivity.ARG_SERVER_INFO, si);
+            i.putExtra(UIActivityLifeCycleHandler.ARG_SERVER_INFO, si);
 
             if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
                 log.debug("Starting SageTV with Exit TO Home Screen option");

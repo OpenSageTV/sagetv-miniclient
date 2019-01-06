@@ -658,6 +658,16 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         return newSize;
     }
 
+    /**
+     * Size we report to SageTV
+     *
+     * @return
+     */
+    @Override
+    public Dimension getUISize() {
+        return uiSize;
+    }
+
     @Override
     public void setFullScreen(boolean b) {
         log.warn("Set FullScreen was called but we did nothing with {}", b);

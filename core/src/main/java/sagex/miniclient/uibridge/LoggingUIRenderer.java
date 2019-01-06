@@ -194,6 +194,16 @@ public class LoggingUIRenderer<Image extends Texture> implements UIRenderer<Imag
         return delegate.getScreenSize();
     }
 
+    /**
+     * Size we report to SageTV
+     *
+     * @return
+     */
+    @Override
+    public Dimension getUISize() {
+        return delegate.getUISize();
+    }
+
     public void setFullScreen(boolean b) {
         log("setFullScreen");
         delegate.setFullScreen(b);

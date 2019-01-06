@@ -86,9 +86,25 @@ public interface UIRenderer<Image extends Texture> {
 
     boolean hasGraphicsCanvas();
 
+    /**
+     * Total Available Screen Size
+     *
+     * @return
+     */
     Dimension getMaxScreenSize();
 
+    /**
+     * Size at which we are rendering, almost always is getMaxScreenSize() but can be smaller if we are windowed.
+     * @return
+     */
     Dimension getScreenSize();
+
+    /**
+     * Size we report to SageTV
+     *
+     * @return
+     */
+    Dimension getUISize();
 
     void setFullScreen(boolean b);
 
