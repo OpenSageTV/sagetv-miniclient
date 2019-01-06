@@ -1,4 +1,9 @@
-**1.4.1 (2018-12-31)**
+**1.4.3 (?)**
+- sls: feat: Added more touch mappings
+- sls: feat: Added more key mappings
+- sls: feat: Added debug keys and commands view
+
+**1.4.2 (2018-12-31)**
 - sls: fix: Back when playing video should not stop the video
 - sls: feat: Added ability to map insert key
 

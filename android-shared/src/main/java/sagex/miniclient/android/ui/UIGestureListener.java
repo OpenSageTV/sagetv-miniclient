@@ -12,9 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
-import sagex.miniclient.android.events.ShowKeyboardEvent;
-import sagex.miniclient.android.events.ShowNavigationEvent;
 import sagex.miniclient.android.preferences.TouchPreferences;
+import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.EventRouter;
 import sagex.miniclient.uibridge.MouseEvent;
 
@@ -24,7 +23,8 @@ import sagex.miniclient.uibridge.MouseEvent;
 public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
 {
     private static final Logger log = LoggerFactory.getLogger(UIGestureListener.class);
-    private static final int EDGE_SIZE = 25; // dp
+    private static int EDGE_SIZE = 50; // dp
+    private static int HOTSPOT_SIZE = 50; // dp
 
     /**
      * Edge flag indicating that the left edge should be affected.
@@ -74,9 +74,13 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
         this.client = client;
         this.activity = act;
         final float density = activity.getResources().getDisplayMetrics().density;
-        edgeSize = (int) (EDGE_SIZE * density + 0.5f);
 
         prefs = new TouchPreferences(client.properties());
+
+        EDGE_SIZE = prefs.getEdgeSizePixels();
+        HOTSPOT_SIZE = prefs.getHotspotSizePixels();
+
+        edgeSize = (int) (EDGE_SIZE * density + 0.5f);
     }
 
 
@@ -90,42 +94,22 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
     @Override
     public void onLongPress(MotionEvent e)
     {
-        super.onLongPress(e);
-        /*
-        if (logTouch) log.debug("onLongPress: Sending SELECT");
-        // EventRouter.post(client, EventRouter.SELECT);
-        */
+        if (logTouch)
+            log.debug("On Long Press");
+
+        if (multi() > 2) {
+            EventRouter.postCommand(client, prefs.getTripleLongPress());
+        } else if (multi() > 1) {
+            EventRouter.postCommand(client, prefs.getDoubleLongPress());
+        } else {
+            EventRouter.postCommand(client, prefs.getLongPress());
+        }
     }
 
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
     {
-        /*
-        if (logTouch) log.debug("onScroll: dX:{}, dY:{}", distanceX, distanceY);
-
-        if (!touchFocusEnabled)
-        {
-            // when touch enabled is not enabled, we'll treat touch as scroll events
-            if (Math.abs(distanceY) > Math.abs(distanceX))
-            {
-                // scroll up/down
-                // client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_WHEEL, System.currentTimeMillis(), 16, X(e1), Y(e1), 1, 1, (distanceY < 0) ? -1 : 1));
-            }
-            else
-            {
-                // scroll left/right
-                // this causes way to many scroll events to sent left/right
-//                if (distanceX>0) {
-//                    client.getCurrentConnection().postSageCommandEvent(UserEvent.LEFT);
-//                } else {
-//                    client.getCurrentConnection().postSageCommandEvent(UserEvent.RIGHT);
-//                }
-            }
-        }
-        return true;
-        */
-
         return super.onScroll(e1, e2, distanceX, distanceY);
     }
 
@@ -227,16 +211,30 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
             // do the edge detections
             if (FLING_RIGHT == fling && isEdgeTouched(EDGE_LEFT))
             {
-                if (logTouch) log.debug("Left Edge Trigger for On Screen Nav");
-                client.eventbus().post(ShowNavigationEvent.INSTANCE);
+                if (logTouch) log.debug("Left Edge Trigger");
+                EventRouter.postCommand(client, prefs.getEdgeSwipeLeft());
+
+                return true;
+            }
+
+            if (FLING_LEFT == fling && isEdgeTouched(EDGE_RIGHT)) {
+                if (logTouch) log.debug("Right Edge Trigger");
+                EventRouter.postCommand(client, prefs.getEdgeSwipeRight());
 
                 return true;
             }
 
             if (FLING_UP == fling && isEdgeTouched(EDGE_BOTTOM))
             {
-                if (logTouch) log.debug("Bottom Edge Trigger for KeyBoard");
-                client.eventbus().post(ShowKeyboardEvent.INSTANCE);
+                if (logTouch) log.debug("Bottom Edge Trigger");
+                EventRouter.postCommand(client, prefs.getEdgeSwipeBottom());
+
+                return true;
+            }
+
+            if (FLING_DOWN == fling && isEdgeTouched(EDGE_TOP)) {
+                if (logTouch) log.debug("Top Edge Trigger");
+                EventRouter.postCommand(client, prefs.getEdgeSwipeTop());
 
                 return true;
             }
@@ -332,8 +330,17 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
     @Override
     public boolean onDoubleTap(MotionEvent e)
     {
-        if (logTouch) log.debug("onDoubleTap: Sending OPTIONS");
-        EventRouter.postCommand(client, SageCommand.OPTIONS);
+        if (logTouch) log.debug("onDoubleTap");
+
+        if (multi() > 2) {
+            EventRouter.postCommand(client, prefs.getOnDoubleTap3());
+        } else if (multi() > 1) {
+            EventRouter.postCommand(client, prefs.getOnDoubleTap2());
+
+        } else {
+            EventRouter.postCommand(client, prefs.getOnDoubleTap());
+        }
+
         return true;
     }
 
@@ -357,9 +364,38 @@ public class UIGestureListener extends GestureDetector.SimpleOnGestureListener
         }
 
         client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_RELEASED, System.currentTimeMillis(), 16, X(e), Y(e), 1, 1, 0));
-        client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 16, X(e), Y(e), 1, 1, 0));
+
+        if (isBottomLeftHotSpot(e) && prefs.getHotspotBottomLeft() != SageCommand.NONE) {
+            EventRouter.postCommand(client, prefs.getHotspotBottomLeft());
+        } else if (isBottomRightHotSpot(e) && prefs.getHotspotBottomRight() != SageCommand.NONE) {
+            EventRouter.postCommand(client, prefs.getHotspotBottomRight());
+        } else if (isTopRightHotSpot(e) && prefs.getHotspotTopRight() != SageCommand.NONE) {
+            EventRouter.postCommand(client, prefs.getHotspotTopRight());
+        } else if (isTopLeftHotSpot(e) && prefs.getHotspotTopLeft() != SageCommand.NONE) {
+            EventRouter.postCommand(client, prefs.getHotspotTopLeft());
+        } else {
+            client.getCurrentConnection().postMouseEvent(new MouseEvent(this, MouseEvent.MOUSE_CLICKED, System.currentTimeMillis(), 16, X(e), Y(e), 1, 1, 0));
+        }
 
         return true;
+    }
+
+    private boolean isBottomLeftHotSpot(MotionEvent e) {
+        return e.getY() > client.getUIRenderer().getScreenSize().getHeight() - HOTSPOT_SIZE && e.getX() < HOTSPOT_SIZE;
+    }
+
+    private boolean isTopLeftHotSpot(MotionEvent e) {
+        return e.getY() < HOTSPOT_SIZE && e.getX() < HOTSPOT_SIZE;
+    }
+
+    private boolean isBottomRightHotSpot(MotionEvent e) {
+        Dimension d = client.getUIRenderer().getScreenSize();
+        return e.getY() > d.getHeight() - HOTSPOT_SIZE && e.getX() > d.getWidth() - HOTSPOT_SIZE;
+    }
+
+    private boolean isTopRightHotSpot(MotionEvent e) {
+        Dimension d = client.getUIRenderer().getScreenSize();
+        return e.getY() < HOTSPOT_SIZE && e.getX() > d.getWidth() - HOTSPOT_SIZE;
     }
 
     public int X(MotionEvent e)

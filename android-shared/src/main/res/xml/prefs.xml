@@ -220,4 +220,13 @@
 
     </PreferenceCategory>
 
+    <!--<PreferenceCategory android:title="Danger">-->
+
+    <!--<Preference-->
+    <!--android:key="reset_to_defaults"-->
+    <!--android:summary="Reset all preferences to Default Values"-->
+    <!--android:title="Reset To Default Preferences"/>-->
+
+    <!--</PreferenceCategory>-->
+
 </PreferenceScreen>

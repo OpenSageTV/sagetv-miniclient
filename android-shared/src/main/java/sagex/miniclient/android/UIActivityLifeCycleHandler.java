@@ -520,7 +520,7 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
 
     @Subscribe
     public void onDeadEvent(DeadEvent event) {
-        log.debug("Unhandled Event: {}", event);
+        log.debug("Unhandled Event: {} -- source: {}", event.event, event.source);
     }
 
     public void setupVideoFrame() {
