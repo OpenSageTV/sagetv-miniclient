@@ -33,7 +33,7 @@ public class OpenGLTexture implements Texture {
     FloatBuffer uvDataBuff = ByteBuffer.allocateDirect(uvData.length * FLOAT_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
     private static ShortBuffer drawListBuffer;
-    protected static short drawOrder[] = {0, 1, 2, 0, 3, 2}; // order to draw vertices
+    protected static short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
 
     static {
         // initialize byte buffer for the draw list
