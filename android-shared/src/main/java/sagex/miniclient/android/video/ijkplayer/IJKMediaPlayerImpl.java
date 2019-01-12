@@ -210,10 +210,15 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 ((IJKPushMediaSource) dataSource).open(sageTVurl);
                 player.setDataSource(dataSource);
             } else {
-                log.info("Playing URL Using DataSource: isPush:{}, sageTVUrl: {}", pushMode, sageTVurl);
-                dataSource = new IJKPullMediaSource(MiniclientApplication.get().getClient().getConnectedServerInfo().address);
-                ((IJKPullMediaSource) dataSource).open(sageTVurl);
-                player.setDataSource(dataSource);
+                if (httpls) {
+                    log.info("Playing URL Using HTTPL: isPush:{}, sageTVUrl: {}", pushMode, sageTVurl);
+                    player.setDataSource(sageTVurl);
+                } else {
+                    log.info("Playing URL Using DataSource: isPush:{}, sageTVUrl: {}", pushMode, sageTVurl);
+                    dataSource = new IJKPullMediaSource(MiniclientApplication.get().getClient().getConnectedServerInfo().address);
+                    ((IJKPullMediaSource) dataSource).open(sageTVurl);
+                    player.setDataSource(dataSource);
+                }
             }
 
             player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {

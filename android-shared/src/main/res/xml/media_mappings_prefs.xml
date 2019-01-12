@@ -10,12 +10,6 @@
             android:title="Enable Smart Remote Mappings"
             android:defaultValue="true" />
 
-        <SwitchPreference
-            android:key="long_press_select_for_osd_nav"
-            android:summary="Long press select shows navigation overlay."
-            android:title="Show Navigation"
-            android:defaultValue="true" />
-
         <EditTextPreference
             android:key="repeat_key_ms"
             android:summary="@string/key_repeat_ms_summary"
@@ -35,6 +29,18 @@
             android:summary="Enable Sound Effects"
             android:title="Sound Effects"
             android:defaultValue="true" />
+
+        <SwitchPreference
+            android:key="debug_key_presses"
+            android:summary="Debug Key Presses"
+            android:title="Debug Key Presses"
+            android:defaultValue="false" />
+
+        <SwitchPreference
+            android:key="debug_sage_commands"
+            android:summary="Debug Sage Commands"
+            android:title="Debug Sage Commands"
+            android:defaultValue="false" />
 
     </PreferenceCategory>
 

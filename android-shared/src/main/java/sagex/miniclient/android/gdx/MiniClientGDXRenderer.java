@@ -40,8 +40,6 @@ import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
-import sagex.miniclient.util.VerboseLogging;
-import sagex.miniclient.video.VideoInfoResponse;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.ImageHolder;
@@ -49,7 +47,9 @@ import sagex.miniclient.uibridge.Rectangle;
 import sagex.miniclient.uibridge.Scale;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.AspectHelper;
+import sagex.miniclient.util.VerboseLogging;
 import sagex.miniclient.video.HasVideoInfo;
+import sagex.miniclient.video.VideoInfoResponse;
 
 /**
  * Created by seans on 26/09/15.
@@ -767,6 +767,16 @@ public class MiniClientGDXRenderer implements ApplicationListener, UIRenderer<Gd
             Dimension newSize = new Dimension(getMaxScreenSize());
             return newSize;
         }
+    }
+
+    /**
+     * Size we report to SageTV
+     *
+     * @return
+     */
+    @Override
+    public Dimension getUISize() {
+        return uiSize;
     }
 
     @Override

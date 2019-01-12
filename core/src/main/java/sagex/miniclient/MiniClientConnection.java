@@ -965,6 +965,14 @@ public class MiniClientConnection implements SageTVInputCallback {
                         Dimension winny = myGfx.getScreenSize();
                         if (winny != null)
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height) + ";windowed";
+                    } else if ("GFX_FIXED_PAR".equals(propName)) {
+                        // note: tels sagetv to go into iphone mode which enables httpls
+                        if (client.properties().getBoolean(PrefStore.Keys.use_httpls, false)) {
+                            propVal = "0.0";
+                        } else {
+                            propVal = "";
+                        }
+                        // propVal = "";
                     } else if ("GFX_RESOLUTION".equals(propName)) {
                         Dimension winny = myGfx.getScreenSize();
                         if (winny != null)
@@ -978,15 +986,13 @@ public class MiniClientConnection implements SageTVInputCallback {
                     } else if ("VIDEO_ADVANCED_ASPECT".equals(propName)) {
                         if (client.options().isUsingAdvancedAspectModes()) {
                             propVal=client.options().getDefaultAdvancedAspectMode();
-                        }
-                        else {
+                        } else {
                             propVal="";
                         }
                     } else if ("VIDEO_ADVANCED_ASPECT_LIST".equals(propName)) {
                         if (client.options().isUsingAdvancedAspectModes()) {
                             propVal=client.options().getAdvancedApectModes();
-                        }
-                        else {
+                        } else {
                             propVal="";
                         }
                     }

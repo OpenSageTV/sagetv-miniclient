@@ -1,4 +1,14 @@
-**1.4.1 (2018-12-31)**
+**1.4.3 (2018-01-12)**
+- sls: feat: Added more touch mappings
+- sls: feat: Added more key mappings
+- sls: feat: NAV OSD and KEYBOARD are able to be mapped in key/touch mappings
+- sls: feat: Added Hotpot mappings (useful for mouse/touch ie, ChromeOS/Tablet) 
+- sls: refactor: OpenGL and GDX now share 90% same code
+- sls: fix: OpenGL transparency issue with shapes
+- sls: feat: Added debug keys and commands view
+- sls: feat: Added httpls streaming support (debug/test only)
+
+**1.4.2 (2018-12-31)**
 - sls: fix: Back when playing video should not stop the video
 - sls: feat: Added ability to map insert key
 

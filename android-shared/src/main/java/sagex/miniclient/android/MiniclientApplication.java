@@ -64,7 +64,7 @@ public class MiniclientApplication extends Application {
             AppUtil.initLogging(this, options.getPrefs().getBoolean(PrefStore.Keys.use_log_to_sdcard, false));
             AppUtil.setLogLevel(options.getPrefs().getString(PrefStore.Keys.log_level, "warn"));
         } catch (Throwable t) {
-            log.warn("Failed to configure logging", t);
+            log.warn("Failed to configureList logging", t);
         }
 
         // start the client instance

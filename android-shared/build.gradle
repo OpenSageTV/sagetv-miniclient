@@ -69,6 +69,7 @@ dependencies {
     // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
     //compile "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
     api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
 
     // exoplayer 2

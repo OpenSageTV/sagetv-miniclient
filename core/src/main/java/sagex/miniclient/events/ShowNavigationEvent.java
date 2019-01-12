@@ -1,4 +1,4 @@
-package sagex.miniclient.android.events;
+package sagex.miniclient.events;
 
 /**
  * Created by seans on 05/12/15.

@@ -9,9 +9,11 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -51,6 +53,19 @@ public class SettingsFragment extends PreferenceFragment {
             if (p != null) {
                 p.setDefaultValue(true);
             }
+
+            p = this.findPreference("reset_to_defaults");
+            if (p != null) {
+                p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        clearAllPreferences();
+                        return true;
+                    }
+                });
+            }
+
+
 
             Preference touchPref = this.findPreference("touch_mappings");
 
@@ -263,5 +278,10 @@ public class SettingsFragment extends PreferenceFragment {
 
             startActivity(Intent.createChooser(intentShareFile, "Share MiniClient Log File"));
         }
+    }
+
+    void clearAllPreferences() {
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().clear().apply();
+        Toast.makeText(getActivity(), "Preferences have been reset to defaults", Toast.LENGTH_LONG).show();
     }
 }

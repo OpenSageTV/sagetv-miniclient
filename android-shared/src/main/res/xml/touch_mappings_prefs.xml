@@ -28,6 +28,18 @@
             android:key="swipe_down"
             android:title="Swipe Down"/>
 
+        <ListPreference
+            android:dialogTitle="Double Tap"
+            android:summary="%s"
+            android:key="double_tap"
+            android:title="Double Tap" />
+
+        <ListPreference
+            android:dialogTitle="Long Press"
+            android:summary="%s"
+            android:key="long_press"
+            android:title="Long Press" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Two Finger">
@@ -55,6 +67,19 @@
             android:summary="%s"
             android:key="swipe_down_2"
             android:title="Swipe Down"/>
+
+        <ListPreference
+            android:dialogTitle="Double Tap"
+            android:summary="%s"
+            android:key="double_tap_2"
+            android:title="Double Tap" />
+
+        <ListPreference
+            android:dialogTitle="Long Press"
+            android:summary="%s"
+            android:key="long_press_2"
+            android:title="Long Press" />
+
 
     </PreferenceCategory>
 
@@ -84,6 +109,87 @@
             android:key="swipe_down_3"
             android:title="Swipe Down"/>
 
+        <ListPreference
+            android:dialogTitle="Double Tap"
+            android:summary="%s"
+            android:key="double_tap_3"
+            android:title="Double Tap" />
+
+        <ListPreference
+            android:dialogTitle="Long Press"
+            android:summary="%s"
+            android:key="long_press_3"
+            android:title="Long Press" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Edge Swipes">
+
+        <EditTextPreference
+            android:summary="%s"
+            android:key="edge_size"
+            android:defaultValue="50"
+            android:numeric="integer"
+            android:title="Edge Size (Pixels)" />
+
+        <ListPreference
+            android:dialogTitle="Swipe Down From Top Edge"
+            android:summary="%s"
+            android:key="edge_swipe_top"
+            android:title="Swipe Down From Top Edge" />
+
+        <ListPreference
+            android:dialogTitle="Swipe Up From Bottom Edge"
+            android:summary="%s"
+            android:key="edge_swipe_bottom"
+            android:title="Swipe Up From Bottom Edge" />
+
+        <ListPreference
+            android:dialogTitle="Swipe Right From Left Edge"
+            android:summary="%s"
+            android:key="edge_swipe_right"
+            android:title="Swipe Right From Left Edge" />
+
+        <ListPreference
+            android:dialogTitle="Swipe Left From Right Edge"
+            android:summary="%s"
+            android:key="edge_swipe_left"
+            android:title="Swipe Left From Right Edge" />
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory android:title="Tap Hot Spots">
+        <EditTextPreference
+            android:summary="%s"
+            android:key="hotspot_size"
+            android:defaultValue="50"
+            android:numeric="integer"
+            android:title="Hotspot Size (Pixels)" />
+
+        <ListPreference
+            android:dialogTitle="Top Left Corner"
+            android:summary="%s"
+            android:key="hotspot_top_left"
+            android:title="Top Left Corner" />
+
+        <ListPreference
+            android:dialogTitle="Top Right Corner"
+            android:summary="%s"
+            android:key="hotspot_top_right"
+            android:title="Top Right Corner" />
+
+        <ListPreference
+            android:dialogTitle="Bottom Left Corner"
+            android:summary="%s"
+            android:key="hotspot_bottom_left"
+            android:title="Bottom Left Corner" />
+
+        <ListPreference
+            android:dialogTitle="Bottom Right Corner"
+            android:summary="%s"
+            android:key="hotspot_bottom_right"
+            android:title="Bottom Right Corner" />
     </PreferenceCategory>
 
 </PreferenceScreen>

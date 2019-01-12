@@ -1,4 +1,4 @@
-package sagex.miniclient.android.events;
+package sagex.miniclient.events;
 
 /**
  * Event that triggers showing the native keyboard

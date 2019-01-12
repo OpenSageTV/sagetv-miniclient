@@ -23,7 +23,7 @@ public class FillRectangle {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 2;
 
-    static short drawOrder[] = {0, 1, 2, 0, 3, 2}; // order to draw vertices
+    static short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
 
     static {
         // initialize byte buffer for the draw list
@@ -121,7 +121,7 @@ public class FillRectangle {
 
         // Draw the triangles with a draw list buffer
         // Draw the square
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, drawOrder.length,
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length,
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
         // Disable vertex array

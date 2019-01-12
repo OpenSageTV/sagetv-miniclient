@@ -12,10 +12,13 @@ import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.video.VideoListener;
 
 import java.io.IOException;
@@ -227,10 +230,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         if (pushMode) {
             dataSource = new Exo2PushDataSource();
         } else {
-            if (!sageTVurl.startsWith("stv://")) {
-                sageTVurl = "stv://" + context.getClient().getConnectedServerInfo().address + "/" + sageTVurl;
-            }
-            dataSource = new Exo2PullDataSource(context.getClient().getConnectedServerInfo().address);
+            if (!httpls)
+                dataSource = new Exo2PullDataSource(context.getClient().getConnectedServerInfo().address);
+            else
+                dataSource = null;
         }
 
         Handler mainHandler = new Handler();
@@ -317,22 +320,31 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         }
 
         final String sageTVurlFinal = sageTVurl;
-        ExtractorMediaSource mediaSource = new ExtractorMediaSource(
-                Uri.parse(sageTVurl),
-                new DataSource.Factory() {
-                    @Override
-                    public DataSource createDataSource() {
-                        return dataSource;
-                    }
-                },
-                new DefaultExtractorsFactory(), mainHandler, new ExtractorMediaSource.EventListener() {
-            @Override
-            public void onLoadError(IOException e) {
-                log.error("FAILED to load: " + sageTVurlFinal);
-            }
-        });
+        if (!httpls) {
+            ExtractorMediaSource mediaSource = new ExtractorMediaSource(
+                    Uri.parse(sageTVurl),
+                    new DataSource.Factory() {
+                        @Override
+                        public DataSource createDataSource() {
+                            return dataSource;
+                        }
+                    },
+                    new DefaultExtractorsFactory(), mainHandler, new ExtractorMediaSource.EventListener() {
+                @Override
+                public void onLoadError(IOException e) {
+                    log.error("FAILED to load: " + sageTVurlFinal);
+                }
+            });
 
-        player.prepare(mediaSource);
+            player.prepare(mediaSource);
+        } else {
+            String url = sageTVurl;
+            log.info("Playing SageTV HTTPLS URL: {}", url);
+            //ExtractorMediaSource mediaSource = new ExtractorMediaSource()
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context.getContext(), "sagetv/miniclient android");
+            MediaSource videoSource = new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url));
+            player.prepare(videoSource);
+        }
 
         // start playing
         player.setVideoSurface(((SurfaceView) context.getVideoView()).getHolder().getSurface());

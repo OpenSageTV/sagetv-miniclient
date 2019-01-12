@@ -67,22 +67,6 @@
 
     <PreferenceCategory android:title="@string/application_settings">
 
-        <!--
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="long_press_select_for_osd"
-            android:summary="@string/long_press_select_for_osd_preference_summary"
-            android:title="@string/long_press_select_for_osd_preference"/>
-        -->
-
-        <!--
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="use_stateful_remote"
-            android:summary="@string/use_stateful_remote_summary"
-            android:title="@string/use_stateful_remote_title"/>
-         -->
-
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="use_opengl_ui"
@@ -172,6 +156,12 @@
             android:summary="@string/summary_debug_ar_preference"
             android:title="@string/title_debug_ar_preference"/>
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="use_httpls"
+            android:summary="@string/summary_use_httpls_preference"
+            android:title="@string/title_use_httpls_preference" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/logging_preferences">
@@ -229,5 +219,14 @@
             android:title="Application Available Memory"/>
 
     </PreferenceCategory>
+
+    <!--<PreferenceCategory android:title="Danger">-->
+
+    <!--<Preference-->
+    <!--android:key="reset_to_defaults"-->
+    <!--android:summary="Reset all preferences to Default Values"-->
+    <!--android:title="Reset To Default Preferences"/>-->
+
+    <!--</PreferenceCategory>-->
 
 </PreferenceScreen>

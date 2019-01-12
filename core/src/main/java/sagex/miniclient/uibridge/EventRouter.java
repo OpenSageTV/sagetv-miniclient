@@ -1,12 +1,19 @@
 package sagex.miniclient.uibridge;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
-import sagex.miniclient.UserEvent;
+import sagex.miniclient.events.DebugSageCommandEvent;
+import sagex.miniclient.events.ShowKeyboardEvent;
+import sagex.miniclient.events.ShowNavigationEvent;
+import sagex.miniclient.prefs.PrefStore;
 
 
 public class EventRouter
 {
+    public static final Logger log = LoggerFactory.getLogger(EventRouter.class);
 
     /*
     public static final UserEvent MEDIA_PAUSE = new UserEvent(UserEvent.PAUSE);
@@ -96,15 +103,29 @@ public class EventRouter
 
     public static void postCommand(MiniClient client, int command)
     {
+        if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false)) {
+            client.eventbus().post(new DebugSageCommandEvent(SageCommand.parseByID(command)));
+        }
 
         client.getCurrentConnection().postSageCommandEvent(command);
     }
 
     public static void postCommand(MiniClient client, SageCommand command)
     {
-        if(command != SageCommand.UNKNOWN && command != SageCommand.NONE)
-        {
+        if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false)) {
+            client.eventbus().post(new DebugSageCommandEvent(command));
+        }
+
+        if (command.getEventCode() >= 0) {
             client.getCurrentConnection().postSageCommandEvent(command.getEventCode());
+        } else {
+            if (command == SageCommand.NAV_OSD) {
+                client.eventbus().post(ShowNavigationEvent.INSTANCE);
+            } else if (command == SageCommand.KEYBOARD_OSD) {
+                client.eventbus().post(ShowKeyboardEvent.INSTANCE);
+            } else {
+                log.warn("Unhandled SageCommand: {}", command);
+            }
         }
     }
 }
