@@ -115,9 +115,9 @@ public class DefaultKeyMap extends KeyMap {
         KEYMAP.put(KeyEvent.KEYCODE_PROG_RED, prefs.getRed());
         KEYMAP.put(KeyEvent.KEYCODE_PROG_GREEN, prefs.getGreen());
 
-        //Mapping them, but they are not currently configurable
-        KEYMAP.put(KeyEvent.KEYCODE_PAGE_UP, SageCommand.PAGE_UP);
-        KEYMAP.put(KeyEvent.KEYCODE_PAGE_DOWN, SageCommand.PAGE_DOWN);
+        // Page/UP which might also do channel up/down
+        KEYMAP.put(KeyEvent.KEYCODE_PAGE_UP, prefs.getPageUp());
+        KEYMAP.put(KeyEvent.KEYCODE_PAGE_DOWN, prefs.getPageDown());
 
         // UI Long Presses
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefs.getUpLongPress());

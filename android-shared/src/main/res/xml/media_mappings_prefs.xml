@@ -188,6 +188,18 @@
             android:title="Channel Down"/>
 
         <ListPreference
+            android:dialogTitle="Page Up"
+            android:key="default_page_up"
+            android:summary="%s"
+            android:title="Page Up" />
+
+        <ListPreference
+            android:dialogTitle="Page Down"
+            android:key="default_page_down"
+            android:summary="%s"
+            android:title="Page Down" />
+
+        <ListPreference
             android:dialogTitle="Menu"
             android:key="default_menu"
             android:summary="%s"
@@ -352,6 +364,18 @@
             android:title="Down"/>
 
         <ListPreference
+            android:dialogTitle="Page Up"
+            android:key="videoplaying_page_up"
+            android:summary="%s"
+            android:title="Page Up" />
+
+        <ListPreference
+            android:dialogTitle="Page Down"
+            android:key="videoplaying_page_down"
+            android:summary="%s"
+            android:title="Page Down" />
+
+        <ListPreference
             android:dialogTitle="Select (Long Press)"
             android:key="videoplaying_select_long_press"
             android:summary="%s"
@@ -418,6 +442,19 @@
             android:key="videopaused_down"
             android:summary="%s"
             android:title="Down"/>
+
+        <ListPreference
+            android:dialogTitle="Page Up"
+            android:key="videopaused_page_up"
+            android:summary="%s"
+            android:title="Page Up" />
+
+        <ListPreference
+            android:dialogTitle="Page Down"
+            android:key="videopaused_page_down"
+            android:summary="%s"
+            android:title="Page Down" />
+
 
         <ListPreference
             android:dialogTitle="Select (Long Press)"

@@ -370,6 +370,36 @@ public class MediaMappingPreferences
         return SageCommand.parseByKey(key);
     }
 
+    public SageCommand getPageUp() {
+        String key;
+        switch (prefix) {
+            case "videoplaying":
+            case "videopaused":
+                key = preferences.getString(prefix + "_page_up", SageCommand.CHANNEL_UP.getKey());
+                break;
+            default:
+                key = preferences.getString(prefix + "_page_up", SageCommand.PAGE_UP.getKey());
+        }
+
+
+        return SageCommand.parseByKey(key);
+    }
+
+    public SageCommand getPageDown() {
+        String key;
+        switch (prefix) {
+            case "videoplaying":
+            case "videopaused":
+                key = preferences.getString(prefix + "_page_down", SageCommand.CHANNEL_DOWN.getKey());
+                break;
+            default:
+                key = preferences.getString(prefix + "_page_down", SageCommand.PAGE_DOWN.getKey());
+        }
+
+        return SageCommand.parseByKey(key);
+    }
+
+
     public SageCommand getMenu()
     {
         String key = preferences.getString(prefix + "_menu", SageCommand.OPTIONS.getKey());

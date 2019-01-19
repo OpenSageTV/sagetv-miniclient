@@ -46,6 +46,11 @@ import sagex.miniclient.util.AspectHelper;
 import sagex.miniclient.video.HasVideoInfo;
 import sagex.miniclient.video.VideoInfoResponse;
 
+// NOTE: check this out
+// https://github.com/nekocode/CameraFilter/blob/master/app/src/main/java/cn/nekocode/camerafilter/CameraRenderer.java
+// might be useful if you ever decide to manage your own egl context
+// or if you want to use shader samples from shadertoy, since they show how to use shadertoy glsl shaders.
+
 public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.Renderer, HasVideoInfo {
     private static final Logger log = LoggerFactory.getLogger(OpenGLRenderer.class);
 

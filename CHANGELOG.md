@@ -1,3 +1,6 @@
+**1.4.4 (2018-01-19)**
+- sls: feat: Added ability to remap Page UP/DOWN
+
 **1.4.3 (2018-01-12)**
 - sls: feat: Added more touch mappings
 - sls: feat: Added more key mappings

@@ -25,6 +25,10 @@ public class VideoPausedKeyMap extends KeyMap {
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_RIGHT, prefsVideo.getRight());
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_UP, prefsVideo.getUp());
         KEYMAP.put(KeyEvent.KEYCODE_DPAD_DOWN, prefsVideo.getDown());
+        // Page/UP which might also do channel up/down
+        KEYMAP.put(KeyEvent.KEYCODE_PAGE_UP, prefsVideo.getPageUp());
+        KEYMAP.put(KeyEvent.KEYCODE_PAGE_DOWN, prefsVideo.getPageDown());
+
 
         // since we are remapping left and right, then, remap long presses to send left/right
         LONGPRESS_KEYMAP.put(KeyEvent.KEYCODE_DPAD_CENTER, prefsVideo.getSelectLongPress());
