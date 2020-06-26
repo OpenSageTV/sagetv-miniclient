@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +31,14 @@ public class Exo2PushDataSource extends PushBufferDataSource implements DataSour
     public Exo2PushDataSource() {
         log.debug("ExoNative datasource being created.");
     }
-
+    
+    
+    @Override
+    public void addTransferListener(TransferListener transferListener)
+    {
+    
+    }
+    
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         this.uri=dataSpec.uri;
@@ -38,7 +47,8 @@ public class Exo2PushDataSource extends PushBufferDataSource implements DataSour
     }
 
     @Override
-    public int read(byte[] buffer, int offset, int readLength) throws IOException {
+    public int read(byte[] buffer, int offset, int readLength) throws IOException
+    {
         return read(0, buffer, offset, readLength);
     }
 
@@ -46,6 +56,14 @@ public class Exo2PushDataSource extends PushBufferDataSource implements DataSour
     public Uri getUri() {
         return uri;
     }
+    
+    @Override
+    public Map<String, List<String>> getResponseHeaders()
+    {
+        return new HashMap<String, List<String>>();
+        //return null;
+    }
+
 
 //    @Override
 //    public Map<String, List<String>> getResponseHeaders() {

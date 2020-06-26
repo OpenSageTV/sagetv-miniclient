@@ -1,3 +1,15 @@
+
+**1.5.0 (2020-6-26) **
+- jvl711: Moving to new Play Store app
+- jvl711: Updated to exoplayer 2.11.5
+- jvl711: Added HEVC codec to list of codecs sent to sage durring connection
+- jvl711: Attempted to clean up the current playback time, and the seek
+- jvl711: Turn off rendering cues if by default
+- jvl711: Add error message toast on ExoPlayer2 Error
+- jvl711: Fixed issues with seeking when using exoplayer and push mediasource
+- jvl711: Added some basic support for subtitles in ExoPlayer
+- jvl711: Fixed a bug where it would not seek to the SageTV supplied start position
+
 **1.4.4 (2018-01-19)**
 - sls: feat: Added ability to remap Page UP/DOWN
 

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,14 @@ public class Exo2PullDataSource implements DataSource, HasClose {
     public Exo2PullDataSource(String host) {
         this.host=host;
     }
-
+    
+    
+    @Override
+    public void addTransferListener(TransferListener transferListener)
+    {
+    
+    }
+    
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         dataSource = new BufferedPullDataSource(host);
@@ -61,6 +69,13 @@ public class Exo2PullDataSource implements DataSource, HasClose {
     public Uri getUri() {
         return uri;
     }
+    
+    @Override
+    public Map<String, List<String>> getResponseHeaders()
+    {
+        return new HashMap<String, List<String>>();
+    }
+
 
 //    @Override
 //    public Map<String, List<String>> getResponseHeaders() {

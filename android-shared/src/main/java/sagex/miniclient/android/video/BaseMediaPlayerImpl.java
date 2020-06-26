@@ -1,6 +1,8 @@
 package sagex.miniclient.android.video;
 
+import android.os.Looper;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,32 +33,27 @@ import sagex.miniclient.video.VideoInfoResponse;
 /**
  * Created by seans on 06/10/15.
  */
-public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPlayerPlugin, HasVideoInfo {
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniPlayerPlugin, HasVideoInfo
+{
+    
 
     protected static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
-
+    protected static final int DISABLE_TRACK = 8192;
+    
+    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+    protected TPlayer player;
+    protected TDataSource dataSource;
     protected final AndroidUIController context;
-
     protected boolean pushMode;
     protected boolean playerReady;
-
-    protected Player player;
-    protected DataSource dataSource;
-
     protected boolean createPlayerOnUI = true;
     protected boolean waitForPlayer = true;
-
     protected int state;
     protected boolean eos=false;
     protected boolean seekPending = false;
-
     protected String lastUri;
-
     protected long lastMediaTime = -1;
-
     protected boolean flushed = false;
-
     protected VideoInfo videoInfo = null;
 
     // this is mainly for testing... when we force a different UI aspect than what we really have
@@ -64,14 +61,12 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     Rectangle lastVidSrc=null, lastVidDest=null;
 
     AspectModeManager aspectModeManager = new AspectModeManager();
-
     boolean debug_ar=false;
-
     protected boolean httpls = false;
 
-    public BaseMediaPlayerImpl(AndroidUIController activity, boolean createPlayerOnUI, boolean waitForPlayer) {
+    public BaseMediaPlayerImpl(AndroidUIController activity, boolean createPlayerOnUI, boolean waitForPlayer)
+    {
         this.context = activity;
-        //this.mSurface = activity.getVideoView();
         this.createPlayerOnUI = createPlayerOnUI;
         this.waitForPlayer = waitForPlayer;
         state = NO_STATE;
@@ -79,23 +74,33 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         debug_ar = context.getClient().properties().getBoolean(PrefStore.Keys.debug_ar, false);
     }
 
-    public Player getPlayer() {
+    public TPlayer getPlayer()
+    {
         return player;
     }
-
+    
     @Override
-    public void free() {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.info("Freeing Media Player");
+    public void free()
+    {
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+        {
+            log.info("Freeing Media Player");
+        }
+        
         releasePlayer();
     }
 
     @Override
-    public void setPushMode(boolean b) {
+    public void setPushMode(boolean b)
+    {
         this.pushMode = b;
     }
 
     @Override
-    public void load(byte majorHint, byte minorHint, String encodingHint, final String urlString, String hostname, boolean timeshifted, long buffersize) {
+    public void load(byte majorHint, byte minorHint, String encodingHint, final String urlString, String hostname, boolean timeshifted, long buffersize)
+    {
+        final String finalUrl;
+        
         lastUri = urlString;
         lastMediaTime = -1;
         eos=false;
@@ -104,40 +109,58 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
         String url = urlString;
         httpls = urlString.startsWith("http://");
-        if (httpls) {
-            if (url.contains("HOSTNAME")) {
+        if (httpls)
+        {
+            if (url.contains("HOSTNAME"))
+            {
                 url = url.replace("HOSTNAME", context.getClient().getConnectedServerInfo().address + ":" + context.getClient().getConnectedServerInfo().port);
             }
-        } else {
-            if (!urlString.startsWith("stv://")) {
+        }
+        else
+        {
+            if (!urlString.startsWith("stv://"))
+            {
                 url = "stv://" + context.getClient().getConnectedServerInfo().address + "/" + urlString;
             }
         }
-        final String finalUrl = url;
+        finalUrl = url;
         log.debug("load(): url: {}", url);
-        if (createPlayerOnUI) {
-            context.runOnUiThread(new Runnable() {
+
+        if (createPlayerOnUI)
+        {
+            context.runOnUiThread(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     releasePlayer();
                     state = LOADED_STATE;
-
                     context.setupVideoFrame();
-
                     setupPlayer(finalUrl);
+                    
                     if (dataSource == null && !httpls)
+                    {
                         throw new RuntimeException("setupPlayer must create a datasource");
+                    }
                 }
             });
-        } else {
+        }
+        else
+        {
+            Looper.prepare();
             releasePlayer();
             state = LOADED_STATE;
+            log.debug("JVL - Creating player on thread ->", Thread.currentThread().getName());
             setupPlayer(finalUrl);
+            
             if (dataSource == null && !httpls)
+            {
                 throw new RuntimeException("setupPlayer must create a datasource");
+            }
         }
 
-        if (debug_ar) {
+        if (debug_ar)
+        {
             // if debug AR is turned on then show the AR UI immediately
             context.getClient().eventbus().post(new VideoInfoShow());
         }
@@ -145,11 +168,13 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
 
     protected abstract void setupPlayer(String sageTVurl);
 
-    public void message(final String msg) {
+    public void message(final String msg)
+    {
         AppUtil.message(msg);
     }
 
-    protected void playerFailed() {
+    protected void playerFailed()
+    {
         stop();
         state = EOS_STATE;
         eos=true;
@@ -158,7 +183,8 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         message(context.getContext().getString(R.string.msg_player_failed, lastUri));
     }
 
-    protected void notifySageTVStop() {
+    protected void notifySageTVStop()
+    {
         // This causes queded up items to fail to play.. so we can't really do this.
         // EventRouter.post(MiniclientApplication.get().getClient(), EventRouter.MEDIA_STOP);
     }
@@ -174,43 +200,59 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     protected abstract long getPlayerMediaTimeMillis(long lastServerTime);
 
     @Override
-    public long getMediaTimeMillis(long lastServerTime) {
+    public long getMediaTimeMillis(long lastServerTime)
+    {
         if (lastMediaTime == -1) lastMediaTime = lastServerTime;
 
-        if (!playerReady || player == null) {
+        if (!playerReady || player == null)
+        {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("getMediaTimeMillis(): Player not ready, returning 0");
-
+            }
             // NOTE: SageTV generally expects 0 during seek/flush calls
             return 0;
         }
 
         // NOTE: when using seekPending check here, ijkplayer tends to send back
         // wrong values, so we removed seekPending checks.
-        if (flushed) {
+        if (flushed)
+        {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("getMediaTimeMillis(): Player seeking or waiting for data, returning 0");
-
+            }
             // NOTE: SageTV generally expects 0 during seek/flush calls
             return 0;
         }
-        if (state == STOPPED_STATE || state == EOS_STATE || state == PAUSE_STATE) {
+        if (state == STOPPED_STATE || state == EOS_STATE || state == PAUSE_STATE)
+        {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("getMediaTimeMillis(): Player State {} returning last time {}", state, Utils.toHHMMSS(lastMediaTime, true));
+            }
+            
             return lastMediaTime;
         }
 
-        if (state == NO_STATE || state == LOADED_STATE) {
+        if (state == NO_STATE || state == LOADED_STATE)
+        {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("getMediaTimeMillis(): Player State Not Ready {} returning 0", state);
+            }
+            
             return 0;
         }
 
         long mt = getPlayerMediaTimeMillis(lastServerTime);
-        if (mt <= 0) {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+        if (mt <= 0)
+        {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("getMediaTimeMillis() is {} after a flush/seek.  Using 0, until data shows up.", mt);
             }
+            
             return 0;
         }
         // we have some data, so we are not flushing/seeking
@@ -219,23 +261,27 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     @Override
-    public int getState() {
+    public int getState()
+    {
         if (eos) return MiniPlayerPlugin.EOS_STATE;
         return state;
     }
 
     @Override
-    public void setMute(boolean b) {
+    public void setMute(boolean b)
+    {
 
     }
 
     @Override
-    public void stop() {
+    public void stop()
+    {
         state = STOPPED_STATE;
         context.removeVideoFrame();
     }
 
-    protected void clearSurface() {
+    protected void clearSurface()
+    {
 //        if (mSurface != null) {
 //            context.runOnUiThread(new Runnable() {
 //                @Override
@@ -254,29 +300,41 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     @Override
-    public void pause() {
+    public void pause()
+    {
         state = PAUSE_STATE;
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("pause()");
-        //if (createPlayerOnUI) waitForPlayer();
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+        {
+            log.debug("pause()");
+        }
     }
 
     @Override
-    public void play() {
+    public void play()
+    {
         state = PLAY_STATE;
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("play()");
-        //waitForPlayer();
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+        {
+            log.debug("play()");
+        }
     }
 
     @Override
-    public void seek(long timeInMS) {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("SEEK: {}", timeInMS);
+    public void seek(long timeInMS)
+    {
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+        {
+            log.debug("SEEK: {}", timeInMS);
+        }
         seekPending = true;
     }
 
     @Override
-    public void setServerEOS() {
+    public void setServerEOS()
+    {
         // tell the datasource that we have all the data
-        if (dataSource != null && dataSource instanceof HasPushBuffer) {
+        if (dataSource != null && dataSource instanceof HasPushBuffer)
+        {
             ((HasPushBuffer) dataSource).setEOS();
         }
         // we don't set our EOS until AFTER the player stream has ended
@@ -286,8 +344,10 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     @Override
-    public long getLastFileReadPos() {
-        if (dataSource instanceof HasPushBuffer) {
+    public long getLastFileReadPos()
+    {
+        if (dataSource instanceof HasPushBuffer)
+        {
             return ((HasPushBuffer) dataSource).getBytesRead();
         } else {
             // return (long)player.getPosition();
@@ -367,54 +427,80 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
     }
 
     @Override
-    public Dimension getVideoDimensions() {
+    public Dimension getVideoDimensions()
+    {
         return videoInfo.size.getDimension().asIntDimension();
     }
 
     @Override
-    public void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException {
+    public void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException
+    {
         //log.debug("pushData()");
-        if (dataSource instanceof HasPushBuffer) {
+        if (dataSource instanceof HasPushBuffer)
+        {
             ((HasPushBuffer) dataSource).pushBytes(cmddata, bufDataOffset, buffSize);
         }
         flushed = false;
     }
 
     @Override
-    public void flush() {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("dispose()");
-        if (dataSource instanceof HasPushBuffer) {
+    public void flush()
+    {
+        log.debug("JVL - flush called!");
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+        {
+            log.debug("dispose()");
+        }
+        
+        if (dataSource instanceof HasPushBuffer)
+        {
+            log.debug("JVL - HasPushBuffer flush called!");
             ((HasPushBuffer) dataSource).flush();
         }
+        
         flushed = true;
     }
 
     @Override
-    public int getBufferLeft() {
-        if (dataSource instanceof HasPushBuffer) {
-            if (state == EOS_STATE || eos) return -1;
+    public int getBufferLeft()
+    {
+        if (dataSource instanceof HasPushBuffer)
+        {
+            if (state == EOS_STATE || eos)
+            {
+                return -1;
+            }
+            
             return ((HasPushBuffer) dataSource).bufferAvailable();
-        } else {
+        }
+        else
+        {
             return PushBufferDataSource.PIPE_SIZE;
         }
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
 
     }
 
-    protected void setVideoSize(int width, int height, float ar) {
+    
+    
+    protected void setVideoSize(int width, int height, float ar)
+    {
         videoInfo.update(width, height, ar);
         updatePlayerView();
     }
 
-    protected void setVideoSize(int width, int height, int sarNum, int sarDen) {
+    protected void setVideoSize(int width, int height, int sarNum, int sarDen)
+    {
         videoInfo.update(width,height,sarNum, sarDen);
         updatePlayerView();
     }
 
-    protected void releasePlayer() {
+    protected void releasePlayer()
+    {
         log.debug("Releasing Player");
         player = null;
         videoInfo.reset();
@@ -426,19 +512,23 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         context.removeVideoFrame();
     }
 
-    protected void releaseDataSource() {
-        if (dataSource instanceof HasPushBuffer) {
+    protected void releaseDataSource()
+    {
+        if (dataSource instanceof HasPushBuffer)
+        {
             ((HasPushBuffer) dataSource).release();
         }
     }
 
     @Override
-    public void setVideoAdvancedAspect(String aspectMode) {
+    public void setVideoAdvancedAspect(String aspectMode)
+    {
         this.videoInfo.updateARMode(aspectMode);
         updatePlayerView();
     }
 
-    public void updatePlayerView() {
+    public void updatePlayerView()
+    {
         Dimension screen = context.getClient().getUIRenderer().getMaxScreenSize();
         Rectangle rect = aspectModeManager.doMeasure(videoInfo, new RectangleF(0,0,screen.width, screen.height), context.getClient().getUIRenderer().getUIAspectRatio()).asIntRect();
 
@@ -448,10 +538,13 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
         updatePlayerView(rect);
     }
 
-    public void updatePlayerView(final Rectangle rect) {
-        context.runOnUiThread(new Runnable() {
+    public void updatePlayerView(final Rectangle rect)
+    {
+        context.runOnUiThread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
                 log.debug("updatePlayerView: Video Size {}", rect);
                 FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) context.getVideoView().getLayoutParams();
                 lp.width = rect.width;
@@ -460,7 +553,9 @@ public abstract class BaseMediaPlayerImpl<Player, DataSource> implements MiniPla
                 lp.topMargin = rect.y;
                 context.getVideoView().setLayoutParams(lp);
                 context.getVideoView().requestLayout();
-                if (debug_ar) {
+                
+                if (debug_ar)
+                {
                     context.getClient().eventbus().post(VideoInfoRefresh.INSTANCE);
                 }
             }

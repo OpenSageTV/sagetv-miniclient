@@ -67,3 +67,6 @@ build/
 
 ## OS Specific
 .DS_Store
+
+## Sensitive
+keystore.properties

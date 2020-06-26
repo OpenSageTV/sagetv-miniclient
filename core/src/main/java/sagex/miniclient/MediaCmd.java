@@ -161,32 +161,48 @@ public class MediaCmd {
                 close();
                 return 4;
             case MEDIACMD_OPENURL:
+                
                 lastServerStartTime = -1;
                 int strLen = readInt(0, cmddata);
                 String urlString = "";
                 maxPrebufferSize = DESIRED_VIDEO_PREBUFFER_SIZE;
+                
                 if (strLen > 1)
+                {
                     urlString = new String(cmddata, 4, strLen - 1);
-                if (!urlString.startsWith("push:")) {
-                    if (urlString.startsWith("dvd:")) {
+                    log.debug("JVL - MEDIACMD_OPENURL {}", urlString);
+                }
+                
+                if (!urlString.startsWith("push:"))
+                {
+                    if (urlString.startsWith("dvd:"))
+                    {
                         log.error("DVD PlayBack not supported");
-                    } else if (urlString.startsWith("file://")) {
+                    }
+                    else if (urlString.startsWith("file://"))
+                    {
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         playa.setPushMode(false);
                         playa.load((byte) 0, (byte) 0, "", urlString, null, false, 0);
                         pushMode = false;
-                    } else {
+                    }
+                    else
+                    {
+                    
                         playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         // We always set it to be an active file because it'll get turned off by the streaming code if it is not.
                         // It's safe to say it's active when it's not (as long as it's a streamable file format), but the opposite is not true.
                         // So we always say it's active to avoid any problems loading the file if it's a streamable file format.
-                        boolean isActive = urlString.toLowerCase().endsWith(".mpg") || urlString.toLowerCase().endsWith(".ts") ||
-                                urlString.toLowerCase().endsWith(".flv");
+                        boolean isActive = urlString.toLowerCase().endsWith(".mpg")
+                                || urlString.toLowerCase().endsWith(".ts")
+                                || urlString.toLowerCase().endsWith(".flv");
                         playa.setPushMode(false);
                         playa.load((byte) 0, (byte) 0, "", urlString, myConn.getServerName(), isActive, 0);
                         pushMode = false;
                     }
-                } else {
+                }
+                else
+                {
                     pushMode = true;
                     {
                         if (urlString.indexOf("audio") != -1 && urlString.indexOf("bf=vid") == -1) {
@@ -244,7 +260,9 @@ public class MediaCmd {
                 writeInt(1, retbuf, 0);
                 // original sagetv code has numPushBuffers > 0, but they are writing to disk
                 // so I don't think we need this numPushBuffers, we should reset always.
-                if (playa != null && pushMode) {
+                if (playa != null && pushMode)
+                {
+                    log.debug("JVL - MEDIACMD_FLUSH called");
                     playa.flush();
                     lastServerStartTime = -1;
                 }
@@ -264,10 +282,12 @@ public class MediaCmd {
                         // this happens after a flush, so we capture the start of where
                         // sagetv is telling us about the buffer, so we can use it later
                         // in the determining the player position
-                        if (lastServerStartTime < 0) {
+                        if (lastServerStartTime < 0)
+                        {
                                 lastServerStartTime = serverMuxTime;
                         }
-                        if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING) {
+                        if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING)
+                        {
                             log.debug("PushBuffer: PUSHED ServerMUXTime: {}, lastServerStartTime: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerStartTime, true));
                         }
                     }
@@ -301,7 +321,7 @@ public class MediaCmd {
                     rv = playa.getBufferLeft();
                     // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv);
                 }
-
+                
                 if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING) {
                     if (rv < 0) {
                         log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}", rv);
@@ -360,21 +380,35 @@ public class MediaCmd {
             case MEDIACMD_SEEK:
                 long seekTime = ((long) readInt(0, cmddata) << 32) | readInt(4, cmddata);
                 if (playa != null)
+                    log.debug("JVL - MEDIACMD_SEEK called: {}", seekTime);
                     playa.seek(seekTime);
                 return 0;
             case MEDIACMD_DVD_STREAMS:
-                if (playa!=null) {
-                    try {
+                if (playa!=null)
+                {
+                    try
+                    {
                         int streamType = readInt(0, cmddata);
                         int streamPos = readInt(4, cmddata);
 
-                        log.debug("Stream Type: {}  Stream Pos: {}", streamType, streamPos);
-                        if (streamType == STREAM_TYPE_AUDIO) {
+                        log.debug("JVL - Stream Type: {}  Stream Pos: {}", streamType, streamPos);
+                        if (streamType == STREAM_TYPE_AUDIO)
+                        {
+                            log.debug("JVL - Changing Audio Track");
                             playa.setAudioTrack(streamPos);
-                        } else if (streamType == STREAM_TYPE_SUBTITLE) {
+                        }
+                        else if (streamType == STREAM_TYPE_SUBTITLE)
+                        {
+                            log.debug("JVL - Changing TEXT Track");
                             playa.setSubtitleTrack(streamPos);
                         }
-                    } catch (Throwable t) {
+                        else
+                        {
+                            log.error("JVL - UNKNOWN Stream Type");
+                        }
+                    }
+                    catch (Throwable t)
+                    {
                         log.error("Failed to set Stream Type", t);
                         return 0;
                     }
@@ -391,8 +425,10 @@ public class MediaCmd {
         }
     }
 
-    private long getMediaTimeMillis() {
-        if (playa != null) {
+    private long getMediaTimeMillis()
+    {
+        if (playa != null)
+        {
             return playa.getMediaTimeMillis(lastServerStartTime);
         }
         return lastServerStartTime;

@@ -1,35 +1,68 @@
 apply plugin: 'com.android.application'
 
 
-def computeVersionCode() {
+def computeVersionCode()
+{
     return appVersionCode;
+}
+
+def Properties signingProps = new Properties()
+def propFile = file("../keystore.properties")
+
+if (propFile.canRead())
+{
+    signingProps.load(new FileInputStream(propFile))
+}
+else
+{
+    System.out.println("Keystore properties file missing.")
 }
 
 android {
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
 
+    android {
     compileOptions {
-        sourceCompatibility defJavaVesionConst
-        targetCompatibility defJavaVesionConst
+            sourceCompatibility 1.8
+            targetCompatibility 1.8
+        }
     }
 
+
     defaultConfig {
-        applicationId "sagex.miniclient.android.tv"
+        applicationId "jvl.sage.miniclient.android.tv.debug"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
         // versionCode API (2 digits), SCREEN (2 digits), VERSION (3 digits)
         versionCode computeVersionCode()
         versionName "${appVersionName}"
-//        // might need this later to strip out some architectures
-//        ndk {
-//            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
-//        }
+        ndk.abiFilters 'armeabi-v7a','arm64-v8a','armeabi','x86','x86_64'
     }
 
-    signingConfigs {
-        release {
-            keyAlias = "sagetv-miniclient-tv"
+    signingConfigs
+    {
+        release
+        {
+            //keyAlias = "sagetv-miniclient-tv"
+            keyAlias = "client"
+            //storePassword=beckrules
+            //keyPassword=beckrules
+            //keyAlias=client
+            //storeFile=C:\Users\jvl711.CORE\Documents\code
+
+            if (signingProps!=null && signingProps.containsKey("keyAlias") && signingProps.containsKey("storeFile")
+                    && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
+            {
+                keyAlias = signingProps.getProperty("keyAlias")
+                storeFile = new File(signingProps.getProperty("storeFile"));
+                storePassword = signingProps.getProperty("storePassword")
+                keyPassword = signingProps.getProperty("keyPassword")
+            }
+            else
+            {
+                System.out.println("signing config missing or incorrectly configured")
+            }
         }
     }
 
@@ -41,16 +74,20 @@ android {
         }
     }
 
-    if (System.getenv("AEA_STORE_FILE") &&
-            System.getenv("AEA_STORE_PASSWORD") &&
-            System.getenv("AEA_MINICLIENT_KEY_PASSWORD")) {
+
+    /*
+    if (System.getenv("AEA_STORE_FILE") && System.getenv("AEA_STORE_PASSWORD") && System.getenv("AEA_MINICLIENT_KEY_PASSWORD"))
+    {
         signingConfigs.release.storeFile = file(System.getenv("AEA_STORE_FILE"))
         signingConfigs.release.storePassword = System.getenv("AEA_STORE_PASSWORD")
         signingConfigs.release.keyPassword = System.getenv("AEA_MINICLIENT_KEY_PASSWORD")
-    } else {
+    }
+    else
+    {
         System.out.println("NEED TO SET AEA_STORE_FILE, AEA_STORE_PASSWORD, AEA_MINICLIENT_KEY_PASSWORD to sign app");
         buildTypes.release.signingConfig = null
     }
+     */
 
 //    dataBinding {
 //        enabled = true

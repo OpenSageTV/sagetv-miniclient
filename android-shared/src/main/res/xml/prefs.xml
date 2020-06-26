@@ -29,16 +29,21 @@
             android:title="@string/title_list_streaming_mode_preference"/>
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="use_exoplayer"
             android:summary="@string/use_exoplayer_preference"
             android:title="@string/use_exoplayer_preference_title"/>
 
-        <CheckBoxPreference
+        <Preference
+            android:key="show_exo_decoders"
+            android:summary="@string/show_exo_decoders_pref_summary"
+            android:title="@string/show_exo_decoders"/>
+
+        <!--<CheckBoxPreference
             android:defaultValue="false"
             android:key="disable_audio_passthrough"
             android:summary="@string/summary_disable_audio_passthrough_preference"
-            android:title="@string/title_disable_audio_passthrough_preference"/>
+            android:title="@string/title_disable_audio_passthrough_preference"/>-->
 
         <CheckBoxPreference
             android:defaultValue="false"
@@ -68,13 +73,13 @@
     <PreferenceCategory android:title="@string/application_settings">
 
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="use_opengl_ui"
             android:summary="@string/use_opengl_ui_summary"
             android:title="@string/use_opengl_ui_title" />
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="use_native_resolution"
             android:summary="@string/use_native_resolution_summary"
             android:title="@string/use_native_resolution_title"/>
@@ -86,7 +91,7 @@
             android:title="@string/exit_on_standby_title" />
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="app_destroy_on_pause"
             android:summary="@string/terminate_onpause_summary"
             android:title="@string/terminate_onpause_title" />
@@ -156,11 +161,12 @@
             android:summary="@string/summary_debug_ar_preference"
             android:title="@string/title_debug_ar_preference"/>
 
+        <!--
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="use_httpls"
             android:summary="@string/summary_use_httpls_preference"
-            android:title="@string/title_use_httpls_preference" />
+            android:title="@string/title_use_httpls_preference" />-->
 
     </PreferenceCategory>
 
@@ -195,6 +201,11 @@
             android:key="version"
             android:summary=""
             android:title="Version"/>
+
+        <Preference
+            android:key="exoversion"
+            android:summary=""
+            android:title="ExoPlayer Version"/>
 
         <EditTextPreference
 

@@ -20,7 +20,8 @@ import java.io.IOException;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
-public interface MiniPlayerPlugin extends Runnable {
+public interface MiniPlayerPlugin extends Runnable
+{
     /**
      * Indicates the MediaPlayer is in an uninitialized state
      */

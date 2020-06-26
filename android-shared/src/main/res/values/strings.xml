@@ -107,4 +107,10 @@
     <string name="exit_on_standby_title">Exit App when on Stand By</string>
     <string name="title_use_httpls_preference">Use HTTPLS Streaming</string>
     <string name="summary_use_httpls_preference">Will use HTTPLS streaming for all media.  This is a debug/experimental property.  Should not be enbled for normal use.</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="show_exo_decoders">Show ExoPlayer MediaCodecs</string>
+    <string name="show_exo_decoders_pref_summary">Show the MediaCodecs that are available on this device</string>
+    <string name="exo_decoders">ExoPlayer MediaCodecs</string>
 </resources>

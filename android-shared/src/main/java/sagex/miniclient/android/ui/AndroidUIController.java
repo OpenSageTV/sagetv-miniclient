@@ -2,6 +2,7 @@ package sagex.miniclient.android.ui;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.TextView;
 
 import sagex.miniclient.MiniClient;
 
@@ -19,11 +20,13 @@ public interface AndroidUIController {
 
     MiniClient getClient();
 
-
+    void showErrorMessage(String message, String cause);
     void runOnUiThread(Runnable runnable);
 
     View getVideoView();
     View getUIView();
+    TextView getPleaseWaitText();
+    TextView getCaptionsText();
 
     Context getContext();
 

@@ -43,9 +43,9 @@ allprojects {
         ijkVersion = "0.7.5"; // NOT USED
 
         // NOTE: using exoplayer from mavenlocal (prebuilt) for ffmpeg
-        exoVersionCustomExt = '2.8.4-SNAPSHOT'
+        exoVersionCustomExt = '2.9.6'
         // NOTE: using regular exoplayer for core stuff
-        exoVersion = '2.8.4'
+        exoVersion = '2.11.5'
 
         androidExtrasVer = "28.0.0"
         androidBuildToolsVersion = "28.0.3"
@@ -54,7 +54,7 @@ allprojects {
         androidCompileSdkVersion = 28
         androidTargetSdkVersion = 28
 
-        appVersionCode = 2101044 // v1.4.0
+        appVersionCode = 2101049 // v1.4.0
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files

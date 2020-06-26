@@ -83,6 +83,7 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     protected ViewGroup videoHolderParent;
     protected View pleaseWait = null;
     protected TextView plaseWaitText = null;
+    protected TextView captionsText = null;
     // error stuff
     protected TextView errorMessage;
     protected TextView errorCause;
@@ -198,10 +199,13 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
             videoHolderParent = (ViewGroup) activity.findViewById(R.id.video_surface_parent);
             pleaseWait = activity.findViewById(R.id.waitforit);
             plaseWaitText = (TextView) activity.findViewById(R.id.pleaseWaitText);
+            captionsText = (TextView) activity.findViewById(R.id.captionsText);
             errorMessage = (TextView) activity.findViewById(R.id.errorMessage);
             errorCause = (TextView) activity.findViewById(R.id.errorCause);
             errorContainer = (ViewGroup) activity.findViewById(R.id.errorContainer);
 
+            
+            
             client = MiniclientApplication.get().getClient();
 
             mgr = activityCallback.createUIRenderer(this);
@@ -239,6 +243,8 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
             setConnectingIsVisible(true);
 
             startMiniClient(si);
+            //VideoPlayerCaptions.
+            
         } catch (Throwable t) {
             log.error("Failed to start/create the Main Activity for the MiniClient UI", t);
             runOnUiThread(new Runnable() {
@@ -297,19 +303,41 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         t.start();
     }
 
-    private void setErrorView(ServerInfo si, String message, String cause) {
+    public void showErrorMessage(String message, String cause)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Toast.makeText(activity, cause + " - " + message, Toast.LENGTH_LONG).show();
+                }
+                catch (Throwable t)
+                {
+                    log.error("MESSAGE: {}", message);
+                }
+            }
+        });
+    }
+    
+    private void setErrorView(ServerInfo si, String message, String cause)
+    {
         plaseWaitText.setVisibility(View.GONE);
         errorMessage.setText(message);
         errorCause.setText(cause);
         errorContainer.setVisibility(View.VISIBLE);
     }
 
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         // hide system ui, in case keyboard is visible
         hideSystemUI(activity);
     }
 
-    public void onDestroy() {
+    public void onDestroy()
+    {
         log.debug("Closing MiniClient Connection");
 
         if (mediaSessionCompat != null) {
@@ -371,6 +399,11 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         return miniClientView;
     }
 
+    public TextView getPleaseWaitText()
+    {
+        return this.plaseWaitText;
+    }
+    
     @Override
     public Context getContext() {
         return activity;
@@ -637,5 +670,10 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
 
     public UIRenderType getUIRenderer() {
         return mgr;
+    }
+    
+    public TextView getCaptionsText()
+    {
+        return this.captionsText;
     }
 }
