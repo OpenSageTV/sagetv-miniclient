@@ -14,8 +14,8 @@ This client supports the playback of many different Media Formats, and, if hardw
 * FireTV running Android 5.0 and higher
 
 ## Installing
-SageTV MiniClient for Android is available on the [Google Play Store](https://play.google.com/store/apps/details?id=sagex.miniclient.android.tv&hl=en) and from [BinTray](https://bintray.com/opensagetv/sagetv/SageTV/_latestVersion).  
-If isntalling from BinTray then you'll need to know how to side load apps. 
+SageTV MiniClient for Android is available on the [Google Play Store]("https://play.google.com/store/apps/details?id=jvl.sage.miniclient.android.tv.debug") and from the releases on this GitHub repository.  
+If isntalling from releases then you'll need to know how to side load apps. 
 
 ## Features
 * Runs like HD300 (ie, impersonates HD300)
