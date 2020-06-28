@@ -380,15 +380,16 @@ public class SettingsFragment extends PreferenceFragment
         
         if(FfmpegLibrary.isAvailable())
         {
-            sb.append("DTS: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_DTS, Format.NO_VALUE)).append("<br/>");
-            sb.append("DTS HD: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_DTS_HD, Format.NO_VALUE)).append("<br/>");
-            sb.append("DTS Express: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_DTS_EXPRESS, Format.NO_VALUE)).append("<br/>");
-            sb.append("AC3: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_AC3, Format.NO_VALUE)).append("<br/>");
-            sb.append("EAC3: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_E_AC3, Format.NO_VALUE)).append("<br/>");
-            sb.append("EAC3 JOC: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_E_AC3_JOC, Format.NO_VALUE)).append("<br/>");
-            sb.append("TRUEHD: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_TRUEHD, Format.NO_VALUE)).append("<br/>");
-            sb.append("FLAC: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_FLAC, Format.NO_VALUE)).append("<br/>");
-            sb.append("VORBIS: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_VORBIS, Format.NO_VALUE)).append("<br/>");
+
+            sb.append("DTS: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_DTS)).append("<br/>");
+            sb.append("DTS HD: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_DTS_HD)).append("<br/>");
+            sb.append("DTS Express: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_DTS_EXPRESS)).append("<br/>");
+            sb.append("AC3: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_AC3)).append("<br/>");
+            sb.append("EAC3: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_E_AC3)).append("<br/>");
+            sb.append("EAC3 JOC: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_E_AC3_JOC)).append("<br/>");
+            sb.append("TRUEHD: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_TRUEHD)).append("<br/>");
+            sb.append("FLAC: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_FLAC)).append("<br/>");
+            sb.append("VORBIS: ").append(FfmpegLibrary.supportsFormat(MimeTypes.AUDIO_VORBIS)).append("<br/>");
         }
         else
         {

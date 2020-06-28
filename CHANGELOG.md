@@ -1,3 +1,5 @@
+**1.5.1 (2020-6-28) **
+- jvl711: Update ExoPlayer FFmpeg extension to 2.11.5
 
 **1.5.0 (2020-6-26) **
 - jvl711: Moving to new Play Store app

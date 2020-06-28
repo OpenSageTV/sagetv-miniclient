@@ -43,7 +43,7 @@ allprojects {
         ijkVersion = "0.7.5"; // NOT USED
 
         // NOTE: using exoplayer from mavenlocal (prebuilt) for ffmpeg
-        exoVersionCustomExt = '2.9.6'
+        exoVersionCustomExt = '2.11.5'
         // NOTE: using regular exoplayer for core stuff
         exoVersion = '2.11.5'
 
