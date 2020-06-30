@@ -113,4 +113,6 @@
     <string name="show_exo_decoders">Show ExoPlayer MediaCodecs</string>
     <string name="show_exo_decoders_pref_summary">Show the MediaCodecs that are available on this device</string>
     <string name="exo_decoders">ExoPlayer MediaCodecs</string>
+    <string name="exoplayer_ffmpeg_extension_title">ExoPlayer FFmpeg Audio Extension</string>
+    <string name="exoplayer_ffmpeg_extension_summary">Sets how the FFmpeg extension is utilized in ExoPlayer. Preferred for audio decoding, On for decoding codecs which the device does not support natively or off.</string>
 </resources>

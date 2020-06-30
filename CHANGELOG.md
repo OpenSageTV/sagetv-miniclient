@@ -1,5 +1,7 @@
-**1.5.1 (2020-6-28) **
+**1.5.1 (2020-6-30) **
 - jvl711: Update ExoPlayer FFmpeg extension to 2.11.5
+- jvl711: Added a setting for ffmpeg exoplayer extension, to turn it on, off or prefer
+- jvl711: Updated some deprecated code in the constructing on the SimpleExoPlayer instance
 
 **1.5.0 (2020-6-26) **
 - jvl711: Moving to new Play Store app

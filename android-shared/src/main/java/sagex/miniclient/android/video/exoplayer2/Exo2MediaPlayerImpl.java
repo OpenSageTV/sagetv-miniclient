@@ -10,6 +10,7 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
@@ -26,8 +27,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 import sagex.miniclient.MiniPlayerPlugin;
+import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
@@ -433,14 +436,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         
         if (pushMode)
         {
-            log.debug("JVL - Creating Exo2PushDataSource datasource");
+            log.debug("Creating Exo2PushDataSource datasource");
             dataSource = new Exo2PushDataSource();
         }
         else
         {
             if (!httpls)
             {
-                log.debug("JVL - Creating Exo2PullDataSource datasource");
+                log.debug("Creating Exo2PullDataSource datasource");
                 dataSource = new Exo2PullDataSource(context.getClient().getConnectedServerInfo().address);
             }
             else
@@ -452,22 +455,43 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     
         log.debug("Creating handler");
         Handler mainHandler = new Handler();
-        
-        // See if we need to disable ffmpeg audio decoding
-        //final boolean preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.disable_audio_passthrough, false);
 
         CustomRenderersFactory customRenderersFactory = new CustomRenderersFactory(context.getContext());
-        customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+
+        if(FfmpegLibrary.isAvailable())
+        {
+            final int preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getInt(PrefStore.Keys.exoplayer_ffmpeg_extension_setting, 1);
+
+            switch (preferExtensionDecoders)
+            {
+                case CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER:
+                    log.debug("Setting FFmpeg Extension to Prefer");
+                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+                    break;
+                case CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON:
+                    log.debug("Setting FFmpeg Extension to On");
+                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+                    break;
+                case CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF:
+                    log.debug("Setting FFmpeg Extension to Off");
+                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+                    break;
+                default:
+                    log.debug("Defaulting FFmpeg Extension to On");
+                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+            }
+        }
         
         CustomMediaCodecSelector mediaCodecSelector = new CustomMediaCodecSelector();
         customRenderersFactory.setMediaCodecSelector(mediaCodecSelector);
     
         
-        
-        trackSelector = new DefaultTrackSelector();
-        player = ExoPlayerFactory.newSimpleInstance(context.getContext(), customRenderersFactory, trackSelector);
 
-        
+        trackSelector = new DefaultTrackSelector(context.getContext());
+        //player = ExoPlayerFactory.newSimpleInstance(context.getContext(), customRenderersFactory, trackSelector);
+        SimpleExoPlayer.Builder builder = new SimpleExoPlayer.Builder(context.getContext(), customRenderersFactory);
+        builder.setTrackSelector(trackSelector);
+        player = builder.build();
         
         player.addListener(new Player.EventListener()
         {

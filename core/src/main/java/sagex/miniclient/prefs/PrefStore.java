@@ -136,6 +136,11 @@ public interface PrefStore {
         String prefer_android_software_decoders = "prefer_android_software_decoders";
 
         /**
+         * Integer: Exoplayer ffmpeg extenstion setting.  (Off = 0, On = 1, Prefer = 2)
+         */
+        String exoplayer_ffmpeg_extension_setting = "exoplayer_ffmpeg_extension";
+
+        /**
          * Boolean: if true, then only software decoders are used
          */
         String disable_hardware_decoders = "disable_hardware_decoders";

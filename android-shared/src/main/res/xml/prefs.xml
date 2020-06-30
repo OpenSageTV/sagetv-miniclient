@@ -39,6 +39,26 @@
             android:summary="@string/show_exo_decoders_pref_summary"
             android:title="@string/show_exo_decoders"/>
 
+        <ListPreference android:defaultValue="1"
+            android:title="@string/exoplayer_ffmpeg_extension_title"
+            android:dialogTitle="@string/exoplayer_ffmpeg_extension_title"
+            android:summary="@string/exoplayer_ffmpeg_extension_summary"
+            android:key="exoplayer_ffmpeg_extension"
+            android:entries="@array/entries_exoplayer_ffmpeg_extension_preference"
+            android:entryValues="@array/entryvalues_exoplayer_ffmpeg_extension_preference"/>
+
+        <!--
+        <ListPreference
+            android:defaultValue="64"
+            android:dialogTitle="@string/dialog_title_list_mem_cache_preference"
+            android:entries="@array/entries_list_mem_cache_preference"
+            android:entryValues="@array/entryvalues_list_mem_cache_preference"
+            android:key="image_cache_size_mb"
+            android:summary="@string/summary_list_mem_cache_preference"
+            android:title="@string/title_list_mem_cache_preference"/>-->
+
+
+
         <!--<CheckBoxPreference
             android:defaultValue="false"
             android:key="disable_audio_passthrough"
