@@ -216,27 +216,33 @@ public class MiniClientConnection implements SageTVInputCallback {
     private MenuHint menuHint = new MenuHint();
     private Properties profileProperties;
 
-    public MiniClientConnection(MiniClient client, String myID, ServerInfo msi) {
+    public MiniClientConnection(MiniClient client, String myID, ServerInfo msi)
+    {
         this.client = client;
         currentCrypto = client.getCryptoFormats();
 
         uiRenderer = client.getUIRenderer();
-        if (uiRenderer == null) {
+        if (uiRenderer == null)
+        {
             throw new RuntimeException("client.setUIRenderer() needs to be set before creating the connection");
         }
 
-        if (msi.port <= 0) {
+        if (msi.port <= 0)
+        {
             msi.port = 31099;
         }
 
-        if (!Utils.isEmpty(msi.address)) {
-            if (msi.address.indexOf(":") != -1) {
+        if (!Utils.isEmpty(msi.address))
+        {
+            if (msi.address.indexOf(":") != -1)
+            {
                 msi.address = msi.address.substring(0, msi.address.indexOf(":"));
                 msi.port = 31099;
-                try {
+                try
+                {
                     msi.port = Integer.parseInt(msi.address.substring(msi.address.indexOf(":") + 1));
-                } catch (NumberFormatException e) {
                 }
+                catch (NumberFormatException e) { }
             }
         }
 
@@ -256,7 +262,8 @@ public class MiniClientConnection implements SageTVInputCallback {
     }
 
     // Needed for local video images...
-    private static int getInt(byte[] buf, int offset) {
+    private static int getInt(byte[] buf, int offset)
+    {
         int value = (buf[offset] & 0xFF) << 24;
         value |= (buf[offset + 1] & 0xFF) << 16;
         value |= (buf[offset + 2] & 0xFF) << 8;
@@ -264,18 +271,23 @@ public class MiniClientConnection implements SageTVInputCallback {
         return value;
     }
 
-    private static void putInt(byte[] buf, int offset, int value) {
+    private static void putInt(byte[] buf, int offset, int value)
+    {
         buf[offset] = (byte) ((value >> 24) & 0xFF);
         buf[offset + 1] = (byte) ((value >> 16) & 0xFF);
         buf[offset + 2] = (byte) ((value >> 8) & 0xFF);
         buf[offset + 3] = (byte) ((value >> 0) & 0xFF);
     }
 
-    private static void putString(byte[] buf, int offset, String str) {
-        try {
+    private static void putString(byte[] buf, int offset, String str)
+    {
+        try
+        {
             byte[] b = str.getBytes("ISO8859_1");
             System.arraycopy(b, 0, buf, offset, str.length());
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.error("putString()", e);
             e.printStackTrace();
         }
@@ -507,7 +519,9 @@ public class MiniClientConnection implements SageTVInputCallback {
         client = null;
     }
 
-    private void GFXThread() {
+    private void GFXThread()
+    {
+
         myGfx = new GFXCMD2(client);
 
         detailedBufferStats = false;
@@ -516,23 +530,28 @@ public class MiniClientConnection implements SageTVInputCallback {
         int[] hasret = new int[1];
         int retval;
         byte[] retbuf = new byte[4];
+        final java.util.Vector gfxSyncVector = new java.util.Vector();
+
         // Try to connect to the media server port to see if we can actually do
         // pull-mode streaming.
         boolean canDoPullStreaming = false;
-        try {
+
+        try
+        {
             log.info("Testing to see if server can do a pull mode streaming connection at {}:{}...", msi.address, 7818);
             java.net.Socket mediaTest = new java.net.Socket();
             mediaTest.connect(new java.net.InetSocketAddress(msi.address, 7818), 2000);
             mediaTest.close();
             canDoPullStreaming = true;
             log.info("Server can do a pull-mode streaming connection at {}:{}", msi.address, 7818);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.warn("Failed pull mode media test....only use push mode for server {}", msi.address);
         }
 
-        final java.util.Vector gfxSyncVector = new java.util.Vector();
-
-        try {
+        try
+        {
             // create the event router thread to handle routing of event on a separate thread
             eventRouterThread = new EventRouterThread("EVTRouter");
             eventRouterThread.start();
@@ -540,94 +559,127 @@ public class MiniClientConnection implements SageTVInputCallback {
             eventChannel = new java.io.DataOutputStream(new java.io.BufferedOutputStream(gfxSocket.getOutputStream()));
             gfxIs = new java.io.DataInputStream(gfxSocket.getInputStream());
             zipMode = false;
+
             // Create the parallel threads so we can sync video and UI rendering
             // appropriately
-            Thread gfxReadThread = new Thread("GFXRead") {
-                public void run() {
+            Thread gfxReadThread = new Thread("GFXRead")
+            {
+                public void run()
+                {
                     byte[] gfxCmds = new byte[4];
                     byte[] cmdbuffer = new byte[4096];
                     int len;
                     java.io.DataInputStream myStream = gfxIs;
                     boolean enabledzip = false;
-                    while (alive) {
-                        synchronized (gfxSyncVector) {
-                            if (gfxSyncVector.contains(gfxCmds)) {
-                                try {
+
+                    while (alive)
+                    {
+                        synchronized (gfxSyncVector)
+                        {
+                            if (gfxSyncVector.contains(gfxCmds))
+                            {
+                                try
+                                {
                                     gfxSyncVector.wait(5000);
-                                } catch (InterruptedException e) {
                                 }
+                                catch (InterruptedException e) { }
                                 continue;
                             }
                         }
-                        try {
-                            if (zipMode && !enabledzip) {
+
+                        try
+                        {
+                            if (zipMode && !enabledzip)
+                            {
                                 // Recreate stream wrappers with ZLIB
-                                com.jcraft.jzlib.ZInputStream zs = new com.jcraft.jzlib.ZInputStream(gfxSocket.getInputStream(),
-                                        true);
+                                com.jcraft.jzlib.ZInputStream zs = new com.jcraft.jzlib.ZInputStream(gfxSocket.getInputStream(),true);
                                 zs.setFlushMode(com.jcraft.jzlib.JZlib.Z_SYNC_FLUSH);
                                 myStream = new java.io.DataInputStream(zs);
                                 enabledzip = true;
                             }
+
                             // System.out.println("before gfxread readfully");
                             myStream.readFully(gfxCmds);
                             len = ((gfxCmds[1] & 0xFF) << 16) | ((gfxCmds[2] & 0xFF) << 8) | (gfxCmds[3] & 0xFF);
-                            if (cmdbuffer.length < len) {
+
+                            if (cmdbuffer.length < len)
+                            {
                                 cmdbuffer = new byte[len];
                             }
+
                             // Read from the tcp socket
                             myStream.readFully(cmdbuffer, 0, len);
-                        } catch (Exception e) {
-                            if (reconnectAllowed && alive && firstFrameStarted && !encryptEvents) {
+                        }
+                        catch (Exception e)
+                        {
+                            if (reconnectAllowed && alive && firstFrameStarted && !encryptEvents)
+                            {
                                 performingReconnect = true;
                                 enabledzip = false;
-                                log.error(
-                                        "GFX channel detected a connection error and we're in a mode that allows reconnect...try to reconnect to the server now", e);
-                                try {
+                                log.error("GFX channel detected a connection error and we're in a mode that allows reconnect...try to reconnect to the server now", e);
+                                try
+                                {
                                     myStream.close();
-                                } catch (Exception e1) {
                                 }
-                                try {
+                                catch (Exception e1) { }
+
+                                try
+                                {
                                     eventChannel.close();
-                                } catch (Exception e1) {
                                 }
-                                try {
+                                catch (Exception e1) { }
+
+                                try
+                                {
                                     gfxSocket.close();
-                                } catch (Exception e1) {
                                 }
-                                try {
+                                catch (Exception e1) { }
+
+                                try
+                                {
                                     gfxSocket = EstablishServerConnection(5);
                                     if (gfxSocket == null) throw new Exception("Failed to reconnect to server.  Unable to establish Graphics Socket.");
-                                    eventChannel = new java.io.DataOutputStream(
-                                            new java.io.BufferedOutputStream(gfxSocket.getOutputStream()));
+                                    eventChannel = new java.io.DataOutputStream(new java.io.BufferedOutputStream(gfxSocket.getOutputStream()));
                                     myStream = gfxIs = new java.io.DataInputStream(gfxSocket.getInputStream());
-                                    if (zipMode && !enabledzip) {
+
+                                    if (zipMode && !enabledzip)
+                                    {
                                         // Recreate stream wrappers with ZLIB
-                                        com.jcraft.jzlib.ZInputStream zs = new com.jcraft.jzlib.ZInputStream(
-                                                gfxSocket.getInputStream(), true);
+                                        com.jcraft.jzlib.ZInputStream zs = new com.jcraft.jzlib.ZInputStream(gfxSocket.getInputStream(), true);
                                         zs.setFlushMode(com.jcraft.jzlib.JZlib.Z_SYNC_FLUSH);
                                         myStream = new java.io.DataInputStream(zs);
                                         enabledzip = true;
                                     }
                                     log.info("Done doing server reconnect...continue on our merry way!");
-                                } catch (Exception e1) {
+                                }
+                                catch (Exception e1)
+                                {
                                     log.error("Failure in reconnecting to server...abort the client", e1);
                                     performingReconnect = false;
+
                                     if (client!=null)
+                                    {
                                         client.eventbus().post(new ConnectionLost(performingReconnect));
-                                    synchronized (gfxSyncVector) {
+                                    }
+                                    synchronized (gfxSyncVector)
+                                    {
                                         gfxSyncVector.add(e);
                                         return;
                                     }
                                 }
                                 performingReconnect = false;
-                            } else {
-                                synchronized (gfxSyncVector) {
+                            }
+                            else
+                            {
+                                synchronized (gfxSyncVector)
+                                {
                                     gfxSyncVector.add(e);
                                     return;
                                 }
                             }
                         }
-                        synchronized (gfxSyncVector) {
+                        synchronized (gfxSyncVector)
+                        {
                             gfxSyncVector.add(gfxCmds);
                             gfxSyncVector.add(cmdbuffer);
                             gfxSyncVector.notifyAll();
@@ -638,32 +690,44 @@ public class MiniClientConnection implements SageTVInputCallback {
             gfxReadThread.setDaemon(true);
             gfxReadThread.start();
 
-            while (alive) {
+            while (alive)
+            {
                 byte[] cmdbuffer;
-                synchronized (gfxSyncVector) {
-                    if (!gfxSyncVector.isEmpty()) {
+
+                synchronized (gfxSyncVector)
+                {
+                    if (!gfxSyncVector.isEmpty())
+                    {
                         Object newData = gfxSyncVector.get(0);
                         if (newData instanceof Throwable)
+                        {
                             throw (Throwable) newData;
-                        else {
+                        }
+                        else
+                        {
                             cmd = (byte[]) newData;
                             cmdbuffer = (byte[]) gfxSyncVector.get(1);
                         }
-                    } else {
-                        try {
+                    }
+                    else
+                    {
+                        try
+                        {
                             gfxSyncVector.wait(5000);
-                        } catch (InterruptedException e) {
                         }
+                        catch (InterruptedException e) { }
                         continue;
                     }
                 }
 
                 command = (cmd[0] & 0xFF);
                 len = ((cmd[1] & 0xFF) << 16) | ((cmd[2] & 0xFF) << 8) | (cmd[3] & 0xFF);
+
                 if ((command & 0x80) != 0) // Local video update command
                 {
                     byte[] data = cmdbuffer;
-                    switch (cmd[0] & 0xFF) {
+                    switch (cmd[0] & 0xFF)
+                    {
                         case 0x80: // New video
                             log.debug("NOT IMPLEMENTED(0x80): Video cmd {}", (cmd[0] & 0xFF));
                             videowidth = getInt(data, 0);
@@ -697,25 +761,36 @@ public class MiniClientConnection implements SageTVInputCallback {
                 {
                     // We need to let the opengl rendering thread do that...
                     command = (cmdbuffer[0] & 0xFF);
-                    if (command == GFXCMD_MEDIA_RECONNECT) {
+
+                    if (command == GFXCMD_MEDIA_RECONNECT)
+                    {
                         // Just tell the MediaThread to kill its current
                         // connection and reconnect
-                        try {
+                        try
+                        {
                             mediaSocket.close();
-                        } catch (Exception e) {
                         }
-                    } else {
+                        catch (Exception e) { }
+                    }
+                    else
+                    {
                         if (command == GFXCMD2.GFXCMD_STARTFRAME)
+                        {
                             firstFrameStarted = true;
+                        }
                         retval = myGfx.ExecuteGFXCommand(command, len, cmdbuffer, hasret);
 
-                        if (hasret[0] != 0) {
+                        if (hasret[0] != 0)
+                        {
                             retbuf[0] = (byte) ((retval >> 24) & 0xFF);
                             retbuf[1] = (byte) ((retval >> 16) & 0xFF);
                             retbuf[2] = (byte) ((retval >> 8) & 0xFF);
                             retbuf[3] = (byte) ((retval >> 0) & 0xFF);
-                            try {
-                                synchronized (eventChannel) {
+
+                            try
+                            {
+                                synchronized (eventChannel)
+                                {
                                     eventChannel.write(DRAWING_CMD_TYPE); // GFX
                                     // reply
                                     eventChannel.writeShort(0);
@@ -724,32 +799,31 @@ public class MiniClientConnection implements SageTVInputCallback {
                                     eventChannel.writeInt(replyCount++);
                                     eventChannel.writeInt(0); // pad
                                     if (encryptEvents && evtEncryptCipher != null)
+                                    {
                                         eventChannel.write(evtEncryptCipher.doFinal(retbuf, 0, 4));
+                                    }
                                     else
+                                    {
                                         eventChannel.write(retbuf, 0, 4);
+                                    }
                                     eventChannel.flush();
                                 }
-                            } catch (Throwable e) {
+                            }
+                            catch (Throwable e)
+                            {
                                 eventChannelError();
                             }
                         }
                     }
-                } else if (command == GET_PROPERTY_CMD_TYPE) // get property
+                }
+                else if (command == GET_PROPERTY_CMD_TYPE) // get property
                 {
                     String propName = new String(cmdbuffer, 0, len);
                     String propVal = "";
                     byte[] propValBytes = null;
-                    if ("GFX_TEXTMODE".equals(propName)) {
-                        // Don't use JOGL text rendering if we're doing a
-                        // connection to a Mac from another machine
-                        // since it may not have the same JVM version and text
-                        // will get truncated then
-                        // NARFLEX - 5/26/09 - Don't use local text rendering
-                        // unless we're on the same machine as
-                        // the server so we know all font calculations will be
-                        // the same. We can cache the font images in the
-                        // filesystem anyways, so it won't be that bad of a
-                        // performance impact
+                    if ("GFX_TEXTMODE".equals(propName))
+                    {
+
                         // NARFLEX - 1/17/10 - Just never allow text rendering
                         // directly because the new effects system has
                         // clipping issues associated with it and the
@@ -758,158 +832,249 @@ public class MiniClientConnection implements SageTVInputCallback {
                         // consistency across implementations.
                         // if (!isLocahostConnection())
                         propVal = "";
-                        // else
-                        // propVal = "REMOTEFONTS";
-                    } else if ("GFX_BLENDMODE".equals(propName)) {
+                    }
+                    else if ("GFX_BLENDMODE".equals(propName))
+                    {
                         propVal = "PREMULTIPLY"; // opengl using PRE
                         //propVal = "POSTMULTIPLY";
-                    } else if ("GFX_SCALING".equals(propName)) {
+                    }
+                    else if ("GFX_SCALING".equals(propName))
+                    {
                         propVal = "HARDWARE"; // opengl uses hardware scaling
-                    } else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName)) {
+                    }
+                    else if ("GFX_OFFLINE_IMAGE_CACHE".equals(propName))
+                    {
                         if (client.properties().getBoolean(PrefStore.Keys.cache_images_on_disk, true))
+                        {
                             propVal = "TRUE";
+                        }
                         else
+                        {
                             propVal = "FALSE";
-                    } else if ("OFFLINE_CACHE_CONTENTS".equals(propName)) {
+                        }
+                    }
+                    else if ("OFFLINE_CACHE_CONTENTS".equals(propName))
+                    {
                         propVal = client.getImageCache().getOfflineCacheList();
-                    } else if ("ADVANCED_IMAGE_CACHING".equals(propName)) {
+                    }
+                    else if ("ADVANCED_IMAGE_CACHING".equals(propName))
+                    {
                         propVal = "TRUE";
                         usesAdvancedImageCaching = true;
-                    } else if ("GFX_BITMAP_FORMAT".equals(propName)) {
+                    }
+                    else if ("GFX_BITMAP_FORMAT".equals(propName))
+                    {
                         if (!client.properties().getBoolean(PrefStore.Keys.use_bitmap_images, true))
+                        {
                             propVal = "";
+                        }
                         else
+                        {
                             propVal = "PNG,JPG,GIF,BMP";
-                        //propVal="";
-                    } else if ("GFX_COMPOSITE".equals(propName)) {
+                        }
+                    }
+                    else if ("GFX_COMPOSITE".equals(propName))
+                    {
                         propVal = "BLEND"; // opengl uses blend
                         //propVal = "COLORKEY";
-                    } else if ("GFX_SURFACES".equals(propName) || "GFX_HIRES_SURFACES".equals(propName)) {
+                    }
+                    else if ("GFX_SURFACES".equals(propName) || "GFX_HIRES_SURFACES".equals(propName))
+                    {
                         propVal = "TRUE";
-                    } else if ("GFX_DIFFUSE_TEXTURES".equals(propName)) {
+                    }
+                    else if ("GFX_DIFFUSE_TEXTURES".equals(propName))
+                    {
                         // if (myGfx instanceof DirectX9GFXCMD)
                         // propVal = "TRUE";
                         // else
                         propVal = "";
-                    } else if ("GFX_XFORMS".equals(propName)) {
+                    }
+                    else if ("GFX_XFORMS".equals(propName))
+                    {
                         // if (myGfx instanceof DirectX9GFXCMD)
                         // propVal = "TRUE";
                         // else
                         propVal = "";
-                    } else if ("GFX_TEXTURE_BATCH_LIMIT".equals(propName)) {
+                    }
+                    else if ("GFX_TEXTURE_BATCH_LIMIT".equals(propName))
+                    {
                         // We don't support this command yet
                         propVal = "";
-                    } else if ("GFX_COLORKEY".equals(propName)) {
-                        // propVal = Integer.toString(AWTUIManager., 16);
-                        // while (propVal.length() < 6)
-                        // propVal = "0" + propVal;
+                    }
+                    else if ("GFX_COLORKEY".equals(propName))
+                    {
                         propVal = "080010";
-                    } else if ("STREAMING_PROTOCOLS".equals(propName)) {
+                    }
+                    else if ("STREAMING_PROTOCOLS".equals(propName))
+                    {
                         propVal = "file,stv";
-                    } else if ("INPUT_DEVICES".equals(propName)) {
+                    }
+                    else if ("INPUT_DEVICES".equals(propName))
+                    {
                         propVal="IR,KEYBOARD";
                         if (client.options().isDesktopUI()) propVal+=",MOUSE";
                         if (client.options().isTouchUI()) propVal+=",TOUCH";
                         if (client.options().isTVUI()) propVal+=",TV";
                         // propVal = "IR,KEYBOARD,TOUCH"; // MOUSE,KEYBOARD,TOUCH,IR (mouse implies desktop)
-                    } else if ("DISPLAY_OVERSCAN".equals(propName)) {
+                    }
+                    else if ("DISPLAY_OVERSCAN".equals(propName))
+                    {
                         propVal = "0;0;1.0;1.0";
-                    } else if ("FIRMWARE_VERSION".equals(propName)) {
+                    }
+                    else if ("FIRMWARE_VERSION".equals(propName))
+                    {
                         // propVal = sage.Version.MAJOR_VERSION + "." +
                         // sage.Version.MINOR_VERSION + "." +
                         // sage.Version.MICRO_VERSION;
                         propVal = "9.0.0";
-                    } else if ("DETAILED_BUFFER_STATS".equals(propName)) {
+                    }
+                    else if ("DETAILED_BUFFER_STATS".equals(propName))
+                    {
                         propVal = "TRUE";
                         detailedBufferStats = true;
-                    } else if ("PUSH_BUFFER_SEEKING".equals(propName))
+                    }
+                    else if ("PUSH_BUFFER_SEEKING".equals(propName))
+                    {
                         propVal = "TRUE";
+                    }
                     else if ("GFX_SUBTITLES".equals(propName))
+                    {
                         propVal = "TRUE";
+                    }
                     else if ("FORCED_MEDIA_RECONNECT".equals(propName))
+                    {
                         propVal = "TRUE";
-                    else if ("AUTH_CACHE".equals(propName)) {
+                    }
+                    else if ("AUTH_CACHE".equals(propName))
+                    {
                         propVal = (msi != null) ? "TRUE" : "";
-                    } else if ("GET_CACHED_AUTH".equals(propName)) {
+                        log.debug("AUTH_CACHE Called: {}", propVal);
+
+                    }
+                    else if ("GET_CACHED_AUTH".equals(propName))
+                    {
+
                         // Make sure crypto is on before we send this back!!
-                        if (encryptEvents && evtEncryptCipher != null && msi != null && msi.authBlock != null) {
+                        if (encryptEvents && evtEncryptCipher != null && msi != null && msi.authBlock != null)
+                        {
                             propVal = msi.authBlock;
-                        } else
-                            propVal = "";
-                    } else if ("REMOTE_FS".equals(propName)) {
-                        if (fsSecurity <= MED_SECURITY_FS)
-                            propVal = "TRUE";
+                            log.debug("GET_CACHED_AUTH Called: {}", propVal);
+                        }
                         else
+                        {
                             propVal = "";
-                    } else if ("GFX_VIDEO_UPDATE".equals(propName))
+                        }
+                    }
+                    else if ("REMOTE_FS".equals(propName))
+                    {
+                        if (fsSecurity <= MED_SECURITY_FS)
+                        {
+                            propVal = "TRUE";
+                        }
+                        else
+                        {
+                            propVal = "";
+                        }
+                    }
+                    else if ("GFX_VIDEO_UPDATE".equals(propName))
+                    {
                         propVal = "TRUE";
+                    }
                     else if ("ZLIB_COMM".equals(propName))
+                    {
                         propVal = "TRUE";
-                    else if ("VIDEO_CODECS".equals(propName)) {
+                    }
+                    else if ("VIDEO_CODECS".equals(propName))
+                    {
                         String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_video_codecs, null);
                         propVal = toStringList(videoCodecs);
                         if (extra_codecs != null)
                             propVal += "," + extra_codecs;
-                    } else if ("AUDIO_CODECS".equals(propName)) {
+                    }
+                    else if ("AUDIO_CODECS".equals(propName))
+                    {
                         String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_audio_codecs, null);
                         propVal = toStringList(audioCodecs);
                         if (extra_codecs != null)
+                        {
                             propVal += "," + extra_codecs;
-                    } else if ("PUSH_AV_CONTAINERS".equals(propName)) {
+                        }
+                    }
+                    else if ("PUSH_AV_CONTAINERS".equals(propName))
+                    {
                         // If we are forced into pull mode then we don't support
                         // pushing
 
-                        if (canDoPullStreaming
-                                && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        if (canDoPullStreaming && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        {
                             propVal = "";
+                        }
                         else
+                        {
                             propVal = toStringList(pushFormats);
-                    } else if ("PULL_AV_CONTAINERS".equals(propName)) {
+                        }
+                    }
+                    else if ("PULL_AV_CONTAINERS".equals(propName))
+                    {
                         // If we're forced into fixed mode then we don't support
                         // pulling
-                        if (!canDoPullStreaming
-                                || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        if (!canDoPullStreaming || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        {
                             propVal = "";
-                        else {
+                        }
+                        else
+                        {
                             // if we are being forced into PULL mode, then add the push containers to our PULL containers
-                            if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))) {
+                            if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                            {
                                 propVal = toStringList(pushFormats) + "," + toStringList(pullFormats);
-                            } else {
+                            }
+                            else
+                            {
                                 propVal = toStringList(pullFormats);
                             }
                         }
-                    } else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName)) {
+                    }
+                    else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName))
+                    {
                         // MPlayer needs an extra 2 seconds of buffer before it
                         // can do playback because of it's single-threaded
                         // nature
                         // NOTE: If MPlayer is not being used, this should be
                         // changed...hopefully to a lower value like 0 :)
                         propVal = "0";
-                    } else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName)) {
-                        if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))) {
+                    }
+                    else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName))
+                    {
+                        if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        {
                             // Build the fixed media format string
-                            propVal = "videobitrate="
-                                    + client.properties().getInt(PrefStore.Keys.fixed_encoding_video_bitrate_kbps, 300) + "000;";
-                            propVal += "audiobitrate="
-                                    + client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 64) + "000;";
+                            propVal = "videobitrate=" + client.properties().getInt(PrefStore.Keys.fixed_encoding_video_bitrate_kbps, 300) + "000;";
+                            propVal += "audiobitrate=" + client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 64) + "000;";
                             int fps = 30;
                             int keyFrameInt = 10;
                             fps = client.properties().getInt(PrefStore.Keys.fixed_encoding_fps, 30);
                             keyFrameInt = client.properties().getInt(PrefStore.Keys.fixed_encoding_key_frame_interval, 10);
                             propVal += "gop=" + (fps * keyFrameInt) + ";";
-                            propVal += "bframes="
-                                    + (client.properties().getBoolean(PrefStore.Keys.fixed_encoding_use_b_frames, true) ? "2" : "0")
-                                    + ";";
+                            propVal += "bframes=" + (client.properties().getBoolean(PrefStore.Keys.fixed_encoding_use_b_frames, true) ? "2" : "0") + ";";
                             propVal += "fps=" + fps + ";";
-                            propVal += "resolution=" + client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "CIF")
-                                    + ";";
-                        } else
+                            propVal += "resolution=" + client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "CIF") + ";";
+                        }
+                        else
+                        {
                             propVal = "";
-                    } else if ("CRYPTO_ALGORITHMS".equals(propName))
+                        }
+                    }
+                    else if ("CRYPTO_ALGORITHMS".equals(propName))
+                    {
                         propVal = client.getCryptoFormats();
-                    else if ("CRYPTO_SYMMETRIC_KEY".equals(propName)) {
-                        if (serverPublicKey != null && encryptedSecretKeyBytes == null) {
-                            if (currentCrypto.indexOf("RSA") != -1) {
+                    }
+                    else if ("CRYPTO_SYMMETRIC_KEY".equals(propName))
+                    {
+                        if (serverPublicKey != null && encryptedSecretKeyBytes == null)
+                        {
+                            if (currentCrypto.indexOf("RSA") != -1)
+                            {
                                 // We have to generate our secret key and then
                                 // encrypt it with the server's public key
                                 javax.crypto.KeyGenerator keyGen = javax.crypto.KeyGenerator.getInstance("Blowfish");
@@ -918,14 +1083,19 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 evtEncryptCipher.init(javax.crypto.Cipher.ENCRYPT_MODE, mySecretKey);
 
                                 byte[] rawSecretBytes = mySecretKey.getEncoded();
-                                try {
+                                try
+                                {
                                     javax.crypto.Cipher encryptCipher = javax.crypto.Cipher.getInstance("RSA/ECB/PKCS1Padding");
                                     encryptCipher.init(javax.crypto.Cipher.ENCRYPT_MODE, serverPublicKey);
                                     encryptedSecretKeyBytes = encryptCipher.doFinal(rawSecretBytes);
-                                } catch (Exception e) {
+                                }
+                                catch (Exception e)
+                                {
                                     log.error("Error encrypting data to submit to server", e);
                                 }
-                            } else {
+                            }
+                            else
+                            {
                                 // We need to finish the DH key agreement and
                                 // generate the shared secret key
                                 /*
@@ -934,8 +1104,7 @@ public class MiniClientConnection implements SageTVInputCallback {
 								 * parameters when he generates his own key
 								 * pair.
 								 */
-                                javax.crypto.spec.DHParameterSpec dhParamSpec = ((javax.crypto.interfaces.DHPublicKey) serverPublicKey)
-                                        .getParams();
+                                javax.crypto.spec.DHParameterSpec dhParamSpec = ((javax.crypto.interfaces.DHPublicKey) serverPublicKey).getParams();
 
                                 // Bob creates his own DH key pair
                                 log.debug("Generate DH keypair ...");
@@ -961,50 +1130,79 @@ public class MiniClientConnection implements SageTVInputCallback {
                             }
                         }
                         propValBytes = encryptedSecretKeyBytes;
-                    } else if ("GFX_SUPPORTED_RESOLUTIONS".equals(propName)) {
+                    }
+                    else if ("GFX_SUPPORTED_RESOLUTIONS".equals(propName))
+                    {
                         Dimension winny = myGfx.getScreenSize();
                         if (winny != null)
+                        {
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height) + ";windowed";
-                    } else if ("GFX_FIXED_PAR".equals(propName)) {
+                        }
+                    }
+                    else if ("GFX_FIXED_PAR".equals(propName))
+                    {
                         // note: tels sagetv to go into iphone mode which enables httpls
-                        if (client.properties().getBoolean(PrefStore.Keys.use_httpls, false)) {
+                        if (client.properties().getBoolean(PrefStore.Keys.use_httpls, false))
+                        {
                             propVal = "0.0";
-                        } else {
+                        }
+                        else
+                        {
                             propVal = "";
                         }
                         // propVal = "";
-                    } else if ("GFX_RESOLUTION".equals(propName)) {
+                    }
+                    else if ("GFX_RESOLUTION".equals(propName))
+                    {
                         Dimension winny = myGfx.getScreenSize();
                         if (winny != null)
+                        {
                             propVal = Integer.toString(winny.width) + "x" + Integer.toString(winny.height);
-                    } else if ("GFX_DRAWMODE".equals(propName)) {
-                        //&& "true".equalsIgnoreCase(MiniClient.myProperties.getProperty("force_full_screen_draw", "false"))) {
+                        }
+                    }
+                    else if ("GFX_DRAWMODE".equals(propName))
+                    {
                         propVal = profileProperties.getProperty("GFX_DRAWMODE","FULLSCREEN");
-                        //propVal = "";
-//                    } else if ("PUSH_BUFFER_LIMIT".equals(propName)) {
-//                        propVal = String.valueOf(PUSH_BUFFER_LIMIT);
-                    } else if ("VIDEO_ADVANCED_ASPECT".equals(propName)) {
-                        if (client.options().isUsingAdvancedAspectModes()) {
+                    }
+                    else if ("VIDEO_ADVANCED_ASPECT".equals(propName))
+                    {
+                        if (client.options().isUsingAdvancedAspectModes())
+                        {
                             propVal=client.options().getDefaultAdvancedAspectMode();
-                        } else {
+                        }
+                        else
+                        {
                             propVal="";
                         }
-                    } else if ("VIDEO_ADVANCED_ASPECT_LIST".equals(propName)) {
-                        if (client.options().isUsingAdvancedAspectModes()) {
+                    }
+                    else if ("VIDEO_ADVANCED_ASPECT_LIST".equals(propName))
+                    {
+                        if (client.options().isUsingAdvancedAspectModes())
+                        {
                             propVal=client.options().getAdvancedApectModes();
-                        } else {
+                        }
+                        else
+                        {
                             propVal="";
                         }
                     }
 
-                    if (propVal==null||propVal.isEmpty() && profileProperties!=null) {
+                    if (propVal==null||propVal.isEmpty() && profileProperties!=null)
+                    {
                         propVal = profileProperties.getProperty(propName, propVal);
                     }
+
                     log.debug("GetProperty: {}='{}'", propName, propVal);
-                    try {
-                        synchronized (eventChannel) {
+
+                    try
+                    {
+                        synchronized (eventChannel)
+                        {
                             if (propValBytes == null)
+                            {
                                 propValBytes = propVal.getBytes(MiniClient.BYTE_CHARSET);
+                            }
+
                             eventChannel.write(GET_PROPERTY_CMD_TYPE); // get
                             // property
                             // reply
@@ -1016,18 +1214,26 @@ public class MiniClientConnection implements SageTVInputCallback {
                             eventChannel.writeInt(0); // timestamp
                             eventChannel.writeInt(replyCount++);
                             eventChannel.writeInt(0); // pad
-                            if (propValBytes.length > 0) {
+                            if (propValBytes.length > 0)
+                            {
                                 if (encryptEvents && evtEncryptCipher != null)
+                                {
                                     eventChannel.write(evtEncryptCipher.doFinal(propValBytes));
+                                }
                                 else
+                                {
                                     eventChannel.write(propValBytes);
+                                }
                             }
                             eventChannel.flush();
                         }
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         eventChannelError();
                     }
-                } else if (command == SET_PROPERTY_CMD_TYPE) // set property
+                }
+                else if (command == SET_PROPERTY_CMD_TYPE) // set property
                 {
                     short nameLen = (short) (((cmdbuffer[0] & 0xFF) << 8) | (cmdbuffer[1] & 0xFF));
                     short valLen = (short) (((cmdbuffer[2] & 0xFF) << 8) | (cmdbuffer[3] & 0xFF));
@@ -1035,9 +1241,13 @@ public class MiniClientConnection implements SageTVInputCallback {
                     // String propVal = new String(cmdbuffer, 4 + nameLen,
                     // valLen);
                     String propVal = null;
-                    synchronized (eventChannel) {
+
+                    synchronized (eventChannel)
+                    {
                         boolean encryptThisReply = encryptEvents;
-                        if ("CRYPTO_PUBLIC_KEY".equals(propName)) {
+
+                        if ("CRYPTO_PUBLIC_KEY".equals(propName))
+                        {
                             byte[] keyBytes = new byte[valLen];
                             System.arraycopy(cmdbuffer, 4 + nameLen, keyBytes, 0, valLen);
                             java.security.spec.X509EncodedKeySpec pubKeySpec = new java.security.spec.X509EncodedKeySpec(keyBytes);
@@ -1048,126 +1258,183 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 keyFactory = java.security.KeyFactory.getInstance("DH");
                             serverPublicKey = keyFactory.generatePublic(pubKeySpec);
                             retval = 0;
-                        } else if ("CRYPTO_ALGORITHMS".equals(propName)) {
+                        }
+                        else if ("CRYPTO_ALGORITHMS".equals(propName))
+                        {
                             currentCrypto = new String(cmdbuffer, 4 + nameLen, valLen);
                             propVal = currentCrypto;
                             retval = 0;
-                        } else if ("CRYPTO_EVENTS_ENABLE".equals(propName)) {
-                            if ("TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen))) {
-                                if (evtEncryptCipher != null) {
+                        }
+                        else if ("CRYPTO_EVENTS_ENABLE".equals(propName))
+                        {
+                            if ("TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen)))
+                            {
+                                if (evtEncryptCipher != null)
+                                {
                                     encryptEvents = true;
                                     retval = 0;
-                                } else {
+                                }
+                                else
+                                {
                                     encryptEvents = false;
                                     retval = 1;
                                 }
-                            } else {
+                            }
+                            else
+                            {
                                 encryptEvents = false;
                                 retval = 0;
                             }
                             log.debug("SageTVPlaceshifter event encryption is now={}", encryptEvents);
-                        } else if ("GFX_RESOLUTION".equals(propName)) {
+                        }
+                        else if ("GFX_RESOLUTION".equals(propName))
+                        {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);
                             // NOTE: These resolution changes need to be done on
                             // the AWT thread because if we're disposing
                             // a window then that may invoke on AWT which could
                             // block against an event coming back in
-                            if ("FULLSCREEN".equals(propVal)) {
-                                uiRenderer.invokeLater(new Runnable() {
+                            if ("FULLSCREEN".equals(propVal))
+                            {
+                                uiRenderer.invokeLater(new Runnable()
+                                {
                                     public void run() {
                                         myGfx.getWindow().setFullScreen(true);
                                     }
                                 });
-                            } else if ("WINDOW".equals(propVal)) {
-                                uiRenderer.invokeLater(new Runnable() {
+                            } else if ("WINDOW".equals(propVal))
+                            {
+                                uiRenderer.invokeLater(new Runnable()
+                                {
                                     public void run() {
                                         myGfx.getWindow().setFullScreen(false);
                                     }
                                 });
-                            } else {
+                            }
+                            else
+                            {
                                 int xidx = propVal.indexOf('x');
-                                if (xidx != -1) {
-                                    try {
+                                if (xidx != -1)
+                                {
+                                    try
+                                    {
                                         int w = Integer.parseInt(propVal.substring(0, xidx));
                                         int h = Integer.parseInt(propVal.substring(xidx + 1));
                                         myGfx.getWindow().setSize(w, h);
-                                    } catch (Exception e) {
+                                    }
+                                    catch (Exception e)
+                                    {
                                         e.printStackTrace();
                                     }
                                 }
                             }
                             retval = 0;
-                        } else if ("GFX_FONTSERVER".equals(propName)) {
-                            if ("TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen))) {
+                        }
+                        else if ("GFX_FONTSERVER".equals(propName))
+                        {
+                            if ("TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen)))
+                            {
                                 fontServer = true;
                                 retval = 0;
-                            } else {
+                            }
+                            else
+                            {
                                 fontServer = false;
                                 retval = 0;
                             }
                             propVal = String.valueOf(fontServer);
-                        } else if ("ZLIB_COMM_XFER".equals(propName)) {
+                        }
+                        else if ("ZLIB_COMM_XFER".equals(propName))
+                        {
                             zipMode = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
                             propVal = String.valueOf(zipMode);
                             retval = 0;
-                        } else if ("ADVANCED_IMAGE_CACHING".equals(propName)) {
+                        }
+                        else if ("ADVANCED_IMAGE_CACHING".equals(propName))
+                        {
                             usesAdvancedImageCaching = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
                             propVal = String.valueOf(usesAdvancedImageCaching);
                             retval = 0;
-                        } else if ("RECONNECT_SUPPORTED".equals(propName)) {
+                        }
+                        else if ("RECONNECT_SUPPORTED".equals(propName))
+                        {
                             reconnectAllowed = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
                             propVal = String.valueOf(reconnectAllowed);
                             retval = 0;
-                        } else if ("SUBTITLES_CALLBACKS".equals(propName)) {
+                        }
+                        else if ("SUBTITLES_CALLBACKS".equals(propName))
+                        {
                             subSupport = "TRUE".equalsIgnoreCase(new String(cmdbuffer, 4 + nameLen, valLen));
                             propVal = String.valueOf(subSupport);
                             retval = 0;
-                        } else if ("MENU_HINT".equals(propName)) {
+                        }
+                        else if ("MENU_HINT".equals(propName))
+                        {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);
                             menuHint.update(propVal);
                             log.debug("Setting MENU_HINT: {}", menuHint);
-                            if (getUiRenderer() != null) {
+                            if (getUiRenderer() != null)
+                            {
                                 getUiRenderer().onMenuHint(menuHint);
                             }
                             retval = 0;
-                        } else if ("GFX_ASPECT".equals(propName)) {
+                        }
+                        else if ("GFX_ASPECT".equals(propName))
+                        {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);
-                            try {
+                            try
+                            {
                                 getUiRenderer().setUIAspectRatio(Float.parseFloat(propVal));
-                            } catch (Throwable t) {
+                            }
+                            catch (Throwable t)
+                            {
                                 log.error("Failed to set UI ASPECT of " + propVal, t);
                             }
                             retval = 0;
-                        } else if ("VIDEO_ADVANCED_ASPECT".equals(propName)) {
+                        }
+                        else if ("VIDEO_ADVANCED_ASPECT".equals(propName))
+                        {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);
                             retval = 0;
-                            if (uiRenderer!=null) {
+                            if (uiRenderer!=null)
+                            {
                                 uiRenderer.setVideoAdvancedAspect(propVal);
                             }
-                        } else if ("SET_CACHED_AUTH".equals(propName)) {
+                        }
+                        else if ("SET_CACHED_AUTH".equals(propName))
+                        {
                             // Save this authentication block in the properties
                             // file
                             // First we need to decrypt it with the symmetric
                             // key
-                            if (evtEncryptCipher != null && msi != null) {
-                                javax.crypto.Cipher decryptCipher = javax.crypto.Cipher
-                                        .getInstance(evtEncryptCipher.getAlgorithm());
+                            if (evtEncryptCipher != null && msi != null)
+                            {
+                                javax.crypto.Cipher decryptCipher = javax.crypto.Cipher.getInstance(evtEncryptCipher.getAlgorithm());
                                 decryptCipher.init(javax.crypto.Cipher.DECRYPT_MODE, mySecretKey);
                                 String newAuth = new String(decryptCipher.doFinal(cmdbuffer, 4 + nameLen, valLen));
-                                if (msi != null) {
+
+
+
+                                if (msi != null)
+                                {
                                     msi.setAuthBlock(newAuth);
                                     msi.save(client.properties());
                                 }
                             }
                             retval = 0;
-                        } else
+                        }
+                        else
+                        {
                             retval = 0; // or the error code if it failed the
+                        }
+
                         // set
                         retbuf[0] = (byte) ((retval >> 24) & 0xFF);
                         retbuf[1] = (byte) ((retval >> 16) & 0xFF);
                         retbuf[2] = (byte) ((retval >> 8) & 0xFF);
                         retbuf[3] = (byte) ((retval >> 0) & 0xFF);
-                        try {
+                        try
+                        {
                             eventChannel.write(SET_PROPERTY_CMD_TYPE); // set
                             // property
                             // reply
@@ -1177,52 +1444,76 @@ public class MiniClientConnection implements SageTVInputCallback {
                             eventChannel.writeInt(replyCount++);
                             eventChannel.writeInt(0); // pad
                             if (encryptThisReply)
+                            {
                                 eventChannel.write(evtEncryptCipher.doFinal(retbuf, 0, 4));
+                            }
                             else
+                            {
                                 eventChannel.write(retbuf, 0, 4);
+                            }
                             eventChannel.flush();
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e)
+                        {
                             eventChannelError();
                         }
                     }
                     log.debug("SetProperty {}={}", propName, (propVal == null) ? "(WAS_NULL)" : propVal);
-                } else if (command == FS_CMD_TYPE) {
+
+                }
+                else if (command == FS_CMD_TYPE)
+                {
                     command = (cmdbuffer[0] & 0xFF);
                     processFSCmd(command, len, cmdbuffer);
                 }
 
                 // Remove whatever we just processed
-                synchronized (gfxSyncVector) {
+                synchronized (gfxSyncVector)
+                {
                     gfxSyncVector.remove(0);
                     gfxSyncVector.remove(0);
                     gfxSyncVector.notifyAll();
                 }
             }
-        } catch (Throwable e) {
+        }
+        catch (Throwable e)
+        {
             log.error("Error w/ GFX Thread", e);
-        } finally {
-            try {
+        }
+        finally
+        {
+            try
+            {
                 gfxIs.close();
-            } catch (Exception e) {
             }
-            try {
+            catch (Exception e) { }
+
+            try
+            {
                 eventChannel.close();
-            } catch (Exception e) {
             }
-            try {
+            catch (Exception e) { }
+
+            try
+            {
                 gfxSocket.close();
-            } catch (Exception e) {
             }
+            catch (Exception e) { }
 
             if (alive)
+            {
                 connectionError();
+            }
         }
     }
 
-    private String toStringList(List<String> list) {
+    private String toStringList(List<String> list)
+    {
         StringBuilder sb = new StringBuilder();
-        for (String s: list) {
-            if (sb.length()>0) {
+        for (String s: list)
+        {
+            if (sb.length()>0)
+            {
                 sb.append(",");
             }
             sb.append(s);
@@ -1230,7 +1521,8 @@ public class MiniClientConnection implements SageTVInputCallback {
         return sb.toString();
     }
 
-    public void recvCommand(int sageCommandID) {
+    public void recvCommand(int sageCommandID)
+    {
         postSageCommandEvent(sageCommandID);
     }
 
