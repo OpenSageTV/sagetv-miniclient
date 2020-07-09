@@ -1,3 +1,6 @@
+**1.5.2 (2020-7-09) **
+- jvl711: Attempted to add a workaround for the FireTV where you can not close the system keyboard.  Next/Previous buttons should now close it.
+
 **1.5.1 (2020-6-30) **
 - jvl711: Update ExoPlayer FFmpeg extension to 2.11.5
 - jvl711: Added a setting for ffmpeg exoplayer extension, to turn it on, off or prefer

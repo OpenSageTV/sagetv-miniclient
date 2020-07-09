@@ -44,12 +44,10 @@ android {
     {
         release
         {
-            //keyAlias = "sagetv-miniclient-tv"
+
             keyAlias = "client"
-            //storePassword=beckrules
-            //keyPassword=beckrules
-            //keyAlias=client
-            //storeFile=C:\Users\jvl711.CORE\Documents\code
+
+
 
             if (signingProps!=null && signingProps.containsKey("keyAlias") && signingProps.containsKey("storeFile")
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
@@ -58,6 +56,8 @@ android {
                 storeFile = new File(signingProps.getProperty("storeFile"));
                 storePassword = signingProps.getProperty("storePassword")
                 keyPassword = signingProps.getProperty("keyPassword")
+
+                System.out.println("signing config setup from properties file")
             }
             else
             {
