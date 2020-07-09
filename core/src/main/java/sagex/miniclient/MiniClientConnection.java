@@ -953,17 +953,16 @@ public class MiniClientConnection implements SageTVInputCallback {
                     }
                     else if ("GET_CACHED_AUTH".equals(propName))
                     {
-
                         // Make sure crypto is on before we send this back!!
                         if (encryptEvents && evtEncryptCipher != null && msi != null && msi.authBlock != null)
                         {
                             propVal = msi.authBlock;
-                            log.debug("GET_CACHED_AUTH Called: {}", propVal);
                         }
                         else
                         {
                             propVal = "";
                         }
+                        log.debug("GET_CACHED_AUTH Called: {}", propVal);
                     }
                     else if ("REMOTE_FS".equals(propName))
                     {
@@ -1413,8 +1412,9 @@ public class MiniClientConnection implements SageTVInputCallback {
                                 decryptCipher.init(javax.crypto.Cipher.DECRYPT_MODE, mySecretKey);
                                 String newAuth = new String(decryptCipher.doFinal(cmdbuffer, 4 + nameLen, valLen));
 
+                                log.debug("SET_CACHED_AUTH: " + newAuth);
 
-
+                                
                                 if (msi != null)
                                 {
                                     msi.setAuthBlock(newAuth);

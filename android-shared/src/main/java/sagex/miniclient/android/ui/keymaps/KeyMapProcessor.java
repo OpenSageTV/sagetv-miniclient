@@ -12,6 +12,7 @@ import sagex.miniclient.MiniClient;
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.AndroidKeyEventMapper;
 import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.UIActivityLifeCycleHandler;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
@@ -51,17 +52,22 @@ public class KeyMapProcessor {
 
     protected Context context;
     private MediaMappingPreferences prefs;
+    private UIActivityLifeCycleHandler uiHandler;
 
-    public KeyMapProcessor(MiniClient client, MediaMappingPreferences prefs, AudioManager am)
+    public KeyMapProcessor(MiniClient client, MediaMappingPreferences prefs, AudioManager am, UIActivityLifeCycleHandler uiHandler)
     {
         this.client = client;
         this.prefs = prefs;
         this.am = am;
+        this.uiHandler = uiHandler;
         this.soundEffects = prefs.isSoundEffectsEnabled();
+        
     }
 
-    public boolean onKey(KeyMap keyMap, int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+    public boolean onKey(KeyMap keyMap, int keyCode, KeyEvent event)
+    {
+        if (event.getAction() == KeyEvent.ACTION_DOWN)
+        {
             if (longPressCancel) return true;
 
             if (VerboseLogging.LOG_KEYS)
@@ -127,17 +133,31 @@ public class KeyMapProcessor {
     }
 
     private void handleKeyPress(KeyMap keyMap, int keyCode, KeyEvent event, boolean longPress) {
+        
+        
+        if(uiHandler.isKeyboardVisible())
+        {
+            log.debug("KEYBOARD IS VISIBLE");
+            if(keyCode == KeyEvent.KEYCODE_ENTER)
+            {
+                uiHandler.showHideKeyboard(false);
+            }
+        }
+    
         // this is really a hack because of the on screen controls
         // when we close them, we don't want to process the "back"
-        if (skipBackOneTime) {
+        if (skipBackOneTime)
+        {
             skipBackOneTime = false;
-            if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (keyCode == KeyEvent.KEYCODE_BACK)
+            {
                 log.debug("Skipping Back Event one time.");
                 return;
             }
         }
 
-        if (prefs.debugKeyPresses()) {
+        if (prefs.debugKeyPresses())
+        {
             client.eventbus().post(new DebugKeyEvent(keyCode, event, longPress, keyEventMapper.getFieldName(event.getKeyCode())));
         }
 

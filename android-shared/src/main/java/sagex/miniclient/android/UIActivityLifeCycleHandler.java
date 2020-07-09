@@ -68,7 +68,9 @@ import static sagex.miniclient.android.AppUtil.message;
  * Created by seans on 20/09/15.
  */
 public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> implements MACAddressResolver, AndroidUIController {
-    public interface IActivityCallback<UIRenderType extends UIRenderer> {
+    
+    public interface IActivityCallback<UIRenderType extends UIRenderer>
+    {
         View createAndConfigureUIView(UIActivityLifeCycleHandler<UIRenderType> handler);
 
         UIRenderType createUIRenderer(UIActivityLifeCycleHandler<UIRenderType> handler);
@@ -76,6 +78,7 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         int getLayoutViewId(UIActivityLifeCycleHandler<UIRenderType> handler);
     }
 
+    protected boolean keyboardVisible = false;
     public static final String ARG_SERVER_INFO = "server_info";
     protected static final Logger log = LoggerFactory.getLogger(UIActivityLifeCycleHandler.class);
     protected FrameLayout uiFrameHolder;
@@ -119,7 +122,7 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         // setup to handle events
         client.eventbus().register(UIActivityLifeCycleHandler.this);
 
-        MiniClientKeyListener keyListener = new MiniClientKeyListener(activity, client);
+        MiniClientKeyListener keyListener = new MiniClientKeyListener(activity, client, UIActivityLifeCycleHandler.this);
 
         try {
             miniClientView.setOnTouchListener(new MiniclientTouchListener(activity, client));
@@ -375,7 +378,8 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     }
 
     @Override
-    public String getMACAddress() {
+    public String getMACAddress()
+    {
         // Android 6 generates the same MAC address, so let's outgenerate one
         String id = client.properties().getString(Keys.client_id);
         if (id == null) {
@@ -409,19 +413,30 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         return activity;
     }
 
+    public boolean isKeyboardVisible()
+    {
+        return this.keyboardVisible;
+    }
+    
     public void showHideKeyboard(final boolean visible) {
 
         miniClientView.postDelayed(new Runnable() {
             @Override
-            public void run() {
+            public void run()
+            {
                 InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (visible) {
+            
+                if (visible)
+                {
                     log.debug("Showing Keyboard");
                     miniClientView.requestFocus();
-                    miniClientView.requestFocusFromTouch();
                     im.showSoftInput(miniClientView, InputMethodManager.SHOW_FORCED);
-                } else {
+                    UIActivityLifeCycleHandler.this.keyboardVisible = true;
+                }
+                else
+                {
                     im.hideSoftInputFromWindow(miniClientView.getWindowToken(), 0);
+                    UIActivityLifeCycleHandler.this.keyboardVisible = false;
                 }
             }
         }, 200);

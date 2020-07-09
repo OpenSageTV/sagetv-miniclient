@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.android.UIActivityLifeCycleHandler;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.android.ui.keymaps.DefaultKeyMap;
 import sagex.miniclient.android.ui.keymaps.GuideKeyMap;
@@ -37,17 +38,18 @@ public class MiniClientKeyListener implements View.OnKeyListener {
     KeyMap pluginKeyMap;
     KeyMap videoPausedKeyMap;
     KeyMap videoPlaybackKeyMap;
+    private UIActivityLifeCycleHandler uiHandler;
 
-    public MiniClientKeyListener(Context context, MiniClient client) {
+    public MiniClientKeyListener(Context context, MiniClient client, UIActivityLifeCycleHandler uiHandler) {
         this.client = client;
-
+        this.uiHandler = uiHandler;
         prefsVideoPaused = new MediaMappingPreferences("videopaused", client.properties());
         prefsVideoPlaying = new MediaMappingPreferences("videoplaying", client.properties());
         prefs = new MediaMappingPreferences(client.properties());
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
-        keyProcessor = new KeyMapProcessor(client, prefs, am);
+        keyProcessor = new KeyMapProcessor(client, prefs, am, uiHandler);
 
         defaultKeyMap = new DefaultKeyMap(null, client);
         defaultKeyMap.initializeKeyMaps();
