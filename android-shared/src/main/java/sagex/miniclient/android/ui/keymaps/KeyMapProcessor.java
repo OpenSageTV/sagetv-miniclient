@@ -133,14 +133,22 @@ public class KeyMapProcessor {
     }
 
     private void handleKeyPress(KeyMap keyMap, int keyCode, KeyEvent event, boolean longPress) {
-        
-        
+
+
         if(uiHandler.isKeyboardVisible())
         {
             log.debug("KEYBOARD IS VISIBLE");
             if(keyCode == KeyEvent.KEYCODE_ENTER)
             {
                 uiHandler.showHideKeyboard(false);
+            }
+        }
+        else if(!uiHandler.isKeyboardVisible() && client.getCurrentConnection().getMenuHint().hasMenuLike("Main Menu")
+                && client.getCurrentConnection().getMenuHint().hasTextInput == true)
+        {
+            if(keyCode == KeyEvent.KEYCODE_DPAD_CENTER)
+            {
+                uiHandler.showHideKeyboard(true);
             }
         }
     

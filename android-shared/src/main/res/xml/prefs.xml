@@ -116,11 +116,13 @@
             android:summary="@string/terminate_onpause_summary"
             android:title="@string/terminate_onpause_title" />
 
+        <!--
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="exit_to_home_screen"
             android:summary="@string/exit_to_home_screen_summary"
             android:title="@string/exit_to_home_screen_title"/>
+        -->
 
         <CheckBoxPreference
             android:defaultValue="false"

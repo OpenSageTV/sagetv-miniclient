@@ -73,20 +73,31 @@ public class ServerInfoUtil {
             Intent i = new Intent(ctx, start);
             i.putExtra(UIActivityLifeCycleHandler.ARG_SERVER_INFO, si);
 
+            /*
+            Removed to make sure the code passes the Amazon App Store testing.  They do not approve of this functionallity for some reason
             if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
                 log.debug("Starting SageTV with Exit TO Home Screen option");
                 //i.setFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 // http://stackoverflow.com/questions/3473168/clear-the-entire-history-stack-and-start-a-new-activity-on-android
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
+            */
+
 
             ctx.startActivity(i);
 
-            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true)) {
-                if (ctx instanceof Activity) {
+            /*
+            Removed to make sure the code passes the Amazon App Store testing
+            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.exit_to_home_screen, true))
+            {
+                if (ctx instanceof Activity)
+                {
                     ((Activity) ctx).finish();
                 }
             }
+            */
+
+
         } catch (Throwable t) {
             log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
             Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
