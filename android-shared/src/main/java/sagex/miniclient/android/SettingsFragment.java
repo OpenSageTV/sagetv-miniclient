@@ -103,6 +103,8 @@ public class SettingsFragment extends PreferenceFragment
                     return true;
                 }
             });
+    
+            
             
             Preference mediaKeyPref = this.findPreference("media_key_mappings");
             
@@ -114,6 +116,20 @@ public class SettingsFragment extends PreferenceFragment
                     Intent i = new Intent(SettingsFragment.this.getActivity(), MediaMappingsActivity.class);
                     startActivity(i);
                     
+                    return true;
+                }
+            });
+    
+            Preference fixedTranscoding = this.findPreference("fixed_transcoding");
+    
+            fixedTranscoding.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+            {
+                @Override
+                public boolean onPreferenceClick(Preference preference)
+                {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), FixedTranscodingActivity.class);
+                    startActivity(i);
+    
                     return true;
                 }
             });

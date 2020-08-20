@@ -85,5 +85,99 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+    <string-array name="entries_list_transcoding_formats_preference">
+        <item>Matroska (MKV)</item>
+        <item>DVD (MPEG-PS)</item>
+    </string-array>
+    <string-array name="entryvalues_list_transcoding_formats_preference">
+        <item>matroska</item>
+        <item>dvd</item>
+    </string-array>
+    <string-array name="entries_list_video_bitrate_preference">
+        <item>1000 kbps</item>
+        <item>2000 kbps</item>
+        <item>3000 kbps</item>
+        <item>4000 kbps</item>
+        <item>5000 kbps</item>
+        <item>6000 kbps</item>
+        <item>7000 kbps</item>
+        <item>8000 kbps</item>
+        <item>9000 kbps</item>
+        <item>10000 kbps</item>
+    </string-array>
+    <string-array name="entryvalues_list_video_bitrate_preference">
+        <item>1000</item>
+        <item>2000</item>
+        <item>3000</item>
+        <item>4000</item>
+        <item>5000</item>
+        <item>6000</item>
+        <item>7000</item>
+        <item>8000</item>
+        <item>9000</item>
+        <item>10000</item>
+    </string-array>
+    <string-array name="entries_list_video_fps_preference">
+        <item>Use Source</item>
+        <item>24 fps</item>
+        <item>29.97 fps</item>
+        <item>59.94 fps</item>
+    </string-array>
+    <string-array name="entryvalues_list_video_fps_preference">
+        <item>SOURCE</item>
+        <item>24</item>
+        <item>29.97</item>
+        <item>59.94</item>
+    </string-array>
+    <string-array name="entries_list_video_resolution_preference">
+        <item>Use Source</item>
+        <item>CIF (352x240/288)</item>
+        <item>D1 (720x480/576)</item>
+        <item>720 (1280x720)</item>
+        <item>1080 (1920x1080)</item>
+    </string-array>
+    <string-array name="entryvalues_list_video_resolution_preference">
+        <item>SOURCE</item>
+        <item>CIF</item>
+        <item>D1</item>
+        <item>720</item>
+        <item>1080</item>
+    </string-array>
+    <string-array name="entries_list_audio_codec_preference">
+        <item>Use Source</item>
+        <item>AC3</item>
+        <item>MP2</item>
+    </string-array>
+    <string-array name="entryvalues_list_audio_codec_preference">
+        <item></item>
+        <item>ac3</item>
+        <item>mp2</item>
+    </string-array>
+    <string-array name="entries_list_audio_bitrate_preference">
+        <item>96 kbps</item>
+        <item>112 kbps</item>
+        <item>128 kbps</item>
+        <item>160 kbps</item>
+        <item>192 kbps</item>
+    </string-array>
+    <string-array name="entryvalues_list_audio_bitrate_preference">
+        <item>96</item>
+        <item>112</item>
+        <item>128</item>
+        <item>160</item>
+        <item>192</item>
+    </string-array>
+    <string-array name="entries_list_audio_channels_preference">
+        <item>Use Source</item>
+        <item>1 (Mono)</item>
+        <item>2 (Stereo)</item>
+        <item>5.1</item>
+    </string-array>
+    <string-array name="entryvalues_list_audio_channels_preference">
+        <item></item>
+        <item>1</item>
+        <item>2</item>
+        <item>6</item>
+    </string-array>
 
 </resources>

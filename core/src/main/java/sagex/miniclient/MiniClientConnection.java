@@ -1043,21 +1043,73 @@ public class MiniClientConnection implements SageTVInputCallback {
                         // changed...hopefully to a lower value like 0 :)
                         propVal = "0";
                     }
+                    else if("MEDIA_PLAYER_BUFFER_DELAY".equals(propName))
+                    {
+                        if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        {
+                            propVal = "2000";
+                        }
+                    }
                     else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName))
                     {
                         if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                         {
+                            String format = client.properties().getString(PrefStore.Keys.fixed_encoding_format, "matroska");
+                            
+                            /* Video properties */
+                            int videobitrate = client.properties().getInt(PrefStore.Keys.fixed_encoding_video_bitrate_kbps, 2000) * 1000;
+                            String framerate = client.properties().getString(PrefStore.Keys.fixed_encoding_fps, "SOURCE"); //Default is to use the source framerate, which means the return is empty string
+                            int keyFrameInt = client.properties().getInt(PrefStore.Keys.fixed_encoding_key_frame_interval, 10);
+                            boolean useBFrames = client.properties().getBoolean(PrefStore.Keys.fixed_encoding_use_b_frames, true);
+                            int bframeInterval= 0; //bframe interval in seconds
+                            String resolution = client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "720");
+    
+                            /* Audio properties */
+                            String audioCodec = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_code, "AC3");//Empty string means copy audio as it is.  No conversion
+                            int audiobitrate = client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 128) * 1000;
+                            String audiochannels = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_channels);
+                            
                             // Build the fixed media format string
-                            propVal = "videobitrate=" + client.properties().getInt(PrefStore.Keys.fixed_encoding_video_bitrate_kbps, 300) + "000;";
-                            propVal += "audiobitrate=" + client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 64) + "000;";
-                            int fps = 30;
-                            int keyFrameInt = 10;
-                            fps = client.properties().getInt(PrefStore.Keys.fixed_encoding_fps, 30);
-                            keyFrameInt = client.properties().getInt(PrefStore.Keys.fixed_encoding_key_frame_interval, 10);
-                            propVal += "gop=" + (fps * keyFrameInt) + ";";
-                            propVal += "bframes=" + (client.properties().getBoolean(PrefStore.Keys.fixed_encoding_use_b_frames, true) ? "2" : "0") + ";";
-                            propVal += "fps=" + fps + ";";
-                            propVal += "resolution=" + client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "CIF") + ";";
+                            propVal = "container=" + format + ";";
+                            propVal += "videobitrate=" + videobitrate + ";";
+                            
+                            if(!framerate.equalsIgnoreCase("SOURCE"))
+                            {
+                                int fps = 30;
+                                
+                                try
+                                {
+                                    fps = Math.round(Float.parseFloat(framerate));
+                                }
+                                catch (Exception ex) {}
+                                
+                                propVal += "gop=" + (fps * keyFrameInt) + ";";
+                                
+                                propVal += "fps=" + framerate + ";";
+                            }
+                            else
+                            {
+                                propVal += "fps=" + framerate + ";";
+                            }
+    
+                            if(useBFrames)
+                            {
+                                propVal += "bframes=" + bframeInterval + ";";
+                            }
+    
+                            propVal += "resolution=" + resolution + ";";
+                            
+
+                            if(!audioCodec.equalsIgnoreCase(""))
+                            {
+                                propVal += "audiocodec=" + audioCodec + ";";
+                                propVal += "audiobitrate=" + audiobitrate + ";";
+                                
+                                if(!audiochannels.equalsIgnoreCase(""))
+                                {
+                                    propVal += "audiochannels=" + audiochannels + ";";
+                                }
+                            }
                         }
                         else
                         {

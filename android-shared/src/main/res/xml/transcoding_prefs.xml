@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="General Settings">
+        <ListPreference
+            android:defaultValue="matroska"
+            android:dialogTitle="@string/dialog_title_list_transcoding_format_preference"
+            android:entries="@array/entries_list_transcoding_formats_preference"
+            android:entryValues="@array/entryvalues_list_transcoding_formats_preference"
+            android:key="fixed_encoding/format"
+            android:summary="@string/summary_list_transcoding_formats_preference"
+            android:title="@string/title_list_transcoding_formats_preference"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Video Settings">
+        <ListPreference
+            android:defaultValue="2000"
+            android:dialogTitle="@string/dialog_title_list_video_bitrate_preference"
+            android:entries="@array/entries_list_video_bitrate_preference"
+            android:entryValues="@array/entryvalues_list_video_bitrate_preference"
+            android:key="fixed_encoding/video_bitrate_kbps"
+            android:summary="@string/summary_list_video_bitrate_preference"
+            android:title="@string/title_list_video_bitrate_preference"/>
+        <ListPreference
+            android:defaultValue="SOURCE"
+            android:dialogTitle="@string/dialog_title_list_video_fps_preference"
+            android:entries="@array/entries_list_video_fps_preference"
+            android:entryValues="@array/entryvalues_list_video_fps_preference"
+            android:key="fixed_encoding/video_fps"
+            android:summary="@string/summary_list_video_fps_preference"
+            android:title="@string/title_list_video_fps_preference"/>
+        <ListPreference
+            android:defaultValue="720"
+            android:dialogTitle="@string/dialog_title_list_video_resolution_preference"
+            android:entries="@array/entries_list_video_resolution_preference"
+            android:entryValues="@array/entryvalues_list_video_resolution_preference"
+            android:key="fixed_encoding/video_resolution"
+            android:summary="@string/summary_list_video_resolution_preference"
+            android:title="@string/title_list_video_resolution_preference"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Audio Settings">
+        <ListPreference
+            android:defaultValue="AC3"
+            android:dialogTitle="@string/dialog_title_list_audio_codec_preference"
+            android:entries="@array/entries_list_audio_codec_preference"
+            android:entryValues="@array/entryvalues_list_audio_codec_preference"
+            android:key="fixed_encoding/audio_codec"
+            android:summary="@string/summary_list_audio_codec_preference"
+            android:title="@string/title_list_audio_codec_preference"/>
+        <ListPreference
+            android:defaultValue="128"
+            android:dialogTitle="@string/dialog_title_list_audio_bitrate_preference"
+            android:entries="@array/entries_list_audio_bitrate_preference"
+            android:entryValues="@array/entryvalues_list_audio_bitrate_preference"
+            android:key="fixed_encoding/audio_bitrate_kbps"
+            android:summary="@string/summary_list_audio_bitrate_preference"
+            android:title="@string/title_list_audio_bitrate_preference"/>
+        <ListPreference
+            android:defaultValue="2"
+            android:dialogTitle="@string/dialog_title_list_audio_channels_preference"
+            android:entries="@array/entries_list_audio_channels_preference"
+            android:entryValues="@array/entryvalues_list_audio_channels_preference"
+            android:key="fixed_encoding/audio_channels"
+            android:summary="@string/summary_list_audio_channels_preference"
+            android:title="@string/title_list_audio_channels_preference"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>

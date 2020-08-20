@@ -74,6 +74,11 @@
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>
+        <activity
+            android:name=".FixedTranscodingActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
     </application>
 
 </manifest>

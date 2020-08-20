@@ -62,7 +62,22 @@ public interface PrefStore {
          * values: dynamic, fixed, pull
          */
         String streaming_mode = "streaming_mode";
-
+    
+        /**
+         * The container format that will be used for fixed transcoding
+         */
+        String fixed_encoding_format = "fixed_encoding/format";
+    
+        /**
+         * The audio codec to be use for fixed transcoding
+         */
+        String fixed_encoding_audio_code = "fixed_encoding/audio_codec";
+    
+        /**
+         * The number of audio channels for fixed transcoding
+         */
+        String fixed_encoding_audio_channels = "fixed_encoding/audio_channels";
+        
         /**
          * 000 will be added to this value, so we only set, 64 to mean 64,000
          */

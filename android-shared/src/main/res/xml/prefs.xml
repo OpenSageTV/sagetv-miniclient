@@ -28,6 +28,10 @@
             android:summary="@string/summary_list_streaming_mode_preference"
             android:title="@string/title_list_streaming_mode_preference"/>
 
+        <Preference android:title="Fixed Transcoding Settings"
+            android:summary="Change the setting SageTV server will use to transcode content when using fixed streaming"
+            android:key="fixed_transcoding"/>
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="use_exoplayer"
