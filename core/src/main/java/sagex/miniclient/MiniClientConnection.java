@@ -33,7 +33,13 @@ import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.Utils;
 
-public class MiniClientConnection implements SageTVInputCallback {
+//import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
+//import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
+
+
+
+public class MiniClientConnection implements SageTVInputCallback
+{
     public static final String QUICKTIME = "Quicktime";
     public static final String AAC = "AAC";
     public static final String AC3 = "AC3";
@@ -81,7 +87,7 @@ public class MiniClientConnection implements SageTVInputCallback {
     public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG,HEVC";
     public static final String DEFAULT_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3";
     public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
-    public static final String DEFAULT_PUSH_FORMATS = "MPEG2-PS,MPEG2-TS,MPEG1-PS";
+    public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
 
     public static final int DRAWING_CMD_TYPE = 16;
     public static final int GET_PROPERTY_CMD_TYPE = 0;
@@ -452,13 +458,21 @@ public class MiniClientConnection implements SageTVInputCallback {
         return prop;
     }
 
-    private void discoverCodecSupport() {
+    private void discoverCodecSupport()
+    {
         String profile = null;
-        if (client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false)) {
+    
+        boolean isExoPlayer = client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
+        
+        if (isExoPlayer)
+        {
             profile = "exoplayer.profile";
-        } else {
+        }
+        else
+        {
             profile = "ijkplayer.profile";
         }
+        
         profileProperties = loadProperties("common.profile");
         profileProperties.putAll(loadProperties(profile));
 
@@ -471,9 +485,11 @@ public class MiniClientConnection implements SageTVInputCallback {
         videoCodecs = stringToList(vcodec);
         pullFormats = stringToList(pullf);
         pushFormats = stringToList(pushf);
-
+    
+        pushFormats=stringToList("MATROSKA");
+        
         Properties codecs = loadProperties("codecs.properties");
-
+        
         client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
     }
 
@@ -1017,12 +1033,12 @@ public class MiniClientConnection implements SageTVInputCallback {
                     {
                         // If we're forced into fixed mode then we don't support
                         // pulling
-                        if (!canDoPullStreaming || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
-                        {
-                            propVal = "";
-                        }
-                        else
-                        {
+                        //if (!canDoPullStreaming || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        //{
+                        //    propVal = "";
+                        //}
+                        //else
+                        //{
                             // if we are being forced into PULL mode, then add the push containers to our PULL containers
                             if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             {
@@ -1032,7 +1048,7 @@ public class MiniClientConnection implements SageTVInputCallback {
                             {
                                 propVal = toStringList(pullFormats);
                             }
-                        }
+                        //}
                     }
                     else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName))
                     {
@@ -2539,4 +2555,14 @@ public class MiniClientConnection implements SageTVInputCallback {
         }
     }
 
+    public boolean isVideoCodecSupported(String codecName)
+    {
+        return true;
+    }
+    
+    public boolean isAudioCodecSupported(String codecName)
+    {
+        return true;
+    }
+    
 }

@@ -76,14 +76,20 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         log.debug("--------- DUMPING HARDWARE CODECS -----------");
         Set<String> acodecs = new TreeSet<>();
         Set<String> vcodecs = new TreeSet<>();
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < count; i++)
+        {
             MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-            if (!info.isEncoder()) {
+        
+            if (!info.isEncoder())
+            {
                 log.debug("[{}] {}; supported: {}", i, info.getName(), info.getSupportedTypes());
-                for (String s : getAudioCodecs(info)) {
+            
+                for (String s : getAudioCodecs(info))
+                {
                     acodecs.add(s);
                 }
-                for (String s : getVideoCodecs(info)) {
+                for (String s : getVideoCodecs(info))
+                {
                     vcodecs.add(s);
                 }
             }
@@ -95,24 +101,30 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         // could be that we need to send MPEG2-VIDEO@HL to tell sagetv that we are a
         // media extender
 
-//        if (getPrefs().getBoolean(PrefStore.Keys.use_exoplayer)) {
-//            videoCodecs.clear();
-//            for (String s: vcodecs) {
-//                if (codecs.getProperty(s)!=null) {
-//                    videoCodecs.add(codecs.getProperty(s));
-//                }
-//            }
-//
-//            audioCodecs.clear();
-//            for (String s: acodecs) {
-//                if (codecs.getProperty(s)!=null) {
-//                    audioCodecs.add(codecs.getProperty(s));
-//                }
-//            }
-//
-//            // exoplayer supports passthrough
-//            audioCodecs.add("AC3");
-//        }
+        if (getPrefs().getBoolean(PrefStore.Keys.use_exoplayer))
+        {
+            videoCodecs.clear();
+            
+            for (String s: vcodecs)
+            {
+                if (codecs.getProperty(s)!=null)
+                {
+                    videoCodecs.add(codecs.getProperty(s));
+                }
+            }
+
+            //audioCodecs.clear();
+            //for (String s: acodecs)
+            //{
+            //    if (codecs.getProperty(s)!=null)
+            //    {
+            //        audioCodecs.add(codecs.getProperty(s));
+            //    }
+            //}
+
+            // exoplayer supports passthrough
+            //audioCodecs.add("AC3");
+        }
     }
 
     @Override

@@ -3,20 +3,32 @@ apply plugin: "java"
 sourceCompatibility = 1.8
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
+
 //sourceSets.main.java.srcDirs = [ "src/" ]
 //sourceSets.main.resources.srcDirs = [ "resources/" ]
 //sourceSets.test.java.srcDirs = ["test/"]
 
 jar.baseName = "sagetv-miniclient-lib"
 
+repositories {
+    google()
+    jcenter()
+}
+
 dependencies {
-    compile 'com.jcraft:jzlib:1.1.3'
-    compile "org.slf4j:slf4j-api:1.7.6"
-    compile "org.nanohttpd:nanohttpd:2.2.0"
+
+    implementation 'com.jcraft:jzlib:1.1.3'
+    //implementation "org.slf4j:slf4j-api:1.7.6"
+    compile group:  'org.slf4j', name: 'slf4j-api', version: '1.7.6'
+
+    implementation "org.nanohttpd:nanohttpd:2.2.0"
 
     // circular buffer
-    compile 'org.ostermiller:utils:1.07.00'
+    implementation 'org.ostermiller:utils:1.07.00'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-all:1.10.19'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-all:1.10.19'
+    //implementation "com.google.android.exoplayer:exoplayer-core:${exoVersion}"
+
+
 }

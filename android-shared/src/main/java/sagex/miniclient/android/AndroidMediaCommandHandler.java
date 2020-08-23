@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
  * Created by seans on 17/11/15.
  */
 public class AndroidMediaCommandHandler {
-    static final Logger log = LoggerFactory.getLogger(AndroidMediaCommandHandler.class);
+    //static final Logger log = LoggerFactory.getLogger(AndroidMediaCommandHandler.class);
     private final Context context;
     private final ExecutorService service;
     Instrumentation inst;
