@@ -1034,11 +1034,13 @@ public class MiniClientConnection implements SageTVInputCallback
                         // If we're forced into fixed mode then we don't support
                         // pulling
                         //if (!canDoPullStreaming || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
-                        //{
-                        //    propVal = "";
-                        //}
-                        //else
-                        //{
+                        //Changed this to only exclude pull if we are remote.  I would like to still do pull (no transcode) if local and supported
+                        if (!canDoPullStreaming)
+                        {
+                            propVal = "";
+                        }
+                        else
+                        {
                             // if we are being forced into PULL mode, then add the push containers to our PULL containers
                             if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             {
@@ -1048,7 +1050,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             {
                                 propVal = toStringList(pullFormats);
                             }
-                        //}
+                        }
                     }
                     else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName))
                     {
