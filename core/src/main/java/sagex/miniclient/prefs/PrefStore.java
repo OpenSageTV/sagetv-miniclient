@@ -44,7 +44,9 @@ public interface PrefStore {
 
     boolean canSet(String key);
 
-    interface Keys {
+    interface Keys
+    {
+    
         String image_cache_size_mb = "image_cache_size_mb";
         String disk_image_cache_size_mb = "disk_image_cache_size_mb";
 
@@ -63,6 +65,13 @@ public interface PrefStore {
          */
         String streaming_mode = "streaming_mode";
     
+        /**
+         * Preference on when to transcode.
+         * Always - Will tell SageTV that there are no supported pull formats
+         * When Needed - Will give SageTV a list of supported formats
+         */
+        String fixed_encoding_preference = "fixed_encoding/preference";
+        
         /**
          * The container format that will be used for fixed transcoding
          */

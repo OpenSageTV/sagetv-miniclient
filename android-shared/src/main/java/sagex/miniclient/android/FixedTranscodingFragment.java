@@ -16,6 +16,19 @@ public class FixedTranscodingFragment extends PreferenceFragment
     {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.transcoding_prefs);
+    
+        final Preference encodingFormat = this.findPreference("fixed_encoding/format");
+        
+        /*
+        encodingFormat.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
+        {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValye)
+            {
+                updateSummary(preference, R.string.summary_list_transcoding_formats_preference, newValue);
+            }
+        });
+         */
     }
     
 }

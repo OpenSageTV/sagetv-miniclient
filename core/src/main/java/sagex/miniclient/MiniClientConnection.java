@@ -1031,14 +1031,16 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("PULL_AV_CONTAINERS".equals(propName))
                     {
-                        // If we're forced into fixed mode then we don't support
-                        // pulling
-                        //if (!canDoPullStreaming || "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
-                        //{
-                        //    propVal = "";
-                        //}
-                        //else
-                        //{
+                        /*
+                        PULL - Containers we can read without transcoding.
+                        Set this to empty if we are remote or if we are fixed and preference is to always transcode
+                        */
+                        if (!canDoPullStreaming || (client.properties().getString(PrefStore.Keys.fixed_encoding_preference).equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
+                        {
+                            propVal = "";
+                        }
+                        else
+                        {
                             // if we are being forced into PULL mode, then add the push containers to our PULL containers
                             if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
                             {
@@ -1048,7 +1050,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             {
                                 propVal = toStringList(pullFormats);
                             }
-                        //}
+                        }
                     }
                     else if ("MEDIA_PLAYER_BUFFER_DELAY".equals(propName))
                     {
@@ -1058,13 +1060,6 @@ public class MiniClientConnection implements SageTVInputCallback
                         // NOTE: If MPlayer is not being used, this should be
                         // changed...hopefully to a lower value like 0 :)
                         propVal = "0";
-                    }
-                    else if("MEDIA_PLAYER_BUFFER_DELAY".equals(propName))
-                    {
-                        if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
-                        {
-                            propVal = "2000";
-                        }
                     }
                     else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName))
                     {
