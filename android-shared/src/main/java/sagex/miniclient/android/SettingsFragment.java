@@ -120,19 +120,7 @@ public class SettingsFragment extends PreferenceFragment
                 }
             });
     
-            Preference fixedTranscoding = this.findPreference("fixed_transcoding");
-    
-            fixedTranscoding.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
-            {
-                @Override
-                public boolean onPreferenceClick(Preference preference)
-                {
-                    Intent i = new Intent(SettingsFragment.this.getActivity(), FixedTranscodingActivity.class);
-                    startActivity(i);
-    
-                    return true;
-                }
-            });
+            
             
             p = findPreference(Keys.use_log_to_sdcard);
             p.setOnPreferenceChangeListener(new OnPreferenceChangeListener()
@@ -167,14 +155,32 @@ public class SettingsFragment extends PreferenceFragment
                     return true;
                 }
             });
-            
+    
+            final Preference fixedTranscoding = this.findPreference("fixed_transcoding");
             final Preference streammode = findPreference(Keys.streaming_mode);
+            fixedTranscoding.setEnabled(prefs.getString(Keys.streaming_mode).equals("fixed"));
+            
             streammode.setOnPreferenceChangeListener(new OnPreferenceChangeListener()
             {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue)
                 {
                     updateSummary(preference, R.string.summary_list_streaming_mode_preference, newValue);
+                    fixedTranscoding.setEnabled(newValue.equals("fixed"));
+                    return true;
+                }
+            });
+    
+            
+    
+            fixedTranscoding.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+            {
+                @Override
+                public boolean onPreferenceClick(Preference preference)
+                {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), FixedTranscodingActivity.class);
+                    startActivity(i);
+            
                     return true;
                 }
             });

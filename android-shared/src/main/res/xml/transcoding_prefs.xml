@@ -2,6 +2,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="General Settings">
         <ListPreference
+            android:defaultValue="needed"
+            android:dialogTitle="@string/dialog_title_list_transcoding_setting_preference"
+            android:entries="@array/entries_list_transcoding_setting_preference"
+            android:entryValues="@array/entryvalues_list_transcoding_setting_preference"
+            android:key="fixed_encoding/preference"
+            android:summary="@string/summary_list_transcoding_setting_preference"
+            android:title="@string/title_list_transcoding_setting_preference"/>
+
+        <ListPreference
             android:defaultValue="matroska"
             android:dialogTitle="@string/dialog_title_list_transcoding_format_preference"
             android:entries="@array/entries_list_transcoding_formats_preference"
@@ -38,7 +47,7 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Audio Settings">
         <ListPreference
-            android:defaultValue="AC3"
+            android:defaultValue="ac3"
             android:dialogTitle="@string/dialog_title_list_audio_codec_preference"
             android:entries="@array/entries_list_audio_codec_preference"
             android:entryValues="@array/entryvalues_list_audio_codec_preference"

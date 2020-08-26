@@ -144,12 +144,10 @@
         <item>1080</item>
     </string-array>
     <string-array name="entries_list_audio_codec_preference">
-        <item>Use Source</item>
         <item>AC3</item>
         <item>MP2</item>
     </string-array>
     <string-array name="entryvalues_list_audio_codec_preference">
-        <item></item>
         <item>ac3</item>
         <item>mp2</item>
     </string-array>
@@ -179,5 +177,14 @@
         <item>2</item>
         <item>6</item>
     </string-array>
+    <string-array name="entries_list_transcoding_setting_preference">
+        <item>When Needed</item>
+        <item>Always</item>
+    </string-array>
+    <string-array name="entryvalues_list_transcoding_setting_preference">
+        <item>needed</item>
+        <item>always</item>
+    </string-array>
+
 
 </resources>
