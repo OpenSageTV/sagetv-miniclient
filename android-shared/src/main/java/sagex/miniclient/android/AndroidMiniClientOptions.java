@@ -39,7 +39,8 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     private boolean isTOUCH=false;
     private boolean advancedAspects=false;
 
-    AndroidMiniClientOptions(Application ctx) {
+    AndroidMiniClientOptions(Application ctx)
+    {
         this.prefs=new AndroidPrefStore(PreferenceManager.getDefaultSharedPreferences(ctx));
         this.configDir = ctx.getFilesDir();
         this.cacheDir = ctx.getCacheDir();
@@ -113,6 +114,18 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 }
             }
 
+            //Check to see if MPEG2-VIDEO is supported.  If so add MPEG2-VIDEO@HL.  This appears to be a SageTV Specific setting
+            if(videoCodecs.contains("MPEG2-VIDEO") && !videoCodecs.contains("MPEG2-VIDEO@HL"))
+            {
+                videoCodecs.add("MPEG2-VIDEO@HL");
+            }
+
+            //SageTV sets the codec string 0X0000 if it does not know what it is.  This generally happens with HEVC.  Adding this if it does not exits
+            if(!videoCodecs.contains("0X0000"))
+            {
+                videoCodecs.add("0X0000");
+            }
+
             //audioCodecs.clear();
             //for (String s: acodecs)
             //{
@@ -124,83 +137,105 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 
             // exoplayer supports passthrough
             //audioCodecs.add("AC3");
+
+
+
         }
     }
 
     @Override
-    public boolean isTouchUI() {
+    public boolean isTouchUI()
+    {
         return isTOUCH;
     }
 
     @Override
-    public boolean isTVUI() {
+    public boolean isTVUI()
+    {
         return isTV;
     }
 
     @Override
-    public boolean isDesktopUI() {
+    public boolean isDesktopUI()
+    {
         return false;
     }
 
     @Override
-    public boolean isUsingAdvancedAspectModes() {
+    public boolean isUsingAdvancedAspectModes()
+    {
         return advancedAspects;
     }
 
     @Override
-    public String getAdvancedApectModes() {
+    public String getAdvancedApectModes()
+    {
         return AspectModeManager.ASPECT_MODES;
     }
 
     @Override
-    public String getDefaultAdvancedAspectMode() {
+    public String getDefaultAdvancedAspectMode()
+    {
         return AspectModeManager.DEFAULT_ASPECT_MODE;
     }
 
-    private Set<String> getAudioCodecs(MediaCodecInfo info) {
+    private Set<String> getAudioCodecs(MediaCodecInfo info)
+    {
         if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
             return Collections.emptySet();
 
         Set<String> list = new TreeSet<>();
-        for (String s : info.getSupportedTypes()) {
-            if (s.startsWith("audio/")) {
+
+        for (String s : info.getSupportedTypes())
+        {
+            if (s.startsWith("audio/"))
+            {
                 list.add(s.trim());
             }
         }
         return list;
     }
 
-    private Set<String> getVideoCodecs(MediaCodecInfo info) {
+    private Set<String> getVideoCodecs(MediaCodecInfo info)
+    {
         if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
             return Collections.emptySet();
 
         Set<String> list = new TreeSet<>();
-        for (String s : info.getSupportedTypes()) {
-            if (s.startsWith("video/")) {
+        for (String s : info.getSupportedTypes())
+        {
+            if (s.startsWith("video/"))
+            {
                 list.add(s.trim());
             }
         }
         return list;
     }
 
-    private boolean isAudioDecoder(MediaCodecInfo info) {
+    private boolean isAudioDecoder(MediaCodecInfo info)
+    {
         if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
             return false;
 
-        for (String s : info.getSupportedTypes()) {
-            if (s.startsWith("audio/")) {
+        for (String s : info.getSupportedTypes())
+        {
+            if (s.startsWith("audio/"))
+            {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isVideoDecoder(MediaCodecInfo info) {
+    private boolean isVideoDecoder(MediaCodecInfo info)
+    {
         if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
             return false;
 
-        for (String s : info.getSupportedTypes()) {
-            if (s.startsWith("video/")) {
+        for (String s : info.getSupportedTypes())
+        {
+            if (s.startsWith("video/"))
+            {
                 return true;
             }
         }

@@ -1,3 +1,7 @@
+**1.6.0 (2020-7-09)**
+- jvl711: Added fixed transcoding settings to allow for HD transcoding from the server to MKV container
+- jvl711: Added the ability for Exoplayer to filter the Video codecs that are not supported.  This will allow SageTV to transcode on unsupported formats
+
 **1.5.2 (2020-7-09)**
 - jvl711: Attempted to add a workaround for the FireTV where you can not close the system keyboard.  Next/Previous buttons should now close it.
 

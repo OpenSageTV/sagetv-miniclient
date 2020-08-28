@@ -86,7 +86,7 @@ public class MiniClientConnection implements SageTVInputCallback
 
     public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG,HEVC";
     public static final String DEFAULT_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3";
-    public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
+    public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3,MPEG2-PS,MPEG2-TS,MPEG1-PS";
     public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
 
     public static final int DRAWING_CMD_TYPE = 16;
@@ -486,7 +486,7 @@ public class MiniClientConnection implements SageTVInputCallback
         pullFormats = stringToList(pullf);
         pushFormats = stringToList(pushf);
     
-        pushFormats=stringToList("MATROSKA");
+        //pushFormats=stringToList("MATROSKA");
         
         Properties codecs = loadProperties("codecs.properties");
         
