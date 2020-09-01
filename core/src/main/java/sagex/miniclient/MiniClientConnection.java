@@ -1017,11 +1017,18 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("PUSH_AV_CONTAINERS".equals(propName))
                     {
-                        // If we are forced into pull mode then we don't support
-                        // pushing
-
-                        if (canDoPullStreaming && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        
+    
+                        if ((client.properties().getString(PrefStore.Keys.fixed_encoding_preference).equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
                         {
+                            // If we are using fixed transcode always, do not allow transcode/remux to mpeg-ps/ts.  Force to use our passed format.
+                            // pushing
+                            propVal = "MATROSKA";
+                        }
+                        else if (canDoPullStreaming && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        {
+                            // If we are forced into pull mode then we don't support
+                            // pushing
                             propVal = "";
                         }
                         else

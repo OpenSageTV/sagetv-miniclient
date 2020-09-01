@@ -66,6 +66,13 @@ public class KeyMapProcessor {
 
     public boolean onKey(KeyMap keyMap, int keyCode, KeyEvent event)
     {
+        if(!longPress && keyMap.getNormalPressCommand(keyCode) == SageCommand.NONE)
+        {
+            log.debug("Key is mapped to none...");
+            //handleDefaultEvent(keyCode, event);
+            return false;
+        }
+        
         if (event.getAction() == KeyEvent.ACTION_DOWN)
         {
             if (longPressCancel) return true;
@@ -133,7 +140,13 @@ public class KeyMapProcessor {
     }
 
     private void handleKeyPress(KeyMap keyMap, int keyCode, KeyEvent event, boolean longPress) {
-
+    
+        if(!longPress && keyMap.getNormalPressCommand(keyCode) == SageCommand.NONE)
+        {
+            log.debug("Key is mapped to none...");
+            //handleDefaultEvent(keyCode, event);
+            return;
+        }
 
         if(uiHandler.isKeyboardVisible())
         {
@@ -173,7 +186,8 @@ public class KeyMapProcessor {
 
         SageCommand command = null;
 
-        if (keyMap.hasSageCommandOverride(keyCode, longPress)) {
+        if (keyMap.hasSageCommandOverride(keyCode, longPress))
+        {
             keyMap.performSageCommandOverride(keyCode, client, longPress);
             return;
         }
