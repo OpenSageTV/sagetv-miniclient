@@ -1036,7 +1036,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         PULL - Containers we can read without transcoding.
                         Set this to empty if we are remote or if we are fixed and preference is to always transcode
                         */
-                        if (!canDoPullStreaming || (client.properties().getString(PrefStore.Keys.fixed_encoding_preference).equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
+                        if (!canDoPullStreaming || (client.properties().getString(PrefStore.Keys.fixed_encoding_preference, "needed").equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
                         {
                             propVal = "";
                         }

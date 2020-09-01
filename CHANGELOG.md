@@ -1,4 +1,7 @@
-**1.6.0 (2020-7-09)**
+**1.6.1 (2020-8-31)**
+- jvl711: Missed a default value on one of the properties which caused a null pointer exception on launch of connection
+
+**1.6.0 (2020-8-29)**
 - jvl711: Added fixed transcoding settings to allow for HD transcoding from the server to MKV container
 - jvl711: Added the ability for Exoplayer to filter the Video codecs that are not supported.  This will allow SageTV to transcode on unsupported formats
 
