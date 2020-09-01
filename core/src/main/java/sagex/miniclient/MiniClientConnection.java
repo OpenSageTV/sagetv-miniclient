@@ -1017,9 +1017,7 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("PUSH_AV_CONTAINERS".equals(propName))
                     {
-                        
-    
-                        if ((client.properties().getString(PrefStore.Keys.fixed_encoding_preference).equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
+                        if ((client.properties().getString(PrefStore.Keys.fixed_encoding_preference, "needed").equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
                         {
                             // If we are using fixed transcode always, do not allow transcode/remux to mpeg-ps/ts.
                             // pushing
