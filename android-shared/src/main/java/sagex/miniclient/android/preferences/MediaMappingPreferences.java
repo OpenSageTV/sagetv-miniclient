@@ -337,14 +337,14 @@ public class MediaMappingPreferences
 
     public SageCommand getVolumeUp()
     {
-        String key = preferences.getString(prefix + "_volume_up", SageCommand.VOLUME_UP.getKey());
+        String key = preferences.getString(prefix + "_volume_up", SageCommand.NONE.getKey());
 
         return SageCommand.parseByKey(key);
     }
 
     public SageCommand getVolumeDown()
     {
-        String key = preferences.getString(prefix + "_volume_down", SageCommand.VOLUME_DOWN.getKey());
+        String key = preferences.getString(prefix + "_volume_down", SageCommand.NONE.getKey());
 
         return SageCommand.parseByKey(key);
     }
