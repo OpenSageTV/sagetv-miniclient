@@ -1,3 +1,9 @@
+**1.6.2 (2020-09-10) **
+- jvl711: Fixed an issue with Android 11 where images were not rendering
+- jvl711: Upgraded ExoPlayer to 2.11.8
+- jvl711: Fixed the volume up/down keys.  You need to map them to NONE for them to work properly
+- jvl711: Volume up/down mapped to NONE by default
+
 **1.6.1 (2020-8-31)**
 - jvl711: Missed a default value on one of the properties which caused a null pointer exception on launch of connection
 

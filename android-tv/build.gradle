@@ -44,10 +44,26 @@ android {
     {
         release
         {
-
             keyAlias = "client"
 
+            if (signingProps!=null && signingProps.containsKey("keyAlias") && signingProps.containsKey("storeFile")
+                    && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
+            {
+                keyAlias = signingProps.getProperty("keyAlias")
+                storeFile = new File(signingProps.getProperty("storeFile"));
+                storePassword = signingProps.getProperty("storePassword")
+                keyPassword = signingProps.getProperty("keyPassword")
 
+                System.out.println("signing config setup from properties file")
+            }
+            else
+            {
+                System.out.println("signing config missing or incorrectly configured")
+            }
+        }
+        debug
+        {
+            keyAlias = "client"
 
             if (signingProps!=null && signingProps.containsKey("keyAlias") && signingProps.containsKey("storeFile")
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
@@ -66,8 +82,16 @@ android {
         }
     }
 
-    buildTypes {
-        release {
+    buildTypes
+    {
+        release
+        {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug
+        {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release

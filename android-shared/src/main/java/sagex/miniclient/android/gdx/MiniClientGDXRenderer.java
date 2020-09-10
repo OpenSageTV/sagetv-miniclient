@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.Build;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -621,14 +622,23 @@ public class MiniClientGDXRenderer implements ApplicationListener, UIRenderer<Gd
 
     @Override
     public ImageHolder<GdxTexture> readImage(File file) throws Exception {
-        try {
+        try
+        {
             FileInputStream fis = new FileInputStream(file);
-            try {
+
+            try
+            {
                 return readImage(fis);
-            } finally {
+            }
+            finally
+            {
                 fis.close();
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
+            log.error("ERRROR READING IMAGE");
+
             e.printStackTrace();
         }
 
@@ -640,13 +650,26 @@ public class MiniClientGDXRenderer implements ApplicationListener, UIRenderer<Gd
         long st = System.currentTimeMillis();
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        /*
+        JVL 09/10/2020 - Bitmap.Config.HARDWARE seemed to break rendering on Andriod 11
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
             // this appears to work better since Android O (documentation says it's prefferred
             // for bitmaps that are only used to render to the screen (immutable)
+            //options.inMutable = false;
             options.inPreferredConfig = Bitmap.Config.HARDWARE;
-        } else {
+        }
+        else
+        {
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         }
+        */
+
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+
+
+
         final Bitmap bitmap = BitmapFactory.decodeStream(fis, null, options);
 
         long time = System.currentTimeMillis() - st;

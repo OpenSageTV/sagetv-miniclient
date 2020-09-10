@@ -540,6 +540,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         long st = System.currentTimeMillis();
 
         BitmapFactory.Options options = new BitmapFactory.Options();
+         /*
+        JVL 09/10/2020 - Bitmap.Config.HARDWARE seemed to break rendering on Andriod 11
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // this appears to work better since Android O (documentation says it's prefferred
             // for bitmaps that are only used to render to the screen (immutable)
@@ -547,6 +549,8 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
         } else {
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         }
+        */
+
         options.inDither = true;
         options.inDensity = 32;
         options.inTargetDensity = 32;
