@@ -225,7 +225,8 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
             // NOTE: SageTV generally expects 0 during seek/flush calls
             return 0;
         }
-        if (state == STOPPED_STATE || state == EOS_STATE || state == PAUSE_STATE)
+        //JVL - Removing this state so that you can seek on pause || state == PAUSE_STAT
+        if (state == STOPPED_STATE || state == EOS_STATE )
         {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
             {

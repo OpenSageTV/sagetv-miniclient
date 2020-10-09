@@ -54,7 +54,7 @@ allprojects {
         androidCompileSdkVersion = 28
         androidTargetSdkVersion = 28
 
-        appVersionCode = 2101062
+        appVersionCode = 2101063
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files
@@ -67,9 +67,9 @@ allprojects {
     repositories {
         maven { url mavenInProject }
         mavenLocal()
+        jcenter()
         google()
         mavenCentral()
-        jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
     }

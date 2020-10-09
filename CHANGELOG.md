@@ -1,3 +1,8 @@
+**1.6.3 (2020-10-8)**
+- jvl711: Rearchitected how playback position was retrieved.  Switched to a UI thread that updates every 500ms.
+- jvl711: Fixed an issue with seeking after resume from pause.  The state was not getting properly updated
+- jvl711L Allowing proper seek when playback is paused.  Allow the position to get reported to sage server on pause
+
 **1.6.2 (2020-09-10) **
 - jvl711: Fixed an issue with Android 11 where images were not rendering
 - jvl711: Upgraded ExoPlayer to 2.11.8
