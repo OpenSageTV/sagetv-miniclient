@@ -41,10 +41,10 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_v2"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:banner="@drawable/sagetv_orig"
+        android:banner="@drawable/banner_v2"
         >
 
         <meta-data android:name="android.max_aspect" android:value="2.1" />
@@ -63,10 +63,10 @@
 
         <activity
             android:name=".MainActivity"
-            android:banner="@drawable/sagetv_orig"
-            android:icon="@drawable/sagetv_orig"
+            android:banner="@drawable/banner_v2"
+            android:icon="@drawable/banner_v2"
             android:label="@string/app_name"
-            android:logo="@drawable/sagetv_orig"
+            android:logo="@drawable/banner_v2"
             tools:replace="android:theme"
             android:theme="@style/Theme.Leanback.SageTV"
             android:screenOrientation="landscape">
