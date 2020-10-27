@@ -5,6 +5,6 @@ package sagex.miniclient;
  */
 public class Version {
 
-    public static final String VERSION = "1.6.3";
+    public static final String VERSION = "1.7.0";
     
 }

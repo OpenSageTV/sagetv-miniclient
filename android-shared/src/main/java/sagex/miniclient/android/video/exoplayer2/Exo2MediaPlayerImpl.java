@@ -5,10 +5,11 @@ import android.os.Handler;
 import android.view.SurfaceView;
 
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
-import com.google.android.exoplayer2.SeekParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
@@ -380,7 +381,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         log.debug("Creating handler");
         Handler mainHandler = new Handler();
 
-        CustomRenderersFactory customRenderersFactory = new CustomRenderersFactory(context.getContext());
+        //CustomRenderersFactory customRenderersFactory = new CustomRenderersFactory(context.getContext());
+        DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context.getContext());
+
 
         if(FfmpegLibrary.isAvailable())
         {
@@ -390,30 +393,32 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             {
                 case CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER:
                     log.debug("Setting FFmpeg Extension to Prefer");
-                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
                     break;
                 case CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON:
                     log.debug("Setting FFmpeg Extension to On");
-                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
                     break;
                 case CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF:
                     log.debug("Setting FFmpeg Extension to Off");
-                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
                     break;
                 default:
                     log.debug("Defaulting FFmpeg Extension to On");
-                    customRenderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
             }
         }
 
         CustomMediaCodecSelector mediaCodecSelector = new CustomMediaCodecSelector();
-        customRenderersFactory.setMediaCodecSelector(mediaCodecSelector);
+        renderersFactory.setMediaCodecSelector(mediaCodecSelector);
 
         trackSelector = new DefaultTrackSelector(context.getContext());
         //player = ExoPlayerFactory.newSimpleInstance(context.getContext(), customRenderersFactory, trackSelector);
-        SimpleExoPlayer.Builder builder = new SimpleExoPlayer.Builder(context.getContext(), customRenderersFactory);
+        SimpleExoPlayer.Builder builder =  new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
+
         builder.setTrackSelector(trackSelector);
         player = builder.build();
+
 
         player.addListener(new Player.EventListener()
         {
@@ -550,7 +555,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 }
             };
 
-            mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(sageTVurl));
+            //mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(sageTVurl));
+
+            mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(Uri.parse(sageTVurl)));
 
             boolean haveStartPosition = (playbackStartPosition >= 0);
 

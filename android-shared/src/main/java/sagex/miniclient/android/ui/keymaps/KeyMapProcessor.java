@@ -154,6 +154,7 @@ public class KeyMapProcessor {
             if(keyCode == KeyEvent.KEYCODE_ENTER)
             {
                 uiHandler.showHideKeyboard(false);
+                return;
             }
         }
         else if(!uiHandler.isKeyboardVisible() && client.getCurrentConnection().getMenuHint().hasMenuLike("Main Menu")
@@ -162,6 +163,7 @@ public class KeyMapProcessor {
             if(keyCode == KeyEvent.KEYCODE_DPAD_CENTER)
             {
                 uiHandler.showHideKeyboard(true);
+                return;
             }
         }
     

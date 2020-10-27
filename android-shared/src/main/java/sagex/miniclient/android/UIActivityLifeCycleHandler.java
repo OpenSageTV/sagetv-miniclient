@@ -108,9 +108,15 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         this.activityCallback = activityCallback;
     }
 
+    public void onWindowFocusChanged (boolean hasFocus)
+    {
+        AppUtil.hideSystemUI(activity);
+    }
+
     public MiniClient getClient() {
         return client;
     }
+
 
     public void onResume(Activity activity) {
         this.activity = activity;

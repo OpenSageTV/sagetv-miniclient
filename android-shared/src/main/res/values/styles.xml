@@ -2,9 +2,13 @@
 
     <style name="Theme.PhoneTheme" parent="Theme.AppCompat.NoActionBar"></style>
 
-    <style name="Theme.Dialog.DoNotDim" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">
+    <!--<style name="Theme.Dialog.DoNotDim" parent="android:Theme.DeviceDefault.Dialog.NoActionBar">-->
+    <style name="Theme.Dialog.DoNotDim" parent="android:style/Theme.Holo.NoActionBar.Fullscreen">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -12,6 +16,9 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
         <item name="android:windowSoftInputMode">stateUnspecified|adjustPan</item>
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Dialog.NoBar" parent="Theme.AppCompat.Light.NoActionBar">
     </style>
 
     <style name="NavIconButton">

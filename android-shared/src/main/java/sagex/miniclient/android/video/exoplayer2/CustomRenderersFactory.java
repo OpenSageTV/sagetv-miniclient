@@ -32,11 +32,12 @@ public class CustomRenderersFactory extends DefaultRenderersFactory
                                       VideoRendererEventListener videoRendererEventListener,
                                       AudioRendererEventListener audioRendererEventListener,
                                       TextOutput textRendererOutput,
-                                      MetadataOutput metadataRendererOutput,
-                                      @Nullable DrmSessionManager<FrameworkMediaCrypto> drmSessionManager)
+                                      MetadataOutput metadataRendererOutput)
     {
 
-        Renderer [] renderers = super.createRenderers(eventHandler,videoRendererEventListener,audioRendererEventListener,textRendererOutput,metadataRendererOutput,drmSessionManager);
+
+
+        Renderer [] renderers = super.createRenderers(eventHandler,videoRendererEventListener,audioRendererEventListener,textRendererOutput,metadataRendererOutput);
 
         for(int i = 0; i < renderers.length; i++)
         {

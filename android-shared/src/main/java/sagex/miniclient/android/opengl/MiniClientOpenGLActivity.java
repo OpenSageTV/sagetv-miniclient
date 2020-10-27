@@ -24,6 +24,13 @@ public class MiniClientOpenGLActivity extends Activity implements UIActivityLife
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus)
+    {
+        super.onWindowFocusChanged(hasFocus);
+        uiActivityLifeCycleHandler.onWindowFocusChanged(hasFocus);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         uiActivityLifeCycleHandler.onResume(this);

@@ -46,6 +46,13 @@ public class MiniClientGDXActivity extends AndroidApplication implements UIActiv
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus)
+    {
+        super.onWindowFocusChanged(hasFocus);
+        uiActivityLifeCycleHandler.onWindowFocusChanged(hasFocus);
+    }
+
+    @Override
     public View createAndConfigureUIView(UIActivityLifeCycleHandler<MiniClientGDXRenderer> handler) {
         AndroidApplicationConfiguration cfg = new AndroidApplicationConfiguration();
         //cfg.useGL20 = false;

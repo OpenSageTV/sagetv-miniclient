@@ -33,9 +33,10 @@ public class CustomMediaCodecSelector implements MediaCodecSelector
     
         return codecs;
     }
-    
+       /*
     @Nullable
     @Override
+
     public MediaCodecInfo getPassthroughDecoderInfo() throws MediaCodecUtil.DecoderQueryException
     {
         MediaCodecInfo codec = MediaCodecSelector.DEFAULT.getPassthroughDecoderInfo();
@@ -44,4 +45,6 @@ public class CustomMediaCodecSelector implements MediaCodecSelector
         
         return codec;
     }
+
+     */
 }

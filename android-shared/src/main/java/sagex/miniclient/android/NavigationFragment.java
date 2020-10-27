@@ -1,14 +1,17 @@
 package sagex.miniclient.android;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -59,18 +62,44 @@ public class NavigationFragment extends DialogFragment {
     }
 
     @Override
+    public void onResume()
+    {
+        super.onResume();
+        AppUtil.hideSystemUI(getActivity());
+    }
+
+
+    @Override
+    public void onAttach(Context context)
+    {
+        super.onAttach(context);
+        AppUtil.hideSystemUI(this.getActivity());
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Theme_Dialog_DoNotDim);
         setCancelable(false);
 
-        prefs = new MediaMappingPreferences(this.client.properties());
+
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        //getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         navView = inflater.inflate(R.layout.navigation, container, false);
+
+
+
+
+
+
+        prefs = new MediaMappingPreferences(this.client.properties());
 
         navOptions = navView.findViewById(R.id.nav_options);
         navPause = navView.findViewById(R.id.nav_media_pause);
@@ -150,6 +179,8 @@ public class NavigationFragment extends DialogFragment {
         }
 
         updateSmartRemoteToggle();
+
+        AppUtil.hideSystemUI(getActivity());
 
         return navView;
     }

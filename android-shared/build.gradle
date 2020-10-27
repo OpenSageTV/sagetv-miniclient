@@ -95,34 +95,15 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
 
     //These are working
+    api "com.google.android.exoplayer:exoplayer-common:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-extractor:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
-    api "com.google.android.exoplayer:exoplayer-ui:${exoVersion}@aar"
-    api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
-    api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer-ui:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
     api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
-
-    //Experimental
-    //api 'com.google.android.exoplayer:exoplayer-core:2.9.6'
-    //api 'com.google.android.exoplayer:exoplayer-hls:2.9.6'
-    //api 'com.google.android.exoplayer:exoplayer-ffmpeg:2.9.6'
-
-
-    // exoplayer 2
-    // compile "sagetv:exoplayer2:${exo2Version}@aar"
-
-    // ijkplayer
-    // don't use these since they will have limited profiles... ok for testing.
-//    compile "tv.danmaku.ijk.media:ijkplayer-java:${ijkVersion}"
-//    compile "tv.danmaku.ijk.media:ijkplayer-armv7a:${ijkVersion}"
-//    compile "tv.danmaku.ijk.media:ijkplayer-armv5:${ijkVersion}"
-//    //compile "tv.danmaku.ijk.media:ijkplayer-arm64:${ijkVersion}"
-//    compile "tv.danmaku.ijk.media:ijkplayer-x86:${ijkVersion}"
-//    //compile "tv.danmaku.ijk.media:ijkplayer-x86_64:${ijkVersion}"
-
-    // requires API level 21
-    // compile "tv.danmaku.ijk.media:ijkplayer-arm64:${ijkVersion}"
-    // compile "tv.danmaku.ijk.media:ijkplayer-exo:${ijkVersion}"
+    api 'com.google.guava:guava:24.1-android'
 
     // If you are rebuilding your own ijkplaer, then comment the lines above and
     // then uncomment these.
@@ -139,7 +120,6 @@ dependencies {
         exclude group: 'com.google.android', module: 'android'
     }
 
-//    compile "org.l6n:sendlog-library:2.0@aar"
     api 'com.github.rahatarmanahmed:circularprogressview:2.4.0'
 
     // simple event bus
@@ -147,11 +127,6 @@ dependencies {
 
     implementation 'org.jetbrains:annotations:16.0.2'
 
-    // animation library
-//    compile 'com.nineoldandroids:library:2.4.0'
-//    compile 'com.daimajia.easing:library:1.0.1@aar'
-//    compile 'com.daimajia.androidanimations:library:1.1.3@aar'
-//    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
 }
 
 // called every time gradle gets executed, takes the native dependencies of
