@@ -2,6 +2,7 @@ package sagex.miniclient.android.video.ijkplayer;
 
 import android.view.SurfaceView;
 
+import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
@@ -20,7 +21,8 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
 /**
  * Created by seans on 06/10/15.
  */
-public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource> {
+public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMediaDataSource>
+{
     long preSeekPos = -1;
     long resumeTimeOffset = -1;
     boolean resumeMode = false;
@@ -37,17 +39,23 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
      * @return
      */
     @Override
-    public long getPlayerMediaTimeMillis(long serverStartTime) {
+    public long getPlayerMediaTimeMillis(long serverStartTime)
+    {
         long time = player.getCurrentPosition();
 
-        if (pushMode) {
+        if (pushMode)
+        {
             // we haven't determined the "resume" time yet
-            if (resumeTimeOffset < 0) {
-                if (serverStartTime < 500) {
+            if (resumeTimeOffset < 0)
+            {
+                if (serverStartTime < 500)
+                {
                     // this is start from beginning
                     resumeMode = false;
                     resumeTimeOffset = 0;
-                } else {
+                }
+                else
+                {
                     // IJK's getMediaTime() is a little quirky for PS/TS streams.  Basically, when you start
                     // from 0, then seeking works fine.  But, when you resume from some other time, the
                     // players internal clock is reset to 0.  So, the stream plays at the right position, but
@@ -59,31 +67,44 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             }
 
-            if (time < 0) {
+            if (time < 0)
+            {
                 // player is adjusting, after a push/seek.
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                {
                     log.debug("IJK: getPlayerMediaTimeMillis(): player adjusting using 0 but time was {}", toHHMMSS(time, true));
+                }
                 return time;
             }
 
-            if (resumeMode) {
+            if (resumeMode)
+            {
                 // when in resume mode, you go back before the start of the resume, player time
                 // seems to do a PTS rollover of sorts
                 long realTime = time;
-                if (time + resumeTimeOffset > PTS_ROLLOVER) {
+
+                if (time + resumeTimeOffset > PTS_ROLLOVER)
+                {
                     // need to adjust the time
                     time = time - PTS_ROLLOVER;
                 }
                 time = time + resumeTimeOffset;
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                    if (logTime != realTime / 1000) {
+
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                {
+                    if (logTime != realTime / 1000)
+                    {
                         logTime = realTime / 1000;
                         log.debug("IJK: getPlayerMediaTimeMillis(): resume: {}, player time: {}, total: {}", toHHMMSS(resumeTimeOffset, true), toHHMMSS(realTime, true), toHHMMSS(time, true));
                     }
                 }
-            } else {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
-                    if (logTime != time / 1000) {
+            }
+            else
+            {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                {
+                    if (logTime != time / 1000)
+                    {
                         logTime = time / 1000;
                         log.debug("IJK: getPlayerMediaTimeMillis(): time: {}", toHHMMSS(time, true));
                     }
@@ -95,44 +116,68 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
-    public void stop() {
+    public void stop()
+    {
         if (player == null) return;
-        if (player.isPlaying()) {
+
+        if (player.isPlaying())
+        {
             player.stop();
         }
         super.stop();
     }
 
     @Override
-    public void pause() {
+    public void pause()
+    {
+        if(state == PAUSE_STATE && !pushMode)
+        {
+            log.debug("In pause state.  Seek frame instead...");
+            //TODO: Could not find the framerate in IJKPlayer.  Going to assume 30fps for now.
+            this.seek(player.getCurrentPosition() + 1000);
+            return;
+        }
+
         super.pause();
-        if (player != null && player.isPlaying()) {
+
+        if (player != null && player.isPlaying())
+        {
             player.pause();
         }
     }
 
     @Override
-    public void play() {
+    public void play()
+    {
         super.play();
-        if (player != null && !player.isPlaying()) {
-            player.start();
 
+        if (player != null && !player.isPlaying())
+        {
+            player.start();
         }
     }
 
     @Override
-    public void flush() {
+    public void flush()
+    {
         super.flush();
-        if (player != null) {
+
+        if (player != null)
+        {
             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("Flush Will force a seek to clear buffers");
+            }
+
             seekToImpl(Long.MAX_VALUE);
         }
     }
 
     @Override
-    public Dimension getVideoDimensions() {
-        if (player != null) {
+    public Dimension getVideoDimensions()
+    {
+        if (player != null)
+        {
             Dimension d = new Dimension(player.getVideoWidth(), player.getVideoHeight());
             if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("getVideoSize(): {}", d);
             return d;
@@ -140,7 +185,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         return null;
     }
 
-    protected void setupPlayer(String sageTVurl) {
+    protected void setupPlayer(String sageTVurl)
+    {
         log.debug("Creating Player");
 
         preSeekPos = -1;
@@ -151,8 +197,10 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         logTime = -1;
 
         releasePlayer();
-        try {
-            if (player == null) {
+        try
+        {
+            if (player == null)
+            {
                 player = new IjkMediaPlayer();
                 ((IjkMediaPlayer) player).setOnMediaCodecSelectListener(CodecSelector.sInstance);
             }
@@ -175,26 +223,25 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             //((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "seekable", 0);
             //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
 
-            player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener() {
+            player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener()
+            {
                 @Override
-                public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int width, int height, int sarNum, int sarDen) {
+                public void onVideoSizeChanged(IMediaPlayer iMediaPlayer, int width, int height, int sarNum, int sarDen)
+                {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                    {
                         log.debug("IJKPlayer.onVideoSizeChanged: {}x{}, {},{}", width, height, sarNum, sarDen);
+                    }
                     setVideoSize(width, height, sarNum, sarDen);
                 }
             });
 
-//            player.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
-//                @Override
-//                public boolean onInfo(IMediaPlayer iMediaPlayer, int i, int i1) {
-//                    log.debug("IjkPlayer onINFO: {}, {}", i, i1);
-//                    return false;
-//                }
-//            });
 
-            player.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
+            player.setOnErrorListener(new IMediaPlayer.OnErrorListener()
+            {
                 @Override
-                public boolean onError(IMediaPlayer mp, int what, int extra) {
+                public boolean onError(IMediaPlayer mp, int what, int extra)
+                {
                     log.error("IjkPlayer onERROR: {}, {}", what, extra);
                     playerFailed();
                     return false;
@@ -204,12 +251,15 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
             log.debug("Sending {} to mediaplayer", sageTVurl);
 
-            if (pushMode) {
+            if (pushMode)
+            {
                 log.info("Playing URL {} PUSH mode", sageTVurl);
                 dataSource = new IJKPushMediaSource();
                 ((IJKPushMediaSource) dataSource).open(sageTVurl);
                 player.setDataSource(dataSource);
-            } else {
+            }
+            else
+            {
                 if (httpls) {
                     log.info("Playing URL Using HTTPL: isPush:{}, sageTVUrl: {}", pushMode, sageTVurl);
                     player.setDataSource(sageTVurl);
@@ -287,10 +337,13 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
-    public void seek(long timeInMS) {
+    public void seek(long timeInMS)
+    {
         super.seek(timeInMS);
-        if (player == null || state == NO_STATE || state == LOADED_STATE) {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+        if (player == null || state == NO_STATE || state == LOADED_STATE)
+        {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+            {
                 log.debug("Setting Pre-Seek {}", timeInMS);
             }
             preSeekPos = timeInMS;

@@ -271,7 +271,7 @@
                         android:layout_column="3"
                         android:layout_row="0"
                         android:src="@drawable/ic_pause_white_24dp"
-                        android:tag="play_pause"/>
+                        android:tag="pause"/>
 
                     <ImageView
                         android:id="@+id/nav_media_play"

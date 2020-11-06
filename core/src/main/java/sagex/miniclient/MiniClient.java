@@ -31,7 +31,8 @@ import sagex.miniclient.prefs.PrefStore;
 /**
  * MiniClient is the central access point to all things MiniClient.
  */
-public class MiniClient {
+public class MiniClient
+{
     public static final Logger log = LoggerFactory.getLogger(MiniClient.class);
     public static final String BYTE_CHARSET = "ISO8859_1";
 
@@ -51,10 +52,12 @@ public class MiniClient {
     private ServerInfo connectedServer;
     private ImageCache imageCache;
 
-    public MiniClient(MiniClientOptions options) {
+    public MiniClient(MiniClientOptions options)
+    {
         this.options = options;
         eventBus = options.getBus();
-        if (eventBus == null) {
+        if (eventBus == null)
+        {
             log.warn("Using a DeadBus for the event bus, since a bus was not provided in the MiniClientOptions");
             eventBus = DeadBus.INSTANCE;
         }
@@ -85,20 +88,26 @@ public class MiniClient {
         return servers;
     }
 
-    private void init() {
-        if (initialized) {
+    private void init()
+    {
+        if (initialized)
+        {
             destroy();
         }
+
         options.getCacheDir().mkdirs();
         options.getConfigDir().mkdirs();
 
         log.info("MiniClient v{} starting on date/time {}", Version.VERSION, new Date());
         log.info("MiniClient cacheDir: {}", options.getCacheDir());
 
-        try {
+        try
+        {
             javax.crypto.Cipher.getInstance("RSA");
             cryptoFormats = "RSA,Blowfish,DH,DES";
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             // If we don't do RSA, then we use DH for the key exchange and DES
             // for the secret stuff
             cryptoFormats = "DH,DES";
@@ -108,7 +117,8 @@ public class MiniClient {
         initialized = true;
     }
 
-    private void destroy() {
+    private void destroy()
+    {
         shutdown();
         initialized = false;
     }
@@ -129,7 +139,8 @@ public class MiniClient {
         return cryptoFormats;
     }
 
-    public String getMACAddress() {
+    public String getMACAddress()
+    {
         log.warn("TODO: Implement getMACAddress()");
         return MACAddress;
     }
@@ -138,11 +149,13 @@ public class MiniClient {
         return currentConnection;
     }
 
-    public void setCurrentConnection(MiniClientConnection currentConnection) {
+    public void setCurrentConnection(MiniClientConnection currentConnection)
+    {
         this.currentConnection = currentConnection;
     }
 
-    public boolean isConnected() {
+    public boolean isConnected()
+    {
         return currentConnection != null && currentConnection.isConnected();
     }
 
@@ -150,74 +163,102 @@ public class MiniClient {
         return UIRenderer;
     }
 
-    public void setUIRenderer(sagex.miniclient.uibridge.UIRenderer<?> UIRenderer) {
+    public void setUIRenderer(sagex.miniclient.uibridge.UIRenderer<?> UIRenderer)
+    {
         this.UIRenderer = UIRenderer;
     }
 
-    public void connect(ServerInfo si, MACAddressResolver macAddressResolver) throws IOException {
-        if (si.isLocatorOnly() || si.forceLocator) {
+    public void connect(ServerInfo si, MACAddressResolver macAddressResolver) throws IOException
+    {
+        if (si.isLocatorOnly() || si.forceLocator)
+        {
             log.debug("Resolving Server Address from GUID {}", si);
             String address = SageTVLocatorService.lookupIPForGuid(si.locatorID);
             si = si.clone();
             si.address = address;
             log.debug("Server Address Lookup complete {}", si);
         }
+
         this.connectedServer=si;
-        if (imageCache!=null) {
+
+        if (imageCache!=null)
+        {
             imageCache.cleanUp();
         }
+
         imageCache = new ImageCache(this);
         MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si);
         connection.connect();
         eventbus().post(new ConnectedEvent());
     }
 
-    public void closeConnection() {
-        if (currentConnection != null) {
+    public void closeConnection()
+    {
+        if (currentConnection != null)
+        {
             currentConnection.close();
             currentConnection = null;
         }
-        if (imageCache!=null) {
+        if (imageCache!=null)
+        {
             imageCache.cleanUp();
         }
     }
 
-    public void shutdown() {
-        if (backgroundService != null) {
+    public void shutdown()
+    {
+        if (backgroundService != null)
+        {
             backgroundService.shutdownNow();
         }
-        if (currentConnection != null) {
+        if (currentConnection != null)
+        {
             closeConnection();
         }
-        if (this.UIRenderer != null) {
+        if (this.UIRenderer != null)
+        {
             this.UIRenderer.close();
             this.UIRenderer = null;
         }
     }
 
-    public boolean isVideoPlaying() {
+    public MiniPlayerPlugin getPlayer()
+    {
+        return currentConnection.getMediaCmd().getPlaya();
+    }
+
+    public boolean isVideoPlaying()
+    {
         return isVideoVisible() && currentConnection.getMediaCmd().getPlaya().getState() == MiniPlayerPlugin.PLAY_STATE;
     }
 
-    public boolean isVideoPaused() {
+    public boolean isVideoPaused()
+    {
+        if(currentConnection.getMediaCmd().getPlaya() != null)
+        {
+            log.debug("isVideoPaused: " + " isVideoVisible: " + isVideoVisible() + " player state:" + currentConnection.getMediaCmd().getPlaya().getState() + " PAUSE: MiniPlayerPlugin.PAUSE_STATE;");
+        }
+
         return isVideoVisible() && currentConnection.getMediaCmd().getPlaya().getState() == MiniPlayerPlugin.PAUSE_STATE;
     }
 
-    public boolean isVideoVisible() {
-        return currentConnection != null
-                && currentConnection.getMediaCmd() != null
-                && currentConnection.getMediaCmd().getPlaya() != null;
+    public boolean isVideoVisible()
+    {
+        return currentConnection != null && currentConnection.getMediaCmd() != null && currentConnection.getMediaCmd().getPlaya() != null;
     }
 
-    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs) {
+    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs)
+    {
         options.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
     }
 
-    public ImageCache getImageCache() {
+    public ImageCache getImageCache()
+    {
         return imageCache;
     }
 
-    public boolean isReady() {
+    public boolean isReady()
+    {
         return isConnected() && getCurrentConnection().hasEventChannel();
     }
 }

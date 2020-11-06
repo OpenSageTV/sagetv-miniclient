@@ -306,7 +306,7 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
         state = PAUSE_STATE;
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
         {
-            log.debug("pause()");
+            log.debug("Pause was called");
         }
     }
 
@@ -316,7 +316,7 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
         state = PLAY_STATE;
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
         {
-            log.debug("play()");
+            log.debug("Play was called");
         }
     }
 

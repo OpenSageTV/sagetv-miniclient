@@ -31,7 +31,8 @@ import sagex.miniclient.util.VerboseLogging;
 /**
  * @author Narflex
  */
-public class MediaCmd {
+public class MediaCmd
+{
     public static final int MEDIACMD_INIT = 0;
     public static final int MEDIACMD_DEINIT = 1;
     public static final int MEDIACMD_OPENURL = 16;
@@ -64,7 +65,17 @@ public class MediaCmd {
     public static final Map<Integer, String> CMDMAP = new HashMap<Integer, String>();
     private static final Logger log = LoggerFactory.getLogger(MediaCmd.class);
 
-    static {
+    private final MiniClient client;
+    private MiniPlayerPlugin playa;
+    private boolean pushMode;
+    private int DESIRED_VIDEO_PREBUFFER_SIZE = 16 * 1024 * 1024;
+    private int DESIRED_AUDIO_PREBUFFER_SIZE = 2 * 1024 * 1024;
+    private int maxPrebufferSize;
+    private MiniClientConnection myConn;
+    private long lastServerStartTime = -1;
+
+    static
+    {
         CMDMAP.put(MEDIACMD_INIT, "MEDIACMD_INIT");
         CMDMAP.put(MEDIACMD_DEINIT, "MEDIACMD_DEINIT");
         CMDMAP.put(MEDIACMD_OPENURL, "MEDIACMD_OPENURL");
@@ -91,48 +102,46 @@ public class MediaCmd {
         CMDMAP.put(MEDIACMD_DVD_STREAMS, "MEDIACMD_DVD_STREAMS");
     }
 
-    private final MiniClient client;
-    private MiniPlayerPlugin playa;
-    private boolean pushMode;
-    private int DESIRED_VIDEO_PREBUFFER_SIZE = 16 * 1024 * 1024;
-    private int DESIRED_AUDIO_PREBUFFER_SIZE = 2 * 1024 * 1024;
-    private int maxPrebufferSize;
-    private MiniClientConnection myConn;
-    private long lastServerStartTime = -1;
-
     /**
      * Creates a new instance of MediaCmd
      */
-    public MediaCmd(MiniClient client) {
+    public MediaCmd(MiniClient client)
+    {
         this.client = client;
         this.myConn = client.getCurrentConnection();
     }
 
-    public static void writeInt(int value, byte[] data, int offset) {
+    public static void writeInt(int value, byte[] data, int offset)
+    {
         data[offset] = (byte) ((value >> 24) & 0xFF);
         data[offset + 1] = (byte) ((value >> 16) & 0xFF);
         data[offset + 2] = (byte) ((value >> 8) & 0xFF);
         data[offset + 3] = (byte) (value & 0xFF);
     }
 
-    public static void writeShort(short value, byte[] data, int offset) {
+    public static void writeShort(short value, byte[] data, int offset)
+    {
         data[offset] = (byte) ((value >> 8) & 0xFF);
         data[offset + 1] = (byte) (value & 0xFF);
     }
 
-    public static int readInt(int pos, byte[] cmddata) {
+    public static int readInt(int pos, byte[] cmddata)
+    {
         return ((cmddata[pos + 0] & 0xFF) << 24) | ((cmddata[pos + 1] & 0xFF) << 16) | ((cmddata[pos + 2] & 0xFF) << 8) | (cmddata[pos + 3] & 0xFF);
     }
 
-    public static short readShort(int pos, byte[] cmddata) {
+    public static short readShort(int pos, byte[] cmddata)
+    {
         return (short) (((cmddata[pos + 0] & 0xFF) << 8) | (cmddata[pos + 1] & 0xFF));
     }
 
-    public MiniPlayerPlugin getPlaya() {
+    public MiniPlayerPlugin getPlaya()
+    {
         return playa;
     }
 
-    public void close() {
+    public void close()
+    {
         if (myConn.getGfxCmd() != null)
             myConn.getGfxCmd().setVideoBounds(null, null);
         if (playa != null)
@@ -140,29 +149,42 @@ public class MediaCmd {
         playa = null;
     }
 
-    public int ExecuteMediaCommand(int cmd, int len, byte[] cmddata, byte[] retbuf) {
-        if (VerboseLogging.DETAILED_MEDIA_COMMAND) {
+    public int ExecuteMediaCommand(int cmd, int len, byte[] cmddata, byte[] retbuf)
+    {
+        if (VerboseLogging.DETAILED_MEDIA_COMMAND)
+        {
             if (VerboseLogging.DETAILED_MEDIA_COMMAND_PUSHBUFFER || cmd != MEDIACMD_PUSHBUFFER)
+            {
                 log.debug("MEDIACMD='{}[{}]'", cmd, CMDMAP.get(cmd));
+            }
         }
-        switch (cmd) {
+        switch (cmd)
+        {
             case MEDIACMD_INIT:
-                try {
+                try
+                {
                     DESIRED_VIDEO_PREBUFFER_SIZE = client.properties().getInt(PrefStore.Keys.video_buffer_size, (4 * 1024 * 1024));
                     DESIRED_AUDIO_PREBUFFER_SIZE = client.properties().getInt(PrefStore.Keys.audio_buffer_size, (2 * 1024 * 1024));
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     log.error("MEDIACMD_INIT: ERROR", e);
                 }
+
                 readInt(0, cmddata); // video format code
                 writeInt(1, retbuf, 0);
                 return 4;
+
             case MEDIACMD_DEINIT:
+
                 writeInt(1, retbuf, 0);
                 close();
                 return 4;
+
             case MEDIACMD_OPENURL:
-                
-                lastServerStartTime = -1;
+
+                this.setLastServerStartPosition(-1);
+
                 int strLen = readInt(0, cmddata);
                 String urlString = "";
                 maxPrebufferSize = DESIRED_VIDEO_PREBUFFER_SIZE;
@@ -248,103 +270,137 @@ public class MediaCmd {
                 writeInt(1, retbuf, 0);
                 if (playa == null)
                     return 4;
+                log.debug("Pause was called");
                 playa.pause();
                 return 4;
             case MEDIACMD_PLAY:
                 writeInt(1, retbuf, 0);
                 if (playa == null)
                     return 4;
+                log.debug("Play was called");
                 playa.play();
                 return 4;
             case MEDIACMD_FLUSH:
                 writeInt(1, retbuf, 0);
-                // original sagetv code has numPushBuffers > 0, but they are writing to disk
-                // so I don't think we need this numPushBuffers, we should reset always.
+
                 if (playa != null && pushMode)
                 {
-                    log.debug("JVL - MEDIACMD_FLUSH called");
                     playa.flush();
-                    lastServerStartTime = -1;
+                    this.setLastServerStartPosition(-1);
                 }
+
                 return 4;
+
             case MEDIACMD_PUSHBUFFER:
+
                 int buffSize = readInt(0, cmddata);
                 int flags = readInt(4, cmddata);
                 int bufDataOffset = 8;
-                if (MiniClientConnection.detailedBufferStats && buffSize > 0 && len > buffSize + 13) {
+
+                if (MiniClientConnection.detailedBufferStats && buffSize > 0 && len > buffSize + 13)
+                {
                     bufDataOffset += 10;
-//                    short statsChannelBWKbps = readShort(8, cmddata);
-//                    short statsStreamBWKbps = readShort(10, cmddata);
-//                    short statsTargetBWKbps = readShort(12, cmddata);
+                    //short statsChannelBWKbps = readShort(8, cmddata);
+                    //short statsStreamBWKbps = readShort(10, cmddata);
+                    //short statsTargetBWKbps = readShort(12, cmddata);
                     int serverMuxTime = readInt(14, cmddata);
 
-                    if (playa != null) {
-                        // this happens after a flush, so we capture the start of where
-                        // sagetv is telling us about the buffer, so we can use it later
-                        // in the determining the player position
-                        if (lastServerStartTime < 0)
+                    if (playa != null)
+                    {
+                        /*
+                         * During push playback, after the server calls for a flush (Most Likely a seek event)
+                         * sagetv sends the playback position telling us about the buffer.
+                         * We will store this position so that it can be used in players that do not read
+                         * the position from the container on push playback
+                        */
+                        if (lastServerStartTime < 0 && serverMuxTime > 0)
                         {
-                                lastServerStartTime = serverMuxTime;
+                            this.setLastServerStartPosition(serverMuxTime);
                         }
                         if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING)
                         {
-                            log.debug("PushBuffer: PUSHED ServerMUXTime: {}, lastServerStartTime: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(lastServerStartTime, true));
+                            log.debug("PushBuffer: PUSHED ServerMUXTime: {}, lastServerStartTime: {}", Utils.toHHMMSS(serverMuxTime, true), Utils.toHHMMSS(this.getLastServerStartPosition(), true));
                         }
+
                     }
-                    // log.debug("STATS chanBW=" + statsChannelBWKbps + " streamBW=" + statsStreamBWKbps + " targetBW=" + statsTargetBWKbps + " pretime=" + prebufferTime);
                 }
-                // sometimes pushbuffer is called to just get bandwidth so don't pass that along to the player
+
+                //sometimes pushbuffer is called to just get bandwidth so don't pass that along to the player
                 //boolean noMoreData = flags == 0x80 && playa != null;
-                if (playa != null) {
-                    if (buffSize > 0) {
-                        try {
+                if (playa != null)
+                {
+                    if (buffSize > 0)
+                    {
+                        try
+                        {
                             playa.pushData(cmddata, bufDataOffset, buffSize);
-                        } catch (IOException e) {
+                        }
+                        catch (IOException e)
+                        {
                             log.error("Pushbuffer Error", e);
                             client.closeConnection();
                         }
                     }
 
-                    if (flags == 0x80) {
+                    if (flags == 0x80)
+                    {
                         playa.setServerEOS();
                     }
                 }
 
                 int rv;
-                // Always indicate we have at least 512K of buffer...there's NO reason to stop buffering additional
-                // data since as playback goes on we keep writing to the filesystem anyways. Yeah, we could recover some bandwidth
-                // but that's not how any online video players work and we shouldn't be any different than that.
+
+                /*
+                 * Always indicate we have at least 512K of buffer...there's NO reason to stop buffering additional
+                 * data since as playback goes on we keep writing to the filesystem anyways. Yeah, we could recover some bandwidth
+                 * but that's not how any online video players work and we shouldn't be any different than that.
+                */
                 if (playa == null)
+                {
                     rv = maxPrebufferSize;
-                else {
+                }
+                else
+                {
                     //rv = (int)(PushBufferDataSource.PIPE_SIZE - (bufferFilePushedBytes - playa.getLastFileReadPos()));
                     rv = playa.getBufferLeft();
                     // log.debug("PUSHBUFFER: bufSize: " + buffSize + " availSize=" + rv);
                 }
                 
-                if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING) {
-                    if (rv < 0) {
+                if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING)
+                {
+                    if (rv < 0)
+                    {
                         log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}", rv);
                     }
                 }
 
                 writeInt(rv, retbuf, 0);
-                if (MiniClientConnection.detailedBufferStats) {
-                    if (playa != null) {
+
+                if (MiniClientConnection.detailedBufferStats)
+                {
+                    if (playa != null)
+                    {
                         writeInt((int) getMediaTimeMillis(), retbuf, 4);
                         retbuf[8] = (byte) (playa.getState() & 0xFF);
-                    } else {
+                    }
+                    else
+                    {
                         writeInt(0, retbuf, 4);
                         retbuf[8] = 0;
                     }
 
-                    if (playa != null) {
+                    if (playa != null)
+                    {
                         retbuf[8] = (byte) (playa.getState() & 0xFF);
                     }
+
                     return 9;
-                } else {
+                }
+                else
+                {
                     return 4;
                 }
+
             case MEDIACMD_GETVOLUME:
                 if (playa == null)
                     writeInt(65535, retbuf, 0);
@@ -378,11 +434,17 @@ public class MediaCmd {
                 }
                 return 4;
             case MEDIACMD_SEEK:
+
                 long seekTime = ((long) readInt(0, cmddata) << 32) | readInt(4, cmddata);
+
                 if (playa != null)
-                    log.debug("JVL - MEDIACMD_SEEK called: {}", seekTime);
+                {
+                    log.debug("MEDIACMD_SEEK called: {}", seekTime);
                     playa.seek(seekTime);
+                }
+
                 return 0;
+
             case MEDIACMD_DVD_STREAMS:
                 if (playa!=null)
                 {
@@ -415,7 +477,9 @@ public class MediaCmd {
                     writeInt(0, retbuf, 0);
 
                     return 4;
-                } else {
+                }
+                else
+                {
                     return 0;
                 }
 
@@ -429,8 +493,24 @@ public class MediaCmd {
     {
         if (playa != null)
         {
-            return playa.getMediaTimeMillis(lastServerStartTime);
+            return playa.getMediaTimeMillis(this.getLastServerStartPosition());
         }
+
+        return lastServerStartTime;
+    }
+
+    private void setLastServerStartPosition(long position)
+    {
+        this.lastServerStartTime = position;
+    }
+
+    public long getLastServerStartPosition()
+    {
+        if(this.lastServerStartTime < 0)
+        {
+            return 0;
+        }
+
         return lastServerStartTime;
     }
 }

@@ -103,7 +103,18 @@ public class EventRouter
 
     public static void postCommand(MiniClient client, int command)
     {
-        if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false)) {
+        log.debug("Post Command Called:  " + command);
+
+        //If the player is already paused, bypass sending command to SageTV, and allow the player to handle
+        if(client.isVideoPaused() && SageCommand.parseByID(command) == SageCommand.PAUSE)
+        {
+            log.debug("Override pause to advance frame");
+            client.getPlayer().pause();
+            return;
+        }
+
+        if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false))
+        {
             client.eventbus().post(new DebugSageCommandEvent(SageCommand.parseByID(command)));
         }
 
@@ -112,6 +123,16 @@ public class EventRouter
 
     public static void postCommand(MiniClient client, SageCommand command)
     {
+        log.debug("Post SageCommandCalled: " + command.getDisplayName() + " Key:" + command.getKey() + " EventCode:" + command.getEventCode());
+
+        //If the player is already paused, bypass sending command to SageTV, and allow the player to handle
+        if(client.isVideoPaused() && command == SageCommand.PAUSE)
+        {
+            log.debug("Override pause to advance frame");
+            client.getPlayer().pause();
+            return;
+        }
+
         if (client.properties().getBoolean(PrefStore.Keys.debug_sage_commands, false)) {
             client.eventbus().post(new DebugSageCommandEvent(command));
         }
