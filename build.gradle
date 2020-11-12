@@ -51,8 +51,8 @@ allprojects {
         androidBuildToolsVersion = "28.0.3"
 
         androidMinSdkVersion = 21
-        androidCompileSdkVersion = 28
-        androidTargetSdkVersion = 28
+        androidCompileSdkVersion = 29
+        androidTargetSdkVersion = 29
 
         appVersionCode = 2101069
         appVersionName = "${baseVersion}"

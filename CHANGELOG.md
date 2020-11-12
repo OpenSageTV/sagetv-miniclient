@@ -1,3 +1,11 @@
+**1.7.0 (2020-11-12)**
+- Playing back active recording TV seeking issue with ExoPlayer: Issue #96
+- Frame Advance & Slow Motion Advance enhancement: Issue #91
+- Upgrade to ExoPlayer 2.12.1 enhancement: Issue #95
+- Full-Screen On Screen Navigation enhancement: Issue #42
+- Issue with keyboard and favorites on the FireTV: Issue #92
+- Error connecting to server when using fixed Transcoding/Streaming: Issue #97
+
 **1.6.3 (2020-10-8)**
 - jvl711: Rearchitected how playback position was retrieved.  Switched to a UI thread that updates every 500ms.
 - jvl711: Fixed an issue with seeking after resume from pause.  The state was not getting properly updated
