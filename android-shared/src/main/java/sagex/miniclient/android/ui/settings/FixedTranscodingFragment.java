@@ -1,4 +1,4 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.ui.settings;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import sagex.miniclient.android.R;
 
 public class FixedTranscodingFragment extends PreferenceFragment
 {

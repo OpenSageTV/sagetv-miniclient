@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.prefs.CodecAdapter;
+import sagex.miniclient.android.ui.settings.CodecAdapter;
 import sagex.miniclient.prefs.PrefStore;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaCodecInfo;

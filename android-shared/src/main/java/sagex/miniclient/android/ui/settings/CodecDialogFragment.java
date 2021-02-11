@@ -1,9 +1,7 @@
-package sagex.miniclient.android.prefs;
+package sagex.miniclient.android.ui.settings;
 
 import android.app.DialogFragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.media.MediaCodecInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -12,8 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
-import com.badlogic.gdx.backends.android.AndroidApplication;
 
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.R;

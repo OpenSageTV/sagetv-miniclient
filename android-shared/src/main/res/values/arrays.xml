@@ -185,6 +185,14 @@
         <item>needed</item>
         <item>always</item>
     </string-array>
+    <string-array name="entries_list_default_player">
+        <item>ExoPlayer</item>
+        <item>IJKPlayer</item>
+    </string-array>
+    <string-array name="entryvalues_list_default_player">
+        <item>exoplayer</item>
+        <item>ijkplayer</item>
+    </string-array>
 
 
 </resources>

@@ -1,14 +1,11 @@
 package sagex.miniclient.android.phone;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -25,7 +22,7 @@ import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.AutoConnectDialog;
 import sagex.miniclient.android.HelpDialogFragment;
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.SettingsActivity;
+import sagex.miniclient.android.ui.settings.SettingsActivity;
 import sagex.miniclient.android.tv.MainActivity;
 import sagex.miniclient.android.tv.R;
 import sagex.miniclient.android.util.AudioUtil;

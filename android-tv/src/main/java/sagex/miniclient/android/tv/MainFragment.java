@@ -51,7 +51,7 @@ import sagex.miniclient.ServerInfo;
 import sagex.miniclient.android.AddServerFragment;
 import sagex.miniclient.android.AddServerFragment.OnAddServerListener;
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.SettingsActivity;
+import sagex.miniclient.android.ui.settings.SettingsActivity;
 import sagex.miniclient.android.tv.actions.Action;
 import sagex.miniclient.android.tv.actions.ActionPresenter;
 import sagex.miniclient.android.util.ServerInfoUtil;

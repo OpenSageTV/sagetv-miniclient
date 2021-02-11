@@ -1,4 +1,4 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.ui.settings;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.SageCommand;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.R;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.prefs.PrefStore;
 

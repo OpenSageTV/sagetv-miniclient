@@ -1,7 +1,10 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.ui.settings;
 
 import android.app.Activity;
 import android.os.Bundle;
+
+import sagex.miniclient.android.AppUtil;
+import sagex.miniclient.android.R;
 
 public class MediaMappingsActivity extends Activity
 {

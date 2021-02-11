@@ -285,6 +285,7 @@ public class MediaCmd
 
                 if (playa != null && pushMode)
                 {
+                    log.debug("Flush - Flush called on pushMode.  Setting last server time to -1");
                     playa.flush();
                     this.setLastServerStartPosition(-1);
                 }
@@ -315,6 +316,7 @@ public class MediaCmd
                         */
                         if (lastServerStartTime < 0 && serverMuxTime > 0)
                         {
+                            log.debug("Flush - Last server time is -1, and serverMuxtime > 0.  ServerMuxTime: {}", Utils.toHHMMSS(serverMuxTime, true));
                             this.setLastServerStartPosition(serverMuxTime);
                         }
                         if (VerboseLogging.DETAILED_PUSHBUFFER_LOGGING)

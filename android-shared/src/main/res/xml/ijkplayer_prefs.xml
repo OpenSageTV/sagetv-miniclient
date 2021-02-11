@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="announce_software_decoder"
+        android:summary="@string/summary_announce_software_decoder_preference"
+        android:title="@string/title_announce_software_decoder_preference"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="prefer_android_software_decoders"
+        android:summary="@string/summary_prefer_android_software_decoders_preference"
+        android:title="@string/title_prefer_android_software_decoders_preference"/>
+
+    <Preference
+        android:key="decoders"
+        android:summary="@string/enable_disable_decoders_pref_summary"
+        android:title="@string/hardware_decoders"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="disable_hardware_decoders"
+        android:summary="@string/summary_disable_hardware_decoders_preference"
+        android:title="@string/title_disable_hardware_decoders_preference"/>
+
+</PreferenceScreen>

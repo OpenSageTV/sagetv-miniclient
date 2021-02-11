@@ -77,6 +77,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         log.debug("--------- DUMPING HARDWARE CODECS -----------");
         Set<String> acodecs = new TreeSet<>();
         Set<String> vcodecs = new TreeSet<>();
+
         for (int i = 0; i < count; i++)
         {
             MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
@@ -95,6 +96,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 }
             }
         }
+
         log.debug("--------- END DUMPING HARDWARE CODECS -----------");
 
         // update the supported hardware codecs for SageTV
@@ -102,7 +104,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         // could be that we need to send MPEG2-VIDEO@HL to tell sagetv that we are a
         // media extender
 
-        if (getPrefs().getBoolean(PrefStore.Keys.use_exoplayer))
+        if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
         {
             videoCodecs.clear();
             
@@ -110,6 +112,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             {
                 if (codecs.getProperty(s)!=null)
                 {
+                    log.debug("Codec Supported: {}", s);
                     videoCodecs.add(codecs.getProperty(s));
                 }
             }

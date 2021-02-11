@@ -1,4 +1,4 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.ui.settings;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import sagex.miniclient.SageCommand;
+import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.R;
 import sagex.miniclient.android.preferences.TouchPreferences;
 
 public class TouchMappingsFragment extends PreferenceFragment {

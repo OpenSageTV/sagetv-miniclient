@@ -145,9 +145,9 @@ public interface PrefStore {
         String app_destroy_on_pause = "app_destroy_on_pause";
 
         /**
-         * Boolean: True when ExoPlayer is used
+         * String: exoplayer and ijkplayer are the current possible values
          */
-        String use_exoplayer = "use_exoplayer";
+        String default_player = "default_player";
 
         /**
          * Boolean: Announce when Software decoder is being used

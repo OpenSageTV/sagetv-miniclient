@@ -234,8 +234,17 @@ public class NavigationFragment extends DialogFragment {
                 })
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        client.properties().setBoolean(PrefStore.Keys.use_exoplayer, !isExoPlayer());
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        if(isExoPlayer())
+                        {
+                            client.properties().setString(PrefStore.Keys.default_player, "ijkplayer");
+                        }
+                        else
+                        {
+                            client.properties().setString(PrefStore.Keys.default_player, "exoplayer");
+                        }
+
                         AppUtil.message(MiniclientApplication.get().getString(R.string.msg_player_changed, getPlayerName()));
                         dismiss();
                     }
@@ -289,8 +298,9 @@ public class NavigationFragment extends DialogFragment {
         HelpDialogFragment.showDialog(getActivity());
     }
 
-    private boolean isExoPlayer() {
-        return client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
+    private boolean isExoPlayer()
+    {
+        return client.properties().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer");
     }
 
     private String getPlayerName() {

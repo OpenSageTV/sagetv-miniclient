@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Touch Mappings" android:key="TouchMappingsCategory">
-
-        <Preference android:title="Touch Mappings"
-            android:summary="Change the default mappings touch screen actions"
-            android:key="touch_mappings"/>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Media Key Mappings" android:key="MediaKeyMappingsCategory">
-
-        <Preference android:title="Media Key Mappings"
-            android:summary="Change the default mappings for remote controls and game pads"
-            android:key="media_key_mappings"/>
-
-    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/media_player_preferences">
+
+        <ListPreference
+            android:defaultValue="exoplayer"
+            android:dialogTitle="@string/dialog_title_default_player"
+            android:entries="@array/entries_list_default_player"
+            android:entryValues="@array/entryvalues_list_default_player"
+            android:key="default_player"
+            android:summary="@string/summary_list_default_player"
+            android:title="@string/title_list_default_player"/>
 
         <ListPreference
             android:defaultValue="dynamic"
@@ -32,69 +26,46 @@
             android:summary="Change the setting SageTV server will use to transcode content when using fixed streaming"
             android:key="fixed_transcoding"/>
 
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="use_exoplayer"
-            android:summary="@string/use_exoplayer_preference"
-            android:title="@string/use_exoplayer_preference_title"/>
+        <Preference android:title="ExoPlayer Settings and Information"
+            android:summary="Change the behavior of ExoPlayer and see supported codecs and version info"
+            android:key="exoplayer_settings"/>
 
-        <Preference
-            android:key="show_exo_decoders"
-            android:summary="@string/show_exo_decoders_pref_summary"
-            android:title="@string/show_exo_decoders"/>
+        <Preference android:title="IJKPlayer Settings and Information"
+            android:summary="Change the behavior of IJKPlayer and see supported codecs and version info"
+            android:key="ijkplayer_settings"/>
+    </PreferenceCategory>
 
-        <ListPreference android:defaultValue="1"
-            android:title="@string/exoplayer_ffmpeg_extension_title"
-            android:dialogTitle="@string/exoplayer_ffmpeg_extension_title"
-            android:summary="@string/exoplayer_ffmpeg_extension_summary"
-            android:key="exoplayer_ffmpeg_extension"
-            android:entries="@array/entries_exoplayer_ffmpeg_extension_preference"
-            android:entryValues="@array/entryvalues_exoplayer_ffmpeg_extension_preference"/>
+    <PreferenceCategory android:title="Mappings" android:key="Mapping Settings">
 
-        <!--
-        <ListPreference
-            android:defaultValue="64"
-            android:dialogTitle="@string/dialog_title_list_mem_cache_preference"
-            android:entries="@array/entries_list_mem_cache_preference"
-            android:entryValues="@array/entryvalues_list_mem_cache_preference"
-            android:key="image_cache_size_mb"
-            android:summary="@string/summary_list_mem_cache_preference"
-            android:title="@string/title_list_mem_cache_preference"/>-->
+        <Preference android:title="Media Key Mappings"
+            android:summary="Change the default mappings for remote controls and game pads"
+            android:key="media_key_mappings"/>
 
-
-
-        <!--<CheckBoxPreference
-            android:defaultValue="false"
-            android:key="disable_audio_passthrough"
-            android:summary="@string/summary_disable_audio_passthrough_preference"
-            android:title="@string/title_disable_audio_passthrough_preference"/>-->
-
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="announce_software_decoder"
-            android:summary="@string/summary_announce_software_decoder_preference"
-            android:title="@string/title_announce_software_decoder_preference"/>
-
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="prefer_android_software_decoders"
-            android:summary="@string/summary_prefer_android_software_decoders_preference"
-            android:title="@string/title_prefer_android_software_decoders_preference"/>
-
-        <Preference
-            android:key="decoders"
-            android:summary="@string/enable_disable_decoders_pref_summary"
-            android:title="@string/hardware_decoders"/>
-
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="disable_hardware_decoders"
-            android:summary="@string/summary_disable_hardware_decoders_preference"
-            android:title="@string/title_disable_hardware_decoders_preference"/>
+        <Preference android:title="Touch Mappings"
+            android:summary="Change the default mappings touch screen actions"
+            android:key="touch_mappings"/>
 
     </PreferenceCategory>
 
+
+
     <PreferenceCategory android:title="@string/application_settings">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="auto_connect_to_last_server"
+            android:summary="@string/summary_auto_connect_to_last_server_preference"
+            android:title="@string/title_auto_connect_to_last_server_preference"/>
+
+        <ListPreference
+            android:dependency="auto_connect_to_last_server"
+            android:defaultValue="10"
+            android:dialogTitle="@string/dialog_title_auto_connect_delay_preference"
+            android:entries="@array/entries_list_auto_connect_delay_preference"
+            android:entryValues="@array/entryvalues_list_auto_connect_delay_preference"
+            android:key="auto_connect_delay"
+            android:summary="@string/summary_auto_connect_delay_preference"
+            android:title="@string/title_auto_connect_delay_preference"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
@@ -154,26 +125,6 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/auto_connect_settings">
-
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="auto_connect_to_last_server"
-            android:summary="@string/summary_auto_connect_to_last_server_preference"
-            android:title="@string/title_auto_connect_to_last_server_preference"/>
-
-        <ListPreference
-            android:dependency="auto_connect_to_last_server"
-            android:defaultValue="10"
-            android:dialogTitle="@string/dialog_title_auto_connect_delay_preference"
-            android:entries="@array/entries_list_auto_connect_delay_preference"
-            android:entryValues="@array/entryvalues_list_auto_connect_delay_preference"
-            android:key="auto_connect_delay"
-            android:summary="@string/summary_auto_connect_delay_preference"
-            android:title="@string/title_auto_connect_delay_preference"/>
-
-    </PreferenceCategory>
-
     <PreferenceCategory android:title="@string/debug_preferences">
         <CheckBoxPreference
             android:defaultValue="false"
@@ -229,28 +180,23 @@
             android:title="Version"/>
 
         <Preference
-            android:key="exoversion"
-            android:summary=""
-            android:title="ExoPlayer Version"/>
-
-        <EditTextPreference
 
             android:key="clientid"
             android:summary=""
             android:title="Cliend ID"/>
 
-        <EditTextPreference
+        <Preference
 
             android:key="ipaddress"
             android:summary=""
             android:title="Device IP Address"/>
 
-        <EditTextPreference
+        <Preference
             android:key="screensize"
             android:summary=""
             android:title="Native UI Resolution"/>
 
-        <EditTextPreference
+        <Preference
             android:key="appmemory"
             android:summary=""
             android:title="Application Available Memory"/>

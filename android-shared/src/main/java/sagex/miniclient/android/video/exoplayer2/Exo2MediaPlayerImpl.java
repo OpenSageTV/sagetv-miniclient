@@ -2,6 +2,7 @@ package sagex.miniclient.android.video.exoplayer2;
 
 import android.net.Uri;
 import android.os.Handler;
+import android.util.Log;
 import android.view.SurfaceView;
 
 import com.google.android.exoplayer2.C;
@@ -206,6 +207,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
         //log.debug("ExoLogging - getPlayerMediaTimeMillis Called lastServerTime=" + Utils.toHHMMSS(lastServerTime) + " position=" + Utils.toHHMMSS(position));
 
+        if(lastServerTime < 0)
+        {
+            log.debug("Flush - Flush was called waiting for last serverTime to be > 0");
+            return -1;
+        }
+
         return lastServerTime + position;
 
     }
@@ -286,6 +293,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         //log.trace("\tCurrent Playbacktime {}", player.getContentPosition());
         //log.trace("\tSeek time difference {}", (player.getContentPosition() - timeInMillis) / 1000);
 
+        log.debug("Seek - Called.  Current Position: {}  Seek Request: {} Difference: {}", player.getContentPosition(), timeInMillis, player.getContentPosition() - timeInMillis);
+
         if(timeInMillis > 0)
         {
             context.runOnUiThread(new Runnable()
@@ -295,7 +304,17 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 {
                     try
                     {
+                        int wait = 0;
                         player.seekTo(timeInMillis);
+
+                        //Wait up to a second for the seek to complete
+                        while(player.getCurrentPosition() < timeInMillis && wait < 10)
+                        {
+                            log.debug("Seek -  Waiting for current position to match Seek request.  Current Position: {}  Seek Request: {} ", player.getContentPosition(), timeInMillis);
+                            Thread.sleep(100);
+                        }
+
+                        Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
                     }
                     catch(Exception ex)
                     {
@@ -313,7 +332,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         try
         {
             playbackPositionLock.lock();
+
+
             //currentPlaybackPosition = 0; //Set this to zero during seek.  Lock will hopefully keep it at zero unti we are completed
+
             log.debug("ExoLogging - pushmode {}, timeinMS {}, playerReady {}", pushMode, timeInMS, playerReady);
 
             super.seek(timeInMS);
@@ -407,12 +429,15 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     {
                         return;
                     }
-                    else
-                    {
-                        Exo2MediaPlayerImpl.this.currentPlaybackPosition = 0;
-                    }
+                    //else
+                    //{
+                    //
+                    //}
 
                     player.prepare(mediaSource, true, false);
+                    log.debug("After Flush was called Current Playback Position: {}",  Utils.toHHMMSS(player.getCurrentPosition()));
+
+                    Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
                 }
                 catch (Exception ex){}
                 finally
