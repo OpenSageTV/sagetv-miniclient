@@ -99,7 +99,9 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     }
 
     @Override
-    public void setEOS() {
+    public void setEOS()
+    {
+        log.error("PushBuffer EOS Called");
         eos = true;
         if (in != null) {
             try {
@@ -119,6 +121,12 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     }
 
     @Override
+    public boolean getEOS()
+    {
+        return eos;
+    }
+
+    @Override
     public void flush() {
         log.debug("FLUSH()");
         bytesRead = 0;
@@ -133,7 +141,14 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     }
 
     @Override
-    public long size() {
+    public int dataAvailable()
+    {
+        return circularByteBuffer.getAvailable();
+    }
+
+    @Override
+    public long size()
+    {
         return -1;
     }
 

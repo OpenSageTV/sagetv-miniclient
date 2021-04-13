@@ -94,12 +94,26 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
         }
     }
 
+    public boolean getEOS()
+    {
+        return dataSource.getEOS();
+    }
+
     @Override
     public int bufferAvailable() {
         if (dataSource != null) {
             return dataSource.bufferAvailable();
         }
         return PushBufferDataSource.PIPE_SIZE;
+    }
+
+    @Override
+    public int dataAvailable()
+    {
+        if (dataSource != null) {
+            return dataSource.dataAvailable();
+        }
+        return 0;
     }
 
     @Override

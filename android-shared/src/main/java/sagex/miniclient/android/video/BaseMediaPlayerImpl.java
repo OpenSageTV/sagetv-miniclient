@@ -333,6 +333,7 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
     @Override
     public void setServerEOS()
     {
+        log.error("Set Server EOS Called");
         // tell the datasource that we have all the data
         if (dataSource != null && dataSource instanceof HasPushBuffer)
         {
@@ -465,13 +466,29 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
     @Override
     public int getBufferLeft()
     {
+
+
         if (dataSource instanceof HasPushBuffer)
         {
             if (state == EOS_STATE || eos)
             {
+                log.error("getBufferLeftCalled MediaPlayer in EOS_STATE");
                 return -1;
             }
-            
+
+
+
+            //Buffers are empty, and Server has already informed us of EOS.
+            // I think this assumes that buffer would never be 0 if there was data left for us to read.
+            //if(((HasPushBuffer) dataSource).getEOS() && ((HasPushBuffer) dataSource).dataAvailable() == 0)
+            //{
+            //    log.error("getBufferLeftCalled MediaPlayer bufferAvailable is 0, setting EOS and returning EOS");
+            //    state = EOS_STATE;
+            //    return -1;
+            //}
+
+            log.error("getBufferLeftCalled bufferAvailable: " + ((HasPushBuffer) dataSource).bufferAvailable());
+
             return ((HasPushBuffer) dataSource).bufferAvailable();
         }
         else

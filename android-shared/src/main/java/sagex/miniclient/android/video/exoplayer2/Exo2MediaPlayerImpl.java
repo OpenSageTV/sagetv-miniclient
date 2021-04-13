@@ -534,6 +534,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             public void onPlayerError(ExoPlaybackException error)
             {
                 log.debug("PLAYER ERROR: " + error.getMessage());
+
                 context.showErrorMessage(error.getMessage(), "Exo2MediaPlayer");
                 error.printStackTrace();
             }
@@ -541,7 +542,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState)
             {
-
                 if (playbackState == Player.STATE_ENDED)
                 {
                     log.debug("Player.STATE_ENDED - Calling stop");

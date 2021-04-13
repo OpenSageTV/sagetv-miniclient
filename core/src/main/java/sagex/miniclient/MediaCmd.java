@@ -298,6 +298,8 @@ public class MediaCmd
                 int flags = readInt(4, cmddata);
                 int bufDataOffset = 8;
 
+                log.error("MEDIACMD_PUSHBUFFER buffSize: " + buffSize + " flags: " + flags);
+
                 if (MiniClientConnection.detailedBufferStats && buffSize > 0 && len > buffSize + 13)
                 {
                     bufDataOffset += 10;
@@ -346,6 +348,7 @@ public class MediaCmd
 
                     if (flags == 0x80)
                     {
+                        log.error("Got EOS from server");
                         playa.setServerEOS();
                     }
                 }
@@ -359,6 +362,7 @@ public class MediaCmd
                 */
                 if (playa == null)
                 {
+                    log.error("Player is null sending full buffer size!");
                     rv = maxPrebufferSize;
                 }
                 else
@@ -372,6 +376,7 @@ public class MediaCmd
                 {
                     if (rv < 0)
                     {
+                        log.error("PUSHBUFFER: We Letting Server know we are done:  rv: {}", rv);
                         log.debug("PUSHBUFFER: We Letting Server know we are done:  rv: {}", rv);
                     }
                 }
@@ -380,6 +385,7 @@ public class MediaCmd
 
                 if (MiniClientConnection.detailedBufferStats)
                 {
+                    log.error("Asking for detailed player stats");
                     if (playa != null)
                     {
                         writeInt((int) getMediaTimeMillis(), retbuf, 4);

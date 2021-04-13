@@ -8,6 +8,8 @@ import java.io.IOException;
 public interface HasPushBuffer {
     int bufferAvailable();
 
+    int dataAvailable();
+
     void pushBytes(byte[] bytes, int offset, int len) throws IOException;
 
     void flush();
@@ -21,4 +23,6 @@ public interface HasPushBuffer {
      * once those bytes are gone, the read command will return -1
      */
     void setEOS();
+
+    boolean getEOS();
 }
