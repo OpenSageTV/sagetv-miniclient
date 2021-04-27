@@ -77,6 +77,12 @@ public class SettingsFragment extends PreferenceFragment
             {
                 p.setDefaultValue(true);
             }
+
+            p = this.findPreference(Keys.disable_sleep);
+            if (p != null)
+            {
+                p.setDefaultValue(true);
+            }
             
             p = this.findPreference("reset_to_defaults");
             if (p != null)
