@@ -139,4 +139,6 @@
     <string name="dialog_title_list_transcoding_setting_preference">Transcoding Preference</string>
     <string name="summary_list_transcoding_setting_preference">%s - When set to \"When Needed\" SageTV will decided based on codec support and bandwidth if transcoding is needed</string>
     <string name="title_list_transcoding_setting_preference">Transcoding Preference</string>
+    <string name="disable_sleep_summary">The system sleep is disabled whenever the SageTV UI is shown.</string>
+    <string name="disable_sleep_title">Always keep screen on (disable system sleep)</string>
 </resources>

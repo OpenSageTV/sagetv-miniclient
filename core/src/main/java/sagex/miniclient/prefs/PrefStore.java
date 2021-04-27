@@ -145,6 +145,11 @@ public interface PrefStore {
         String app_destroy_on_pause = "app_destroy_on_pause";
 
         /**
+         * If set to true, then system sleep is disabled
+         */
+        String disable_sleep = "disable_sleep";
+
+        /**
          * Boolean: True when ExoPlayer is used
          */
         String use_exoplayer = "use_exoplayer";
