@@ -3,6 +3,8 @@ package sagex.miniclient.android.video.exoplayer2;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.SurfaceView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -22,6 +24,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.video.VideoListener;
+import com.google.android.exoplayer2.ui.SubtitleView;
 import java.util.List;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
@@ -52,6 +55,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
     Handler handler;
     Runnable progressRunnable;
     String url;
+
+    SubtitleView subView;
 
     public Exo2MediaPlayerImpl(AndroidUIController activity)
     {
@@ -161,6 +166,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 }
             }
         });
+
+        this.RemoveSubTitleView();
     }
 
     @Override
@@ -365,10 +372,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         if(streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK)
         {
             this.showCaptions = false;
+            this.RemoveSubTitleView();
         }
         else
         {
             this.showCaptions = true;
+            this.AddSubTitleView();
         }
 
         changeTrack(C.TRACK_TYPE_TEXT, streamPos, 0);
@@ -602,27 +611,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             @Override
             public void onCues(List<Cue> cues)
             {
-                if(showCaptions)
-                {
-                    if (cues.isEmpty())
-                    {
-                        context.getCaptionsText().setText("");
-                    }
-                    else
-                    {
-                        String text = "";
-                        for (int i = 0; i < cues.size(); i++)
-                        {
-                            text += cues.get(i).text;
-                        }
-
-                        context.getCaptionsText().setText(text);
-                    }
-                }
-                else
-                {
-                    context.getCaptionsText().setText("");
-                }
+                if( showCaptions && subView != null)
+                    subView.onCues( cues);
             }
         });
 
@@ -834,6 +824,59 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
         }
 
+    }
+
+    // cncb - Add and remove ExoPlayer2 SubTitleView for embedded PGS subtitles
+    private void AddSubTitleView()
+    {
+        if( subView == null)
+        {
+            subView = new SubtitleView(context.getContext());
+            subView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            context.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        FrameLayout layout = (FrameLayout) context.getVideoView().getParent();
+                        layout.addView(subView);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.debug("Error adding SubTitleView: " + ex.getMessage());
+                    }
+                }
+            });
+        }
+    }
+
+    private void RemoveSubTitleView()
+    {
+        if( subView != null)
+        {
+            context.runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        FrameLayout layout = (FrameLayout) context.getVideoView().getParent();
+                        layout.removeView(subView);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.debug("Error removing SubTitleView: " + ex.getMessage());
+                    }
+                    finally
+                    {
+                        subView = null;
+                    }
+                }
+            });
+        }
     }
 
 }
