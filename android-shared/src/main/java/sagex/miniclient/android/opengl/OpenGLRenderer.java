@@ -34,6 +34,7 @@ import sagex.miniclient.android.opengl.shapes.Line;
 import sagex.miniclient.android.opengl.shapes.LineRectangle;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.android.video.exlink.ExternalLinkPlayerImpl;
 import sagex.miniclient.android.video.exoplayer2.Exo2MediaPlayerImpl;
 import sagex.miniclient.android.video.ijkplayer.IJKMediaPlayerImpl;
 import sagex.miniclient.prefs.PrefStore;
@@ -710,11 +711,18 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
     }
 
     @Override
-    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
+    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection, String urlString) {
         log.debug("New Player Requested");
         //return new ExoPlayerMediaPlayer(activity);
         if (player != null) {
             player.free();
+        }
+
+        // cncb - Special player for external links
+        if( urlString.endsWith(".exlink"))
+        {
+            player = new ExternalLinkPlayerImpl(activity);
+            return player;
         }
 
         boolean useExoPlayer = client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
