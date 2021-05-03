@@ -98,7 +98,7 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-common:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-extractor:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-ui:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-ui:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"

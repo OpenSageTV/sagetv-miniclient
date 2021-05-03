@@ -91,6 +91,12 @@
             android:summary="@string/terminate_onpause_summary"
             android:title="@string/terminate_onpause_title" />
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="disable_sleep"
+            android:summary="@string/disable_sleep_summary"
+            android:title="@string/disable_sleep_title" />
+
         <!--
         <CheckBoxPreference
             android:defaultValue="false"

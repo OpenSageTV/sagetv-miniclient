@@ -6,6 +6,7 @@ import android.view.View;
 
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.UIActivityLifeCycleHandler;
+import sagex.miniclient.prefs.PrefStore;
 
 /**
  * Created by seans on 20/09/15.
@@ -21,6 +22,9 @@ public class MiniClientOpenGLActivity extends Activity implements UIActivityLife
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         uiActivityLifeCycleHandler.onCreate(this);
+
+        if( this.uiActivityLifeCycleHandler.getClient().properties().getBoolean(PrefStore.Keys.disable_sleep, true))
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
