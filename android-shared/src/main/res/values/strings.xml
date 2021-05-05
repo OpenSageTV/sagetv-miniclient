@@ -3,7 +3,7 @@
 
     <string name="app_name">SageTV MiniClient</string>
 
-    <string name="media_player_preferences">Media Player</string>
+    <string name="media_player_preferences">Playback Settings</string>
     <string name="title_use_vlc_preference">Use VLC</string>
     <string name="title_use_hardware_acceleration_preference">Use Hardware Acceleration</string>
     <string name="summary_use_hardware_acceleration_preference">If disabled, then no hardware acceleration will be used when decoding the video.</string>
@@ -38,7 +38,7 @@
     <string name="use_bitmap_images_summary">Disabling this may increase performance for WIRED connections, but should never be enabled for WIFI connections</string>
     <string name="GFX_SURFACES_title">Use Surfaces</string>
     <string name="GFX_SURFACES_summary">Disabling this will decrease rendering performance, but may reduce the screen flicker</string>
-    <string name="application_settings">Application Settings</string>
+    <string name="application_settings">General</string>
     <string name="use_exoplayer_preference">If enabled, then ExoPlayer will be used for video playback</string>
     <string name="use_exoplayer_preference_title">Use ExoPlayer</string>
     <string name="title_use_http_proxy_preference">Use HTTP Proxy</string>
@@ -141,6 +141,9 @@
     <string name="title_list_transcoding_setting_preference">Transcoding Preference</string>
     <string name="disable_sleep_summary">The system sleep is disabled whenever the SageTV UI is shown.</string>
     <string name="disable_sleep_title">Always keep screen on (disable system sleep)</string>
+    <string name="dialog_title_default_player">Default player that will be used for media playback</string>
+    <string name="title_list_default_player">Default Player</string>
+    <string name="summary_list_default_player">(%s) - Default media player used for playback</string>
     <string name="exlink_app_not_found_msg1">Could not find app %s.</string>
     <string name="exlink_app_not_found_msg2">No app could open %s.</string>
     <string name="exlink_exit_msg">Press STOP or BACK to return.</string>

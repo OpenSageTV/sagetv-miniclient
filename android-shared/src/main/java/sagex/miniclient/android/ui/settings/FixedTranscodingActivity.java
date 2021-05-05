@@ -1,23 +1,27 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.ui.settings;
 
 import android.app.Activity;
 import android.os.Bundle;
 
-public class TouchMappingsActivity extends Activity
+import sagex.miniclient.android.AppUtil;
+import sagex.miniclient.android.R;
+
+public class FixedTranscodingActivity extends Activity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         AppUtil.hideSystemUIOnTV(this);
-        setContentView(R.layout.activity_touch_mappings);
+        setContentView(R.layout.activity_fixed_transcoding);
     }
-
+    
     @Override
     protected void onResume()
     {
         super.onResume();
         AppUtil.hideSystemUIOnTV(this);
-
+        
     }
+    
 }

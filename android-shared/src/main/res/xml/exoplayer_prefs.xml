@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:key="show_exo_decoders"
+        android:summary="@string/show_exo_decoders_pref_summary"
+        android:title="@string/show_exo_decoders"/>
+
+    <ListPreference android:defaultValue="1"
+        android:title="@string/exoplayer_ffmpeg_extension_title"
+        android:dialogTitle="@string/exoplayer_ffmpeg_extension_title"
+        android:summary="@string/exoplayer_ffmpeg_extension_summary"
+        android:key="exoplayer_ffmpeg_extension"
+        android:entries="@array/entries_exoplayer_ffmpeg_extension_preference"
+        android:entryValues="@array/entryvalues_exoplayer_ffmpeg_extension_preference"/>
+
+    <Preference
+        android:key="exoversion"
+        android:summary=""
+        android:title="ExoPlayer Version"/>
+
+</PreferenceScreen>

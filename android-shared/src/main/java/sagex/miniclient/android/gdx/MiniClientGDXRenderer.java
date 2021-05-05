@@ -850,7 +850,8 @@ public class MiniClientGDXRenderer implements ApplicationListener, UIRenderer<Gd
             return player;
         }
 
-        boolean useExoPlayer = client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
+        boolean useExoPlayer = client.properties().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer");
+
         if (activity.isSwitchingPlayerOneTime()) {
             useExoPlayer = !useExoPlayer;
         }

@@ -1,3 +1,9 @@
+**1.7.1 (2021-02-11)**
+- Redesigned some of the settings screens.  Broke out the settings for ExoPlayer and IJKPlayer
+- Upgrade to ExoPlayer 2.12.3
+- Added additional codecs to the ExoPlaye Codec Debug Screen (DIVX, AC4, OPUS, etc...)
+- Removed AVI as a supported container format for ExoPlayer.  This should go thru the transcoder
+
 **1.7.0 (2020-11-12)**
 - Playing back active recording TV seeking issue with ExoPlayer: Issue #96
 - Frame Advance & Slow Motion Advance enhancement: Issue #91
@@ -63,6 +69,8 @@
 
 **1.4.1 (2018-12-30)**
 - sls: fix: Amazon Fire TV and MiBox could not use OpenGL renderer due to using some invalid GL calls for those devices.
+
+
 
 **1.4.0 (2018-12-30)**
 - sls: new UI renderer

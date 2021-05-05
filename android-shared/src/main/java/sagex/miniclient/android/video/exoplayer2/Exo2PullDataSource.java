@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.channels.ScatteringByteChannel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,14 +22,16 @@ import sagex.miniclient.net.HasClose;
 /**
  * Created by seans on 10/12/15.
  */
-public class Exo2PullDataSource implements DataSource, HasClose {
+public class Exo2PullDataSource implements DataSource, HasClose
+{
     static final Logger log = LoggerFactory.getLogger(Exo2PullDataSource.class);
     private String host = null;
     BufferedPullDataSource dataSource = null;
     private long startPos;
     private Uri uri;
 
-    public Exo2PullDataSource(String host) {
+    public Exo2PullDataSource(String host)
+    {
         this.host=host;
     }
     
@@ -40,29 +43,53 @@ public class Exo2PullDataSource implements DataSource, HasClose {
     }
     
     @Override
-    public long open(DataSpec dataSpec) throws IOException {
+    public long open(DataSpec dataSpec) throws IOException
+    {
         dataSource = new BufferedPullDataSource(host);
-        this.uri=dataSpec.uri;
+        this.uri = dataSpec.uri;
         long size = dataSource.open(dataSpec.uri.toString());
         this.startPos = dataSpec.position;
         log.debug("Open: {}, Offset: {}", dataSource.getUri(), startPos);
         return size;
+
     }
 
     @Override
-    public void close() throws IOException {
-        if (dataSource != null) {
+    public void close() throws IOException
+    {
+        if (dataSource != null)
+        {
             dataSource.close();
         }
     }
 
     @Override
-    public int read(byte[] buffer, int offset, int readLength) throws IOException {
-        if (dataSource == null) return 0;
-        int bytes = dataSource.read(startPos, buffer, offset, readLength);
-        if (bytes == -1) return -1;
-        startPos += bytes;
-        return bytes;
+    public int read(byte[] buffer, int offset, int readLength) throws IOException
+    {
+        try
+        {
+            if (dataSource == null)
+            {
+                log.debug("DATA SOURCE IS NULL");
+                return 0;
+            }
+            int bytes = dataSource.read(startPos, buffer, offset, readLength);
+
+            log.debug("Bytes: {}", bytes);
+
+            if (bytes == -1)
+            {
+                log.debug("DATA SOURCE RETURNED -1");
+                return -1;
+            }
+            startPos += bytes;
+            return bytes;
+        }
+        catch(Exception ex)
+        {
+            log.debug("Data source read error: " + ex.getMessage());
+            throw ex;
+        }
     }
 
     @Override

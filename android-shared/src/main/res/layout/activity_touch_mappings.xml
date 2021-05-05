@@ -7,11 +7,11 @@
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin"
-                tools:context="sagex.miniclient.android.TouchMappingsActivity">
+                tools:context="sagex.miniclient.android.ui.settings.TouchMappingsActivity">
 
     <fragment
         android:id="@+id/touch_mappings"
-        class="sagex.miniclient.android.TouchMappingsFragment"
+        class="sagex.miniclient.android.ui.settings.TouchMappingsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </RelativeLayout>

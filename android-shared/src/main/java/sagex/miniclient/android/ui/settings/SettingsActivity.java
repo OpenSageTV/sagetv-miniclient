@@ -1,7 +1,10 @@
-package sagex.miniclient.android;
+package sagex.miniclient.android.ui.settings;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import sagex.miniclient.android.AppUtil;
+import sagex.miniclient.android.R;
 
 public class SettingsActivity extends AppCompatActivity {
 

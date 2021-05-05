@@ -1,4 +1,4 @@
-package sagex.miniclient.android.prefs;
+package sagex.miniclient.android.ui.settings;
 
 import android.content.Context;
 import android.media.MediaCodecInfo;

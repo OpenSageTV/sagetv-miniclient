@@ -7,11 +7,12 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="sagex.miniclient.android.ui.settings.FixedTranscodingActivity">
+    tools:context="sagex.miniclient.android.ui.settings.IJKPlayerSettingsActivity">
 
     <fragment
         android:id="@+id/fixed_transcoding"
-        class="sagex.miniclient.android.ui.settings.FixedTranscodingFragment"
+        class="sagex.miniclient.android.ui.settings.IJKPlayerSettingsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </RelativeLayout>

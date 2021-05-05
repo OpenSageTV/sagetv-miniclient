@@ -724,8 +724,9 @@ public class OpenGLRenderer implements UIRenderer<OpenGLTexture>, GLSurfaceView.
             player = new ExternalLinkPlayerImpl(activity);
             return player;
         }
+      
+        boolean useExoPlayer = client.properties().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer");
 
-        boolean useExoPlayer = client.properties().getBoolean(PrefStore.Keys.use_exoplayer, false);
         if (activity.isSwitchingPlayerOneTime()) {
             useExoPlayer = !useExoPlayer;
         }

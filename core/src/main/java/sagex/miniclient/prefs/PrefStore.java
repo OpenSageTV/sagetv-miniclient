@@ -150,9 +150,9 @@ public interface PrefStore {
         String disable_sleep = "disable_sleep";
 
         /**
-         * Boolean: True when ExoPlayer is used
+         * String: exoplayer and ijkplayer are the current possible values
          */
-        String use_exoplayer = "use_exoplayer";
+        String default_player = "default_player";
 
         /**
          * Boolean: Announce when Software decoder is being used

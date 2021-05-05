@@ -55,7 +55,7 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name=".ui.settings.SettingsActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>
@@ -65,17 +65,27 @@
             android:label="@string/title_activity_connecting"
             android:theme="@style/FullscreenTheme"></activity>
         <activity
-            android:name=".TouchMappingsActivity"
+            android:name=".ui.settings.TouchMappingsActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
-            android:name=".MediaMappingsActivity"
+            android:name=".ui.settings.MediaMappingsActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
-            android:name=".FixedTranscodingActivity"
+            android:name=".ui.settings.FixedTranscodingActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
+        <activity
+            android:name=".ui.settings.ExoPlayerSettingsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
+        <activity
+            android:name=".ui.settings.IJKPlayerSettingsActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>
