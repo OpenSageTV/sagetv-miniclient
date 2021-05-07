@@ -144,4 +144,8 @@
     <string name="dialog_title_default_player">Default player that will be used for media playback</string>
     <string name="title_list_default_player">Default Player</string>
     <string name="summary_list_default_player">(%s) - Default media player used for playback</string>
+    <string name="exlink_app_not_found_msg1">Could not find app %s.</string>
+    <string name="exlink_app_not_found_msg2">No app could open %s.</string>
+    <string name="exlink_exit_msg">Press STOP or BACK to return.</string>
+    <string name="exlink_launch_msg">Launching %s...</string>
 </resources>

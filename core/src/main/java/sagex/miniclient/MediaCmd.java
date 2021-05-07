@@ -203,7 +203,7 @@ public class MediaCmd
                     }
                     else if (urlString.startsWith("file://"))
                     {
-                        playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
+                        playa = myConn.newPlayerPlugin( urlString);//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         playa.setPushMode(false);
                         playa.load((byte) 0, (byte) 0, "", urlString, null, false, 0);
                         pushMode = false;
@@ -211,7 +211,7 @@ public class MediaCmd
                     else
                     {
                     
-                        playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
+                        playa = myConn.newPlayerPlugin( urlString);//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         // We always set it to be an active file because it'll get turned off by the streaming code if it is not.
                         // It's safe to say it's active when it's not (as long as it's a streamable file format), but the opposite is not true.
                         // So we always say it's active to avoid any problems loading the file if it's a streamable file format.
@@ -232,7 +232,7 @@ public class MediaCmd
                         } else {
                             maxPrebufferSize = DESIRED_VIDEO_PREBUFFER_SIZE;
                         }
-                        playa = myConn.newPlayerPlugin();//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
+                        playa = myConn.newPlayerPlugin( urlString);//new MiniMPlayerPlugin(myConn.getGfxCmd(), myConn);
                         playa.setPushMode(true);
                         playa.load((byte) 0, (byte) 0, "", urlString, null, true, 0);
                     }

@@ -2515,8 +2515,8 @@ public class MiniClientConnection implements SageTVInputCallback
         return uiRenderer;
     }
 
-    public MiniPlayerPlugin newPlayerPlugin() {
-        return uiRenderer.newPlayerPlugin(this);
+    public MiniPlayerPlugin newPlayerPlugin( String urlString) {
+        return uiRenderer.newPlayerPlugin(this, urlString);
     }
 
     public boolean doesUseAdvancedImageCaching() {

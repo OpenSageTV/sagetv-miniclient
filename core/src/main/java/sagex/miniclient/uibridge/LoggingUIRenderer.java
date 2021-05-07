@@ -238,9 +238,9 @@ public class LoggingUIRenderer<Image extends Texture> implements UIRenderer<Imag
     }
 
     @Override
-    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection) {
+    public MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection, String urlString) {
         log("newPlayer");
-        return delegate.newPlayerPlugin(connection);
+        return delegate.newPlayerPlugin(connection, urlString);
     }
 
     @Override

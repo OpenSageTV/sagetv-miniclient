@@ -118,7 +118,7 @@ public interface UIRenderer<Image extends Texture> {
     boolean createVideo(int width, int height, int format);
     boolean updateVideo(int frametype, ByteBuffer buf);
 
-    MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection);
+    MiniPlayerPlugin newPlayerPlugin(MiniClientConnection connection, String urlString);
 
     void setVideoBounds(Rectangle o, Rectangle o1);
 
