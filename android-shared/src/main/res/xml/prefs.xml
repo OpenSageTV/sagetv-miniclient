@@ -14,7 +14,7 @@
             android:title="@string/title_list_default_player"/>
 
         <ListPreference
-            android:defaultValue="dynamic"
+            android:defaultValue="fixed"
             android:dialogTitle="@string/dialog_title_list_streaming_mode_preference"
             android:entries="@array/entries_list_streaming_mode_preference"
             android:entryValues="@array/entryvalues_list_streaming_mode_preference"

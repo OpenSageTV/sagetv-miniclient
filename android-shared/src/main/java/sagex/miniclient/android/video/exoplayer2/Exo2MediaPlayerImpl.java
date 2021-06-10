@@ -296,12 +296,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
     private void seekToImpl(long timeInMillis)
     {
-        //log.trace("JVL - Called seekToImpl - timeInMillis {}", timeInMillis);
-        //log.trace("\tCurrent Playbacktime {}", player.getContentPosition());
-        //log.trace("\tSeek time difference {}", (player.getContentPosition() - timeInMillis) / 1000);
-
-        log.debug("Seek - Called.  Current Position: {}  Seek Request: {} Difference: {}", player.getContentPosition(), timeInMillis, player.getContentPosition() - timeInMillis);
-
         if(timeInMillis > 0)
         {
             context.runOnUiThread(new Runnable()
@@ -311,6 +305,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 {
                     try
                     {
+                        log.debug("Seek - Called.  Current Position: {}  Seek Request: {} Difference: {}", player.getContentPosition(), timeInMillis, player.getContentPosition() - timeInMillis);
+
                         int wait = 0;
                         player.seekTo(timeInMillis);
 
@@ -381,7 +377,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 playbackStartPosition = timeInMS;
             }
         }
-        catch(Exception ex) {}
+        catch(Exception ex)
+        {
+            log.debug("Exception thrown durring seek: " + ex.getMessage());
+            ex.printStackTrace();
+        }
         finally
         {
             playbackPositionLock.unlock();

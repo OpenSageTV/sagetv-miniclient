@@ -75,7 +75,7 @@ public class Exo2PullDataSource implements DataSource, HasClose
             }
             int bytes = dataSource.read(startPos, buffer, offset, readLength);
 
-            log.debug("Bytes: {}", bytes);
+            //log.debug("Bytes: {}", bytes);
 
             if (bytes == -1)
             {

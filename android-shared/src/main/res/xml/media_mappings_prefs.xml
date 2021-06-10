@@ -28,7 +28,7 @@
             android:key="sound_effects_enabled"
             android:summary="Enable Sound Effects"
             android:title="Sound Effects"
-            android:defaultValue="true" />
+            android:defaultValue="false" />
 
         <SwitchPreference
             android:key="debug_key_presses"
