@@ -1082,7 +1082,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             String resolution = client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "720");
     
                             /* Audio properties */
-                            String audioCodec = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_code, "AC3");//Empty string means copy audio as it is.  No conversion
+                            String audioCodec = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_code, "ac3");//Empty string means copy audio as it is.  No conversion
                             int audiobitrate = client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 128) * 1000;
                             String audiochannels = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_channels, "2");
                             
