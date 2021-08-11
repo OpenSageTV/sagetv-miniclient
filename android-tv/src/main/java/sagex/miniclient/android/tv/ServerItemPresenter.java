@@ -1,7 +1,6 @@
 package sagex.miniclient.android.tv;
 
 import android.content.Context;
-import android.support.v17.leanback.widget.Presenter;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.PopupMenu.OnMenuItemClickListener;
 import android.widget.TextView;
+
+import androidx.leanback.widget.Presenter;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -22,7 +23,8 @@ import sagex.miniclient.android.util.ServerInfoUtil.OnAfterCommands;
 /**
  * Created by seans on 27/02/16.
  */
-public class ServerItemPresenter extends Presenter {
+public class ServerItemPresenter extends Presenter
+{
     private final Context context;
     private final OnAfterCommands after;
 

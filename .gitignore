@@ -23,6 +23,7 @@ www-test/
 **/libs/armeabi/
 **/libs/armeabi-v7a/
 **/libs/x86/
+**/libs/x86_64
 **/libs/arm64-v8a/
 **/gen/
 .idea/

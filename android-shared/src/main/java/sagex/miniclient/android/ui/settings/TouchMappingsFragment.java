@@ -6,8 +6,9 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.MiniclientApplication;

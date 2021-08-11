@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General Settings">
+        <ListPreference
+            android:defaultValue="needed"
+            android:dialogTitle="@string/dialog_title_list_remuxing_setting_preference"
+            android:entries="@array/entries_list_remuxing_setting_preference"
+            android:entryValues="@array/entryvalues_list_remuxing_setting_preference"
+            android:key="fixed_remuxing/preference"
+            android:summary="@string/summary_list_remuxing_setting_preference"
+            android:title="@string/title_list_transcoding_setting_preference"/>
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

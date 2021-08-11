@@ -26,6 +26,10 @@
             android:summary="Change the setting SageTV server will use to transcode content when using fixed streaming"
             android:key="fixed_transcoding"/>
 
+        <Preference android:title="Fixed Remuxing Settings"
+            android:summary="Change the setting SageTV server will use to remux content when using fixed streaming (> v9.2.5 SageTV)"
+            android:key="fixed_remuxing"/>
+
         <Preference android:title="ExoPlayer Settings and Information"
             android:summary="Change the behavior of ExoPlayer and see supported codecs and version info"
             android:key="exoplayer_settings"/>

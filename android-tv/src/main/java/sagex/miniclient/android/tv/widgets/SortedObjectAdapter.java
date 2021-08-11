@@ -16,9 +16,9 @@
 
 package sagex.miniclient.android.tv.widgets;
 
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.PresenterSelector;
+import androidx.leanback.widget.ArrayObjectAdapter;
+import androidx.leanback.widget.Presenter;
+import androidx.leanback.widget.PresenterSelector;
 
 import java.util.Comparator;
 import java.util.TreeSet;
@@ -26,7 +26,8 @@ import java.util.TreeSet;
 /**
  * Created by Jerrell Mardis on 8/16/14.
  */
-public class SortedObjectAdapter extends ArrayObjectAdapter {
+public class SortedObjectAdapter extends ArrayObjectAdapter
+{
 
     private TreeSet<Object> mSortedItems;
 

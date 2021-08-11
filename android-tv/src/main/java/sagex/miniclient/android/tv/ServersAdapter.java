@@ -1,6 +1,6 @@
 package sagex.miniclient.android.tv;
 
-import android.support.v17.leanback.widget.Presenter;
+import androidx.leanback.widget.Presenter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

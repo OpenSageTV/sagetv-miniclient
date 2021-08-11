@@ -1,16 +1,12 @@
 package sagex.miniclient.android.ui.settings;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.Html;
-import android.util.Log;
 import android.util.Pair;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;

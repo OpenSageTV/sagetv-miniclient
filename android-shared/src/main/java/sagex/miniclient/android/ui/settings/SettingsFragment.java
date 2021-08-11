@@ -23,6 +23,7 @@ import sagex.miniclient.Version;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.prefs.AndroidPrefStore;
 import sagex.miniclient.android.util.NetUtil;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.prefs.PrefStore.Keys;
@@ -152,8 +153,8 @@ public class SettingsFragment extends PreferenceFragment
 
 
             final Preference fixedTranscoding = this.findPreference("fixed_transcoding");
-            final Preference streammode = findPreference(Keys.streaming_mode);
-            fixedTranscoding.setEnabled(prefs.getString(Keys.streaming_mode).equals("fixed"));
+            final Preference streammode = findPreference(AndroidPrefStore.STREAMING_MODE);
+            fixedTranscoding.setEnabled(prefs.getStreamingMode().equals("fixed"));
             
             streammode.setOnPreferenceChangeListener(new OnPreferenceChangeListener()
             {
@@ -176,6 +177,20 @@ public class SettingsFragment extends PreferenceFragment
                     Intent i = new Intent(SettingsFragment.this.getActivity(), FixedTranscodingActivity.class);
                     startActivity(i);
             
+                    return true;
+                }
+            });
+
+            final Preference fixedRemuxing = this.findPreference("fixed_remuxing");
+
+            fixedRemuxing.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+            {
+                @Override
+                public boolean onPreferenceClick(Preference preference)
+                {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), FixedRemuxingActivity.class);
+                    startActivity(i);
+
                     return true;
                 }
             });
@@ -238,7 +253,7 @@ public class SettingsFragment extends PreferenceFragment
             
             
             updateSummary(loglevel, R.string.summary_list_loglevels_preference, prefs.getString(Keys.log_level, "debug"));
-            updateSummary(streammode, R.string.summary_list_streaming_mode_preference, prefs.getString(Keys.streaming_mode, "dynamic"));
+            updateSummary(streammode, R.string.summary_list_streaming_mode_preference, prefs.getStreamingMode());
             
             final Preference version = findPreference("version");
             version.setSummary(Version.VERSION);

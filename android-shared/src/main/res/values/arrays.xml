@@ -185,6 +185,16 @@
         <item>needed</item>
         <item>always</item>
     </string-array>
+    <string-array name="entries_list_remuxing_setting_preference">
+        <item>When Needed</item>
+        <item>Always</item>
+        <item>Off</item>
+    </string-array>
+    <string-array name="entryvalues_list_remuxing_setting_preference">
+        <item>needed</item>
+        <item>always</item>
+        <item>off</item>
+    </string-array>
     <string-array name="entries_list_default_player">
         <item>ExoPlayer</item>
         <item>IJKPlayer</item>

@@ -123,11 +123,13 @@ public class MiniClient
         initialized = false;
     }
 
-    public PrefStore properties() {
+    public PrefStore properties()
+    {
         return options.getPrefs();
     }
 
-    public MiniClientOptions options() {
+    public MiniClientOptions options()
+    {
         return options;
     }
 

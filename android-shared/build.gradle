@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-//apply plugin: 'com.android.application'
+
 
 android {
     buildToolsVersion androidBuildToolsVersion
@@ -58,31 +58,19 @@ configurations {
 }
 
 dependencies {
+
     api project(":core")
 
-
-    /*
-    api "androidx.legacy:legacy-support-v4:1.0.0"
-    api "androidx.appcompat:appcompat:1.0.0"
-    api "androidx.cardview:cardview:1.0.0"
-    api "androidx.recyclerview:recyclerview:1.0.0"
-    */
-
-
-    api "com.android.support:support-v4:${androidExtrasVer}"
-    api "com.android.support:appcompat-v7:${androidExtrasVer}"
-    api "com.android.support:cardview-v7:${androidExtrasVer}"
-    api "com.android.support:recyclerview-v7:${androidExtrasVer}"
-
-
-    // doesn't work in library projects :(
-    // compile 'com.jakewharton:butterknife:7.0.1'
+    implementation "androidx.preference:preference:1.1.1"
+    implementation "androidx.legacy:legacy-support-v4:1.0.0"
+    implementation "androidx.cardview:cardview:1.0.0"
 
     // gdx
     api("com.badlogicgames.gdx:gdx:$gdxVersion") {
         exclude group: 'xerces'
         exclude group: 'xpp3'
     }
+
     api "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
@@ -103,16 +91,29 @@ dependencies {
     //api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
     api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
-    api 'com.google.guava:guava:24.1-android'
+    api 'com.google.guava:guava:24.1-jre'
 
     // If you are rebuilding your own ijkplaer, then comment the lines above and
     // then uncomment these.
+    /*
     api "sagetv.ijkplayer:ijkplayer-java:${ijkVersionDev}@aar"
     api "sagetv.ijkplayer:ijkplayer-armv7a:${ijkVersionDev}@aar"
     api "sagetv.ijkplayer:ijkplayer-arm64:${ijkVersionDev}@aar"
     api "sagetv.ijkplayer:ijkplayer-x86:${ijkVersionDev}@aar"
     implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
     api "sagetv.ijkplayer:ijkplayer-exo:${ijkVersionDev}@aar"
+    */
+    // required, enough for most devices.
+    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+
+    //Other ABIs: optional
+    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-x86:0.8.8'
+    implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
+
+    // ExoPlayer as IMediaPlayer: optional, experimental
+    implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
 
     // logging
     api "com.github.tony19:logback-android-core:1.1.1-6"
@@ -133,16 +134,14 @@ dependencies {
 // the natives configuration, and extracts them to the proper libs/ folders
 // so they get packed with the APK.
 task copyAndroidNatives() {
-    file("libs/armeabi/").mkdirs();
-    file("libs/armeabi-v7a/").mkdirs();
-    file("libs/x86/").mkdirs();
 
-    configurations.natives.files.each { jar ->
+    configurations.getByName("natives").copy().files.each { jar ->
         def outputDir = null
         if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("libs/armeabi-v7a")
         if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("libs/armeabi")
-        if (jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
         if (jar.name.endsWith("natives-arm64-v8a.jar")) outputDir = file("libs/arm64-v8a")
+        if (jar.name.endsWith("natives-x86.jar")) outputDir = file("libs/x86")
+        if (jar.name.endsWith("natives-x86_64.jar")) outputDir = file("libs/x86_64")
         if (outputDir != null) {
             copy {
                 from zipTree(jar)

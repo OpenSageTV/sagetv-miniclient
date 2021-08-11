@@ -2,10 +2,11 @@ package sagex.miniclient.android.ui;
 
 
 import android.app.Activity;
-import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.core.view.GestureDetectorCompat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

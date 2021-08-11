@@ -21,7 +21,7 @@ import java.util.TreeSet;
 import sagex.miniclient.IBus;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
-import sagex.miniclient.prefs.ConnectionPrefStore;
+//import sagex.miniclient.prefs.ConnectionPrefStore;
 import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.prefs.PrefStore;
 
@@ -244,4 +244,6 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         }
         return false;
     }
+
+
 }

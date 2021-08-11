@@ -1,18 +1,20 @@
 package sagex.miniclient.android.tv.actions;
 
 import android.content.Context;
-import android.support.v17.leanback.widget.Presenter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.leanback.widget.Presenter;
 
 import sagex.miniclient.android.tv.R;
 
 /**
  * Created by seans on 28/02/16.
  */
-public class ActionPresenter extends Presenter {
+public class ActionPresenter extends Presenter
+{
     public class ActionViewHolder extends ViewHolder {
         public TextView text;
 

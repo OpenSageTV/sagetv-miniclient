@@ -10,7 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.support.v4.media.session.MediaButtonReceiver;
+//import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.view.MotionEvent;
 import android.view.View;
@@ -62,6 +62,8 @@ import sagex.miniclient.video.HasVideoInfo;
 import static sagex.miniclient.android.AppUtil.confirmExit;
 import static sagex.miniclient.android.AppUtil.hideSystemUI;
 import static sagex.miniclient.android.AppUtil.message;
+
+import androidx.media.session.MediaButtonReceiver;
 
 
 /**

@@ -33,6 +33,7 @@ import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.Utils;
 
+
 //import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 //import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 
@@ -1017,13 +1018,13 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("PUSH_AV_CONTAINERS".equals(propName))
                     {
-                        if ((client.properties().getString(PrefStore.Keys.fixed_encoding_preference, "needed").equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
+                        if ((client.properties().getFixedEncodingPreference().equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
                         {
                             // If we are using fixed transcode always, do not allow transcode/remux to mpeg-ps/ts.
                             // pushing
                             propVal = "NONE";
                         }
-                        else if (canDoPullStreaming && "pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        else if (canDoPullStreaming && "pull".equalsIgnoreCase(client.properties().getStreamingMode()))
                         {
                             // If we are forced into pull mode then we don't support
                             // pushing
@@ -1041,14 +1042,14 @@ public class MiniClientConnection implements SageTVInputCallback
                         PULL - Containers we can read without transcoding.
                         Set this to empty if we are remote or if we are fixed and preference is to always transcode
                         */
-                        if (!canDoPullStreaming || (client.properties().getString(PrefStore.Keys.fixed_encoding_preference, "needed").equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic"))))
+                        if (!canDoPullStreaming || (client.properties().getFixedEncodingPreference().equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
                         {
                             propVal = "";
                         }
                         else
                         {
                             // if we are being forced into PULL mode, then add the push containers to our PULL containers
-                            if ("pull".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                            if ("pull".equalsIgnoreCase(client.properties().getStreamingMode()))
                             {
                                 propVal = toStringList(pushFormats) + "," + toStringList(pullFormats);
                             }
@@ -1069,22 +1070,30 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("FIXED_PUSH_MEDIA_FORMAT".equals(propName))
                     {
-                        if ("fixed".equalsIgnoreCase(client.properties().getString(PrefStore.Keys.streaming_mode, "dynamic")))
+                        if ("fixed".equalsIgnoreCase(client.properties().getStreamingMode()))
                         {
-                            String format = client.properties().getString(PrefStore.Keys.fixed_encoding_format, "matroska");
+                            String format = client.properties().getFixedEncodingContainerFormat();
                             
                             /* Video properties */
-                            int videobitrate = client.properties().getInt(PrefStore.Keys.fixed_encoding_video_bitrate_kbps, 2000) * 1000;
-                            String framerate = client.properties().getString(PrefStore.Keys.fixed_encoding_fps, "SOURCE"); //Default is to use the source framerate, which means the return is empty string
-                            int keyFrameInt = client.properties().getInt(PrefStore.Keys.fixed_encoding_key_frame_interval, 10);
-                            boolean useBFrames = client.properties().getBoolean(PrefStore.Keys.fixed_encoding_use_b_frames, true);
-                            int bframeInterval= 0; //bframe interval in seconds
-                            String resolution = client.properties().getString(PrefStore.Keys.fixed_encoding_video_resolution, "720");
+                            int videobitrate = client.properties().getFixedEncodingVideoBitrateKBPS() * 1000;
+
+                            String framerate = client.properties().getFixedEncodingFPS();
+
+                            int keyFrameInt = client.properties().getFixedEncodingKeyFrameInterval();
+
+                            boolean useBFrames = client.properties().getFixedEncodingUseBFrames();
+
+                            //TODO: Investigate why this is set as 0.  Maybe set as a property.  Could possibly expose to end user at some point
+                            int bframeInterval= 0;
+
+                            String resolution = client.properties().getFixedEncodingVideoResolution();
     
                             /* Audio properties */
-                            String audioCodec = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_code, "ac3");//Empty string means copy audio as it is.  No conversion
-                            int audiobitrate = client.properties().getInt(PrefStore.Keys.fixed_encoding_audio_bitrate_kbps, 128) * 1000;
-                            String audiochannels = client.properties().getString(PrefStore.Keys.fixed_encoding_audio_channels, "2");
+                            String audioCodec = client.properties().getFixedEncodingAudioCodec();
+
+                            int audiobitrate = client.properties().getFixedEncodingAudioBitrateKBPS() * 1000;
+
+                            String audiochannels = client.properties().getFixedEncodingAudioChannels();
                             
                             // Build the fixed media format string
                             propVal = "container=" + format + ";";
@@ -1131,6 +1140,14 @@ public class MiniClientConnection implements SageTVInputCallback
                         else
                         {
                             propVal = "";
+                        }
+                    }
+                    else if ("FIXED_PUSH_REMUX_FORMAT".equals(propName))
+                    {
+                        //If we are using fixed streaming mode and
+                        if ("fixed".equalsIgnoreCase(client.properties().getStreamingMode()))
+                        {
+                            propVal = "container=matroska;videocodec=COPY;audiocodec=COPY;";
                         }
                     }
                     else if ("CRYPTO_ALGORITHMS".equals(propName))

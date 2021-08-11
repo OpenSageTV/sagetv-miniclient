@@ -1,36 +1,30 @@
 package sagex.miniclient.android.ui.settings;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
-import android.util.Log;
-
 import sagex.miniclient.android.R;
+import sagex.miniclient.android.prefs.AndroidPrefStore;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceFragmentCompat;
 
-public class FixedTranscodingFragment extends PreferenceFragment
+public class FixedTranscodingFragment extends PreferenceFragmentCompat
 {
+
     @Override
-    public void onCreate(Bundle savedInstanceState)
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey)
     {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.transcoding_prefs);
-    
-        final Preference encodingFormat = this.findPreference("fixed_encoding/format");
-        
-        /*
-        encodingFormat.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener()
-        {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValye)
-            {
-                updateSummary(preference, R.string.summary_list_transcoding_formats_preference, newValue);
-            }
-        });
-         */
+        setPreferencesFromResource(R.xml.transcoding_prefs, rootKey);
+
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_PREFERENCE), AndroidPrefStore.FIXED_ENCODING_PREFERENCE_DEFAULT);
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_FORMAT), AndroidPrefStore.FIXED_ENCODING_FORMAT_DEFAULT);
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_VIDEO_BITRATE_KBPS), AndroidPrefStore.FIXED_ENCODING_AUDIO_BITRATE_KBPS_DEFAULT + "");
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_FPS), AndroidPrefStore.FIXED_ENCODING_FPS_DEFAULT);
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_VIDEO_RESOLUTION), AndroidPrefStore.FIXED_ENCODING_VIDEO_RESOLUTION_DEFAULT);
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_AUDIO_CODEC),AndroidPrefStore.FIXED_ENCODING_AUDIO_CODEC_DEFAULT);
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_AUDIO_BITRATE_KBPS), AndroidPrefStore.FIXED_ENCODING_AUDIO_BITRATE_KBPS_DEFAULT + "");
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_AUDIO_CHANNELS), AndroidPrefStore.FIXED_ENCODING_AUDIO_CHANNELS_DEFAULT);
+
     }
-    
+
+
+
 }

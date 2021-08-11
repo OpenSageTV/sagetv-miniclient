@@ -1,13 +1,12 @@
 package sagex.miniclient.android.ui;
 
 import android.app.Activity;
-import android.content.Context;
-import android.support.v4.view.GestureDetectorCompat;
 import android.view.MotionEvent;
+
 import android.view.View;
+import androidx.core.view.GestureDetectorCompat;
 
 import sagex.miniclient.MiniClient;
-import sagex.miniclient.android.gdx.MiniClientGDXActivity;
 
 /**
  * Created by seans on 26/09/15.

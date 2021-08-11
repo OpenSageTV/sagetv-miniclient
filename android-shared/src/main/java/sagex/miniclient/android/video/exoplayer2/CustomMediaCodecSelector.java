@@ -1,6 +1,5 @@
 package sagex.miniclient.android.video.exoplayer2;
 
-import android.support.annotation.Nullable;
 
 import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;

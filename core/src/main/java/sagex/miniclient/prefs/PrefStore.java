@@ -5,7 +5,8 @@ import java.util.Set;
 /**
  * Simple Abstract way of handling Preferences
  */
-public interface PrefStore {
+public interface PrefStore
+{
     String getString(String key);
 
     String getString(String key, String defValue);
@@ -44,6 +45,46 @@ public interface PrefStore {
 
     boolean canSet(String key);
 
+    /**
+     * Gets the streaming mode that SageTV uses to send content to the client
+     *
+     * @return fixed, dynamic, pull
+     */
+    String getStreamingMode();
+
+    /**
+     * Preference on when to transcode content.
+     *
+     * Always - Will tell SageTV that there are no supported pull formats
+     * When Needed - Will give SageTV a list of supported formats
+     *
+     * @return Returns the preference for transcoding
+     */
+    String getFixedEncodingPreference();
+
+    /**
+     * Get the container format to be used for Fixed Encoding
+     *
+     * @return Container format
+     */
+    String getFixedEncodingContainerFormat();
+
+    String getFixedEncodingAudioCodec();
+
+    String getFixedEncodingAudioChannels();
+
+    int getFixedEncodingVideoBitrateKBPS();
+
+    int getFixedEncodingAudioBitrateKBPS();
+
+    String getFixedEncodingFPS();
+
+    int getFixedEncodingKeyFrameInterval();
+
+    boolean getFixedEncodingUseBFrames();
+
+    String getFixedEncodingVideoResolution();
+
     interface Keys
     {
     
@@ -63,43 +104,44 @@ public interface PrefStore {
         /**
          * values: dynamic, fixed, pull
          */
-        String streaming_mode = "streaming_mode";
+        //String streaming_mode = "streaming_mode";
     
         /**
          * Preference on when to transcode.
          * Always - Will tell SageTV that there are no supported pull formats
          * When Needed - Will give SageTV a list of supported formats
          */
-        String fixed_encoding_preference = "fixed_encoding/preference";
+        //String fixed_encoding_preference = "fixed_encoding/preference";
         
         /**
          * The container format that will be used for fixed transcoding
          */
-        String fixed_encoding_format = "fixed_encoding/format";
+        //String fixed_encoding_format = "fixed_encoding/format";
     
         /**
          * The audio codec to be use for fixed transcoding
          */
-        String fixed_encoding_audio_code = "fixed_encoding/audio_codec";
+        //String fixed_encoding_audio_code = "fixed_encoding/audio_codec";
     
         /**
          * The number of audio channels for fixed transcoding
          */
-        String fixed_encoding_audio_channels = "fixed_encoding/audio_channels";
+        //String fixed_encoding_audio_channels = "fixed_encoding/audio_channels";
         
         /**
          * 000 will be added to this value, so we only set, 64 to mean 64,000
          */
-        String fixed_encoding_video_bitrate_kbps = "fixed_encoding/video_bitrate_kbps";
+        //String fixed_encoding_video_bitrate_kbps = "fixed_encoding/video_bitrate_kbps";
         /**
          * 000 will be added to this value, so we only set, 64 to mean 64,000
          */
-        String fixed_encoding_audio_bitrate_kbps = "fixed_encoding/audio_bitrate_kbps";
+        //String fixed_encoding_audio_bitrate_kbps = "fixed_encoding/audio_bitrate_kbps";
 
-        String fixed_encoding_fps = "fixed_encoding/fps";
-        String fixed_encoding_key_frame_interval = "fixed_encoding/key_frame_interval";
-        String fixed_encoding_use_b_frames = "fixed_encoding/use_b_frames";
-        String fixed_encoding_video_resolution = "fixed_encoding/video_resolution";
+        //String fixed_encoding_fps = "fixed_encoding/fps";
+        //String fixed_encoding_key_frame_interval = "fixed_encoding/key_frame_interval";
+        //String fixed_encoding_use_b_frames = "fixed_encoding/use_b_frames";
+        //String fixed_encoding_video_resolution = "fixed_encoding/video_resolution";
+
         String video_buffer_size = "video_buffer_size";
         String audio_buffer_size = "audio_buffer_size";
 
