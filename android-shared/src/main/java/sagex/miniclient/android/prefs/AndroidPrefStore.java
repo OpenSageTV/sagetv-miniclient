@@ -34,7 +34,7 @@ public class AndroidPrefStore implements PrefStore
     public static final String FIXED_ENCODING_AUDIO_BITRATE_KBPS = "fixed_encoding/audio_bitrate_kbps";
     public static final int FIXED_ENCODING_AUDIO_BITRATE_KBPS_DEFAULT = 128;
 
-    public static final String FIXED_ENCODING_FPS = "fixed_encoding/fps";
+    public static final String FIXED_ENCODING_FPS = "fixed_encoding/video_fps";
     public static final String FIXED_ENCODING_FPS_DEFAULT = "SOURCE";
 
     public static final String FIXED_ENCODING_KEY_FRAME_INTERVAL = "fixed_encoding/key_frame_interval";
@@ -45,6 +45,13 @@ public class AndroidPrefStore implements PrefStore
 
     public static final String FIXED_ENCODING_VIDEO_RESOLUTION = "fixed_encoding/video_resolution";
     public static final String FIXED_ENCODING_VIDEO_RESOLUTION_DEFAULT = "SOURCE";
+
+    public static final String FIXED_REMUXING_PREFERENCE = "fixed_remuxing/preference";
+    public static final String FIXED_REMUXING_PREFERENCE_DEFAULT = "needed";
+
+    public static final String FIXED_REMUXING_FORMAT = "fixed_remuxing/format";
+    public static final String FIXED_REMUXING_FORMAT_DEFAULT = "matroska";
+
 
     //</editor-fold>
 
@@ -274,6 +281,18 @@ public class AndroidPrefStore implements PrefStore
     public String getFixedEncodingVideoResolution()
     {
         return this.getString(AndroidPrefStore.FIXED_ENCODING_VIDEO_RESOLUTION, AndroidPrefStore.FIXED_ENCODING_VIDEO_RESOLUTION_DEFAULT);
+    }
+
+    @Override
+    public String getFixedRemuxingPreference()
+    {
+        return this.getString(AndroidPrefStore.FIXED_REMUXING_PREFERENCE, AndroidPrefStore.FIXED_REMUXING_PREFERENCE_DEFAULT);
+    }
+
+    @Override
+    public String getFixedRemuxingFormat()
+    {
+        return this.getString(AndroidPrefStore.FIXED_REMUXING_FORMAT, AndroidPrefStore.FIXED_REMUXING_FORMAT_DEFAULT);
     }
 
     //</editor-fold>

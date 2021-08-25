@@ -3,7 +3,8 @@ package sagex.miniclient.android.ui.settings;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+
+
 
 import sagex.miniclient.android.R;
 

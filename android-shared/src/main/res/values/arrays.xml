@@ -203,6 +203,14 @@
         <item>exoplayer</item>
         <item>ijkplayer</item>
     </string-array>
+    <string-array name="entries_list_remuxing_formats_preference">
+        <item>Matroska (MKV)</item>
+        <item>DVD (MPEG-PS)</item>
+    </string-array>
+    <string-array name="entryvalues_list_remuxing_formats_preference">
+        <item>matroska</item>
+        <item>dvd</item>
+    </string-array>
 
 
 </resources>

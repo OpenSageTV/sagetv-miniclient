@@ -47,42 +47,62 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
         // can start reading from the new location.
         if (size == 0) return 0;
 
-        try {
-            if (dataSource == null) _open();
+        try
+        {
+            if (dataSource == null)
+            {
+                log.debug("Data source was null.  Reopening the datasource");
+                _open();
+            }
+
             return dataSource.read(position, bytes, offset, size);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             t.printStackTrace();
             throw t;
         }
     }
 
     @Override
-    public long getSize() throws IOException {
+    public long getSize() throws IOException
+    {
         if (dataSource == null) _open();
         return dataSource.size();
     }
 
     @Override
-    public void close() throws IOException {
-        if (dataSource != null) {
+    public void close() throws IOException
+    {
+        if (dataSource != null)
+        {
             dataSource.close();
         }
     }
 
     @Override
-    public void release() {
-        try {
+    public void release()
+    {
+        try
+        {
             close();
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
-        if (dataSource!=null) {
-            try {
+        if (dataSource!=null)
+        {
+            try
+            {
                 dataSource.release();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 t.printStackTrace();
             }
         }
+
         released = true;
         dataSource = null;
     }

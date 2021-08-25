@@ -2,12 +2,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="sagex.miniclient.android.ui.settings.FixedRemuxingActivity">
+    android:layout_height="match_parent">
 
     <fragment
         android:id="@+id/fixed_remuxing"
-        class="sagex.miniclient.android.ui.settings.FixedRemuxingFragment"
+        android:name="sagex.miniclient.android.ui.settings.FixedRemuxingFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

@@ -346,6 +346,7 @@ public class MediaCmd
 
                     if (flags == 0x80)
                     {
+                        log.debug("------------------------- setServerEOS Called --------------------------------");
                         playa.setServerEOS();
                     }
                 }

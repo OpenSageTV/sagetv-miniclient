@@ -270,7 +270,7 @@ public class SettingsFragment extends PreferenceFragment
 
 
 
-            final EditTextPreference clientid = (EditTextPreference) findPreference(Keys.client_id);
+            final Preference clientid = (Preference) findPreference(Keys.client_id);
 
 
             final ClientIDGenerator gen = new ClientIDGenerator();

@@ -109,7 +109,6 @@
     <string name="summary_use_httpls_preference">Will use HTTPLS streaming for all media.  This is a debug/experimental property.  Should not be enbled for normal use.</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="show_exo_decoders">Show ExoPlayer MediaCodecs</string>
     <string name="show_exo_decoders_pref_summary">Show the MediaCodecs that are available on this device</string>
     <string name="exo_decoders">ExoPlayer MediaCodecs</string>
@@ -151,4 +150,7 @@
     <string name="exlink_exit_msg">Press STOP or BACK to return.</string>
     <string name="exlink_launch_msg">Launching %s...</string>
     <string name="dialog_title_list_remuxing_setting_preference">Remuxing Preference</string>
+    <string name="dialog_title_list_remuxing_format_preference" >Remuxing Container Format</string>
+    <string name="summary_list_remuxing_formats_preference">%s - The container format SageTV will use to remux the content too</string>
+    <string name="title_list_remuxing_formats_preference">Remuxing Container Format</string>
 </resources>

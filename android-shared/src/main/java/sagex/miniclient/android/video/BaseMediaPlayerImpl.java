@@ -469,6 +469,7 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
         {
             if (state == EOS_STATE || eos)
             {
+                log.debug("------------------------- Telling SageTV that EOS was reached in client --------------------------------");
                 return -1;
             }
             

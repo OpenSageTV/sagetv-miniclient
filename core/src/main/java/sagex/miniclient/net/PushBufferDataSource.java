@@ -15,7 +15,8 @@ import sagex.miniclient.util.VerboseLogging;
 /**
  * used push:// is used, this is the media data source that feeds the video player
  */
-public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
+public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer
+{
     public enum State {Idle, Opened, Closed}
 
     public static final int PIPE_SIZE = 4 * 1024 * 1024;
@@ -33,7 +34,9 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
 
     DataCollector dataCollector = null;
 
-    public PushBufferDataSource() {
+    public PushBufferDataSource()
+    {
+
     }
 
     @Override
@@ -69,7 +72,8 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
         return -1;
     }
 
-    public void close() {
+    public void close()
+    {
         log.debug("close() for a push is ignored, until the release() is called.");
         //log.error("close() stacktrace", new Exception("PushBuffer.close()"));
     }
@@ -99,19 +103,31 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     }
 
     @Override
-    public void setEOS() {
+    public void setEOS()
+    {
         eos = true;
-        if (in != null) {
-            try {
-                if (in.available() == 0) {
+
+        if (in != null)
+        {
+            try
+            {
+                if (in.available() == 0)
+                {
                     log.debug("setEOS() called and there is no data the stream");
-                } else {
+                }
+                else
+                {
                     log.debug("setEOS() called and we still have {} bytes of data", in.available());
                 }
-            } catch (Throwable t) {
-                try {
+            }
+            catch (Throwable t)
+            {
+                try
+                {
                     in.close();
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -119,83 +135,128 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer {
     }
 
     @Override
-    public void flush() {
+    public void flush()
+    {
         log.debug("FLUSH()");
+
         bytesRead = 0;
+
         if (circularByteBuffer!=null)
+        {
             circularByteBuffer.clear();
+        }
     }
 
     @Override
-    public int bufferAvailable() {
-        if (circularByteBuffer == null) return 0;
+    public int bufferAvailable()
+    {
+        if (circularByteBuffer == null)
+        {
+            return 0;
+        }
+
         return circularByteBuffer.getSpaceLeft();
     }
 
     @Override
-    public long size() {
+    public long size()
+    {
         return -1;
     }
 
-    public boolean isOpen() {
+    public boolean isOpen()
+    {
         return state == State.Opened;
     }
 
     @Override
-    public int read(long readOffset, byte[] bytes, int offset, int len) throws IOException {
-        if (state != State.Opened) {
+    public int read(long readOffset, byte[] bytes, int offset, int len) throws IOException
+    {
+        if (state != State.Opened)
+        {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
         }
-        if (in == null) return 0;
+
+        if (in == null)
+        {
+            return 0;
+        }
         // streamOffset is not used for push
-        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled()) log.debug("READ: {}", len);
-        if (eos && in.available() <= 0) return -1; // EOS - no data left
+        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
+        {
+            log.debug("READ: {}", len);
+        }
+
+        if (eos && in.available() <= 0)
+        {
+            return -1; // EOS - no data left
+        }
+
         int read = in.read(bytes, offset, Math.min(len, in.available())); // never read more than what we have
-        if (read >= 0) {
+
+        if (read >= 0)
+        {
             bytesRead += read;
         }
+
         return read;
     }
 
     @Override
-    public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
+    public void pushBytes(byte[] bytes, int offset, int len) throws IOException
+    {
         if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled()) log.debug("PUSH: {}", len);
-        while (out == null) {
+
+        while (out == null)
+        {
             if (state == State.Closed) return;
+
             log.warn("PUSH: We are waiting this PUSH because our DataSource is not yet opened.");
-            try {
+            try
+            {
                 Thread.sleep(50);
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 e.printStackTrace();
             }
         }
-        if (len > 0) {
-            if (eos) {
+        if (len > 0)
+        {
+            if (eos)
+            {
                 log.warn("We are getting data, even after EOS has been set.  Resetting EOS");
-                if (state != State.Closed && out != null) {
+                if (state != State.Closed && out != null)
+                {
                     // we are not closed, so reset the eos, and then continue to receive the data
                     // this might happen if we were close to finishing the file, but, then
                     // we reseeked to an earlier position
                     eos = false;
-                } else {
+                }
+                else
+                {
                     // we are closed so ignore the data
                     return;
                 }
             }
-            if (VerboseLogging.DATASOURCE_LOGGING) {
-                if (bufferAvailable() < len) {
+            if (VerboseLogging.DATASOURCE_LOGGING)
+            {
+                if (bufferAvailable() < len)
+                {
                     log.warn("BLOCKING: We have more data than we can store {}, need {}", bufferAvailable(), len);
                 }
             }
             out.write(bytes, offset, len);
-            if (dataCollector != null) {
+            if (dataCollector != null)
+            {
                 dataCollector.write(bytes, offset, len);
             }
         }
     }
 
     @Override
-    public long getBytesRead() {
+    public long getBytesRead()
+    {
         return bytesRead;
     }
 }

@@ -16,7 +16,7 @@ public class FixedTranscodingFragment extends PreferenceFragmentCompat
 
         PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_PREFERENCE), AndroidPrefStore.FIXED_ENCODING_PREFERENCE_DEFAULT);
         PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_FORMAT), AndroidPrefStore.FIXED_ENCODING_FORMAT_DEFAULT);
-        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_VIDEO_BITRATE_KBPS), AndroidPrefStore.FIXED_ENCODING_AUDIO_BITRATE_KBPS_DEFAULT + "");
+        PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_VIDEO_BITRATE_KBPS), AndroidPrefStore.FIXED_ENCODING_VIDEO_BITRATE_KBPS_DEFAULT + "");
         PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_FPS), AndroidPrefStore.FIXED_ENCODING_FPS_DEFAULT);
         PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_VIDEO_RESOLUTION), AndroidPrefStore.FIXED_ENCODING_VIDEO_RESOLUTION_DEFAULT);
         PreferenceUtils.setDefaultValue(findPreference(AndroidPrefStore.FIXED_ENCODING_AUDIO_CODEC),AndroidPrefStore.FIXED_ENCODING_AUDIO_CODEC_DEFAULT);

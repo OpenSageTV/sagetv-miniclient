@@ -85,6 +85,10 @@ public interface PrefStore
 
     String getFixedEncodingVideoResolution();
 
+    String getFixedRemuxingPreference();
+
+    String getFixedRemuxingFormat();
+
     interface Keys
     {
     

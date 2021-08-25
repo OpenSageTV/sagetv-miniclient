@@ -4,6 +4,7 @@
 - Update ExoPlayer to 2.14.2  
 - Moved IJKPlayer over to normal repository instead of local
 - Multiple build.gradle files cleaned up
+- Fixed error generating client ID
 
 **1.7.1 (2021-02-11)**
 - Redesigned some of the settings screens.  Broke out the settings for ExoPlayer and IJKPlayer

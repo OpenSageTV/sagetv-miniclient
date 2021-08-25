@@ -90,30 +90,32 @@ dependencies {
     //api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
-    api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
+
+    implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
+    //api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
     api 'com.google.guava:guava:24.1-jre'
 
     // If you are rebuilding your own ijkplaer, then comment the lines above and
     // then uncomment these.
-    /*
-    api "sagetv.ijkplayer:ijkplayer-java:${ijkVersionDev}@aar"
-    api "sagetv.ijkplayer:ijkplayer-armv7a:${ijkVersionDev}@aar"
-    api "sagetv.ijkplayer:ijkplayer-arm64:${ijkVersionDev}@aar"
-    api "sagetv.ijkplayer:ijkplayer-x86:${ijkVersionDev}@aar"
-    implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
-    api "sagetv.ijkplayer:ijkplayer-exo:${ijkVersionDev}@aar"
-    */
+
+    implementation files("../libs/ijkplayer-java-${ijkVersionDev}.aar")
+    implementation files("../libs/ijkplayer-armv7a-${ijkVersionDev}.aar")
+    implementation files("../libs/ijkplayer-arm64-${ijkVersionDev}.aar")
+    implementation files("../libs/ijkplayer-x86-${ijkVersionDev}.aar")
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
+    implementation files("../libs/ijkplayer-exo-${ijkVersionDev}.aar")
+
     // required, enough for most devices.
-    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
 
     //Other ABIs: optional
-    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-x86:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-x86:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
 
     // ExoPlayer as IMediaPlayer: optional, experimental
-    implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
 
     // logging
     api "com.github.tony19:logback-android-core:1.1.1-6"

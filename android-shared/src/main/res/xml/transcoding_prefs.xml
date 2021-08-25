@@ -60,7 +60,6 @@
             android:title="@string/title_list_audio_codec_preference"/>
 
         <ListPreference
-            android:defaultValue="196"
             android:dialogTitle="@string/dialog_title_list_audio_bitrate_preference"
             android:entries="@array/entries_list_audio_bitrate_preference"
             android:entryValues="@array/entryvalues_list_audio_bitrate_preference"

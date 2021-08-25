@@ -1018,7 +1018,9 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("PUSH_AV_CONTAINERS".equals(propName))
                     {
-                        if ((client.properties().getFixedEncodingPreference().equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
+                        if (((client.properties().getFixedEncodingPreference().equalsIgnoreCase("always")
+                            || client.properties().getFixedRemuxingPreference().equalsIgnoreCase("always"))
+                                && (client.properties().getStreamingMode()).equalsIgnoreCase("fixed")))
                         {
                             // If we are using fixed transcode always, do not allow transcode/remux to mpeg-ps/ts.
                             // pushing
@@ -1040,9 +1042,9 @@ public class MiniClientConnection implements SageTVInputCallback
 
                         /*
                         PULL - Containers we can read without transcoding.
-                        Set this to empty if we are remote or if we are fixed and preference is to always transcode
+                        Set this to empty if we are remote or if we are fixed and preference is to always transcode or always remux
                         */
-                        if (!canDoPullStreaming || (client.properties().getFixedEncodingPreference().equalsIgnoreCase("always") && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
+                        if (!canDoPullStreaming || ((client.properties().getFixedEncodingPreference().equalsIgnoreCase("always") || client.properties().getFixedRemuxingPreference().equalsIgnoreCase("always"))  && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
                         {
                             propVal = "";
                         }
@@ -1147,7 +1149,10 @@ public class MiniClientConnection implements SageTVInputCallback
                         //If we are using fixed streaming mode and
                         if ("fixed".equalsIgnoreCase(client.properties().getStreamingMode()))
                         {
-                            propVal = "container=matroska;videocodec=COPY;audiocodec=COPY;";
+                            if(!client.properties().getFixedRemuxingPreference().equalsIgnoreCase("off"))
+                            {
+                                propVal = "container=" + client.properties().getFixedRemuxingFormat() + ";videocodec=COPY;audiocodec=COPY;";
+                            }
                         }
                     }
                     else if ("CRYPTO_ALGORITHMS".equals(propName))
