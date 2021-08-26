@@ -1002,18 +1002,34 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                     else if ("VIDEO_CODECS".equals(propName))
                     {
-                        String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_video_codecs, null);
-                        propVal = toStringList(videoCodecs);
-                        if (extra_codecs != null)
-                            propVal += "," + extra_codecs;
+                        if (client.properties().getFixedEncodingPreference().equalsIgnoreCase("always")
+                                && (client.properties().getStreamingMode()).equalsIgnoreCase("fixed"))
+                        {
+                            propVal = "NONE";
+                        }
+                        else
+                        {
+                            String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_video_codecs, null);
+                            propVal = toStringList(videoCodecs);
+                            if (extra_codecs != null)
+                                propVal += "," + extra_codecs;
+                        }
                     }
                     else if ("AUDIO_CODECS".equals(propName))
                     {
-                        String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_audio_codecs, null);
-                        propVal = toStringList(audioCodecs);
-                        if (extra_codecs != null)
+                        if (client.properties().getFixedEncodingPreference().equalsIgnoreCase("always")
+                                && (client.properties().getStreamingMode()).equalsIgnoreCase("fixed"))
                         {
-                            propVal += "," + extra_codecs;
+                            propVal = "NONE";
+                        }
+                        else
+                        {
+                            String extra_codecs = client.properties().getString(PrefStore.Keys.mplayer_extra_audio_codecs, null);
+                            propVal = toStringList(audioCodecs);
+                            if (extra_codecs != null)
+                            {
+                                propVal += "," + extra_codecs;
+                            }
                         }
                     }
                     else if ("PUSH_AV_CONTAINERS".equals(propName))
@@ -1044,7 +1060,10 @@ public class MiniClientConnection implements SageTVInputCallback
                         PULL - Containers we can read without transcoding.
                         Set this to empty if we are remote or if we are fixed and preference is to always transcode or always remux
                         */
-                        if (!canDoPullStreaming || ((client.properties().getFixedEncodingPreference().equalsIgnoreCase("always") || client.properties().getFixedRemuxingPreference().equalsIgnoreCase("always"))  && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
+                        if (!canDoPullStreaming
+                                || ((client.properties().getFixedEncodingPreference().equalsIgnoreCase("always")
+                                || client.properties().getFixedRemuxingPreference().equalsIgnoreCase("always"))
+                                && "fixed".equalsIgnoreCase(client.properties().getStreamingMode())))
                         {
                             propVal = "";
                         }

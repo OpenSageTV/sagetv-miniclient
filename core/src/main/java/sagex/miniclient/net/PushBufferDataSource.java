@@ -40,33 +40,44 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer
     }
 
     @Override
-    public long open(String uri) throws IOException {
+    public long open(String uri) throws IOException
+    {
         // push:f=MPEG2-TS;dur=1851466;br=2500000;
         // [bf=vid;f=H.264;index=0;main=yes;tag=1011;fps=59.94006;fpsn=60000;fpsd=1001;ar=1.777778;arn=16;ard=9;w=1280;h=720;]
         // [bf=aud;f=AAC;index=1;main=yes;tag=1100;sr=48000;ch=2;at=ADTS-MPEG2;]
-        if (state == State.Opened) {
+
+        if (state == State.Opened)
+        {
             log.warn("opened called on an already opened push buffer, will ignore");
             return -1;
         }
+
         state = State.Idle;
         eos = false;
 
         this.uri = uri;
         log.debug("Open Called: {}", uri);
         bytesRead = 0;
-        if (circularByteBuffer != null) {
+        if (circularByteBuffer != null)
+        {
             circularByteBuffer.clear();
-        } else {
+        }
+        else
+        {
             circularByteBuffer = new CircularByteBuffer(PIPE_SIZE);
         }
+
         in = circularByteBuffer.getInputStream();
         out = circularByteBuffer.getOutputStream();
-        if (VerboseLogging.LOG_DATASOURCE_BYTES_TO_FILE) {
+
+        if (VerboseLogging.LOG_DATASOURCE_BYTES_TO_FILE)
+        {
             log.warn("DataCollector is enabled");
             dataCollector = new DataCollector();
         }
         state = State.Opened;
-        if (dataCollector != null) {
+        if (dataCollector != null)
+        {
             dataCollector.open();
         }
         return -1;
@@ -172,6 +183,8 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer
     @Override
     public int read(long readOffset, byte[] bytes, int offset, int len) throws IOException
     {
+        int read = 0;
+
         if (state != State.Opened)
         {
             throw new IOException("read() called on DataSource that is not opened: " + uri);
@@ -179,20 +192,29 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer
 
         if (in == null)
         {
+            log.debug("Input stream is null returning 0");
             return 0;
         }
-        // streamOffset is not used for push
-        if (VerboseLogging.DATASOURCE_LOGGING && log.isDebugEnabled())
+
+        if(in.available() > 0)
         {
-            log.debug("READ: {}", len);
+            //NONTE: It appears that even though a length of zero is passed to this call, it will still block.
+            read = in.read(bytes, offset, Math.min(len, in.available())); // never read more than what we have
+        }
+        else if(eos)
+        {
+            log.debug("in.available is 0 and EOS is true.  Returning -1");
+            return -1;
+        }
+        else
+        {
+            return 0;
         }
 
-        if (eos && in.available() <= 0)
+        if(eos)
         {
-            return -1; // EOS - no data left
+            log.debug("ServerIsEOS: Read returned: " + read);
         }
-
-        int read = in.read(bytes, offset, Math.min(len, in.available())); // never read more than what we have
 
         if (read >= 0)
         {
@@ -252,6 +274,11 @@ public class PushBufferDataSource implements ISageTVDataSource, HasPushBuffer
                 dataCollector.write(bytes, offset, len);
             }
         }
+    }
+
+    public boolean isServerEOS()
+    {
+        return this.eos;
     }
 
     @Override

@@ -14,22 +14,27 @@ import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 /**
  * Created by seans on 20/12/15.
  */
-public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasClose {
+public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasClose
+{
     private static final Logger log = LoggerFactory.getLogger(IJKPushMediaSource.class);
 
     private PushBufferDataSource dataSource;
     private String url;
     boolean released = false;
 
-    public IJKPushMediaSource() {
+    public IJKPushMediaSource()
+    {
     }
 
-    public void open(String url) throws IOException {
+    public void open(String url) throws IOException
+    {
         this.url = url;
     }
 
-    private void _open() throws IOException {
-        if (dataSource != null) {
+    private void _open() throws IOException
+    {
+        if (dataSource != null)
+        {
             // we are already opened
             return;
         }
@@ -38,9 +43,16 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
     }
 
     @Override
-    public int readAt(long position, byte[] bytes, int offset, int size) throws IOException {
+    public int readAt(long position, byte[] bytes, int offset, int size) throws IOException
+    {
+
         if (VerboseLogging.DATASOURCE_LOGGING)
+
+        if(dataSource.isServerEOS())
+        {
+            log.debug("Datasource thinks server is EOS");
             log.debug("readAt(): pos: {}, offset:{}, size: {}", position, offset, size);
+        }
 
         // ijkmediasource does a zero len read on a seek to see if it was successful
         // we'll return 0 (ok) so that the player buffers get cleaned up, and the the player
@@ -67,7 +79,11 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
     @Override
     public long getSize() throws IOException
     {
-        if (dataSource == null) _open();
+        if (dataSource == null)
+        {
+            log.debug("Get Size Called: Data source was null.  Reopening the datasource");
+            _open();
+        }
         return dataSource.size();
     }
 
@@ -76,6 +92,7 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
     {
         if (dataSource != null)
         {
+            log.debug("Datasource close called");
             dataSource.close();
         }
     }
@@ -83,6 +100,8 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
     @Override
     public void release()
     {
+        log.debug("Datasource release called");
+
         try
         {
             close();
@@ -108,32 +127,43 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
     }
 
     @Override
-    public void setEOS() {
-        if (dataSource != null) {
+    public void setEOS()
+    {
+        if (dataSource != null)
+        {
             dataSource.setEOS();
         }
     }
 
     @Override
-    public int bufferAvailable() {
-        if (dataSource != null) {
+    public int bufferAvailable()
+    {
+        if (dataSource != null)
+        {
             return dataSource.bufferAvailable();
         }
+
         return PushBufferDataSource.PIPE_SIZE;
     }
 
     @Override
-    public void pushBytes(byte[] bytes, int offset, int len) throws IOException {
-        if (released) {
+    public void pushBytes(byte[] bytes, int offset, int len) throws IOException
+    {
+        if (released)
+        {
             log.info("DataSource is released, so ignoring push.");
             return;
         }
-        while (dataSource == null) {
+        while (dataSource == null)
+        {
             // wait for the datasource
-            try {
+            try
+            {
                 Thread.sleep(50);
                 if (VerboseLogging.DATASOURCE_LOGGING) log.warn("Waiting for datasource...");
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 Thread.interrupted();
                 return;
             }
@@ -142,17 +172,22 @@ public class IJKPushMediaSource implements IMediaDataSource, HasPushBuffer, HasC
     }
 
     @Override
-    public void flush() {
-        if (dataSource != null) {
+    public void flush()
+    {
+        if (dataSource != null)
+        {
             dataSource.flush();
         }
     }
 
     @Override
-    public long getBytesRead() {
-        if (dataSource != null) {
+    public long getBytesRead()
+    {
+        if (dataSource != null)
+        {
             return dataSource.getBytesRead();
         }
+
         return 0;
     }
 }

@@ -1,3 +1,8 @@
+**1.9.1 (2021-08-26)**
+- Fixed issue in PushBufferDataSource that was causing transcoding and live tv transitions to freeze
+- Updated build to use local libs directory instead of MavenLocal.  Simplify build process for support libraries
+- Fixed logic bugs on how to tell SageTV when to transcode/remux
+
 **1.9.0 (2021-08-09)**
 - Moved project to Androidx
 - Update GDX library version to 1.9.14

@@ -274,10 +274,12 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             }
 
-            player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
+            player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener()
+            {
                 @Override
                 public void onCompletion(IMediaPlayer iMediaPlayer) {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("MEDIA COMPLETE");
+                    log.debug("OnCompletionListener fired.  Stoping playback and setting state to EOS");
                     stop();
                     state = EOS_STATE;
                     eos = true;
