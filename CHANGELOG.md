@@ -11,6 +11,16 @@
 - Multiple build.gradle files cleaned up
 - Fixed error generating client ID
 
+**1.8.1 (6/18/2021)**
+- Updated to ExoPlayer 2.14.0
+- Updated FFmpeg extension to 2.14.0
+- Some minor bug fixes
+
+**1.8.0 (5/14/2021) - Brought to you by user cncb**
+- Support external links to open videos in other apps directly (Netflix/Amazon).
+- Allow display of embedded PGS subtitles in ExoPlayer.
+- Add option to enable system sleep.
+
 **1.7.1 (2021-02-11)**
 - Redesigned some of the settings screens.  Broke out the settings for ExoPlayer and IJKPlayer
 - Upgrade to ExoPlayer 2.12.3
