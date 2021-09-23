@@ -7,13 +7,15 @@ if [ -z "$1" ]; then
 
 fi
 
-ExoPlayerVersion="r2.14.0"
+FFmpegExtVersion="2.15.0"
+ExoPlayerVersion="r${FFmpegExtVersion}"
 FFmpegVersion="release/4.2"
 
 export ANDROID_SDK_ROOT=/home/jvl711/Documents/sdk/
 export ANDROID_HOME=/home/jvl711/Documents/sdk/
 
 ENABLED_DECODERS=(vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac ac3 eac3 dca mlp truehd)
+
 ROOT_PATH="$(pwd)"
 BUILD_PATH="${ROOT_PATH}/build"
 HOST_PLATFORM="linux-x86_64"
@@ -22,6 +24,7 @@ NDK_PATH="${BUILD_PATH}/android-ndk-r21"
 export ANDROID_NDK_HOME="${BUILD_PATH}/android-ndk-r21"
 FFMPEG_PATH="${BUILD_PATH}/FFmpeg"
 FFMPEG_EXT_PATH="${EXOPLAYER_ROOT}/extensions/ffmpeg/src/main"
+FFMPEG_EXT_OUTPUT_PATH="${EXOPLAYER_ROOT}/extensions/ffmpeg/buildout/outputs/aar"
 
 echo "ROOT_PATH: $ROOT_PATH" 
 echo "BUILD_PATH: $ROOT_PATH"  
@@ -143,16 +146,15 @@ if [ $1 = "buildexoplayer" ] || [ $1 = "all" ]; then
 
 fi
 
-if [ $1 = "packageexoplayer" ] || [ $1 = "all" ]; then
+if [ $1 = "deploy" ] || [ $1 = "all" ]; then
 
 	cd 	$BUILD_PATH
 
 	echo "Package Exoplayer..."
 
-	cd "$EXOPLAYER_ROOT"
-	./gradlew publishToMavenLocal
+	cp "${FFMPEG_EXT_OUTPUT_PATH}/extension-ffmpeg-release.aar" "../../libs/extension-ffmpeg-${FFmpegExtVersion}.aar"
 
-	cd 	$BUILD_PATH
+
 
 fi
 
