@@ -102,11 +102,16 @@ public class VideoInfoFragment extends DialogFragment {
     }
 
     @Subscribe
-    public void refresh(VideoInfoRefresh refresh) {
+    public void refresh(VideoInfoRefresh refresh)
+    {
         VideoInfoResponse resp = ((HasVideoInfo) client.getUIRenderer()).getVideoInfo();
+
         log.debug("Got a Request for Video Info", resp);
-        if (resp!=null) {
-            if (resp.videoInfo != null) {
+
+        if (resp!=null)
+        {
+            if (resp.videoInfo != null)
+            {
                 setText(R.id.vi_videoSize, resp.videoInfo.size);
                 setText(R.id.vi_aspectMode, resp.videoInfo.aspectMode);
                 setText(R.id.vi_videoPixelAspect, resp.videoInfo.size.getAR());
@@ -114,7 +119,8 @@ public class VideoInfoFragment extends DialogFragment {
                 setText(R.id.vi_sagetvDestRect, resp.videoInfo.destRect);
             }
             setText(R.id.vi_sagetvScreenAspect, resp.uiAspectRatio);
-            if (resp.uiScreenSizePixels != null) {
+            if (resp.uiScreenSizePixels != null)
+            {
                 setText(R.id.vi_screenAdjustedSize, resp.uiScreenSizePixels.copy().updateHeightUsingAspectRatio(resp.uiAspectRatio));
                 setText(R.id.vi_screenPixelAR, resp.uiScreenSizePixels.getAR());
                 setText(R.id.vi_screenPixelSize, resp.uiScreenSizePixels);

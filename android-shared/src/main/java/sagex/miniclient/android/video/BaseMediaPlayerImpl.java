@@ -565,8 +565,10 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
     }
 
     @Override
-    public VideoInfoResponse getVideoInfo() {
-        if (player!=null) {
+    public VideoInfoResponse getVideoInfo()
+    {
+        if (player!=null)
+        {
             VideoInfoResponse vi = new VideoInfoResponse();
             vi.videoInfo = videoInfo.copy();
             vi.uiAspectRatio = context.getClient().getUIRenderer().getUIAspectRatio();

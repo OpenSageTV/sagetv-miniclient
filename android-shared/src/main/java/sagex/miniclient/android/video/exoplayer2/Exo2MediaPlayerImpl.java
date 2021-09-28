@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -26,6 +27,8 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.video.VideoListener;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.video.VideoSize;
+
 import java.util.List;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
@@ -530,6 +533,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         renderersFactory.setMediaCodecSelector(mediaCodecSelector);
 
         trackSelector = new DefaultTrackSelector(context.getContext());
+
         //player = ExoPlayerFactory.newSimpleInstance(context.getContext(), customRenderersFactory, trackSelector);
         SimpleExoPlayer.Builder builder =  new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
 
@@ -537,18 +541,20 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         player = builder.build();
 
 
-        player.addListener(new Player.EventListener()
+
+
+        player.addListener(new Player.Listener()
         {
             @Override
-            public void onPlayerError(ExoPlaybackException error)
+            public void onPlayerError(PlaybackException error)
             {
                 log.debug("PLAYER ERROR: " + error.getMessage());
                 context.showErrorMessage(error.getMessage(), "Exo2MediaPlayer");
                 error.printStackTrace();
             }
-
+            
             @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState)
+            public void onPlaybackStateChanged(int playbackState)
             {
 
                 if (playbackState == Player.STATE_ENDED)
@@ -558,11 +564,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                     {
                         log.debug("Player Has Ended, set EOS");
+                        //stop(); - JVL: Not sure if we will need to do this or not
                     }
-                    if (playWhenReady)
-                    {
-                        stop();
-                    }
+
                     //notifySageTVStop();
                     eos = true;
                     Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
@@ -578,14 +582,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                         setAudioTrack(initialAudioTrackIndex);
                         initialAudioTrackIndex = -1;
                     }
+
+                    log.debug("Player.STATE_READY - Debugging available tracks in file");
+                    debugAvailableTracks();
                 }
 
-            }
-
-            @Override
-            public void onSeekProcessed()
-            {
-                seekPending = false;
             }
 
             @Override
@@ -595,18 +596,24 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
             @Override
-            public void onPositionDiscontinuity(int reason)
+            public void onPositionDiscontinuity(Player.PositionInfo oldPosition, Player.PositionInfo newPosition, int reason)
             {
-                //log.warn("ExoPlayer: Continuity Error: {}", reason);
-                seekPending = false;
-            }
-        });
+                switch (reason)
+                {
+                    case Player.DISCONTINUITY_REASON_SEEK:
+                        seekPending = false;
+                        break;
 
-        player.addVideoListener(new VideoListener()
-        {
+                }
+            }
+
             @Override
-            public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio)
+            public void onVideoSizeChanged(VideoSize videoSize)
             {
+                int width = videoSize.width;
+                int height = videoSize.height;
+                float pixelWidthHeightRatio = videoSize.pixelWidthHeightRatio;
+
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 {
                     log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, pixel ratio: {}", width, height, pixelWidthHeightRatio);
@@ -621,12 +628,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 {
                     setVideoSize(width, height, 0);
                 }
-            }
-
-            @Override
-            public void onRenderedFirstFrame()
-            {
-
             }
         });
 
@@ -827,6 +828,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
                     for (int k = 0; k < trackGroups.get(j).length; k++)
                     {
+
                         log.debug("\t\t Track {}, Channels {}, Bitrate {}, Language {}", k, trackGroups.get(j).getFormat(k).channelCount, trackGroups.get(j).getFormat(k).bitrate, trackGroups.get(j).getFormat(k).language);
                         if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
                         {
