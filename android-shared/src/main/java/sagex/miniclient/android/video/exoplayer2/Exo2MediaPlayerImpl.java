@@ -498,12 +498,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
         }
 
-        log.debug("Creating handler");
-        Handler mainHandler = new Handler();
-
-        //CustomRenderersFactory customRenderersFactory = new CustomRenderersFactory(context.getContext());
         DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context.getContext());
-
 
         if(FfmpegLibrary.isAvailable())
         {
@@ -511,21 +506,21 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
             switch (preferExtensionDecoders)
             {
-                case CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER:
+                case DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER:
                     log.debug("Setting FFmpeg Extension to Prefer");
-                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+                    renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
                     break;
-                case CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON:
+                case DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON:
                     log.debug("Setting FFmpeg Extension to On");
-                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+                    renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
                     break;
-                case CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF:
+                case DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF:
                     log.debug("Setting FFmpeg Extension to Off");
-                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
+                    renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
                     break;
                 default:
                     log.debug("Defaulting FFmpeg Extension to On");
-                    renderersFactory.setExtensionRendererMode(CustomRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+                    renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
             }
         }
 
@@ -534,13 +529,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
         trackSelector = new DefaultTrackSelector(context.getContext());
 
-        //player = ExoPlayerFactory.newSimpleInstance(context.getContext(), customRenderersFactory, trackSelector);
         SimpleExoPlayer.Builder builder =  new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
 
         builder.setTrackSelector(trackSelector);
         player = builder.build();
-
-
 
 
         player.addListener(new Player.Listener()
@@ -552,7 +544,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                 context.showErrorMessage(error.getMessage(), "Exo2MediaPlayer");
                 error.printStackTrace();
             }
-            
+
             @Override
             public void onPlaybackStateChanged(int playbackState)
             {
@@ -671,8 +663,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
 
             log.debug("ExoLogging - Preparing playback");
             player.prepare(mediaSource, !haveStartPosition, false);
-
-
         }
 
         //Set seek preferences
@@ -690,6 +680,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         this.playerReady = true;
         this.state = MiniPlayerPlugin.PLAY_STATE;
 
+        log.debug("Creating handler");
         handler = new Handler();
 
 
@@ -711,7 +702,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         });
 
         handler.postDelayed(progressRunnable, 0);
-
     }
 
     public void changeTrack(int trackType, int groupIndex, int trackIndex)

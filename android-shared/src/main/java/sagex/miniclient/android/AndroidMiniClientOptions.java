@@ -71,27 +71,30 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     }
 
     @Override
-    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs) {
-        // log the media codec information
-        int count = MediaCodecList.getCodecCount();
-        log.debug("--------- DUMPING HARDWARE CODECS -----------");
+    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs)
+    {
+
         Set<String> acodecs = new TreeSet<>();
         Set<String> vcodecs = new TreeSet<>();
 
-        for (int i = 0; i < count; i++)
+        log.debug("--------- DUMPING HARDWARE CODECS -----------");
+        for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
         {
             MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-        
+
             if (!info.isEncoder())
             {
+
                 log.debug("[{}] {}; supported: {}", i, info.getName(), info.getSupportedTypes());
             
                 for (String s : getAudioCodecs(info))
                 {
+                    log.debug("\t" + s);
                     acodecs.add(s);
                 }
                 for (String s : getVideoCodecs(info))
                 {
+                    log.debug("\t" + s);
                     vcodecs.add(s);
                 }
             }
@@ -112,16 +115,18 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             {
                 if (codecs.getProperty(s)!=null)
                 {
-                    log.debug("Codec Supported: {}", s);
+                    log.debug("Codec Supported: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
                     videoCodecs.add(codecs.getProperty(s));
                 }
             }
 
             //Check to see if MPEG2-VIDEO is supported.  If so add MPEG2-VIDEO@HL.  This appears to be a SageTV Specific setting
+            /* Added MPEG2-VIDEO@HL to the codec.properties file as a MPEG2 codec
             if(videoCodecs.contains("MPEG2-VIDEO") && !videoCodecs.contains("MPEG2-VIDEO@HL"))
             {
                 videoCodecs.add("MPEG2-VIDEO@HL");
             }
+             */
 
             //SageTV sets the codec string 0X0000 if it does not know what it is.  This generally happens with HEVC.  Adding this if it does not exits
             if(!videoCodecs.contains("0X0000"))

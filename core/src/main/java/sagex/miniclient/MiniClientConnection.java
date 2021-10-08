@@ -85,7 +85,7 @@ public class MiniClientConnection implements SageTVInputCallback
     // content
     public static final String VP6F = "VP6F";
 
-    public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.264,WMV9,VC1,MJPEG,HEVC,VP8,VP9";
+    public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.263,H.264,WMV9,VC1,MJPEG,HEVC,VP8,VP9";
     public static final String DEFAULT_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AC4,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3,OPUS";
     public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3,MPEG2-PS,MPEG2-TS,MPEG1-PS";
     public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
@@ -492,6 +492,13 @@ public class MiniClientConnection implements SageTVInputCallback
         Properties codecs = loadProperties("codecs.properties");
         
         client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
+
+        log.debug("***** FINAL VIDEO CODEC LIST *****");
+
+        for(int i = 0; i < videoCodecs.size(); i++)
+        {
+            log.debug(videoCodecs.get(i));
+        }
     }
 
     private List<String> stringToList(String str) {

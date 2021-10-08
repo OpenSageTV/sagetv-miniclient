@@ -1,3 +1,9 @@
+**NEXT**
+- Updated to 2.15.1 of ExoPlayer and FFmpeg extension
+- Cleaned up a number of deprecated calls in ExoPlayer implementation
+- Added VP8, VP9, H.263 as valid video codecs
+- Removed MPEG4 as a valid codec, because Android TV support is very limited.  All non H.264/AVC content will be transcoded
+
 **1.9.1 (2021-08-26)**
 - Fixed issue in PushBufferDataSource that was causing transcoding and live tv transitions to freeze
 - Updated build to use local libs directory instead of MavenLocal.  Simplify build process for support libraries
