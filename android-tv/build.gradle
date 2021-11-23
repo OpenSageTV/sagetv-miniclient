@@ -3,10 +3,10 @@ apply plugin: 'com.android.application'
 
 def computeVersionCode()
 {
-    return appVersionCode;
+    return appVersionCode
 }
 
-def Properties signingProps = new Properties()
+Properties signingProps = new Properties()
 def propFile = file("../keystore.properties")
 
 if (propFile.canRead())
@@ -15,7 +15,7 @@ if (propFile.canRead())
 }
 else
 {
-    System.out.println("Keystore properties file missing.")
+    System.out.println("Keystore properties file missing. Expceted path:" + propFile.path)
 }
 
 android {
@@ -50,7 +50,7 @@ android {
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
             {
                 keyAlias = signingProps.getProperty("keyAlias")
-                storeFile = new File(signingProps.getProperty("storeFile"));
+                storeFile = new File(signingProps.getProperty("storeFile"))
                 storePassword = signingProps.getProperty("storePassword")
                 keyPassword = signingProps.getProperty("keyPassword")
 
@@ -69,7 +69,7 @@ android {
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
             {
                 keyAlias = signingProps.getProperty("keyAlias")
-                storeFile = new File(signingProps.getProperty("storeFile"));
+                storeFile = new File(signingProps.getProperty("storeFile"))
                 storePassword = signingProps.getProperty("storePassword")
                 keyPassword = signingProps.getProperty("keyPassword")
 

@@ -60,14 +60,13 @@ nbactions.xml
 nb-configuration.xml
 
 ## Gradle
-
 .gradle
-gradle.properties
 gradle-app.setting
-build/
+
 
 ## OS Specific
 .DS_Store
 
 ## Sensitive
 keystore.properties
+jvlsagetvkeystore
