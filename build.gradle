@@ -42,7 +42,7 @@ allprojects {
         // NOTE: using exoplayer from mavenlocal (prebuilt) for ffmpeg
         exoVersionCustomExt = '2.15.1'
         // NOTE: using regular exoplayer for core stuff
-        exoVersion = '2.15.1'
+        exoVersion = '2.16.1'
         ijkVersionDev = '0.8.8-SNAPSHOT'
 
         //androidExtrasVer = "28.0.0"
@@ -58,8 +58,8 @@ allprojects {
         // tell every project where to find the local project maven files
         mavenInProject = file('../mavenlocal').absoluteFile.toURI()
 
-        defJavaVesionNum = 1.7
-        defJavaVesionConst = JavaVersion.VERSION_1_7
+        defJavaVesionNum = 1.8
+        defJavaVesionConst = JavaVersion.VERSION_1_8
     }
 
     repositories {

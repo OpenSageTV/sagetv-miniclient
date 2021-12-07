@@ -82,16 +82,21 @@ dependencies {
 
     // ExoPlayer
     // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
-    api "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
 
     //These are working
     api "com.google.android.exoplayer:exoplayer-common:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-extractor:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-ui:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-datasource:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-decoder:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer-rtsp:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer-transformer:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     //api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:exoplayer-testutils:${exoVersion}@aar"
 
     implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
     //api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
