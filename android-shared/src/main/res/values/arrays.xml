@@ -211,6 +211,16 @@
         <item>matroska</item>
         <item>dvd</item>
     </string-array>
+    <string-array name="entries_list_container_preference">
+        <item>Automatic</item>
+        <item>Enabled</item>
+        <item>Disabled</item>
+    </string-array>
+    <string-array name="entryvalues_list_container_preference">
+        <item>automatic</item>
+        <item>enabled</item>
+        <item>disabled</item>
+    </string-array>
 
 
 </resources>

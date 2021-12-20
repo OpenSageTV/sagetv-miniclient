@@ -52,6 +52,8 @@ public class AndroidPrefStore implements PrefStore
     public static final String FIXED_REMUXING_FORMAT = "fixed_remuxing/format";
     public static final String FIXED_REMUXING_FORMAT_DEFAULT = "matroska";
 
+    public static final String CONTAINER_SUPPORT_DEFAULT = "automatic";
+
 
     //</editor-fold>
 
@@ -293,6 +295,11 @@ public class AndroidPrefStore implements PrefStore
     public String getFixedRemuxingFormat()
     {
         return this.getString(AndroidPrefStore.FIXED_REMUXING_FORMAT, AndroidPrefStore.FIXED_REMUXING_FORMAT_DEFAULT);
+    }
+
+    public String getContainerSupport(String container)
+    {
+        return this.getString("container/" + container + "/support", AndroidPrefStore.CONTAINER_SUPPORT_DEFAULT);
     }
 
     //</editor-fold>

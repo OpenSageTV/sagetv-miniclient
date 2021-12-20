@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Containers" >
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="Matroska"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/MATROSKA/support"
+            android:title="Matroska (.mkv)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MPEG2-TS"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/MPEG2-TS/support"
+            android:title="MPEG2 Transport Steam (.ts)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MPEG2-PS"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/MPEG2-PS/support"
+            android:title="MPEG2 Program Stream (.ps)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MPEG1-PS"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/MPEG1-PS/support"
+            android:title="MPEG1 Program Stream (.ps)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="Audio Video Interleave"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/AVI/support"
+            android:title="Audio Video Interleave (.avi)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="Flash Video"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/FLASHVIDEO/support"
+            android:title="Flash Video (.flv, .f4v)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="Quicktime"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/QUICKTIME/support"
+            android:title="Quicktime (.mov, .qt, .mp4)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="Ogg"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/OGG/support"
+            android:title="Ogg (.ogg, .opus)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="Mp3"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/MP3/support"
+            android:title="Mp3 (.mp3)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="AAC"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/MP3/support"
+            android:title="AAC (.aac)"
+            android:summary="%s"/>
+
+        //:TODO Investigate WMV further.  Sage has WMV7, WMV8, WMV9
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="ASF"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="containerASF/support"
+            android:title="ASF (.asf)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="FLAC"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/FLAC/support"
+            android:title="FLAC (.flac)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="WAV"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/WAV/support"
+            android:title="WAV (.wav)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="AC3"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="container/AC3/support"
+            android:title="AC3 (.ac3)"
+            android:summary="%s"/>
+
+
+        <!-- PULL_FORMATS=AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3
+        PUSH_FORMATS=MPEG2-PS,MPEG2-TS,MPEG1-PS
+        -->
+
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

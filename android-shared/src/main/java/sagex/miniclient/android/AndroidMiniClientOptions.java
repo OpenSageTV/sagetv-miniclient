@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +32,7 @@ import sagex.miniclient.prefs.PrefStore;
 public class AndroidMiniClientOptions implements MiniClientOptions {
     private static final Logger log = LoggerFactory.getLogger(AndroidMiniClientOptions.class);
 
-    private final PrefStore prefs;
+    private final AndroidPrefStore prefs;
     private final File configDir;
     private final File cacheDir;
     private final IBus bus;
@@ -77,6 +78,9 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         Set<String> acodecs = new TreeSet<>();
         Set<String> vcodecs = new TreeSet<>();
 
+        List<String> pushFormatsFinal = new ArrayList<String>();
+        List<String> pullFormatsFinal = new ArrayList<String>();
+
         log.debug("--------- DUMPING HARDWARE CODECS -----------");
         for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
         {
@@ -102,6 +106,42 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 
         log.debug("--------- END DUMPING HARDWARE CODECS -----------");
 
+
+        log.debug("--------- PROCESSING OF PUSH CONTAINERS -----------");
+
+        for(int i = 0; i < pushFormats.size(); i++)
+        {
+            if(prefs.getContainerSupport(pushFormats.get(i)).equalsIgnoreCase("automatic")
+            || prefs.getContainerSupport(pushFormats.get(i)).equalsIgnoreCase("enabled"))
+            {
+                log.debug("Container format set to supported: " + pushFormats.get(i));
+                pushFormatsFinal.add(pushFormats.get(i));
+            }
+            else
+            {
+                log.debug("Container format being set to disbaled by preference: " + pushFormats.get(i));
+            }
+        }
+        pushFormats = pushFormatsFinal;
+
+        log.debug("--------- PROCESSING OF PULL CONTAINERS -----------");
+
+        for(int i = 0; i < pullFormats.size(); i++)
+        {
+            if(prefs.getContainerSupport(pullFormats.get(i)).equalsIgnoreCase("automatic")
+                    || prefs.getContainerSupport(pullFormats.get(i)).equalsIgnoreCase("enabled"))
+            {
+                log.debug("Container format set to supported: " + pullFormats.get(i));
+                pullFormatsFinal.add(pullFormats.get(i));
+            }
+            else
+            {
+                log.debug("Container format being set to disbaled by preference: " + pullFormats.get(i));
+            }
+        }
+
+        pullFormats = pullFormatsFinal;
+
         // update the supported hardware codecs for SageTV
         // SageTV is crashing when we are enabling formats, so we are doing something wrong
         // could be that we need to send MPEG2-VIDEO@HL to tell sagetv that we are a
@@ -113,11 +153,20 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             
             for (String s: vcodecs)
             {
-                if (codecs.getProperty(s)!=null)
-                {
-                    log.debug("Codec Supported: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
-                    videoCodecs.add(codecs.getProperty(s));
-                }
+                //if(codecs.getProperty(s) != null
+                //    && (prefs.getContainerSupport(codecs.getProperty(s).toUpperCase()).equalsIgnoreCase("automatic")
+                //    || prefs.getContainerSupport(codecs.getProperty(s).toUpperCase()).equalsIgnoreCase("enabled")))
+                //{
+                    if (codecs.getProperty(s) != null)
+                    {
+                        log.debug("Codec Supported: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
+                        videoCodecs.add(codecs.getProperty(s));
+                    }
+                //}
+                //else
+                //{
+                //    log.debug("Codec set to disabled by preference: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
+                //}
             }
 
             //Check to see if MPEG2-VIDEO is supported.  If so add MPEG2-VIDEO@HL.  This appears to be a SageTV Specific setting

@@ -195,6 +195,20 @@ public class SettingsFragment extends PreferenceFragment
                 }
             });
 
+            final Preference containerCodec = this.findPreference("container_codec_settings");
+
+            containerCodec.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
+            {
+                @Override
+                public boolean onPreferenceClick(Preference preference)
+                {
+                    Intent i = new Intent(SettingsFragment.this.getActivity(), CodecContainerActivity.class);
+                    startActivity(i);
+
+                    return true;
+                }
+            });
+
             Preference exoplayerSettingsPref = this.findPreference("exoplayer_settings");
 
             exoplayerSettingsPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()

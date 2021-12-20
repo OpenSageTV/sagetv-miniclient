@@ -490,7 +490,9 @@ public class MiniClientConnection implements SageTVInputCallback
         //pushFormats=stringToList("MATROSKA");
         
         Properties codecs = loadProperties("codecs.properties");
-        
+
+        log.debug("***** Calling prepare codecs *****");
+
         client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
 
         log.debug("***** FINAL VIDEO CODEC LIST *****");
@@ -498,6 +500,20 @@ public class MiniClientConnection implements SageTVInputCallback
         for(int i = 0; i < videoCodecs.size(); i++)
         {
             log.debug(videoCodecs.get(i));
+        }
+
+        log.debug("***** FINAL PUSH FORMATS *****");
+
+        for(int i = 0; i < pushFormats.size(); i++)
+        {
+            log.debug(pushFormats.get(i));
+        }
+
+        log.debug("***** FINAL PULL FORMATS *****");
+
+        for(int i = 0; i < pullFormats.size(); i++)
+        {
+            log.debug(pullFormats.get(i));
         }
     }
 
