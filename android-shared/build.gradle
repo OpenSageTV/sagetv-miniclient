@@ -91,12 +91,12 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-ui:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-datasource:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-decoder:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-rtsp:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-transformer:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
-    //api "com.google.android.exoplayer:exoplayer-testutils:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-dash:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-rtsp:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-transformer:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
+    api "com.google.android.exoplayer:exoplayer-testutils:${exoVersion}@aar"
 
     implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
     //api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"

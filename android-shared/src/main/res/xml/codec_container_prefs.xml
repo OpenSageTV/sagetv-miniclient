@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Containers" >
+    <PreferenceCategory android:title="Containers">
 
         <ListPreference
             android:defaultValue="automatic"
@@ -93,14 +93,16 @@
             android:title="AAC (.aac)"
             android:summary="%s"/>
 
+        <!--
         //:TODO Investigate WMV further.  Sage has WMV7, WMV8, WMV9
+        -->
 
         <ListPreference
             android:defaultValue="automatic"
             android:dialogTitle="ASF"
             android:entries="@array/entries_list_container_preference"
             android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="containerASF/support"
+            android:key="container/ASF/support"
             android:title="ASF (.asf)"
             android:summary="%s"/>
 
@@ -131,10 +133,140 @@
             android:title="AC3 (.ac3)"
             android:summary="%s"/>
 
-
         <!-- PULL_FORMATS=AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3
         PUSH_FORMATS=MPEG2-PS,MPEG2-TS,MPEG1-PS
         -->
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Video Codecs">
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MPEG-1"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/MPEG1-VIDEO/support"
+            android:title="MPEG-1"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MPEG-2"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/MPEG2-VIDEO/support"
+            android:title="MPEG-2"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MPEG-2 HL"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/MPEG2-VIDEO@HL/support"
+            android:title="MPEG-2 LH (SageTV specifc designator for higher quality MPEG-2)"
+            android:summary="%s"/>
+
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="H.263"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/H.263/support"
+            android:title="H.263"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="disabled"
+            android:dialogTitle="MPEG-4"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/MPEG4-VIDEO/support"
+            android:title="MPEG-4"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="disabled"
+            android:dialogTitle="Microsoft MPEG-4"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/MSMPEG4/support"
+            android:title="Microsoft MPEG-4"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="H.264 (MPEG-4 Part 10 / AVC)"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/H.264/support"
+            android:title="H.264 (MPEG-4 Part 10 / AVC)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="VC-1"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/VC1/support"
+            android:title="VC-1"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="HEVC (H.265 / MPEG-H Part 2)"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/HEVC/support"
+            android:title="HEVC (H.265 / MPEG-H Part 2)"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="MJPEG"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/MJPEG/support"
+            android:title="MJPEG"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="VP8"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/VP8/support"
+            android:title="VP8"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="automatic"
+            android:dialogTitle="VP9"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/VP9/support"
+            android:title="VP9"
+            android:summary="%s"/>
+
+
+        <ListPreference
+            android:defaultValue="enabled"
+            android:dialogTitle="SageTV unknown codec (0X0000)"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/video/0X0000/support"
+            android:title="SageTV was not able to identify codec (0X0000)"
+            android:summary="%s"/>
+
+        <!--
+        TODO: FLASHVIDEO is a container not a codec.  Need to investigate further.
+        TODO: WMV is a container format not a codec.  Need to investigate further.
+        -->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Audio Codecs" >
 
 
     </PreferenceCategory>

@@ -15,11 +15,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 import sagex.miniclient.IBus;
+import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
 //import sagex.miniclient.prefs.ConnectionPrefStore;
@@ -78,8 +80,14 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         Set<String> acodecs = new TreeSet<>();
         Set<String> vcodecs = new TreeSet<>();
 
-        List<String> pushFormatsFinal = new ArrayList<String>();
-        List<String> pullFormatsFinal = new ArrayList<String>();
+        pushFormats.clear();
+        pushFormats.addAll(getSupportedPushContainers());
+
+        pullFormats.clear();
+        pullFormats.addAll(getSupportedPullContainers());
+
+        videoCodecs.clear();
+        videoCodecs.addAll(getSupportedVideoCodecs());
 
         log.debug("--------- DUMPING HARDWARE CODECS -----------");
         for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
@@ -104,51 +112,17 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             }
         }
 
-        log.debug("--------- END DUMPING HARDWARE CODECS -----------");
 
-
-        log.debug("--------- PROCESSING OF PUSH CONTAINERS -----------");
-
-        for(int i = 0; i < pushFormats.size(); i++)
-        {
-            if(prefs.getContainerSupport(pushFormats.get(i)).equalsIgnoreCase("automatic")
-            || prefs.getContainerSupport(pushFormats.get(i)).equalsIgnoreCase("enabled"))
-            {
-                log.debug("Container format set to supported: " + pushFormats.get(i));
-                pushFormatsFinal.add(pushFormats.get(i));
-            }
-            else
-            {
-                log.debug("Container format being set to disbaled by preference: " + pushFormats.get(i));
-            }
-        }
-        pushFormats = pushFormatsFinal;
-
-        log.debug("--------- PROCESSING OF PULL CONTAINERS -----------");
-
-        for(int i = 0; i < pullFormats.size(); i++)
-        {
-            if(prefs.getContainerSupport(pullFormats.get(i)).equalsIgnoreCase("automatic")
-                    || prefs.getContainerSupport(pullFormats.get(i)).equalsIgnoreCase("enabled"))
-            {
-                log.debug("Container format set to supported: " + pullFormats.get(i));
-                pullFormatsFinal.add(pullFormats.get(i));
-            }
-            else
-            {
-                log.debug("Container format being set to disbaled by preference: " + pullFormats.get(i));
-            }
-        }
-
-        pullFormats = pullFormatsFinal;
 
         // update the supported hardware codecs for SageTV
         // SageTV is crashing when we are enabling formats, so we are doing something wrong
         // could be that we need to send MPEG2-VIDEO@HL to tell sagetv that we are a
         // media extender
 
+
         if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
         {
+            /*
             videoCodecs.clear();
             
             for (String s: vcodecs)
@@ -168,6 +142,8 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 //    log.debug("Codec set to disabled by preference: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
                 //}
             }
+            */
+
 
             //Check to see if MPEG2-VIDEO is supported.  If so add MPEG2-VIDEO@HL.  This appears to be a SageTV Specific setting
             /* Added MPEG2-VIDEO@HL to the codec.properties file as a MPEG2 codec
@@ -178,10 +154,10 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
              */
 
             //SageTV sets the codec string 0X0000 if it does not know what it is.  This generally happens with HEVC.  Adding this if it does not exits
-            if(!videoCodecs.contains("0X0000"))
-            {
-                videoCodecs.add("0X0000");
-            }
+            //if(!videoCodecs.contains("0X0000"))
+            //{
+            //    videoCodecs.add("0X0000");
+            //}
 
             //audioCodecs.clear();
             //for (String s: acodecs)
@@ -198,6 +174,108 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 
 
         }
+    }
+
+    private List<String> getSupportedPullContainers()
+    {
+        List<String> supportedPullContainers = new ArrayList<String>();
+        List<String> allPullContainers = stringToList(MiniClientConnection.DEFAULT_PULL_FORMATS);
+
+        for(int i = 0; i < allPullContainers.size(); i++)
+        {
+            if(prefs.getContainerSupport(allPullContainers.get(i)).equalsIgnoreCase("automatic")
+                    || prefs.getContainerSupport(allPullContainers.get(i)).equalsIgnoreCase("enabled"))
+            {
+                supportedPullContainers.add(allPullContainers.get(i));
+            }
+        }
+
+        return supportedPullContainers;
+    }
+
+    private List<String> getSupportedPushContainers()
+    {
+        List<String> supportedPushContainers = new ArrayList<String>();
+        List<String> allPushContainers = stringToList(MiniClientConnection.DEFAULT_PUSH_FORMATS);
+
+        for(int i = 0; i < allPushContainers.size(); i++)
+        {
+            if(prefs.getContainerSupport(allPushContainers.get(i)).equalsIgnoreCase("automatic")
+                    || prefs.getContainerSupport(allPushContainers.get(i)).equalsIgnoreCase("enabled"))
+            {
+                supportedPushContainers.add(allPushContainers.get(i));
+            }
+        }
+
+        return supportedPushContainers;
+    }
+
+    private List<String> getSupportedVideoCodecs()
+    {
+        List<String> supportedCodecs = new ArrayList<String>();
+        List<String> allCodecs = stringToList(MiniClientConnection.DEFAULT_VIDEO_CODECS);
+
+        List<String> exoplayerCodecsMimeType = new ArrayList<>();
+
+        //Get all supported video mime types that exoplayer is reporting
+        for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
+        {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+
+            if (!info.isEncoder())
+            {
+                exoplayerCodecsMimeType.addAll(getVideoCodecs(info));
+            }
+        }
+
+        for(int i = 0; i < allCodecs.size(); i++)
+        {
+            if(prefs.getVideoCodecSupport(allCodecs.get(i)).equalsIgnoreCase("enabled"))
+            {
+                log.debug("Video codec marked enabled: " + allCodecs.get(i));
+
+                supportedCodecs.add(allCodecs.get(i));
+            }
+            else if(prefs.getVideoCodecSupport(allCodecs.get(i)).equalsIgnoreCase("automatic"))
+            {
+                if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
+                {
+                    //Determine if ExoPlayer supports the codec
+                    for(int j = 0; j < exoplayerCodecsMimeType.size(); j++)
+                    {
+                        if(prefs.getVideoCodecMimeTypes(allCodecs.get(i)).toLowerCase().contains(exoplayerCodecsMimeType.get(j).toLowerCase()))
+                        {
+                            log.debug("Video codec marked automatic, and is supported: " + allCodecs.get(i));
+
+                            supportedCodecs.add(allCodecs.get(i));
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    log.debug("Video codec marked automatic, and player is not exoplayer: " + allCodecs.get(i));
+
+                    //This is most likely IJKPlayer.  We assume everything is supported
+                    supportedCodecs.add(allCodecs.get(i));
+                }
+            }
+        }
+
+        return supportedCodecs;
+    }
+
+
+    private List<String> stringToList(String str)
+    {
+        ArrayList<String> list = new ArrayList<String>();
+        if (str==null) return list;
+
+        for (String s: str.split("\\s*,\\s*"))
+        {
+            list.add(s.trim());
+        }
+        return list;
     }
 
     @Override

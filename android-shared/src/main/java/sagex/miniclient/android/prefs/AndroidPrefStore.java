@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 
 import java.util.Set;
 import java.util.TreeSet;
+
+import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -300,6 +302,53 @@ public class AndroidPrefStore implements PrefStore
     public String getContainerSupport(String container)
     {
         return this.getString("container/" + container + "/support", AndroidPrefStore.CONTAINER_SUPPORT_DEFAULT);
+    }
+
+    public String getVideoCodecSupport(String codec)
+    {
+        return this.getString("codec/video/" + codec + "/support", AndroidPrefStore.CONTAINER_SUPPORT_DEFAULT);
+    }
+
+    /***
+     * Gets the mime types that Android associates with these different video codecs.  This is utilized
+     * to map between SageTV codecs identifiers and Android codec identifiers
+     * @param codec The SageTV codec identifier we are looking for a mime type
+     * @return A list of mime types seperated by a comma that are associated with the SageTV codec identifier
+     */
+    public String getVideoCodecMimeTypes(String codec)
+    {
+        switch (codec)
+        {
+            case MiniClientConnection.MPEG1_VIDEO:
+                return MiniClientConnection.MPEG1_VIDEO_MIME_TYPES;
+            case MiniClientConnection.MPEG2_VIDEO:
+                return MiniClientConnection.MPEG2_VIDEO_MIME_TYPES;
+            case MiniClientConnection.MPEG2_VIDEO_HL:
+                return MiniClientConnection.MPEG2_VIDEO_HL_MIME_TYPES;
+            case MiniClientConnection.H263_VIDEO:
+                return  MiniClientConnection.H263_VIDEO_MIME_TYPES;
+            case MiniClientConnection.MPEG4_VIDEO:
+                return MiniClientConnection.MPEG4_VIDEO_MIME_TYPES;
+            case MiniClientConnection.MSMPEG4_VIDEO:
+                return MiniClientConnection.MSMPEG4_VIDEO_MIME_TYPES;
+            case MiniClientConnection.H264_VIDEO:
+                return MiniClientConnection.H264_VIDEO_MIME_TYPES;
+            case MiniClientConnection.VC1_VIDEO:
+                return MiniClientConnection.VC1_VIDEO_MIME_TYPES;
+            case MiniClientConnection.HEVC_VIDEO:
+                return MiniClientConnection.HEVC_VIDEO_MIME_TYPES;
+            case MiniClientConnection.MJPEG_VIDEO:
+                return MiniClientConnection.MJPEG_VIDEO_MIME_TYPES;
+            case MiniClientConnection.VP8_VIDEO:
+                return MiniClientConnection.VP8_VIDEO_MIME_TYPES;
+            case MiniClientConnection.VP9_VIDEO:
+                return MiniClientConnection.VP9_VIDEO_MIME_TYPES;
+
+
+            default:
+                return "";
+
+        }
     }
 
     //</editor-fold>

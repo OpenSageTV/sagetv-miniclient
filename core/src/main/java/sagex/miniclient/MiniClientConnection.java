@@ -34,18 +34,63 @@ import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.Utils;
 
 
-//import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
-//import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
-
-
-
 public class MiniClientConnection implements SageTVInputCallback
 {
-    public static final String QUICKTIME = "Quicktime";
-    public static final String AAC = "AAC";
-    public static final String AC3 = "AC3";
+
+    /*Containers*/
+    public static final String MPEG2_PS = "MPEG2-PS";
+    public static final String MPEG1_PS = "MPEG1-PS";
     public static final String MPEG2_TS = "MPEG2-TS";
-    public static final String MPEG2_VIDEO = "MPEG2-Video";
+    public static final String QUICKTIME = "Quicktime";
+    public static final String FLASHVIDEO = "FLASHVIDEO";
+    public static final String AVI = "AVI";
+    public static final String MATROSKA = "MATROSKA";
+    public static final String OGG = "Ogg";
+    public static final String MP3 = "MP3";
+    public static final String AAC = "AAC";
+    public static final String ASF = "ASF";
+    public static final String FLAC = "FLAC";
+    public static final String AC3 = "AC3";
+    public static final String WAV = "WAV";
+
+    public static final String DEFAULT_PULL_FORMATS = AVI + "," + FLASHVIDEO + "," + QUICKTIME + "," + OGG + "," + MP3 + "," + AAC + "," + ASF + "," + FLAC + "," + MATROSKA + "," + WAV + "," + AC3;
+    public static final String DEFAULT_PUSH_FORMATS =  MPEG2_PS + "," + MPEG1_PS + "," + MPEG2_TS;
+
+    //public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
+    //public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
+
+    /*Video Codecs with Mime Types*/
+    public static final String MPEG1_VIDEO = "MPEG1-VIDEO";
+    public static final String MPEG1_VIDEO_MIME_TYPES = "video/mpeg";
+    public static final String MPEG2_VIDEO_HL = "MPEG2-VIDEO@HL";
+    public static final String MPEG2_VIDEO_HL_MIME_TYPES = "video/mpeg2";
+    public static final String MPEG2_VIDEO = "MPEG2-VIDEO";
+    public static final String MPEG2_VIDEO_MIME_TYPES = "video/mpeg2";
+    public static final String H263_VIDEO = "H.263";
+    public static final String H263_VIDEO_MIME_TYPES = "video/3gpp";
+    public static final String MPEG4_VIDEO = "MPEG4-VIDEO";
+    public static final String MPEG4_VIDEO_MIME_TYPES = "video/mp4v-es";
+    public static final String MSMPEG4_VIDEO = "MSMPEG4-VIDEO";
+    public static final String MSMPEG4_VIDEO_MIME_TYPES = "video/mp4v-es";
+    public static final String H264_VIDEO = "H.264";
+    public static final String H264_VIDEO_MIME_TYPES = "video/avc";
+    public static final String VC1_VIDEO = "VC1";
+    public static final String VC1_VIDEO_MIME_TYPES = "video/x-ms-wmv,video/wvc1";
+    public static final String HEVC_VIDEO = "HEVC";
+    public static final String HEVC_VIDEO_MIME_TYPES = "video/hevc";
+    public static final String MJPEG_VIDEO = "MJPEG";
+    public static final String MJPEG_VIDEO_MIME_TYPES = "video/mjpeg";
+    public static final String VP8_VIDEO = "VP8";
+    public static final String VP8_VIDEO_MIME_TYPES = "video/x-vnd.on2.vp8";
+    public static final String VP9_VIDEO = "VP9";
+    public static final String VP9_VIDEO_MIME_TYPES = "video/x-vnd.on2.vp9";
+
+    //Not sure about supporting yet
+    public static final String MPEG4X = "MPEG4X"; // this is our private stream, format we put inside, MPEG2 PS for MPEG4/Divx, video on Windows
+
+    /* Full list of possible video codecs that the client potentially knows about.  Additional support checks happen later */
+    public static final String DEFAULT_VIDEO_CODECS = MPEG2_VIDEO + ',' + MPEG1_VIDEO + ',' + MPEG4_VIDEO + "," + MSMPEG4_VIDEO + "," + H263_VIDEO + "," + H264_VIDEO + "," + HEVC_VIDEO + "," + VP8_VIDEO + "," + VP9_VIDEO;
+
     public static final String WMA7 = "WMA7";
     public static final String WMA8 = "WMA8";
     public static final String WMA9LOSSLESS = "WMA9Lossless";
@@ -53,42 +98,26 @@ public class MiniClientConnection implements SageTVInputCallback
     public static final String WMV9 = "WMV9";
     public static final String WMV8 = "WMV8";
     public static final String WMV7 = "WMV7";
-    public static final String FLASH_VIDEO = "FlashVideo";
-    public static final String H264 = "H.264";
-    public static final String OGG = "Ogg";
     public static final String VORBIS = "Vorbis";
-    public static final String MPEG2_PS = "MPEG2-PS";
-    public static final String MPEG2_PES_VIDEO = "MPEG2-PESVideo";
-    public static final String MPEG2_PES_AUDIO = "MPEG2-PESAudio";
     public static final String MPEG1 = "MPEG1";
     public static final String JPEG = "JPEG";
     public static final String GIF = "GIF";
     public static final String PNG = "PNG";
     public static final String BMP = "BMP";
     public static final String MP2 = "MP2";
-    public static final String MP3 = "MP3";
-    public static final String MPEG1_VIDEO = "MPEG1-Video";
-    public static final String MPEG4_VIDEO = "MPEG4-Video";
-    public static final String MPEG4X = "MPEG4X"; // this is our private stream
-    // format we put inside
-    // MPEG2 PS for MPEG4/DivX
-    // video on Windows
-    public static final String AVI = "AVI";
-    public static final String WAV = "WAV";
-    public static final String ASF = "ASF";
-    public static final String FLAC = "FLAC";
-    public static final String MATROSKA = "MATROSKA";
-    public static final String VC1 = "VC1";
+
     public static final String ALAC = "ALAC"; // Apple lossless
+
     public static final String SMIL = "SMIL"; // for SMIL-XML files which
     // represent sequences of
     // content
     public static final String VP6F = "VP6F";
 
-    public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.263,H.264,WMV9,VC1,MJPEG,HEVC,VP8,VP9";
     public static final String DEFAULT_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AC4,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3,OPUS";
-    public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3,MPEG2-PS,MPEG2-TS,MPEG1-PS";
-    public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
+
+
+
+
 
     public static final int DRAWING_CMD_TYPE = 16;
     public static final int GET_PROPERTY_CMD_TYPE = 0;
@@ -1073,7 +1102,15 @@ public class MiniClientConnection implements SageTVInputCallback
                         }
                         else
                         {
-                            propVal = toStringList(pushFormats);
+                            if(pushFormats.size() == 0)
+                            {
+                                propVal = "NONE";
+                            }
+                            else
+                            {
+                                propVal = toStringList(pushFormats);
+                            }
+
                         }
                     }
                     else if ("PULL_AV_CONTAINERS".equals(propName))

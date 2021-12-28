@@ -679,7 +679,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             }
 
             log.debug("ExoLogging - Preparing playback");
-            player.prepare(mediaSource, !haveStartPosition, false);
+            //player.prepare(mediaSource, !haveStartPosition, false);
+            player.setMediaSource(mediaSource, !haveStartPosition);
+            player.prepare();
+
         }
 
         //Set seek preferences
