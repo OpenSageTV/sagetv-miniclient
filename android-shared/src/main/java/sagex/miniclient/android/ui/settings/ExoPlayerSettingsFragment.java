@@ -1,5 +1,7 @@
 package sagex.miniclient.android.ui.settings;
 
+import static android.media.AudioFormat.ENCODING_INVALID;
+
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -13,10 +15,12 @@ import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.audio.AudioCapabilities;
 
 import java.util.ArrayList;
 
 import sagex.miniclient.android.R;
+import sagex.miniclient.media.AudioCodec;
 
 public class ExoPlayerSettingsFragment extends PreferenceFragment
 {
@@ -48,7 +52,7 @@ public class ExoPlayerSettingsFragment extends PreferenceFragment
         builder.setTitle(R.string.exo_decoders);
         StringBuilder sb = new StringBuilder();
         ArrayList<Pair> videoCodecs = new ArrayList<Pair>();
-        ArrayList<Pair> audioCodecs = new ArrayList<Pair>();
+        //ArrayList<Pair> audioCodecs = new ArrayList<Pair>();
         MediaCodecInfo mediaCodecInfo;
 
         videoCodecs.add(Pair.create(MimeTypes.VIDEO_H263, "H.263"));
@@ -63,6 +67,7 @@ public class ExoPlayerSettingsFragment extends PreferenceFragment
         videoCodecs.add(Pair.create(MimeTypes.VIDEO_VC1, "VC1"));
         videoCodecs.add(Pair.create(MimeTypes.VIDEO_VP8, "VP8"));
         videoCodecs.add(Pair.create(MimeTypes.VIDEO_VP9, "VP9"));
+
 
         sb.append("<B>").append("Video Decoders").append("</B><br/>\n");
 
@@ -89,32 +94,34 @@ public class ExoPlayerSettingsFragment extends PreferenceFragment
             }
         }
 
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_AAC, "AAC"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_AC3, "AC3"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_AC4, "AC4"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_DTS, "DTS"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_DTS_EXPRESS, "DTS Express"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_DTS_HD, "DTS HD"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_E_AC3, "EAC3"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_E_AC3_JOC, "EAC3 JOC"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_MP4, "MP4"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_FLAC, "FLAC"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_OPUS, "OPUS"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_MPEG, "MPEG"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_MPEG_L1, "MPEG L1"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_MPEG_L2, "MPEG_L2"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_VORBIS, "VORBIS"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_RAW, "EAC3"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_TRUEHD, "TRUEHD"));
-        audioCodecs.add(Pair.create(MimeTypes.AUDIO_RAW, "RAW"));
+        AudioCodec [] audioCodecs = AudioCodec.values();
+        boolean hardwareSupport = false;
+        AudioCapabilities capabilities = AudioCapabilities.getCapabilities(getActivity());
 
         sb.append("<B>").append("Audio Decoders").append("</B><br/>\n");
+        sb.append("<table>");
 
-        for(int i = 0; i < audioCodecs.size(); i++)
+        sb.append("<tr>");
+        sb.append("<td><b>Name</b></td>");
+        sb.append("<td><b>Support</b></t>");
+        sb.append("<td><b>Passthrough</b></td>");
+        sb.append("</tr>");
+
+        for(int i = 0; i < audioCodecs.length; i++)
         {
             try
             {
-                mediaCodecInfo = MediaCodecUtil.getDecoderInfo((String)audioCodecs.get(i).first, false, false);
+                mediaCodecInfo = MediaCodecUtil.getDecoderInfo(audioCodecs[i].getAndroidMimeTypes()[0], false, false);
+                hardwareSupport = false;
+
+                for(int j = 0; j < audioCodecs[i].getAndroidAudioEncodings().length; j++)
+                {
+                    if(capabilities.supportsEncoding(audioCodecs[i].getAndroidAudioEncodings()[j]))
+                    {
+                        hardwareSupport = true;
+                    }
+                }
+
             }
             catch (Exception ex)
             {
@@ -123,11 +130,19 @@ public class ExoPlayerSettingsFragment extends PreferenceFragment
 
             if (mediaCodecInfo != null)
             {
-                sb.append("").append((String)audioCodecs.get(i).second).append(": ").append(mediaCodecInfo.name).append("<br/>\n");
+                sb.append("<tr>");
+                sb.append("<td>" + audioCodecs[i].getName() + "</td>");
+                sb.append("<td>" + mediaCodecInfo.name + "</td>");
+                sb.append("<td>" + hardwareSupport + "</td>");
+                sb.append("</tr>");
             }
             else
             {
-                sb.append("").append((String)audioCodecs.get(i).second).append(": ").append("<i>Unsupported</i>").append("<br/>\n");
+                sb.append("<tr>");
+                sb.append("<td>" + audioCodecs[i].getName() + "</td>");
+                sb.append("<td>Not Supported</td>");
+                sb.append("<td>" + hardwareSupport + "</td>");
+                sb.append("</tr>");
             }
         }
 

@@ -55,6 +55,8 @@ public class AndroidPrefStore implements PrefStore
     public static final String FIXED_REMUXING_FORMAT_DEFAULT = "matroska";
 
     public static final String CONTAINER_SUPPORT_DEFAULT = "automatic";
+    public static final String VIDEO_CODEC_SUPPORT_DEFAULT = "automatic";
+    public static final String AUDIO_CODEC_SUPPORT_DEFAULT = "automatic";
 
 
     //</editor-fold>
@@ -306,50 +308,31 @@ public class AndroidPrefStore implements PrefStore
 
     public String getVideoCodecSupport(String codec)
     {
-        return this.getString("codec/video/" + codec + "/support", AndroidPrefStore.CONTAINER_SUPPORT_DEFAULT);
+        return this.getString("codec/video/" + codec + "/support", AndroidPrefStore.VIDEO_CODEC_SUPPORT_DEFAULT);
     }
 
-    /***
-     * Gets the mime types that Android associates with these different video codecs.  This is utilized
-     * to map between SageTV codecs identifiers and Android codec identifiers
-     * @param codec The SageTV codec identifier we are looking for a mime type
-     * @return A list of mime types seperated by a comma that are associated with the SageTV codec identifier
-     */
-    public String getVideoCodecMimeTypes(String codec)
+    public String getAudioCodecSupport(String codec)
     {
-        switch (codec)
-        {
-            case MiniClientConnection.MPEG1_VIDEO:
-                return MiniClientConnection.MPEG1_VIDEO_MIME_TYPES;
-            case MiniClientConnection.MPEG2_VIDEO:
-                return MiniClientConnection.MPEG2_VIDEO_MIME_TYPES;
-            case MiniClientConnection.MPEG2_VIDEO_HL:
-                return MiniClientConnection.MPEG2_VIDEO_HL_MIME_TYPES;
-            case MiniClientConnection.H263_VIDEO:
-                return  MiniClientConnection.H263_VIDEO_MIME_TYPES;
-            case MiniClientConnection.MPEG4_VIDEO:
-                return MiniClientConnection.MPEG4_VIDEO_MIME_TYPES;
-            case MiniClientConnection.MSMPEG4_VIDEO:
-                return MiniClientConnection.MSMPEG4_VIDEO_MIME_TYPES;
-            case MiniClientConnection.H264_VIDEO:
-                return MiniClientConnection.H264_VIDEO_MIME_TYPES;
-            case MiniClientConnection.VC1_VIDEO:
-                return MiniClientConnection.VC1_VIDEO_MIME_TYPES;
-            case MiniClientConnection.HEVC_VIDEO:
-                return MiniClientConnection.HEVC_VIDEO_MIME_TYPES;
-            case MiniClientConnection.MJPEG_VIDEO:
-                return MiniClientConnection.MJPEG_VIDEO_MIME_TYPES;
-            case MiniClientConnection.VP8_VIDEO:
-                return MiniClientConnection.VP8_VIDEO_MIME_TYPES;
-            case MiniClientConnection.VP9_VIDEO:
-                return MiniClientConnection.VP9_VIDEO_MIME_TYPES;
-
-
-            default:
-                return "";
-
-        }
+        return this.getString("codec/audio/" + codec + "/support", AndroidPrefStore.AUDIO_CODEC_SUPPORT_DEFAULT);
     }
+
+    /*
+    private boolean codecListCompare(String list, String compCodec)
+    {
+        String [] codecs = list.split(",");
+
+        for(int i = 0; i < codecs.length; i++)
+        {
+            if(codecs[i].trim().equalsIgnoreCase(compCodec))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    */
+
 
     //</editor-fold>
 }

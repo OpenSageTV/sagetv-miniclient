@@ -145,7 +145,7 @@
             android:dialogTitle="MPEG-1"
             android:entries="@array/entries_list_container_preference"
             android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/video/MPEG1-VIDEO/support"
+            android:key="codec/video/MPEG1/support"
             android:title="MPEG-1"
             android:summary="%s"/>
 
@@ -154,19 +154,9 @@
             android:dialogTitle="MPEG-2"
             android:entries="@array/entries_list_container_preference"
             android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/video/MPEG2-VIDEO/support"
+            android:key="codec/video/MPEG2/support"
             android:title="MPEG-2"
             android:summary="%s"/>
-
-        <ListPreference
-            android:defaultValue="automatic"
-            android:dialogTitle="MPEG-2 HL"
-            android:entries="@array/entries_list_container_preference"
-            android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/video/MPEG2-VIDEO@HL/support"
-            android:title="MPEG-2 LH (SageTV specifc designator for higher quality MPEG-2)"
-            android:summary="%s"/>
-
 
         <ListPreference
             android:defaultValue="automatic"
@@ -182,17 +172,8 @@
             android:dialogTitle="MPEG-4"
             android:entries="@array/entries_list_container_preference"
             android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/video/MPEG4-VIDEO/support"
+            android:key="codec/video/MPEG4/support"
             android:title="MPEG-4"
-            android:summary="%s"/>
-
-        <ListPreference
-            android:defaultValue="disabled"
-            android:dialogTitle="Microsoft MPEG-4"
-            android:entries="@array/entries_list_container_preference"
-            android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/video/MSMPEG4/support"
-            android:title="Microsoft MPEG-4"
             android:summary="%s"/>
 
         <ListPreference
@@ -255,7 +236,7 @@
             android:dialogTitle="SageTV unknown codec (0X0000)"
             android:entries="@array/entries_list_container_preference"
             android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/video/0X0000/support"
+            android:key="codec/video/UNKNOWN/support"
             android:title="SageTV was not able to identify codec (0X0000)"
             android:summary="%s"/>
 
@@ -268,6 +249,32 @@
 
     <PreferenceCategory android:title="Audio Codecs" >
 
+        <ListPreference
+            android:defaultValue="enabled"
+            android:dialogTitle="MPEG1"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/audio/MPEG1/support"
+            android:title="MPEG1"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="enabled"
+            android:dialogTitle="MPEG1 Layer 2"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/audio/MP2/support"
+            android:title="MPEG1 Layer 2"
+            android:summary="%s"/>
+
+        <ListPreference
+            android:defaultValue="enabled"
+            android:dialogTitle="MPEG1 Layer 3"
+            android:entries="@array/entries_list_container_preference"
+            android:entryValues="@array/entryvalues_list_container_preference"
+            android:key="codec/audio/MP3/support"
+            android:title="MPEG1 Layer 3"
+            android:summary="%s"/>
 
     </PreferenceCategory>
 

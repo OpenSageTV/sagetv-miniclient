@@ -5,6 +5,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.preference.PreferenceManager;
 
+import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
@@ -15,7 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,8 +25,10 @@ import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
 //import sagex.miniclient.prefs.ConnectionPrefStore;
+import sagex.miniclient.media.AudioCodec;
 import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.prefs.PrefStore;
+import sagex.miniclient.media.VideoCodec;
 
 /**
  * Created by seans on 08/11/15.
@@ -87,37 +89,26 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         pullFormats.addAll(getSupportedPullContainers());
 
         videoCodecs.clear();
-        videoCodecs.addAll(getSupportedVideoCodecs());
+        List<VideoCodec> supVideoCodecs = this.getSupportedVideoCodecs();
 
-        log.debug("--------- DUMPING HARDWARE CODECS -----------");
-        for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
+        for(int i = 0; i < supVideoCodecs.size(); i++)
         {
-            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-
-            if (!info.isEncoder())
+            for(int j = 0; j < supVideoCodecs.get(i).sageTVNames().length; j++)
             {
-
-                log.debug("[{}] {}; supported: {}", i, info.getName(), info.getSupportedTypes());
-            
-                for (String s : getAudioCodecs(info))
-                {
-                    log.debug("\t" + s);
-                    acodecs.add(s);
-                }
-                for (String s : getVideoCodecs(info))
-                {
-                    log.debug("\t" + s);
-                    vcodecs.add(s);
-                }
+                videoCodecs.add(supVideoCodecs.get(i).sageTVNames()[j]);
             }
         }
 
+        audioCodecs.clear();
+        List<AudioCodec> supAudioCodecs = this.getSupportedAudioCodecs();
 
-
-        // update the supported hardware codecs for SageTV
-        // SageTV is crashing when we are enabling formats, so we are doing something wrong
-        // could be that we need to send MPEG2-VIDEO@HL to tell sagetv that we are a
-        // media extender
+        for(int i = 0; i < supAudioCodecs.size(); i++)
+        {
+            for(int j = 0; j < supAudioCodecs.get(i).getSageTVNames().length; j++)
+            {
+                audioCodecs.add(supAudioCodecs.get(i).getSageTVNames()[j]);
+            }
+        }
 
 
         if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
@@ -210,10 +201,77 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         return supportedPushContainers;
     }
 
-    private List<String> getSupportedVideoCodecs()
+    private List<AudioCodec> getSupportedAudioCodecs()
     {
-        List<String> supportedCodecs = new ArrayList<String>();
-        List<String> allCodecs = stringToList(MiniClientConnection.DEFAULT_VIDEO_CODECS);
+        List<AudioCodec> supportedCodecs = new ArrayList<AudioCodec>();
+        AudioCodec[] allCodecs = AudioCodec.values();
+
+        List<String> exoplayerCodecsMimeType = new ArrayList<>();
+
+        //Get all supported video mime types that exoplayer is reporting
+        for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
+        {
+            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
+
+            if (!info.isEncoder())
+            {
+                exoplayerCodecsMimeType.addAll(getAudioCodecs(info));
+            }
+        }
+
+        for(int i = 0; i < allCodecs.length; i++)
+        {
+            if(prefs.getAudioCodecSupport(allCodecs[i].getName()).equalsIgnoreCase("enabled"))
+            {
+                log.debug("Audio codec marked enabled: " + allCodecs[i].getName());
+                supportedCodecs.add(allCodecs[i]);
+            }
+            else if(prefs.getAudioCodecSupport(allCodecs[i].getName()).equalsIgnoreCase("automatic"))
+            {
+                if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
+                {
+                    //If ffmpeg is available an enabled than check that first
+                    if(FfmpegLibrary.isAvailable() && !getPrefs().getString(PrefStore.Keys.exoplayer_ffmpeg_extension_setting, "1").equalsIgnoreCase("0"))
+                    {
+                        for(int j = 0; j < allCodecs[i].getAndroidMimeTypes().length; j++)
+                        {
+                            if(FfmpegLibrary.supportsFormat(allCodecs[i].getAndroidMimeTypes()[j]))
+                            {
+                                log.debug("Audio codec added because it is supported by FFmpeg ext: " + allCodecs[i].getName());
+                                supportedCodecs.add(allCodecs[i]);
+                            }
+                        }
+                    }
+
+                    for(int j = 0; j < exoplayerCodecsMimeType.size(); j++)
+                    {
+                        if(allCodecs[i].hasAndroidMimeType(exoplayerCodecsMimeType.get(j)))
+                        {
+                            log.debug("Audio codec supported by android device: " + allCodecs[i].getName());
+                            supportedCodecs.add(allCodecs[i]);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    log.debug("Audio codec added because it was set to auto and player is not ExoPlayer: " + allCodecs[i].getName());
+                    supportedCodecs.add(allCodecs[i]);
+                }
+            }
+            else
+            {
+                log.debug("Audio codec NOT SUPPORTED: " + allCodecs[i].getName());
+            }
+        }
+
+        return supportedCodecs;
+    }
+
+    private List<VideoCodec> getSupportedVideoCodecs()
+    {
+        List<VideoCodec> supportedCodecs = new ArrayList<VideoCodec>();
+        VideoCodec[] allCodecs = VideoCodec.values();
 
         List<String> exoplayerCodecsMimeType = new ArrayList<>();
 
@@ -228,42 +286,48 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             }
         }
 
-        for(int i = 0; i < allCodecs.size(); i++)
+        for(int i = 0; i < allCodecs.length; i++)
         {
-            if(prefs.getVideoCodecSupport(allCodecs.get(i)).equalsIgnoreCase("enabled"))
+            if(prefs.getVideoCodecSupport(allCodecs[i].getName()).equalsIgnoreCase("enabled"))
             {
-                log.debug("Video codec marked enabled: " + allCodecs.get(i));
+                log.debug("Video codec marked enabled: " + allCodecs[i].getName());
 
-                supportedCodecs.add(allCodecs.get(i));
+                supportedCodecs.add(allCodecs[i]);
             }
-            else if(prefs.getVideoCodecSupport(allCodecs.get(i)).equalsIgnoreCase("automatic"))
+            else if(prefs.getVideoCodecSupport(allCodecs[i].getName()).equalsIgnoreCase("automatic"))
             {
                 if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
                 {
                     //Determine if ExoPlayer supports the codec
                     for(int j = 0; j < exoplayerCodecsMimeType.size(); j++)
                     {
-                        if(prefs.getVideoCodecMimeTypes(allCodecs.get(i)).toLowerCase().contains(exoplayerCodecsMimeType.get(j).toLowerCase()))
+                        if(allCodecs[i].hasAndroidMimeType(exoplayerCodecsMimeType.get(j)))
                         {
-                            log.debug("Video codec marked automatic, and is supported: " + allCodecs.get(i));
+                            log.debug("Video codec marked automatic, and is supported: " + allCodecs[i]);
 
-                            supportedCodecs.add(allCodecs.get(i));
+                            supportedCodecs.add(allCodecs[i]);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    log.debug("Video codec marked automatic, and player is not exoplayer: " + allCodecs.get(i));
+                    log.debug("Video codec marked automatic, and player is not exoplayer: " + allCodecs[i]);
 
                     //This is most likely IJKPlayer.  We assume everything is supported
-                    supportedCodecs.add(allCodecs.get(i));
+                    supportedCodecs.add(allCodecs[i]);
                 }
+            }
+            else
+            {
+                //Marked as disabled
             }
         }
 
         return supportedCodecs;
     }
+
+
 
 
     private List<String> stringToList(String str)
