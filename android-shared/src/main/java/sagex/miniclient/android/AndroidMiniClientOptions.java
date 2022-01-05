@@ -3,10 +3,12 @@ package sagex.miniclient.android;
 import static sagex.miniclient.media.Container.*;
 
 import android.app.Application;
+import android.content.Context;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.preference.PreferenceManager;
 
+import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
@@ -46,6 +48,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     private boolean isTV=false;
     private boolean isTOUCH=false;
     private boolean advancedAspects=false;
+    private Context context;
 
     AndroidMiniClientOptions(Application ctx)
     {
@@ -56,6 +59,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         this.isTV = ctx.getResources().getBoolean(R.bool.istv);
         this.isTOUCH = !isTV;
         this.advancedAspects=true;
+        this.context = ctx;
     }
 
     @Override
@@ -211,6 +215,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         AudioCodec[] allCodecs = AudioCodec.values();
 
         List<String> exoplayerCodecsMimeType = new ArrayList<>();
+        AudioCapabilities capabilities = AudioCapabilities.getCapabilities(context);
 
         //Get all supported video mime types that exoplayer is reporting
         for (int i = 0; i < MediaCodecList.getCodecCount(); i++)
@@ -234,6 +239,8 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             {
                 if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
                 {
+                    boolean supported = false;
+
                     //If ffmpeg is available an enabled than check that first
                     if(FfmpegLibrary.isAvailable() && !getPrefs().getString(PrefStore.Keys.exoplayer_ffmpeg_extension_setting, "1").equalsIgnoreCase("0"))
                     {
@@ -241,18 +248,41 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                         {
                             log.debug("Audio codec added because it is supported by FFmpeg ext: " + allCodecs[i].getName());
                             supportedCodecs.add(allCodecs[i]);
+                            supported = true;
                         }
                     }
 
-                    for(int j = 0; j < exoplayerCodecsMimeType.size(); j++)
+                    if(!supported)
                     {
-                        if(allCodecs[i].hasAndroidMimeType(exoplayerCodecsMimeType.get(j)))
+                        for (int j = 0; j < exoplayerCodecsMimeType.size(); j++)
                         {
-                            log.debug("Audio codec supported by android device: " + allCodecs[i].getName());
-                            supportedCodecs.add(allCodecs[i]);
-                            break;
+                            if (!supported && allCodecs[i].hasAndroidMimeType(exoplayerCodecsMimeType.get(j)))
+                            {
+                                log.debug("Audio codec supported by android device: " + allCodecs[i].getName());
+                                supportedCodecs.add(allCodecs[i]);
+                                supported = true;
+
+                            }
                         }
                     }
+
+                    if(!supported)
+                    {
+                        for (int j = 0; j < allCodecs[i].getAndroidAudioEncodings().length; j++)
+                        {
+                            if (!supported && capabilities.supportsEncoding(allCodecs[i].getAndroidAudioEncodings()[j]))
+                            {
+                                supportedCodecs.add(allCodecs[i]);
+                                supported = true;
+                            }
+                        }
+                    }
+
+                    if(!supported)
+                    {
+                        log.debug("Audio codec set to automatic and is not supported: " + allCodecs[i].getName());
+                    }
+
                 }
                 else
                 {
@@ -322,6 +352,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
             else
             {
                 //Marked as disabled
+                log.debug("Video codec marked disabled: " + allCodecs[i]);
             }
         }
 
