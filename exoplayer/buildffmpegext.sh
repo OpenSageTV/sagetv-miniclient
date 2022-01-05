@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 
 fi
 
-FFmpegExtVersion="2.15.1"
+FFmpegExtVersion="2.16.1"
 ExoPlayerVersion="r${FFmpegExtVersion}"
 FFmpegVersion="release/4.2"
 
@@ -53,7 +53,8 @@ if [ $1 = "exoplayer" ] || [ $1 = "all" ]; then
 
 	if [ -d $EXOPLAYER_ROOT  ]; then
 		echo "ExoPlayer already exist..."
-		cd $EXOPLAYER_ROOT 
+		cd $EXOPLAYER_ROOT
+		git pull 
 		git reset --hard
 		git checkout $ExoPlayerVersion
 	else
@@ -76,6 +77,7 @@ if [ $1 = "ffmpeg" ] || [ $1 = "all" ]; then
 	if [ -d $FFMPEG_PATH ]; then
 		echo "FFmpeg already exist..."
 		cd $FFMPEG_PATH 
+		git pull
 		git reset --hard
 		git checkout $FFmpegVersion
 	else
