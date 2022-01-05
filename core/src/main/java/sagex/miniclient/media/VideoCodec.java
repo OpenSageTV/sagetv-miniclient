@@ -5,31 +5,29 @@ import java.util.List;
 
 public enum VideoCodec
 {
-    MPEG1("MPEG1", new String[]{"MPEG1-VIDEO"}, new String[]{"video/mpeg"}),
-    MPEG2("MPEG2", new String[]{"MPEG2-VIDEO", "MPEG2-VIDEO@HL"}, new String[]{"video/mpeg2"}),
-    H263("H.263", new String[]{"H.263"}, new String[]{"video/3gpp"}),
-    MPEG4("MPEG4", new String[]{"MPEG4-VIDEO", "MSMPEG4-VIDEO"}, new String[]{"video/mp4v-es"}),
-    H264("H.264", new String[]{"H.264"}, new String[]{"video/avc"}),
-    VC1("VC1", new String[]{"VC1"}, new String[]{"video/x-ms-wmv","video/wvc1"}),
-    HEVC("HEVC", new String[]{"HEVC"}, new String[]{"video/hevc"}),
-    MJPEG("MJPEG", new String[]{"MJPEG"}, new String[]{"video/mjpeg"}),
-    VP8("VP8", new String[]{"VP8"}, new String[]{"video/x-vnd.on2.vp8"}),
-    VP9("VP9", new String[]{"VP9"}, new String[]{"video/x-vnd.on2.vp9"}),
-    /* TODO: Need to investigate further if WMC7,WMC8,WMC9 are supported by video/x-ms-wmv.  If so I will add it */
-    WMV7("WMV7", new String[]{"WMV7"}, new String[]{}),
-    WMV8("WMV8", new String[]{"WMV8"}, new String[]{}),
-    WMV9("WMV9", new String[]{"WMV9"}, new String[]{}),
-    UNKNOWN("UNKNOWN", new String[]{"0X0000"}, new String[]{});;
+    MPEG1("MPEG1", "MPEG-1", new String[]{"MPEG1-VIDEO"}, "video/mpeg"),
+    MPEG2("MPEG2", "MPEG-2", new String[]{"MPEG2-VIDEO", "MPEG2-VIDEO@HL"}, "video/mpeg2"),
+    H263("H.263", "H.263", new String[]{"H.263"}, "video/3gpp"),
+    MPEG4("MPEG4", "MPEG-4", new String[]{"MPEG4-VIDEO", "MSMPEG4-VIDEO"}, "video/mp4v-es"),
+    H264("H.264", "Advanced Video Coding, MPEG-4 Part 10 (H.264)", new String[]{"H.264"}, "video/avc"),
+    VC1("VC1", "VC-1", new String[]{"VC1", "WMV7", "WMV8", "WMV9"}, "video/wvc1"),
+    HEVC("HEVC", "High Efficiency Video Coding, H.265 (HEVC)", new String[]{"HEVC"}, "video/hevc"),
+    MJPEG("MJPEG", "Motion JPEG (MJPEG)", new String[]{"MJPEG"}, ""),
+    VP8("VP8", "VP8", new String[]{"VP8"}, "video/x-vnd.on2.vp8"),
+    VP9("VP9", "VP9", new String[]{"VP9"}, "video/x-vnd.on2.vp9"),
+    UNKNOWN("UNKNOWN", "", new String[]{"0X0000"}, "");
 
     private String name;
     private String [] sageTVNames;
-    private String [] androidMimeTypes;
+    private String androidMimeType;
+    private String description;
 
-    private VideoCodec(String name, String [] sageTVNames, String [] androidMimeTypes)
+    private VideoCodec(String name, String description, String [] sageTVNames, String androidMimeType)
     {
         this.name = name;
         this.sageTVNames = sageTVNames;
-        this.androidMimeTypes = androidMimeTypes;
+        this.androidMimeType = androidMimeType;
+        this.description = description;
     }
 
     public String getName()
@@ -37,24 +35,27 @@ public enum VideoCodec
         return name;
     }
 
+    public String getDescription()
+    {
+        return description;
+    }
+
     public String [] sageTVNames()
     {
         return sageTVNames;
     }
 
-    public String [] getAndroidMimeTypes()
+    public String getAndroidMimeType()
     {
-        return androidMimeTypes;
+        return androidMimeType;
     }
 
     public boolean hasAndroidMimeType(String mime_type)
     {
-        for(int i = 0; i < this.androidMimeTypes.length; i++)
+
+        if(this.androidMimeType.equalsIgnoreCase(mime_type))
         {
-            if(this.androidMimeTypes[i].equalsIgnoreCase(mime_type))
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;

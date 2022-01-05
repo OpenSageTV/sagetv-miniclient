@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="Containers">
+    <PreferenceCategory android:title="Containers" android:key="containers">
 
+        <!--
         <ListPreference
             android:defaultValue="automatic"
             android:dialogTitle="Matroska"
@@ -93,10 +94,6 @@
             android:title="AAC (.aac)"
             android:summary="%s"/>
 
-        <!--
-        //:TODO Investigate WMV further.  Sage has WMV7, WMV8, WMV9
-        -->
-
         <ListPreference
             android:defaultValue="automatic"
             android:dialogTitle="ASF"
@@ -132,14 +129,16 @@
             android:key="container/AC3/support"
             android:title="AC3 (.ac3)"
             android:summary="%s"/>
+        -->
 
         <!-- PULL_FORMATS=AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3
         PUSH_FORMATS=MPEG2-PS,MPEG2-TS,MPEG1-PS
         -->
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Video Codecs">
+    <PreferenceCategory android:title="Video Codecs" android:key="video_codecs">
 
+        <!--
         <ListPreference
             android:defaultValue="automatic"
             android:dialogTitle="MPEG-1"
@@ -239,42 +238,17 @@
             android:key="codec/video/UNKNOWN/support"
             android:title="SageTV was not able to identify codec (0X0000)"
             android:summary="%s"/>
+        -->
 
         <!--
         TODO: FLASHVIDEO is a container not a codec.  Need to investigate further.
-        TODO: WMV is a container format not a codec.  Need to investigate further.
         -->
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Audio Codecs" >
+    <PreferenceCategory android:title="Audio Codecs" android:key="audio_codecs">
 
-        <ListPreference
-            android:defaultValue="enabled"
-            android:dialogTitle="MPEG1"
-            android:entries="@array/entries_list_container_preference"
-            android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/audio/MPEG1/support"
-            android:title="MPEG1"
-            android:summary="%s"/>
 
-        <ListPreference
-            android:defaultValue="enabled"
-            android:dialogTitle="MPEG1 Layer 2"
-            android:entries="@array/entries_list_container_preference"
-            android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/audio/MP2/support"
-            android:title="MPEG1 Layer 2"
-            android:summary="%s"/>
-
-        <ListPreference
-            android:defaultValue="enabled"
-            android:dialogTitle="MPEG1 Layer 3"
-            android:entries="@array/entries_list_container_preference"
-            android:entryValues="@array/entryvalues_list_container_preference"
-            android:key="codec/audio/MP3/support"
-            android:title="MPEG1 Layer 3"
-            android:summary="%s"/>
 
     </PreferenceCategory>
 

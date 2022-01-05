@@ -1,5 +1,7 @@
 package sagex.miniclient.android;
 
+import static sagex.miniclient.media.Container.*;
+
 import android.app.Application;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
@@ -26,6 +28,7 @@ import sagex.miniclient.MiniClientOptions;
 import sagex.miniclient.android.prefs.AndroidPrefStore;
 //import sagex.miniclient.prefs.ConnectionPrefStore;
 import sagex.miniclient.media.AudioCodec;
+import sagex.miniclient.media.Container;
 import sagex.miniclient.util.AspectModeManager;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.media.VideoCodec;
@@ -83,10 +86,26 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         Set<String> vcodecs = new TreeSet<>();
 
         pushFormats.clear();
-        pushFormats.addAll(getSupportedPushContainers());
+        List<Container> supPushContainers = this.getSupportedPushContainers();
+
+        for(int i = 0; i < supPushContainers.size(); i++)
+        {
+            for(int j = 0; j < supPushContainers.get(j).getSageTVNames().length; j++)
+            {
+                pushFormats.add(supPushContainers.get(j).getSageTVNames()[j]);
+            }
+        }
 
         pullFormats.clear();
-        pullFormats.addAll(getSupportedPullContainers());
+        List<Container> supPullContainers = this.getSupportedPullContainers();
+
+        for(int i = 0; i < supPullContainers.size(); i++)
+        {
+            for(int j = 0; j < supPullContainers.get(i).getSageTVNames().length; j++)
+            {
+                pullFormats.add(supPullContainers.get(i).getSageTVNames()[j]);
+            }
+        }
 
         videoCodecs.clear();
         List<VideoCodec> supVideoCodecs = this.getSupportedVideoCodecs();
@@ -109,96 +128,81 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 audioCodecs.add(supAudioCodecs.get(i).getSageTVNames()[j]);
             }
         }
+    }
 
+    private List<Container> getSupportedPushContainers()
+    {
+        List<Container> supportedContainers = new ArrayList<Container>();
+        Container [] allContainers = new Container[]{MPEG1PS, MPEG2PS, MPEG2TS};
 
-        if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
+        for(int i = 0; i < allContainers.length; i++)
         {
-            /*
-            videoCodecs.clear();
-            
-            for (String s: vcodecs)
+            if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("enabled"))
             {
-                //if(codecs.getProperty(s) != null
-                //    && (prefs.getContainerSupport(codecs.getProperty(s).toUpperCase()).equalsIgnoreCase("automatic")
-                //    || prefs.getContainerSupport(codecs.getProperty(s).toUpperCase()).equalsIgnoreCase("enabled")))
-                //{
-                    if (codecs.getProperty(s) != null)
+                log.debug("Pull Container being added because it is set as enabled: " + allContainers[i].getName());
+                supportedContainers.add(allContainers[i]);
+            }
+            else if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("automatic"))
+            {
+                if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
+                {
+                    if(isSupportedExoPlayerContainer(allContainers[i]))
                     {
-                        log.debug("Codec Supported: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
-                        videoCodecs.add(codecs.getProperty(s));
+                        log.debug("Pull Container being added because it is set as automatic and is ExoPlayer supported: " + allContainers[i].getName());
+                        supportedContainers.add(allContainers[i]);
                     }
-                //}
-                //else
-                //{
-                //    log.debug("Codec set to disabled by preference: Android Mime={}, SageTV Type={}", s, codecs.getProperty(s));
-                //}
+                }
+                else
+                {
+                    log.debug("Pull Container being added because it is set as automatic and player is IJKPlayer: " + allContainers[i].getName());
+                    //IJK Player.  Adding all for now
+                    supportedContainers.add(allContainers[i]);
+                }
             }
-            */
-
-
-            //Check to see if MPEG2-VIDEO is supported.  If so add MPEG2-VIDEO@HL.  This appears to be a SageTV Specific setting
-            /* Added MPEG2-VIDEO@HL to the codec.properties file as a MPEG2 codec
-            if(videoCodecs.contains("MPEG2-VIDEO") && !videoCodecs.contains("MPEG2-VIDEO@HL"))
+            else
             {
-                videoCodecs.add("MPEG2-VIDEO@HL");
+                log.debug("Pull Container being NOT added because it is set as disabled: " + allContainers[i].getName());
             }
-             */
-
-            //SageTV sets the codec string 0X0000 if it does not know what it is.  This generally happens with HEVC.  Adding this if it does not exits
-            //if(!videoCodecs.contains("0X0000"))
-            //{
-            //    videoCodecs.add("0X0000");
-            //}
-
-            //audioCodecs.clear();
-            //for (String s: acodecs)
-            //{
-            //    if (codecs.getProperty(s)!=null)
-            //    {
-            //        audioCodecs.add(codecs.getProperty(s));
-            //    }
-            //}
-
-            // exoplayer supports passthrough
-            //audioCodecs.add("AC3");
-
-
-
         }
+        return supportedContainers;
     }
 
-    private List<String> getSupportedPullContainers()
+    private List<Container> getSupportedPullContainers()
     {
-        List<String> supportedPullContainers = new ArrayList<String>();
-        List<String> allPullContainers = stringToList(MiniClientConnection.DEFAULT_PULL_FORMATS);
+        List<Container> supportedContainers = new ArrayList<Container>();
+        Container [] allContainers = Container.values();
 
-        for(int i = 0; i < allPullContainers.size(); i++)
+        for(int i = 0; i < allContainers.length; i++)
         {
-            if(prefs.getContainerSupport(allPullContainers.get(i)).equalsIgnoreCase("automatic")
-                    || prefs.getContainerSupport(allPullContainers.get(i)).equalsIgnoreCase("enabled"))
+            if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("enabled"))
             {
-                supportedPullContainers.add(allPullContainers.get(i));
+                log.debug("Pull Container being added because it is set as enabled: " + allContainers[i].getName());
+                supportedContainers.add(allContainers[i]);
+            }
+            else if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("automatic"))
+            {
+                if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
+                {
+                    if(isSupportedExoPlayerContainer(allContainers[i]))
+                    {
+                        log.debug("Pull Container being added because it is set as automatic and is ExoPlayer supported: " + allContainers[i].getName());
+                        supportedContainers.add(allContainers[i]);
+                    }
+                }
+                else
+                {
+                    log.debug("Pull Container being added because it is set as automatic and player is IJKPlayer: " + allContainers[i].getName());
+                    //IJK Player.  Adding all for now
+                    supportedContainers.add(allContainers[i]);
+                }
+            }
+            else
+            {
+                log.debug("Pull Container being NOT added because it is set as disabled: " + allContainers[i].getName());
             }
         }
 
-        return supportedPullContainers;
-    }
-
-    private List<String> getSupportedPushContainers()
-    {
-        List<String> supportedPushContainers = new ArrayList<String>();
-        List<String> allPushContainers = stringToList(MiniClientConnection.DEFAULT_PUSH_FORMATS);
-
-        for(int i = 0; i < allPushContainers.size(); i++)
-        {
-            if(prefs.getContainerSupport(allPushContainers.get(i)).equalsIgnoreCase("automatic")
-                    || prefs.getContainerSupport(allPushContainers.get(i)).equalsIgnoreCase("enabled"))
-            {
-                supportedPushContainers.add(allPushContainers.get(i));
-            }
-        }
-
-        return supportedPushContainers;
+        return supportedContainers;
     }
 
     private List<AudioCodec> getSupportedAudioCodecs()
@@ -233,13 +237,10 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                     //If ffmpeg is available an enabled than check that first
                     if(FfmpegLibrary.isAvailable() && !getPrefs().getString(PrefStore.Keys.exoplayer_ffmpeg_extension_setting, "1").equalsIgnoreCase("0"))
                     {
-                        for(int j = 0; j < allCodecs[i].getAndroidMimeTypes().length; j++)
+                        if(FfmpegLibrary.supportsFormat(allCodecs[i].getAndroidMimeType()))
                         {
-                            if(FfmpegLibrary.supportsFormat(allCodecs[i].getAndroidMimeTypes()[j]))
-                            {
-                                log.debug("Audio codec added because it is supported by FFmpeg ext: " + allCodecs[i].getName());
-                                supportedCodecs.add(allCodecs[i]);
-                            }
+                            log.debug("Audio codec added because it is supported by FFmpeg ext: " + allCodecs[i].getName());
+                            supportedCodecs.add(allCodecs[i]);
                         }
                     }
 
@@ -328,20 +329,6 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     }
 
 
-
-
-    private List<String> stringToList(String str)
-    {
-        ArrayList<String> list = new ArrayList<String>();
-        if (str==null) return list;
-
-        for (String s: str.split("\\s*,\\s*"))
-        {
-            list.add(s.trim());
-        }
-        return list;
-    }
-
     @Override
     public boolean isTouchUI()
     {
@@ -411,6 +398,36 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         return list;
     }
 
+    private boolean isSupportedExoPlayerContainer(Container container)
+    {
+        switch(container)
+        {
+            case MATROSKA:
+                return true;
+            case MP4:
+                return true;
+            case MP3:
+                return true;
+            case OGG:
+                return true;
+            case WAV:
+                return true;
+            case MPEG1PS:
+                return true;
+            case MPEG2PS:
+                return true;
+            case FLASHVIDEO:
+                return true;
+            case AAC:
+                return true;
+            default:
+                return false;
+
+        }
+
+
+    }
+
     private boolean isAudioDecoder(MediaCodecInfo info)
     {
         if (info == null || info.getSupportedTypes() == null || info.getSupportedTypes().length == 0)
@@ -440,6 +457,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         }
         return false;
     }
+
 
 
 }
