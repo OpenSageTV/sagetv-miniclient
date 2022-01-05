@@ -18,7 +18,7 @@ public class CodecContainerFragment extends PreferenceFragmentCompat
     {
         setPreferencesFromResource(R.xml.codec_container_prefs, rootKey);
 
-        PreferenceCategory container = findPreference("container");
+        PreferenceCategory container = findPreference("containers");
         ListPreference containerPref;
 
         Container [] containers = Container.values();

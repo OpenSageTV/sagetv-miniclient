@@ -416,6 +416,8 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 return true;
             case MPEG2PS:
                 return true;
+            case MPEG2TS:
+                return true;
             case FLASHVIDEO:
                 return true;
             case AAC:
