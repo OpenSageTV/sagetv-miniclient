@@ -83,7 +83,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     }
 
     @Override
-    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs)
+    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats)
     {
 
         Set<String> acodecs = new TreeSet<>();
@@ -178,31 +178,29 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 
         for(int i = 0; i < allContainers.length; i++)
         {
-            if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("enabled"))
+            if (allContainers[i] == MPEG1PS || allContainers[i] == MPEG2TS || allContainers[i] == MPEG1PS)
             {
-                log.debug("Pull Container being added because it is set as enabled: " + allContainers[i].getName());
-                supportedContainers.add(allContainers[i]);
-            }
-            else if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("automatic"))
-            {
-                if(getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer"))
-                {
-                    if(isSupportedExoPlayerContainer(allContainers[i]))
-                    {
-                        log.debug("Pull Container being added because it is set as automatic and is ExoPlayer supported: " + allContainers[i].getName());
-                        supportedContainers.add(allContainers[i]);
-                    }
-                }
-                else
-                {
-                    log.debug("Pull Container being added because it is set as automatic and player is IJKPlayer: " + allContainers[i].getName());
-                    //IJK Player.  Adding all for now
-                    supportedContainers.add(allContainers[i]);
-                }
+                //These codecs are not support for pull at this time.  They are push only formats.
             }
             else
             {
-                log.debug("Pull Container being NOT added because it is set as disabled: " + allContainers[i].getName());
+                if (prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("enabled")) {
+                    log.debug("Pull Container being added because it is set as enabled: " + allContainers[i].getName());
+                    supportedContainers.add(allContainers[i]);
+                } else if (prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("automatic")) {
+                    if (getPrefs().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer")) {
+                        if (isSupportedExoPlayerContainer(allContainers[i])) {
+                            log.debug("Pull Container being added because it is set as automatic and is ExoPlayer supported: " + allContainers[i].getName());
+                            supportedContainers.add(allContainers[i]);
+                        }
+                    } else {
+                        log.debug("Pull Container being added because it is set as automatic and player is IJKPlayer: " + allContainers[i].getName());
+                        //IJK Player.  Adding all for now
+                        supportedContainers.add(allContainers[i]);
+                    }
+                } else {
+                    log.debug("Pull Container being NOT added because it is set as disabled: " + allContainers[i].getName());
+                }
             }
         }
 

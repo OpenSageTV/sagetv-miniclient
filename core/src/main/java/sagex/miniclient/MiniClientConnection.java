@@ -27,6 +27,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import sagex.miniclient.events.ConnectionLost;
+import sagex.miniclient.media.Container;
 import sagex.miniclient.media.VideoCodec;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
@@ -545,60 +546,14 @@ public class MiniClientConnection implements SageTVInputCallback
 
     private void discoverCodecSupport()
     {
-        String profile = null;
-
-        boolean isExoPlayer = client.properties().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer");
-        
-        if (isExoPlayer)
-        {
-            profile = "exoplayer.profile";
-        }
-        else
-        {
-            profile = "ijkplayer.profile";
-        }
-        
         profileProperties = loadProperties("common.profile");
-        profileProperties.putAll(loadProperties(profile));
-
-        //String acodec = profileProperties.getProperty("AUDIO_CODECS", DEFAULT_AUDIO_CODECS);
-        //String vcodec = profileProperties.getProperty("VIDEO_CODECS", DEFAULT_VIDEO_CODECS);
-        String pushf = profileProperties.getProperty("PUSH_FORMATS", DEFAULT_PUSH_FORMATS);
-        String pullf = profileProperties.getProperty("PULL_FORMATS", DEFAULT_PULL_FORMATS);
 
         audioCodecs = AudioCodec.getAllSageTVNames();
         videoCodecs = VideoCodec.getAllSageTVNames();
-        pullFormats = stringToList(pullf);
-        pushFormats = stringToList(pushf);
-    
-        //pushFormats=stringToList("MATROSKA");
-        
-        Properties codecs = loadProperties("codecs.properties");
+        pullFormats = Container.getAllSageTVNames();
+        pushFormats = Container.getAllSageTVNames();
 
-        log.debug("***** Calling prepare codecs *****");
-
-        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
-
-        log.debug("***** FINAL VIDEO CODEC LIST *****");
-
-        for(int i = 0; i < videoCodecs.size(); i++)
-        {
-            log.debug(videoCodecs.get(i));
-        }
-
-        log.debug("***** FINAL PUSH FORMATS *****");
-
-        for(int i = 0; i < pushFormats.size(); i++)
-        {
-            log.debug(pushFormats.get(i));
-        }
-
-        log.debug("***** FINAL PULL FORMATS *****");
-
-        for(int i = 0; i < pullFormats.size(); i++)
-        {
-            log.debug(pullFormats.get(i));
-        }
+        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats);
     }
 
     private List<String> stringToList(String str) {

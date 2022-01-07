@@ -249,9 +249,9 @@ public class MiniClient
         return currentConnection != null && currentConnection.getMediaCmd() != null && currentConnection.getMediaCmd().getPlaya() != null;
     }
 
-    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats, Properties codecs)
+    public void prepareCodecs(List<String> videoCodecs, List<String> audioCodecs, List<String> pushFormats, List<String> pullFormats)
     {
-        options.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
+        options.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats);
     }
 
     public ImageCache getImageCache()

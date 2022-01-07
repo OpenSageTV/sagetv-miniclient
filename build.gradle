@@ -40,7 +40,7 @@ allprojects {
         gdxVersion = "1.9.14"
 
         // NOTE: using exoplayer from mavenlocal (prebuilt) for ffmpeg
-        exoVersionCustomExt = '2.15.1'
+        exoVersionCustomExt = '2.16.1'
         // NOTE: using regular exoplayer for core stuff
         exoVersion = '2.16.1'
         ijkVersionDev = '0.8.8-SNAPSHOT'
