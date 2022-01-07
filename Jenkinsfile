@@ -3,10 +3,10 @@ pipeline {
     environment {
         appName = 'SageTV Android Client'
 
-        KEY_PASSWORD = credentials('keyPassword')
-        KEY_ALIAS = credentials('keyAlias')
-        KEYSTORE = credentials('keystore')
-        STORE_PASSWORD = credentials('storePassword')
+        //KEY_PASSWORD = credentials('keyPassword')
+        //KEY_ALIAS = credentials('keyAlias')
+        //KEYSTORE = credentials('keystore')
+        //STORE_PASSWORD = credentials('storePassword')
     }
     stages {
         
@@ -14,8 +14,9 @@ pipeline {
             steps {
                 echo 'Building'
                 script {
-                    VARIANT = getBuildType()
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=${KEYSTORE} -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
+                    //VARIANT = getBuildType()
+                    //sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=${KEYSTORE} -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
+                    sh "./gradlew build"
                 }
             }
         }
