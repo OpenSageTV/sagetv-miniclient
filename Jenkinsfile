@@ -6,7 +6,7 @@ pipeline {
         KEY_PASSWORD = credentials('keyPassword')
         KEY_ALIAS = credentials('keyAlias')
         KEYSTORE = credentials('keystoreFile')
-        writeFile file: 'jvlsagetvkeystore', text: readFile(jvlsagetvkeystore)
+        writeFile file: 'jvlsagetvkeystore', text: readFile(credentials('keystoreFile'))
 
         STORE_PASSWORD = credentials('storePassword')
     }
