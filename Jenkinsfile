@@ -10,9 +10,10 @@ pipeline {
     }
     stages {
         stage('Credentials file'){
-
-            withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTOREFILE')]){
-                writeFile file: 'jvlsagetvkeystore', text: readFile(KEYSTOREFILE)
+            steps {
+                withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTOREFILE')]){
+                    writeFile file: 'jvlsagetvkeystore', text: readFile(KEYSTOREFILE)
+                }
             }
 
         }
