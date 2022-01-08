@@ -58,17 +58,17 @@ android {
             }
             else
             {
-                storeFile file(getPropertyFromBuildCommand("storeFile"))
-                storePassword getPropertyFromBuildCommand("storePassword")
+                storeFile file(getPropertyFromBuildCommand("keystore"))
+                storePassword getPropertyFromBuildCommand("storePass")
                 keyAlias getPropertyFromBuildCommand("keyAlias")
-                keyPassword getPropertyFromBuildCommand("keyPassword")
+                keyPassword getPropertyFromBuildCommand("keyPass")
 
                 System.out.println("signing config missing or incorrectly configured.  Used command line params")
             }
         }
         debug
         {
-            keyAlias = "client"
+            alias = "client"
 
             if (signingProps!=null && signingProps.containsKey("keyAlias") && signingProps.containsKey("storeFile")
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
@@ -82,10 +82,10 @@ android {
             }
             else
             {
-                storeFile file(getPropertyFromBuildCommand("storeFile"))
-                storePassword getPropertyFromBuildCommand("storePassword")
-                keyAlias getPropertyFromBuildCommand("keyAlias")
-                keyPassword getPropertyFromBuildCommand("keyPassword")
+                storeFile file(getPropertyFromBuildCommand("keystore"))
+                storePassword getPropertyFromBuildCommand("storePass")
+                keyAlias getPropertyFromBuildCommand("alias")
+                keyPassword getPropertyFromBuildCommand("keyPass")
 
                 System.out.println("signing config missing or incorrectly configured.  Used command line params")
             }
