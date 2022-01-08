@@ -23,8 +23,10 @@ pipeline {
                 echo 'Building'
                 script {
                     //VARIANT = getBuildType()
-                    echo "${KEYSTORE}"
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=${KEYSTORE} -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
+                    withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTOREFILE')]){
+
+                        sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=${KEYSTOREFILE} -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
+                    }
                     //sh "./gradlew build"
                 }
             }
