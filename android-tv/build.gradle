@@ -58,7 +58,12 @@ android {
             }
             else
             {
-                System.out.println("signing config missing or incorrectly configured")
+                storeFile file(getPropertyFromBuildCommand("storeFile"))
+                storePassword getPropertyFromBuildCommand("storePassword")
+                keyAlias getPropertyFromBuildCommand("keyAlias")
+                keyPassword getPropertyFromBuildCommand("keyPassword")
+
+                System.out.println("signing config missing or incorrectly configured.  Used command line params")
             }
         }
         debug
@@ -77,7 +82,12 @@ android {
             }
             else
             {
-                System.out.println("signing config missing or incorrectly configured")
+                storeFile file(getPropertyFromBuildCommand("storeFile"))
+                storePassword getPropertyFromBuildCommand("storePassword")
+                keyAlias getPropertyFromBuildCommand("keyAlias")
+                keyPassword getPropertyFromBuildCommand("keyPassword")
+
+                System.out.println("signing config missing or incorrectly configured.  Used command line params")
             }
         }
     }
