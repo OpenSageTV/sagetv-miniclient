@@ -16,7 +16,7 @@ pipeline {
                 script {
                     //VARIANT = getBuildType()
                     withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTOREFILE')]){
-
+                        sh "cp ${KEYSTOREFILE} ."
                         sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=${KEYSTOREFILE} -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
                     }
                     //sh "./gradlew build"
