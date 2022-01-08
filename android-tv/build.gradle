@@ -60,7 +60,7 @@ android {
             {
                 storeFile file(getPropertyFromBuildCommand("keystore"))
                 storePassword getPropertyFromBuildCommand("storePass")
-                keyAlias getPropertyFromBuildCommand("keyAlias")
+                keyAlias getPropertyFromBuildCommand("alias")
                 keyPassword getPropertyFromBuildCommand("keyPass")
 
                 System.out.println("signing config missing or incorrectly configured.  Used command line params")
