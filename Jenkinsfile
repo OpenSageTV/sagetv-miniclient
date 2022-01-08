@@ -5,7 +5,9 @@ pipeline {
 
         KEY_PASSWORD = credentials('keyPassword')
         KEY_ALIAS = credentials('keyAlias')
-        KEYSTORE = credentials('keystoreFile')
+        //KEYSTORE = credentials('keystoreFile')
+        withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTORE')])
+
         STORE_PASSWORD = credentials('storePassword')
     }
     stages {
