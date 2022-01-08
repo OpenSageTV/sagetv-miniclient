@@ -15,6 +15,7 @@ pipeline {
                 echo 'Building'
                 script {
                     //VARIANT = getBuildType()
+                    sh "echo ${KEYSTORE}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=${KEYSTORE} -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
 
                     //sh "./gradlew build"
