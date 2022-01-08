@@ -5,8 +5,11 @@ pipeline {
 
         KEY_PASSWORD = credentials('keyPassword')
         KEY_ALIAS = credentials('keyAlias')
-        //KEYSTORE = credentials('keystoreFile')
-        withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTORE')])
+        KEYSTORE = credentials('keystoreFile')
+        withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTOREFILE')])
+        {
+            writeFile file: 'jvlsagetvkeystore', text: readFile(KEYSTOREFILE)
+        }
 
         STORE_PASSWORD = credentials('storePassword')
     }
