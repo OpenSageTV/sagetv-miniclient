@@ -9,14 +9,6 @@ pipeline {
         STORE_PASSWORD = credentials('storePassword')
     }
     stages {
-        stage('Credentials file'){
-            steps {
-                withCredentials([file(credentialsId: 'keystoreFile', variable: 'KEYSTOREFILE')]){
-                    writeFile file: 'jvlsagetvkeystore', text: readFile(KEYSTOREFILE)
-                }
-            }
-
-        }
 
         stage('Build Bundle') {
             steps {
