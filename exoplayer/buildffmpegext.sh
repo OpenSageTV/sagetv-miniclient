@@ -142,10 +142,6 @@ if [ $1 = "buildexoplayer" ] || [ $1 = "all" ]; then
 	
 	echo "Building Exoplayer..."
 	cd "$EXOPLAYER_ROOT"
-	echo "Attempting to change gradle version..."
-	sed -i 's/com.android.tools.build:gradle:7.0.3/com.android.tools.build:gradle:6.1.1/g' build.gradle
-	echo "Show gradle tasks..."
-	./gradle tasks
 	./gradlew assemble
 
 	cd 	$BUILD_PATH	
