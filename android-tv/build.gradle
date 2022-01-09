@@ -77,25 +77,21 @@ android {
             if (signingProps!=null && signingProps.containsKey("keyAlias") && signingProps.containsKey("storeFile")
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
             {
-                keyAlias = signingProps.getProperty("keyAlias")
-                storeFile = new File(signingProps.getProperty("storeFile"))
-                storePassword = signingProps.getProperty("storePassword")
-                keyPassword = signingProps.getProperty("keyPassword")
+                storeFile file(project.getProperty("keystore"))
+                storePassword project.getProperty("storePass")
+                keyAlias project.getProperty("alias")
+                keyPassword project.getProperty("keyPass")
 
-                System.out.println("signing config setup from properties file")
+                System.out.println("signing config missing or incorrectly configured.  Using command line params")
             }
             else
             {
                 storeFile file(project.getProperty("keystore"))
-                System.out.println("Keystore: " + storeFile)
                 storePassword project.getProperty("storePass")
-                System.out.println("Store Password: " + storePassword)
                 keyAlias project.getProperty("alias")
-                System.out.println("Key Alias: " + keyAlias)
                 keyPassword project.getProperty("keyPass")
-                System.out.println("Key Password: " + keyPassword)
 
-                System.out.println("signing config missing or incorrectly configured.  Used command line params")
+                System.out.println("signing config missing or incorrectly configured.  Using command line params")
             }
         }
     }
