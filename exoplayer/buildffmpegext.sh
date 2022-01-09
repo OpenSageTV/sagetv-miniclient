@@ -142,8 +142,7 @@ if [ $1 = "buildexoplayer" ] || [ $1 = "all" ]; then
 	
 	echo "Building Exoplayer..."
 	cd "$EXOPLAYER_ROOT"
-	./gradlew wrapper --gradle-version 6.1.1
-	./gradlew assemble
+	./gradlew assemble --gradle-version 6.1.1
 
 	cd 	$BUILD_PATH	
 
