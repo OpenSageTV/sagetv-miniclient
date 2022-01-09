@@ -59,9 +59,13 @@ android {
             else
             {
                 storeFile file(project.getProperty("keystore"))
+                System.out.println("Keystore: " + storeFile)
                 storePassword project.getProperty("storePass")
+                System.out.println("Store Password: " + storePassword)
                 keyAlias project.getProperty("alias")
+                System.out.println("Key Alias: " + keyAlias)
                 keyPassword project.getProperty("keyPass")
+                System.out.println("Key Password: " + keyPassword)
 
                 System.out.println("signing config missing or incorrectly configured.  Used command line params")
             }
@@ -83,9 +87,13 @@ android {
             else
             {
                 storeFile file(project.getProperty("keystore"))
+                System.out.println("Keystore: " + storeFile)
                 storePassword project.getProperty("storePass")
+                System.out.println("Store Password: " + storePassword)
                 keyAlias project.getProperty("alias")
+                System.out.println("Key Alias: " + keyAlias)
                 keyPassword project.getProperty("keyPass")
+                System.out.println("Key Password: " + keyPassword)
 
                 System.out.println("signing config missing or incorrectly configured.  Used command line params")
             }
