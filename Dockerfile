@@ -11,6 +11,7 @@ RUN apt-get update \
 
 ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip" \
     ANDROID_HOME="/usr/local/android-sdk" \
+    ANDROID_SDK_ROOT="/usr/local/android-sdk" \
     ANDROID_VERSION=29
 
 # Download Android SDK
@@ -24,8 +25,8 @@ RUN mkdir "$ANDROID_HOME" .android \
     && yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager --licenses
 
 # Install Android Build Tool and Libraries
-RUN $ANDROID_HOME/tools/bin/sdkmanager --update
-RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.2" \
+RUN $ANDROID_HOME/cmdline-tools/bin/sdkmanager --update
+RUN $ANDROID_HOME/cmdline-tools/bin/sdkmanager "build-tools;29.0.2" \
     "platforms;android-${ANDROID_VERSION}" \
     "platform-tools"
 
