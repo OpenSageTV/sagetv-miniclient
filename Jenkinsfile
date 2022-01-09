@@ -16,7 +16,7 @@ pipeline {
                 echo 'Building ExoPlayer'
                 script {
                     sh "cd exoplayer"
-                    sh "./buildffmpegext.sh all"
+                    sh "cd exoplayer && ./buildffmpegext.sh all"
 
                 }
             }
