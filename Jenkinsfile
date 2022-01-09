@@ -14,10 +14,12 @@ pipeline {
 
             steps {
                 echo 'Building ExoPlayer'
-                script {
-                    sh "cd exoplayer"
-                    sh "cd exoplayer && ./buildffmpegext.sh all"
+                dir("exoplayer") {
+                    script {
 
+                        sh "./buildffmpegext.sh all"
+
+                    }
                 }
             }
 
