@@ -16,7 +16,6 @@ pipeline {
                 echo 'Building ExoPlayer'
                 dir('exoplayer') {
                     sh('ls')
-                    sh('./gradlew wrapper --gradle-version 6.1.1')
                     sh('bash ./buildffmpegext.sh all')
                 }
             }
