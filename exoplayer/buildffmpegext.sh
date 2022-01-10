@@ -11,8 +11,9 @@ FFmpegExtVersion="2.16.1"
 ExoPlayerVersion="r${FFmpegExtVersion}"
 FFmpegVersion="release/4.2"
 
-export ANDROID_SDK_ROOT=/home/jvl711/Documents/sdk/
-export ANDROID_HOME=/home/jvl711/Documents/sdk/
+#I think we should check these and maybe
+#export ANDROID_SDK_ROOT=/home/jvl711/Documents/sdk/
+#export ANDROID_HOME=/home/jvl711/Documents/sdk/
 
 ENABLED_DECODERS=(vorbis opus flac alac pcm_mulaw pcm_alaw mp3 amrnb amrwb aac ac3 eac3 dca mlp truehd)
 
