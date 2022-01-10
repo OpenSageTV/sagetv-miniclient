@@ -15,8 +15,7 @@ pipeline {
             steps {
                 echo 'Building ExoPlayer'
                 dir('exoplayer') {
-                    sh('ls')
-                    sh('bash ./buildffmpegext.sh all')
+                    //sh('bash ./buildffmpegext.sh all')
                 }
             }
 
