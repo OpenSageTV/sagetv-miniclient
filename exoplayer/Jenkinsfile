@@ -16,8 +16,6 @@ pipeline {
                     sh('bash ./buildffmpegext.sh all')
                 }
 
-
-
                 sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
                 sh('git config --global user.email "josh@joshandmonique.com"')
                 sh('git config --global user.name "Joshua Lewis"')
