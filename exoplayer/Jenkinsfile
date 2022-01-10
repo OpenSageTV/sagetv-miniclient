@@ -19,7 +19,7 @@ pipeline {
 
 
 
-                sh('git remote set-url origin https://${GIT_HUB_USER}:${GIT_HUB_TOKEN}@https://github.com/OpenSageTV/sagetv-miniclient.git')
+                sh('git remote set-url origin https://${GIT_HUB_TOKEN}@https://github.com/OpenSageTV/sagetv-miniclient.git')
                 sh('git config --global user.email "jvl711@gmail.com"')
                 sh('git config --global user.name "Joshua Lewis"')
 
