@@ -16,11 +16,12 @@ pipeline {
                     sh('bash ./buildffmpegext.sh all')
                 }
 
-                sh('git config --global user.email "jvl711@gmail.com"')
-                sh('git config --global user.name "Joshua Lewis"')
 
 
                 sh('git remote set-url origin https://${GIT_HUB_USER}:${GIT_HUB_TOKEN}@https://github.com/OpenSageTV/sagetv-miniclient.git')
+                sh('git config --global user.email "jvl711@gmail.com"')
+                sh('git config --global user.name "Joshua Lewis"')
+
                 sh('git add -A')
                 sh('git commit -a -m \"Automated commit from Jenkins build fro FFmpeg extention\"')
                 sh('git push')
