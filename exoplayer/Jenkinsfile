@@ -25,7 +25,7 @@ pipeline {
 
                 sh('git add -A')
                 sh('git commit -a -m \"Automated commit from Jenkins build fro FFmpeg extention\"')
-                sh('git push')
+                sh('git push origin HEAD:exoplayer')
 
             }
 
