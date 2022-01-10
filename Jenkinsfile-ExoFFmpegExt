@@ -1,0 +1,22 @@
+pipeline {
+    agent { dockerfile true }
+    environment {
+        KEY_PASSWORD = credentials('keyPassword')
+        KEY_ALIAS = credentials('keyAlias')
+        KEYSTORE = credentials('keystoreFile')
+        STORE_PASSWORD = credentials('storePassword')
+    }
+    stages {
+
+        stage('Build exoplayer') {
+
+            steps {
+                echo 'Building ExoPlayer'
+                dir('exoplayer') {
+                    sh('bash ./buildffmpegext.sh all')
+                }
+            }
+
+        }
+    }
+}
