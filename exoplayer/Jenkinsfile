@@ -14,6 +14,7 @@ pipeline {
                 echo 'Building ExoPlayer'
                 dir('exoplayer') {
                     //sh('bash ./buildffmpegext.sh all')
+                    sh('touch testfile')
                 }
 
 
