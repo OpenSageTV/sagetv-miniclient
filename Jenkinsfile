@@ -25,11 +25,9 @@ pipeline {
             steps {
                 echo 'Building'
                 script {
-                    //VARIANT = getBuildType()
-                    sh "echo `cat \"${KEYSTORE}\"`"
+                    sh "printenv"
+                    sh "unset NDK_PATH"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundlerelease"
-
-                    //sh "./gradlew build"
                 }
             }
         }
