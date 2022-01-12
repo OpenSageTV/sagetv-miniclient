@@ -34,7 +34,7 @@ pipeline {
 
         stage('Publish to Play Store') {
             steps {
-                androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: '**/*-release.aab', trackName: 'Beta Release Track'
+                androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: '**/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%"
             }
         }
         
