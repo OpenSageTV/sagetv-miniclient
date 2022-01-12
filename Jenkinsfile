@@ -27,10 +27,16 @@ pipeline {
                 script {
                     //VARIANT = getBuildType()
                     sh "echo `cat \"${KEYSTORE}\"`"
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} build"
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundlerelease"
 
                     //sh "./gradlew build"
                 }
+            }
+        }
+
+        stage('Publish to Play Store') {
+            steps {
+                androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: '**/*-release.aab', trackName: 'Beta Release Track'
             }
         }
         
