@@ -27,14 +27,14 @@ pipeline {
                 script {
                     sh "printenv"
                     sh "unset NDK_PATH"
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundlerelease"
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
                 }
             }
         }
 
         stage('Publish to Play Store') {
             steps {
-                androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: '**/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%"
+                androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%"
             }
         }
         
