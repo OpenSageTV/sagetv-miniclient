@@ -10,8 +10,6 @@ pipeline {
     }
     stages {
 
-
-
         stage('Get build information') {
             steps {
                 script {
@@ -20,12 +18,13 @@ pipeline {
                     def exoversion = sh (script: "./gradlew properties -q | grep \"exoVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
                     def exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
                     def ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
+
                     currentBuild.displayName = "${version}"
-                    currentBuild.description = "<B>Version:</B> ${version}<BR>>"
-                    currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>>"
-                    currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>>"
-                    currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>>"
-                    currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>>"
+                    currentBuild.description = "<B>Version:</B> ${version}<BR>\n"
+                    currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
+                    currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>\n"
                 }
             }
 
@@ -35,25 +34,20 @@ pipeline {
             steps {
                 echo 'Building'
                 script {
-                    sh "printenv"
+                    //sh "printenv"
                     //sh "unset NDK_PATH"
-                    //sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
                 }
             }
         }
 
-        /*
         stage('Publish local') {
 
              steps {
-                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/bundle/release', sourceFiles: 'android-tv/build/outputs/bundle/release/*-release.aab']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'builds/${version}', remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/bundle/release', sourceFiles: 'android-tv/build/outputs/bundle/release/*-release.aab']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
              }
 
         }
-        */
-
-
-
 
         //stage('Publish to Play Store') {
         //    steps {
