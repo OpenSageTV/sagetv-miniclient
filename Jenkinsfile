@@ -15,15 +15,22 @@ pipeline {
         exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
         ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
 
-        env.currentBuild.displayName = "${version}"
-        env.currentBuild.description = "<B>Version:</B> ${version}<BR>\n"
-        env.currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
-        env.currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
-        env.currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
-        env.currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>\n"
+
     }
 
-
+    stage('Set build informaction') {
+            steps {
+                echo 'Building'
+                script {
+                    currentBuild.displayName = "${version}"
+                    currentBuild.description = "<B>Version:</B> ${version}<BR>\n"
+                    currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
+                    currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>\n"
+                }
+            }
+        }
 
     stage('Build Bundle') {
         steps {
