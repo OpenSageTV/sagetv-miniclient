@@ -10,12 +10,16 @@ pipeline {
     }
     stages {
 
-        stage('Build exoplayer') {
 
+
+        stage('Ge build information') {
             steps {
-                echo 'Building ExoPlayer'
-                dir('exoplayer') {
-                    //sh('bash ./buildffmpegext.sh all')
+                script {
+                    def version = sh (script: "./gradlew properties -q | grep \"baseVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
+                    currentBuild.displayName = "${version}"
+                    currentBuild.description = "Version: ${version}\n"
+                    currentBuild.description += "Second line test"
+                    currentBuild.description += "Third line test"
                 }
             }
 
@@ -26,12 +30,13 @@ pipeline {
                 echo 'Building'
                 script {
                     sh "printenv"
-                    sh "unset NDK_PATH"
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
+                    //sh "unset NDK_PATH"
+                    //sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
                 }
             }
         }
 
+        /*
         stage('Publish local') {
 
              steps {
@@ -39,6 +44,7 @@ pipeline {
              }
 
         }
+        */
 
 
 
