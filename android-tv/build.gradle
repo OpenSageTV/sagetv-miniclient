@@ -58,12 +58,18 @@ android {
             }
             else
             {
-                storeFile = file(project.getProperty("keystore"))
-                storePassword = project.getProperty("storePass")
-                keyAlias = project.getProperty("alias")
-                keyPassword = project.getProperty("keyPass")
+                try
+                {
 
-                System.out.println("signing config missing or incorrectly configured.  Using command line params")
+
+                    storeFile = file(project.getProperty("keystore"))
+                    storePassword = project.getProperty("storePass")
+                    keyAlias = project.getProperty("alias")
+                    keyPassword = project.getProperty("keyPass")
+
+                    System.out.println("signing config missing or incorrectly configured.  Using command line params")
+                }
+                catch (Exception ex){}
             }
         }
         debug
@@ -82,12 +88,18 @@ android {
             }
             else
             {
-                storeFile file(project.getProperty("keystore"))
-                storePassword project.getProperty("storePass")
-                keyAlias project.getProperty("alias")
-                keyPassword project.getProperty("keyPass")
+                try
+                {
 
-                System.out.println("signing config missing or incorrectly configured.  Using command line params")
+
+                    storeFile = file(project.getProperty("keystore"))
+                    storePassword = project.getProperty("storePass")
+                    keyAlias = project.getProperty("alias")
+                    keyPassword = project.getProperty("keyPass")
+
+                    System.out.println("signing config missing or incorrectly configured.  Using command line params")
+                }
+                catch (Exception ex){}
             }
         }
     }
