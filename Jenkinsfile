@@ -12,14 +12,20 @@ pipeline {
 
 
 
-        stage('Ge build information') {
+        stage('Get build information') {
             steps {
                 script {
                     def version = sh (script: "./gradlew properties -q | grep \"baseVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
+                    def appversioncode = sh (script: "./gradlew properties -q | grep \"appVersionCode:\" | awk '{print \$2}'", returnStdout: true).trim()
+                    def exoversion = sh (script: "./gradlew properties -q | grep \"exoVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
+                    def exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
+                    def ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
                     currentBuild.displayName = "${version}"
-                    currentBuild.description = "Version: ${version}\n"
-                    currentBuild.description += "Second line test"
-                    currentBuild.description += "Third line test"
+                    currentBuild.description = "<B>Version:</B> ${version}<BR>>"
+                    currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>>"
+                    currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>>"
+                    currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>>"
+                    currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>>"
                 }
             }
 
