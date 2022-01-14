@@ -58,10 +58,10 @@ android {
             }
             else
             {
-                storeFile file(project.getProperty("keystore"))
-                storePassword project.getProperty("storePass")
-                keyAlias project.getProperty("alias")
-                keyPassword project.getProperty("keyPass")
+                storeFile = file(project.getProperty("keystore"))
+                storePassword = project.getProperty("storePass")
+                keyAlias = project.getProperty("alias")
+                keyPassword = project.getProperty("keyPass")
 
                 System.out.println("signing config missing or incorrectly configured.  Using command line params")
             }
