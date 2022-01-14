@@ -22,7 +22,6 @@ pipeline {
 
         stage('Set build informaction') {
                 steps {
-                    echo 'Building'
                     script {
                         currentBuild.displayName = "${version}"
                         currentBuild.description = "<B>Version:</B> ${version}<BR>\n"
