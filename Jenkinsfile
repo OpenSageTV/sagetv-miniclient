@@ -35,10 +35,7 @@ pipeline {
 
         stage('Build Bundle') {
             steps {
-                echo 'Building'
                 script {
-                    //sh "printenv"
-                    //sh "unset NDK_PATH"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
                 }
             }
