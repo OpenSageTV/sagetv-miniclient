@@ -99,19 +99,26 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-testutils:${exoVersion}@aar"
 
     //implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
-    implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
+    //implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
+    api(name: "extension-ffmpeg-${exoVersionCustomExt}", ext: 'aar') // yourLib.aar is put in libs folder
+
     //api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
     api 'com.google.guava:guava:24.1-jre'
 
     // If you are rebuilding your own ijkplaer, then comment the lines above and
     // then uncomment these.
 
-    implementation files("../libs/ijkplayer-java-${ijkVersionDev}.aar")
-    implementation files("../libs/ijkplayer-armv7a-${ijkVersionDev}.aar")
-    implementation files("../libs/ijkplayer-arm64-${ijkVersionDev}.aar")
-    implementation files("../libs/ijkplayer-x86-${ijkVersionDev}.aar")
+    //implementation files("../libs/ijkplayer-java-${ijkVersionDev}.aar")
+    api(name: "ijkplayer-java-${ijkVersionDev}", ext: "aar")
+    //implementation files("../libs/ijkplayer-armv7a-${ijkVersionDev}.aar")
+    api(name: "ijkplayer-armv7a-${ijkVersionDev}", ext: "aar")
+    //implementation files("../libs/ijkplayer-arm64-${ijkVersionDev}.aar")
+    api(name: "ijkplayer-arm64-${ijkVersionDev}", ext: "aar")
+    //implementation files("../libs/ijkplayer-x86-${ijkVersionDev}.aar")
+    api(name: "ijkplayer-x86-${ijkVersionDev}", ext: "aar")
     //implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
-    implementation files("../libs/ijkplayer-exo-${ijkVersionDev}.aar")
+    //implementation files("../libs/ijkplayer-exo-${ijkVersionDev}.aar")
+    api(name: "ijkplayer-exo-${ijkVersionDev}", ext: "aar")
 
     // required, enough for most devices.
     //implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
