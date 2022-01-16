@@ -26,6 +26,7 @@ pipeline {
 
         stage('Set build informaction') {
                 steps {
+                    echo "Branch is: ${GIT_BRANCH}"
                     script {
                         currentBuild.displayName = "${version}"
                         currentBuild.description = "<B>Version:</B> ${version}<BR>\n"
