@@ -31,6 +31,7 @@ android {
 
 
     defaultConfig {
+
         applicationId "jvl.sage.miniclient.android.tv.debug"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
@@ -111,12 +112,19 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            resValue "string", "app_name", "@string/app_name_release"
         }
         debug
         {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
+            debuggable true
+
+            //Identify the application as debug, and allow it to be installed along side production
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
+            resValue "string", "app_name", "@string/app_name_debug"
         }
     }
 }

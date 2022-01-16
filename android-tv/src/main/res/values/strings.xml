@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">SageTV Android Client</string>
+    <string name="app_name_release">SageTV Android Client</string>
+    <string name="app_name_debug">SageTV Android Client (DEBUG)</string>
     <string name="browse_title">SageTV Android Client</string>
     <string name="related_movies">Related Videos</string>
     <string name="vertical_grid_title"><![CDATA[Vertical Video Grid]]></string>

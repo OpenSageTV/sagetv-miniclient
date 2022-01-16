@@ -49,11 +49,11 @@ pipeline {
              }
         }
 
-        //stage('Publish to Play Store') {
-        //    steps {
-        //        //androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%"
-        //    }
-        //}
+        stage('Publish to Play Store') {
+            steps {
+                androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%"
+            }
+        }
         
     }
 }

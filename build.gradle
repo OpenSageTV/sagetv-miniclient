@@ -31,9 +31,12 @@ def getVersionFile(project) {
 }
 
 allprojects {
+
     version = '1.0'
+
     ext {
-        appName = "SageTVMiniclient"
+
+
         versionText = getVersionFile(project).text
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
@@ -52,7 +55,7 @@ allprojects {
         androidCompileSdkVersion = 29
         androidTargetSdkVersion = 30
 
-        appVersionCode = 2101084
+        appVersionCode = 2101085
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files
