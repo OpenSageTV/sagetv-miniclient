@@ -1,6 +1,10 @@
 pipeline {
     agent { dockerfile true }
 
+    parameters {
+        booleanParam(name: 'GOOGLE_DEPLOY_ALPHA', defaultValue: false, description: 'Deploy to Google Play Store closed beta test track')
+    }
+
     environment {
         appName = 'SageTV Android Client'
 
@@ -50,6 +54,7 @@ pipeline {
         }
 
         stage('Publish to Play Store') {
+            when { expression { params.GOOGLE_DEPLOY_ALPHA } }
             steps {
                 androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%"
             }
