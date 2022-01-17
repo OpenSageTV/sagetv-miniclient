@@ -3,7 +3,7 @@ def getBuildType() {
     {
         return "release"
     }
-    else if(env.GIT_BRANCH].endsWith("/beta"))
+    else if(env.GIT_BRANCH.endsWith("/beta"))
     {
         return "release"
     }
