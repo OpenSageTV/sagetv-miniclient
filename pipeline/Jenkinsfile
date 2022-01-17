@@ -1,9 +1,13 @@
 def getBuildType() {
-    if(env.GIT_BRANCH.toLowerCase().endsWith("master"))
+    if(env.GIT_BRANCH.endsWith("/master"))
     {
         return "release"
     }
-    else if(env.GIT_BRANCH.toLowerCase().endsWith("beta"))
+    else if(env.GIT_BRANCH].endsWith("/beta"))
+    {
+        return "release"
+    }
+    else if(env.GIT_BRANCH.endsWith("/ExoPlayer_2.16.1_upgrade"))
     {
         return "release"
     }
@@ -14,7 +18,9 @@ def getBuildType() {
 }
 
 pipeline {
-    agent { dockerfile true }
+    agent { dockerfile
+        dir 'pipeline'
+    }
 
     parameters {
         booleanParam(name: 'GOOGLE_DEPLOY_ALPHA', defaultValue: false, description: 'Deploy to Google Play Store closed beta test track')
@@ -40,7 +46,6 @@ pipeline {
 
         stage('Set build informaction') {
                 steps {
-                    echo "Branch is: ${GIT_BRANCH}"
                     script {
                         VARIANT = getBuildType()
                         currentBuild.displayName = "${version}"
