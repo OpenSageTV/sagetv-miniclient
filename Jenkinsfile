@@ -1,3 +1,18 @@
+def getBuildType() {
+    if(env.BRANCH_NAME.toLowerCase().endsWith("master"))
+    {
+        return "release"
+    }
+    if(env.BRANCH_NAME.toLowerCase().endsWith("beta"))
+    {
+        return "release"
+    }
+    else
+    {
+        return "debug"
+    }
+}
+
 pipeline {
     agent { dockerfile true }
 
@@ -19,6 +34,9 @@ pipeline {
         exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
         ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
 
+        script {
+            VARIANT = getBuildType();
+        }
 
     }
 
@@ -29,7 +47,8 @@ pipeline {
                     echo "Branch is: ${GIT_BRANCH}"
                     script {
                         currentBuild.displayName = "${version}"
-                        currentBuild.description = "<B>Version:</B> ${version}<BR>\n"
+                        currentBuild.description = "<B>Build Type:</B> ${VARIANT}<BR>\n"
+                        currentBuild.description += "<B>Version:</B> ${version}<BR>\n"
                         currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
                         currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
                         currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
@@ -41,16 +60,16 @@ pipeline {
         stage('Build Bundle') {
             steps {
                 script {
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundleRelease"
-                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assembleRelease"
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
                 }
             }
         }
 
         stage('Publish local') {
              steps {
-                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/bundle/release', sourceFiles: 'android-tv/build/outputs/bundle/release/*-release.aab']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
-                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/apk/release', sourceFiles: 'android-tv/build/outputs/apk/release/*-release.apk']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/bundle/', sourceFiles: 'android-tv/build/outputs/bundle/${VARIANT}/*-release.aab']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/apk/', sourceFiles: 'android-tv/build/outputs/apk/${VARIANT}/*-release.apk']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
              }
         }
 
