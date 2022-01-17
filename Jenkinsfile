@@ -59,6 +59,9 @@ pipeline {
                 script {
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
+                    sh 'echo "Check to see if there is any outputs"'
+                    sh "ls android-tv/build/outputs/bundle/${VARIANT}"
+                    sh "ls android-tv/build/outputs/apk/${VARIANT}"
                 }
             }
         }
