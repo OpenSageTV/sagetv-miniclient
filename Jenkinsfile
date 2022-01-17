@@ -1,9 +1,9 @@
 def getBuildType() {
-    if(env.BRANCH_NAME.toLowerCase().endsWith("master"))
+    if(env.GIT_BRANCH.toLowerCase().endsWith("master"))
     {
         return "release"
     }
-    else if(env.BRANCH_NAME.toLowerCase().endsWith("beta"))
+    else if(env.GIT_BRANCH.toLowerCase().endsWith("beta"))
     {
         return "release"
     }
