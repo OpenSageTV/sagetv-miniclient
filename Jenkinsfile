@@ -65,8 +65,8 @@ pipeline {
 
         stage('Publish local') {
              steps {
-                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/bundle/', sourceFiles: 'android-tv/build/outputs/bundle/${VARIANT}/*-release.aab']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
-                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/apk/', sourceFiles: 'android-tv/build/outputs/apk/${VARIANT}/*-release.apk']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/bundle/', sourceFiles: 'android-tv/build/outputs/bundle/${VARIANT}/*-${VARIANT}.aab']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}", remoteDirectorySDF: false, removePrefix: 'android-tv/build/outputs/apk/', sourceFiles: 'android-tv/build/outputs/apk/${VARIANT}/*-{VARIANT}.apk']], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false]])
              }
         }
 
