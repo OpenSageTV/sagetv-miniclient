@@ -33,7 +33,7 @@ pipeline {
         exoversion = sh (script: "./gradlew properties -q | grep \"exoVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
         exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
         ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
-        VARIANT = "${getBuildType()}"
+        VARIANT = "debug"
     }
 
     stages {
@@ -42,6 +42,7 @@ pipeline {
                 steps {
                     echo "Branch is: ${GIT_BRANCH}"
                     script {
+                        VARIANT = getBuildType()
                         currentBuild.displayName = "${version}"
                         currentBuild.description = "<B>Build Type:</B> ${VARIANT}<BR>\n"
                         currentBuild.description += "<B>Version:</B> ${version}<BR>\n"
