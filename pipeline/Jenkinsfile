@@ -18,8 +18,10 @@ def getBuildType() {
 }
 
 pipeline {
-    agent { dockerfile
-        dir 'pipeline'
+    agent {
+        dockerfile {
+            dir 'pipeline'
+        }
     }
 
     parameters {
