@@ -3,7 +3,7 @@ def getBuildType() {
     {
         return "release"
     }
-    if(env.BRANCH_NAME.toLowerCase().endsWith("beta"))
+    else if(env.BRANCH_NAME.toLowerCase().endsWith("beta"))
     {
         return "release"
     }
@@ -33,7 +33,7 @@ pipeline {
         exoversion = sh (script: "./gradlew properties -q | grep \"exoVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
         exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
         ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
-        VARIANT = getBuildType();
+        VARIANT = getBuildType()
     }
 
     stages {
