@@ -114,6 +114,11 @@ pipeline {
                     sh("git tag v${version}")
                     sh("git push origin v${version}")
 
+                    sh('printenv')
+                    sh('echo USER=$USER')
+                    sh('ls /home/$USER')
+                    sh('ls /home/$USER/go/bin')
+                    sh('PATH=/home/$USER/go/bin:$PATH')
                     sh('github-release --help')
                 }
             }
