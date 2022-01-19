@@ -106,9 +106,15 @@ pipeline {
                     sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
                     sh('git config --global user.email "josh@joshandmonique.com"')
                     sh('git config --global user.name "Joshua Lewis"')
+
+                    //Delete the tag remote an local incase it already exists
                     sh("git tag -d v${version} || exit 0")
+                    sh("git push --delete origin v${version} || exit 0")
+
                     sh("git tag v${version}")
                     sh("git push origin v${version}")
+
+                    sh('github-release --help')
                 }
             }
 
