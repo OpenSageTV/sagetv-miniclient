@@ -48,6 +48,8 @@ pipeline {
         KEY_ALIAS = credentials('keyAlias')
         KEYSTORE = credentials('keystoreFile')
         STORE_PASSWORD = credentials('storePassword')
+        GIT_HUB_USER = credentials('GitHubUser')
+        GIT_HUB_TOKEN = credentials('GitHubToken')
 
         version = sh (script: "./gradlew properties -q | grep \"baseVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
         appversioncode = sh (script: "./gradlew properties -q | grep \"appVersionCode:\" | awk '{print \$2}'", returnStdout: true).trim()
