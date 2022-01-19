@@ -1,4 +1,5 @@
 def getBuildType() {
+
     if(env.GIT_BRANCH.endsWith("/master"))
     {
         return "release"
@@ -14,6 +15,18 @@ def getBuildType() {
     else
     {
         return "debug"
+    }
+}
+
+def getBranch() {
+
+    if(env.GIT_BRANCH.split("/").length > 1)
+    {
+        return env.GIT_BRANCH.split("/")[1];
+    }
+    else
+    {
+        return env.GIT_BRANCH;
     }
 }
 
@@ -50,6 +63,7 @@ pipeline {
                 steps {
                     script {
                         VARIANT = getBuildType()
+
                         currentBuild.displayName = "${version}"
                         currentBuild.description = "<B>Build Type:</B> ${VARIANT}<BR>\n"
                         currentBuild.description += "<B>Version:</B> ${version}<BR>\n"
@@ -82,13 +96,17 @@ pipeline {
 
         stage('Publish to GitHub') {
             steps {
-                echo "Test creating tag"
-                sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
-                sh('git config --global user.email "josh@joshandmonique.com"')
-                sh('git config --global user.name "Joshua Lewis"')
-                sh("git tag v${version}")
-                sh('git push')
 
+                script {
+                    BRANCH = getBranch()
+
+                    echo "Test creating tag"
+                    sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
+                    sh('git config --global user.email "josh@joshandmonique.com"')
+                    sh('git config --global user.name "Joshua Lewis"')
+                    sh("git tag v${version}")
+                    sh('git push origin HEAD:${BRANCH}')
+                }
             }
 
 
