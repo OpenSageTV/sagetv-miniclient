@@ -14,6 +14,8 @@ ENV SDK_URL="https://dl.google.com/android/repository/commandlinetools-linux-758
     ANDROID_SDK_ROOT="/usr/local/cmdline-tools" \
     ANDROID_VERSION=29
 
+ENV PATH="`eval echo ~$USER`/go/bin:$PATH"
+
 # Download Android SDK
 RUN mkdir "$ANDROID_HOME" .android \
     && cd "$ANDROID_HOME" \
