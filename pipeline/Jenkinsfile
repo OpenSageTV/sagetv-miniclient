@@ -106,7 +106,7 @@ pipeline {
                     sh('git config --global user.name "Joshua Lewis"')
                     sh("git tag -d v${version} || exit 0")
                     sh("git tag v${version}")
-                    sh('git push origin HEAD:${BRANCH}')
+                    sh("git push origin HEAD:${BRANCH}"")
                 }
             }
 
