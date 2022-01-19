@@ -81,7 +81,9 @@ pipeline {
         }
 
         stage('Publish to GitHub') {
-
+            steps {
+                echo "Place holder"
+            }
 
             /*
             # set your token
