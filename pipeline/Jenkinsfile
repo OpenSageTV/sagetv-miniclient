@@ -82,8 +82,15 @@ pipeline {
 
         stage('Publish to GitHub') {
             steps {
-                echo "Place holder"
+                echo "Test creating tag"
+                sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
+                sh('git config --global user.email "josh@joshandmonique.com"')
+                sh('git config --global user.name "Joshua Lewis"')
+                sh("git tag v${version}")
+                sh('git push')
+
             }
+
 
             /*
             # set your token
@@ -144,11 +151,8 @@ pipeline {
 
 
         stage('Publish to Play Store') {
-
-            //when { expression { params.GOOGLE_DEPLOY_ALPHA } }
-
+            when { expression { params.GOOGLE_DEPLOY_ALPHA } }
             steps {
-
                 script {
 
                     try
