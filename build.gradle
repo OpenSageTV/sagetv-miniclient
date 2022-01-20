@@ -1,13 +1,13 @@
 buildscript {
     repositories {
         google()
-        mavenLocal()
+        //mavenLocal()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        jcenter()
         flatDir {
             dirs 'libs'
         }
+        jcenter()
     }
 
     dependencies {
@@ -70,8 +70,7 @@ allprojects {
 
     repositories {
         maven { url mavenInProject }
-        mavenLocal()
-        jcenter()
+        //mavenLocal()
         google()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
@@ -79,6 +78,7 @@ allprojects {
         flatDir {
             dirs '../libs'
         }
+        jcenter()
     }
 }
 
