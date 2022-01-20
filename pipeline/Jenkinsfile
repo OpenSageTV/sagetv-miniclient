@@ -130,8 +130,8 @@ pipeline {
                         CHANGELOG = ''
                     }
 
-                    sh("github-release delete --user OpenSageTV --repo \"sagetv-miniclient\" -s=${GIT_HUB_TOKEN} || exit 0")
-                    sh("github-release release -s=${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"Automated release for v${version}\" --description \"${CHANGELOG}\"")
+                    sh("github-release delete --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} -s ${GIT_HUB_TOKEN} || exit 0")
+                    sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"Automated release for v${version}\" --description \"${CHANGELOG}\"")
                 }
             }
 
