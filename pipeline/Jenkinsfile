@@ -114,12 +114,25 @@ pipeline {
                     sh("git tag v${version}")
                     sh("git push origin v${version}")
 
-                    sh('printenv')
+                    //sh('printenv')
+                    //sh('ls /root')
+                    //sh('ls /root/go/bin')
+                    //sh('PATH=/root/go/bin:$PATH')
+                    //sh('github-release --help')
 
-                    sh('ls /root')
-                    sh('ls /root/go/bin')
-                    sh('PATH=/root/go/bin:$PATH')
-                    sh('github-release --help')
+                    try
+                    {
+                        CHANGELOG = readFile(file: 'pipeline/releasechangelist')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasechangelist file: ${err.localizedMessage}"
+                        CHANGELOG = ''
+                    }
+
+                    sh("export GITHUB_TOKEN=${GIT_HUB_TOKEN}")
+                    sh("github-release delete --u OpenSageTV --r sagetv-miniclient || exit 0")
+                    sh("github-release release --u OpenSageTV --r sagetv-miniclient --tag v${version} --name \"Automated release for v{version}\" --description \"${CHANGELOG}\"")
                 }
             }
 
