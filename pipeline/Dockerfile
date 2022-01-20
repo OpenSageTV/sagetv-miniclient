@@ -11,6 +11,8 @@ ENV SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-3859397.zi
     ANDROID_HOME="/usr/local/android-sdk" \
     ANDROID_VERSION=29
 
+ENV PATH="/root/go/bin:$PATH"
+
 # Download Android SDK
 RUN mkdir "$ANDROID_HOME" .android \
     && cd "$ANDROID_HOME" \
