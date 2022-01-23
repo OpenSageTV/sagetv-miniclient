@@ -63,7 +63,7 @@ def getReleaseToGit()
             releasetogit false
             break
 
-        case: "ExoPlayer_2.16.1_upgrade":
+        case "ExoPlayer_2.16.1_upgrade":
 
             releasetogit true
             break
