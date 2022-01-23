@@ -1,9 +1,12 @@
 buildscript {
     repositories {
         google()
-        mavenLocal()
+        //mavenLocal()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        flatDir {
+            dirs 'libs'
+        }
         jcenter()
     }
 
@@ -31,18 +34,21 @@ def getVersionFile(project) {
 }
 
 allprojects {
+
     version = '1.0'
+
     ext {
-        appName = "SageTVMiniclient"
+
+
         versionText = getVersionFile(project).text
         baseVersion = (versionText =~ /VERSION = "([^"]+)"/)[0][1]
         //System.out.println("Version: " + baseVersion)
         gdxVersion = "1.9.14"
 
         // NOTE: using exoplayer from mavenlocal (prebuilt) for ffmpeg
-        exoVersionCustomExt = '2.15.1'
+        exoVersionCustomExt = '2.16.1'
         // NOTE: using regular exoplayer for core stuff
-        exoVersion = '2.15.1'
+        exoVersion = '2.16.1'
         ijkVersionDev = '0.8.8-SNAPSHOT'
 
         //androidExtrasVer = "28.0.0"
@@ -52,24 +58,27 @@ allprojects {
         androidCompileSdkVersion = 29
         androidTargetSdkVersion = 30
 
-        appVersionCode = 2101083
+        appVersionCode = 2101087
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files
         mavenInProject = file('../mavenlocal').absoluteFile.toURI()
 
-        defJavaVesionNum = 1.7
-        defJavaVesionConst = JavaVersion.VERSION_1_7
+        defJavaVesionNum = 1.8
+        defJavaVesionConst = JavaVersion.VERSION_1_8
     }
 
     repositories {
         maven { url mavenInProject }
-        mavenLocal()
-        jcenter()
+        //mavenLocal()
         google()
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        flatDir {
+            dirs '../libs'
+        }
+        jcenter()
     }
 }
 

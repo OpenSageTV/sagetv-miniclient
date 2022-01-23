@@ -1,3 +1,8 @@
+**1.10.0 (1/6/2021)**
+- Added configuration screens for container and codec support that allows users to customize support
+- Updated ExoPlayer to version 2.16.1 and fixed all associated code that broke.  SimpleExoPlayer was removed in this release
+- Added a new build of the FFmpeg ext for version 2.16.1
+
 **1.9.3 (2021-11-2)**
 - Updated to 2.15.1 of ExoPlayer and FFmpeg extension
 - Cleaned up a number of deprecated calls in ExoPlayer implementation

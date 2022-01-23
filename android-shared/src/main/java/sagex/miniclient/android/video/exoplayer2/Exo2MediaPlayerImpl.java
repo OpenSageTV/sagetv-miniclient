@@ -1,15 +1,16 @@
 package sagex.miniclient.android.video.exoplayer2;
 
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.upstream.DataSource;
+
 import android.net.Uri;
 import android.os.Handler;
-import android.util.Log;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
@@ -24,8 +25,6 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.video.VideoListener;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.video.VideoSize;
 
@@ -38,6 +37,8 @@ import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
+
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static sagex.miniclient.util.Utils.toHHMMSS;
@@ -46,7 +47,7 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
  * Created by seans on 24/09/16.
  */
 
-public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, DataSource>
+public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource>
 {
     MediaSource mediaSource;
     long playbackStartPosition = -1;
@@ -77,7 +78,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             playbackPositionLock.lock();
             position = this.currentPlaybackPosition;
         }
-        catch (Exception ex) { }
+        catch (Exception ex)
+        {
+            log.error("Exception thrown getting playback position", ex);
+        }
         finally
         {
             playbackPositionLock.unlock();
@@ -103,7 +107,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
         }
-        catch (Exception ex) { }
+        catch (Exception ex)
+        {
+            log.error("Error setting playback position", ex);
+        }
         finally
         {
             playbackPositionLock.unlock();
@@ -157,13 +164,19 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                             ExoPause();
                         }
                     }
-                    catch (Throwable t) { }
+                    catch(Exception ex)
+                    {
+                        log.error("Error pausing/stoppig video before releasing", ex);
+                    }
 
                     try
                     {
                         player.release();
                     }
-                    catch (Throwable t) { }
+                    catch (Exception ex)
+                    {
+                        log.error("Error calling release on player", ex);
+                    }
 
                     player = null;
                     Exo2MediaPlayerImpl.super.releasePlayer();
@@ -258,7 +271,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         {
             log.debug("In pause state.  Seek frame instead...");
             //TODO: Could not find the framerate in ExoPlayer.  Going to assume 30fps for now.
-            this.seek(this.getPlaybackPosition() + Math.round(1000 / 30));
+            this.seek(this.getPlaybackPosition() + Math.round(1000.0 / 30.0));
             return;
         }
 
@@ -318,6 +331,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                         {
                             log.debug("Seek -  Waiting for current position to match Seek request.  Current Position: {}  Seek Request: {} ", player.getContentPosition(), timeInMillis);
                             Thread.sleep(100);
+                            wait++;
                         }
 
                         Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
@@ -441,12 +455,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
                     {
                         return;
                     }
-                    //else
-                    //{
-                    //
-                    //}
 
-                    player.prepare(mediaSource, true, false);
+                    player.setMediaSource(mediaSource, true);
+                    player.prepare();
+
                     log.debug("After Flush was called Current Playback Position: {}",  Utils.toHHMMSS(player.getCurrentPosition()));
 
                     Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
@@ -624,8 +636,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
         });
 
 
-        player.addTextOutput(new TextOutput()
-        {
+
+
+        player.addListener(new Player.Listener() {
             @Override
             public void onCues(List<Cue> cues)
             {
@@ -634,10 +647,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
         });
 
+
+
+
         final String sageTVurlFinal = sageTVurl;
         if (!httpls)
         {
-            DataSource.Factory dataSourceFactory = new DataSource.Factory()
+
+            com.google.android.exoplayer2.upstream.DataSource.Factory dataSourceFactory = new DataSource.Factory()
             {
                 @Override
                 public DataSource createDataSource()
@@ -662,7 +679,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<SimpleExoPlayer, Da
             }
 
             log.debug("ExoLogging - Preparing playback");
-            player.prepare(mediaSource, !haveStartPosition, false);
+            //player.prepare(mediaSource, !haveStartPosition, false);
+            player.setMediaSource(mediaSource, !haveStartPosition);
+            player.prepare();
+
         }
 
         //Set seek preferences

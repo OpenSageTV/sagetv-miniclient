@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 
 import java.util.Set;
 import java.util.TreeSet;
+
+import sagex.miniclient.MiniClientConnection;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -51,6 +53,10 @@ public class AndroidPrefStore implements PrefStore
 
     public static final String FIXED_REMUXING_FORMAT = "fixed_remuxing/format";
     public static final String FIXED_REMUXING_FORMAT_DEFAULT = "matroska";
+
+    public static final String CONTAINER_SUPPORT_DEFAULT = "automatic";
+    public static final String VIDEO_CODEC_SUPPORT_DEFAULT = "automatic";
+    public static final String AUDIO_CODEC_SUPPORT_DEFAULT = "automatic";
 
 
     //</editor-fold>
@@ -294,6 +300,39 @@ public class AndroidPrefStore implements PrefStore
     {
         return this.getString(AndroidPrefStore.FIXED_REMUXING_FORMAT, AndroidPrefStore.FIXED_REMUXING_FORMAT_DEFAULT);
     }
+
+    public String getContainerSupport(String container)
+    {
+        return this.getString("container/" + container + "/support", AndroidPrefStore.CONTAINER_SUPPORT_DEFAULT);
+    }
+
+    public String getVideoCodecSupport(String codec)
+    {
+        return this.getString("codec/video/" + codec + "/support", AndroidPrefStore.VIDEO_CODEC_SUPPORT_DEFAULT);
+    }
+
+    public String getAudioCodecSupport(String codec)
+    {
+        return this.getString("codec/audio/" + codec + "/support", AndroidPrefStore.AUDIO_CODEC_SUPPORT_DEFAULT);
+    }
+
+    /*
+    private boolean codecListCompare(String list, String compCodec)
+    {
+        String [] codecs = list.split(",");
+
+        for(int i = 0; i < codecs.length; i++)
+        {
+            if(codecs[i].trim().equalsIgnoreCase(compCodec))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    */
+
 
     //</editor-fold>
 }

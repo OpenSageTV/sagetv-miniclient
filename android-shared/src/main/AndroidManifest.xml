@@ -76,15 +76,15 @@
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
-        android:name=".ui.settings.FixedTranscodingActivity"
-        android:label="@string/app_name"
-        android:launchMode="singleInstance"
-        android:theme="@style/Theme.PhoneTheme"></activity>
+            android:name=".ui.settings.FixedTranscodingActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
-        android:name=".ui.settings.FixedRemuxingActivity"
-        android:label="@string/app_name"
-        android:launchMode="singleInstance"
-        android:theme="@style/Theme.PhoneTheme"></activity>
+            android:name=".ui.settings.FixedRemuxingActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
             android:name=".ui.settings.ExoPlayerSettingsActivity"
             android:label="@string/app_name"
@@ -92,6 +92,11 @@
             android:theme="@style/Theme.PhoneTheme"></activity>
         <activity
             android:name=".ui.settings.IJKPlayerSettingsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.PhoneTheme"></activity>
+        <activity
+            android:name=".ui.settings.CodecContainerActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/Theme.PhoneTheme"></activity>

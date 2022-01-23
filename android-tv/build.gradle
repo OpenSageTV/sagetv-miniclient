@@ -3,10 +3,10 @@ apply plugin: 'com.android.application'
 
 def computeVersionCode()
 {
-    return appVersionCode;
+    return appVersionCode
 }
 
-def Properties signingProps = new Properties()
+Properties signingProps = new Properties()
 def propFile = file("../keystore.properties")
 
 if (propFile.canRead())
@@ -15,7 +15,7 @@ if (propFile.canRead())
 }
 else
 {
-    System.out.println("Keystore properties file missing.")
+    System.out.println("Keystore properties file missing. Expceted path:" + propFile.path)
 }
 
 android {
@@ -31,6 +31,7 @@ android {
 
 
     defaultConfig {
+
         applicationId "jvl.sage.miniclient.android.tv.debug"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
@@ -50,7 +51,7 @@ android {
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
             {
                 keyAlias = signingProps.getProperty("keyAlias")
-                storeFile = new File(signingProps.getProperty("storeFile"));
+                storeFile = new File(signingProps.getProperty("storeFile"))
                 storePassword = signingProps.getProperty("storePassword")
                 keyPassword = signingProps.getProperty("keyPassword")
 
@@ -58,7 +59,18 @@ android {
             }
             else
             {
-                System.out.println("signing config missing or incorrectly configured")
+                try
+                {
+
+
+                    storeFile = file(project.getProperty("keystore"))
+                    storePassword = project.getProperty("storePass")
+                    keyAlias = project.getProperty("alias")
+                    keyPassword = project.getProperty("keyPass")
+
+                    System.out.println("signing config missing or incorrectly configured.  Using command line params")
+                }
+                catch (Exception ex){}
             }
         }
         debug
@@ -69,7 +81,7 @@ android {
                     && signingProps.containsKey("storePassword") && signingProps.containsKey("keyPassword"))
             {
                 keyAlias = signingProps.getProperty("keyAlias")
-                storeFile = new File(signingProps.getProperty("storeFile"));
+                storeFile = new File(signingProps.getProperty("storeFile"))
                 storePassword = signingProps.getProperty("storePassword")
                 keyPassword = signingProps.getProperty("keyPassword")
 
@@ -77,7 +89,18 @@ android {
             }
             else
             {
-                System.out.println("signing config missing or incorrectly configured")
+                try
+                {
+
+
+                    storeFile = file(project.getProperty("keystore"))
+                    storePassword = project.getProperty("storePass")
+                    keyAlias = project.getProperty("alias")
+                    keyPassword = project.getProperty("keyPass")
+
+                    System.out.println("signing config missing or incorrectly configured.  Using command line params")
+                }
+                catch (Exception ex){}
             }
         }
     }
@@ -89,12 +112,19 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            resValue "string", "app_name", "@string/app_name_release"
         }
         debug
         {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
+            debuggable true
+
+            //Identify the application as debug, and allow it to be installed along side production
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
+            resValue "string", "app_name", "@string/app_name_debug"
         }
     }
 }

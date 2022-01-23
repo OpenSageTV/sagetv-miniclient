@@ -30,6 +30,10 @@
             android:summary="Change the setting SageTV server will use to remux content when using fixed streaming (> v9.2.5 SageTV)"
             android:key="fixed_remuxing"/>
 
+        <Preference android:title="Codec and Container Settings"
+            android:summary="Change how the application reports to SageTV which containers and codecs it supports. This can be helpful if a specific device does not handle a specific codec or container well"
+            android:key="container_codec_settings"/>
+
         <Preference android:title="ExoPlayer Settings and Information"
             android:summary="Change the behavior of ExoPlayer and see supported codecs and version info"
             android:key="exoplayer_settings"/>

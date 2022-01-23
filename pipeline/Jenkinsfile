@@ -1,0 +1,234 @@
+def getBranch()
+{
+    if(env.GIT_BRANCH.split("/").length > 1)
+    {
+        return env.GIT_BRANCH.split("/")[1];
+    }
+    else
+    {
+        return env.GIT_BRANCH;
+    }
+}
+
+def getBuildType()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return "release"
+
+        case "beta":
+
+            return "release"
+
+        case "alpha":
+
+            return "debug"
+
+        default:
+
+            return "debug"
+
+    }
+}
+
+def getReleaseToGit()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return true
+
+        case "beta":
+
+            return false
+
+        case "alpha":
+
+            return false
+
+        default:
+
+            return false
+
+    }
+}
+
+def getReleaseToGooglePlay()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return true
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return false
+
+        default:
+
+            return false
+
+    }
+}
+
+pipeline
+{
+    agent
+    {
+        dockerfile
+        {
+            dir 'pipeline'
+        }
+    }
+
+    /*
+    parameters
+    {
+        booleanParam(name: 'GOOGLE_DEPLOY_ALPHA', defaultValue: false, description: 'Deploy to Google Play Store closed beta test track')
+    }
+    */
+
+    environment
+    {
+        appName = 'SageTV Android Client'
+
+        KEY_PASSWORD = credentials('keyPassword')
+        KEY_ALIAS = credentials('keyAlias')
+        KEYSTORE = credentials('keystoreFile')
+        STORE_PASSWORD = credentials('storePassword')
+        GIT_HUB_USER = credentials('GitHubUser')
+        GIT_HUB_TOKEN = credentials('GitHubToken')
+
+        version = sh (script: "./gradlew properties -q | grep \"baseVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
+        appversioncode = sh (script: "./gradlew properties -q | grep \"appVersionCode:\" | awk '{print \$2}'", returnStdout: true).trim()
+        exoversion = sh (script: "./gradlew properties -q | grep \"exoVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
+        exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
+        ijkversion = sh (script: "./gradlew properties -q | grep \"ijkVersionDev:\" | awk '{print \$2}'", returnStdout: true).trim()
+        VARIANT = "debug"
+    }
+
+    stages
+    {
+
+        stage('Set build informaction')
+        {
+            steps
+            {
+                script
+                {
+                    VARIANT = getBuildType()
+
+                    currentBuild.displayName = "${version}"
+                    currentBuild.description = "<B>Build Type:</B> ${VARIANT}<BR>\n"
+                    currentBuild.description += "<B>Version:</B> ${version}<BR>\n"
+                    currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
+                    currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>\n"
+                }
+            }
+        }
+
+        stage('Build Bundle')
+        {
+            steps
+            {
+                script
+                {
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
+                    sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
+
+                    archiveArtifacts artifacts: "android-tv/build/outputs/apk/${VARIANT}/android-tv-${VARIANT}.apk", onlyIfSuccessful: true
+                }
+            }
+        }
+
+        stage('Publish local')
+        {
+             steps
+             {
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/bundle/${VARIANT}", sourceFiles: "android-tv/build/outputs/bundle/${VARIANT}/*.aab"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/apk/${VARIANT}", sourceFiles: "android-tv/build/outputs/apk/${VARIANT}/*.apk"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+             }
+        }
+
+        stage('Publish to GitHub')
+        {
+            when { expression { return getReleaseToGit() } }
+            steps
+            {
+                script
+                {
+                    BRANCH = getBranch()
+
+                    sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
+                    sh('git config --global user.email "josh@joshandmonique.com"')
+                    sh('git config --global user.name "Joshua Lewis"')
+
+                    //Delete the tag remote an local incase it already exists
+                    sh("git tag -d v${version} || exit 0")
+                    sh("git push --delete origin v${version} || exit 0")
+
+                    sh("git tag v${version}")
+                    sh("git push origin v${version}")
+
+                    try
+                    {
+                        CHANGELOG = readFile(file: 'pipeline/releasechangelist')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasechangelist file: ${err.localizedMessage}"
+                        CHANGELOG = ''
+                    }
+
+                    try
+                    {
+                        RELEASENAME = readFile(file: 'pipeline/releasename')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasename file: ${err.localizedMessage}"
+                        RELEASENAME = ''
+                    }
+
+                    sh("github-release delete --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} -s ${GIT_HUB_TOKEN} || exit 0")
+                    sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"${RELEASENAME}\" --description \"${CHANGELOG}\"")
+
+                    //Add apk to the release
+                    sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name SageTVAndroidClient_${version}.apk --file android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk")
+                }
+            }
+        }
+
+        stage('Publish to Play Store')
+        {
+            when { expression { return getReleaseToGooglePlay() } }
+            steps
+            {
+                script
+                {
+                    try
+                    {
+                        CHANGELOG = readFile(file: 'pipeline/releasechangelist')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasechangelist file: ${err.localizedMessage}"
+                        CHANGELOG = ''
+                    }
+
+                    androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%", recentChangeList: [[language: 'en-US', text: CHANGELOG]]
+                }
+            }
+        }
+    }
+}

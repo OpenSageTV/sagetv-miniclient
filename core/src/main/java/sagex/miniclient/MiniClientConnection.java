@@ -27,68 +27,153 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import sagex.miniclient.events.ConnectionLost;
+import sagex.miniclient.media.Container;
+import sagex.miniclient.media.VideoCodec;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.MouseEvent;
 import sagex.miniclient.uibridge.UIRenderer;
 import sagex.miniclient.util.Utils;
-
-
-//import com.google.android.exoplayer2.mediacodec.MediaCodecInfo;
-//import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
-
+import sagex.miniclient.media.AudioCodec;
 
 
 public class MiniClientConnection implements SageTVInputCallback
 {
-    public static final String QUICKTIME = "Quicktime";
-    public static final String AAC = "AAC";
-    public static final String AC3 = "AC3";
+
+    /*Containers*/
+    public static final String MPEG2_PS = "MPEG2-PS";
+    public static final String MPEG1_PS = "MPEG1-PS";
     public static final String MPEG2_TS = "MPEG2-TS";
-    public static final String MPEG2_VIDEO = "MPEG2-Video";
-    public static final String WMA7 = "WMA7";
-    public static final String WMA8 = "WMA8";
-    public static final String WMA9LOSSLESS = "WMA9Lossless";
-    public static final String WMA_PRO = "WMAPRO";
+    public static final String QUICKTIME = "Quicktime";
+    public static final String FLASHVIDEO = "FLASHVIDEO";
+    public static final String AVI = "AVI";
+    public static final String MATROSKA = "MATROSKA";
+    public static final String OGG = "Ogg";
+    public static final String MP3 = "MP3";
+    public static final String AAC = "AAC";
+    public static final String ASF = "ASF";
+    public static final String FLAC = "FLAC";
+    public static final String AC3 = "AC3";
+    public static final String WAV = "WAV";
+
+    public static final String DEFAULT_PULL_FORMATS = AVI + "," + FLASHVIDEO + "," + QUICKTIME + "," + OGG + "," + MP3 + "," + AAC + "," + ASF + "," + FLAC + "," + MATROSKA + "," + WAV + "," + AC3;
+    public static final String DEFAULT_PUSH_FORMATS =  MPEG2_PS + "," + MPEG1_PS + "," + MPEG2_TS;
+
+    //public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3";
+    //public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
+
+    /*Video Codecs with Mime Types*/
+    /*
+    public static final String MPEG1_VIDEO = "MPEG1-VIDEO";
+    public static final String MPEG1_VIDEO_MIME_TYPES = "video/mpeg";
+    public static final String MPEG2_VIDEO_HL = "MPEG2-VIDEO@HL";
+    public static final String MPEG2_VIDEO_HL_MIME_TYPES = "video/mpeg2";
+    public static final String MPEG2_VIDEO = "MPEG2-VIDEO";
+    public static final String MPEG2_VIDEO_MIME_TYPES = "video/mpeg2";
+    public static final String H263_VIDEO = "H.263";
+    public static final String H263_VIDEO_MIME_TYPES = "video/3gpp";
+    public static final String MPEG4_VIDEO = "MPEG4-VIDEO";
+    public static final String MPEG4_VIDEO_MIME_TYPES = "video/mp4v-es";
+    public static final String MSMPEG4_VIDEO = "MSMPEG4-VIDEO";
+    public static final String MSMPEG4_VIDEO_MIME_TYPES = "video/mp4v-es";
+    public static final String H264_VIDEO = "H.264";
+    public static final String H264_VIDEO_MIME_TYPES = "video/avc";
+    public static final String VC1_VIDEO = "VC1";
+    public static final String VC1_VIDEO_MIME_TYPES = "video/x-ms-wmv,video/wvc1";
+    public static final String HEVC_VIDEO = "HEVC";
+    public static final String HEVC_VIDEO_MIME_TYPES = "video/hevc";
+    public static final String MJPEG_VIDEO = "MJPEG";
+    public static final String MJPEG_VIDEO_MIME_TYPES = "video/mjpeg";
+    public static final String VP8_VIDEO = "VP8";
+    public static final String VP8_VIDEO_MIME_TYPES = "video/x-vnd.on2.vp8";
+    public static final String VP9_VIDEO = "VP9";
+    public static final String VP9_VIDEO_MIME_TYPES = "video/x-vnd.on2.vp9";
+
+    // TODO: Not sure about supporting this.  Assume this is SageTV format
+    public static final String MPEG4X = "MPEG4X"; // this is our private stream, format we put inside, MPEG2 PS for MPEG4/Divx, video on Windows
+    */
+
+
+    /*
     public static final String WMV9 = "WMV9";
     public static final String WMV8 = "WMV8";
     public static final String WMV7 = "WMV7";
-    public static final String FLASH_VIDEO = "FlashVideo";
-    public static final String H264 = "H.264";
-    public static final String OGG = "Ogg";
-    public static final String VORBIS = "Vorbis";
-    public static final String MPEG2_PS = "MPEG2-PS";
-    public static final String MPEG2_PES_VIDEO = "MPEG2-PESVideo";
-    public static final String MPEG2_PES_AUDIO = "MPEG2-PESAudio";
-    public static final String MPEG1 = "MPEG1";
+    */
+
+
+    /* Full list of possible video codecs that the client potentially knows about.  Additional support checks happen later */
+    /*
+    public static final String DEFAULT_VIDEO_CODECS = MPEG2_VIDEO + ',' + MPEG1_VIDEO + ',' + MPEG4_VIDEO + "," + MSMPEG4_VIDEO + "," + H263_VIDEO + "," + H264_VIDEO + "," + HEVC_VIDEO + "," + VP8_VIDEO + "," + VP9_VIDEO;
+    */
+
+    /*
+    public static final String MPEG1_AUDIO = "MPEG1";
+    public static final String MPEG1_AUDIO_MIME_TYPES = "";
+    public static final String MPG1L2_AUDIO = "MP2,MPG1L2";
+    public static final String MPG1L2_AUDIO_MIME_TYPES = "audio/mpeg-L2";
+    //public static final String MP2_AUDIO = "MP2";
+    //public static final String MP2_AUDIO_MIME_TYPES = "audio/mpeg-L2";
+    public static final String MPG1L3_AUDIO = "MP3,MPG1L3";
+    public static final String MPG1L3_AUDIO_MIME_TYPES = "audio/mpeg";
+    //public static final String MP3_AUDIO = "MP3";
+    //public static final String MP3_AUDIO_MIME_TYPES = "audio/mpeg";
+    public static final String WMA_AUDIO = "WMA,WMA7,WMA8,WMAPRO,WMA9Lossless";
+    public static final String WMA_AUDIO_MIME_TYPES = "audio/x-ms-wma";
+    //public static final String WMA7_AUDIO = "WMA7";
+    //public static final String WMA7_AUDIO_MIME_TYPES = "audio/x-ms-wma";
+    //public static final String WMA8_AUDIO = "WMA8";
+    //public static final String WMA8_AUDIO_MIME_TYPES = "audio/x-ms-wma";
+    //public static final String WMAPRO_AUDIO = "WMAPRO";
+    //public static final String WMAPRO_AUDIO_MIME_TYPE = "audio/x-ms-wma";
+    //public static final String WMA9LOSSLESS_AUDIO = "WMA9Lossless";
+    //public static final String WMA9LOSSLESS_AUDIO_MIME_TYPE = "audio/x-ms-wma";
+    public static final String VORBIS_AUDIO = "Vorbis";
+    public static final String VORBIS_AUDIO_MIME_TYPES = "audio/vorbis";
+    public static final String AAC_AUDIO = "AAC,AAC-HE";
+    public static final String AAC_AUDIO_MIME_TYPES = "audio/mp4a-latm";
+    //public static final String AACHE_AUDIO = "AAC-HE";
+    //public static final String AACHE_AUDIO_MIME_TYPES = "audio/mp4a-latm";
+    public static final String FLAC_AUDIO = "FLAC";
+    public static final String FLAC_AUDIO_MIME_TYPES = "";
+    public static final String ALAC_AUDIO = "ALAC";
+    public static final String ALAC_AUDIO_MIME_TYPES = "";
+    public static final String PCM_AUDIO = "PCM,PCM_S16LE";
+    public static final String PCM_AUDIO_MIME_TYPES = "audio/raw";
+    //public static final String PCMS16LE_AUDIO = "PCM_S16LE";
+    //public static final String PCMS16LE_AUDIO_MIME_TYPES = "audio/raw";
+    public static final String DTS_AUDIO = "DTS,DCA";
+    public static final String DTS_AUDIO_MIME_TYPES = "";
+    //public static final String DCA_AUDIO = "DCA";
+    //public static final String DCA_AUDIO_MIME_TYPES = "";
+    public static final String DTSHD_AUDIO = "DTS-HD";
+    public static final String DTSHD_AUDIO_MIME_TYPES = "";
+    public static final String DTSMA_AUDIO = "DTS-MA";
+    public static final String DTSMA_AUDIO_MIME_TYPES = "";
+    public static final String AC3_AUDIO = "AC3";
+    public static final String AC3_AUDIO_MIME_TYPES = "";
+    public static final String AC4_AUDIO = "AC4";
+    public static final String AC4_AUDIO_MIME_TYPES = "";
+    public static final String EAC3_AUDIO = "EAC3,EC-3";
+    public static final String EAC3_AUDIO_MIME_TYPES = "";
+    //public static final String EC3_AUDIO = "EC-3";
+    //public static final String EC3_AUDIO_MIME_TYPES = "";
+    public static final String DOLBYTRUEHD_AUDIO = "DOLBYTRUEHD";
+    public static final String DOLBYTRUEHD_AUDIO_MIME_TYPES = "";
+    public static final String OPUS_AUDIO = "OPUS";
+    public static final String OPUS_AUDIO_MIME_TYPES = "";
+
+    public static final String DEFAULT_AUDIO_CODECS = MPG1L2_AUDIO + "," + MPG1L3_AUDIO + "," + AC3_AUDIO + "," + AC4_AUDIO
+            + "," + AAC_AUDIO  + "," + WMA_AUDIO + "," + FLAC_AUDIO + "," + VORBIS_AUDIO + "," + PCM_AUDIO + "," + OPUS_AUDIO
+            + "," + DTS_AUDIO  + "," + DTSHD_AUDIO + "," + DTSMA_AUDIO + "," + EAC3_AUDIO  + "," + DOLBYTRUEHD_AUDIO;
+    */
+
+    public static final String SMIL = "SMIL"; // for SMIL-XML files which represent sequences of content
+    public static final String VP6F = "VP6F";
     public static final String JPEG = "JPEG";
     public static final String GIF = "GIF";
     public static final String PNG = "PNG";
     public static final String BMP = "BMP";
-    public static final String MP2 = "MP2";
-    public static final String MP3 = "MP3";
-    public static final String MPEG1_VIDEO = "MPEG1-Video";
-    public static final String MPEG4_VIDEO = "MPEG4-Video";
-    public static final String MPEG4X = "MPEG4X"; // this is our private stream
-    // format we put inside
-    // MPEG2 PS for MPEG4/DivX
-    // video on Windows
-    public static final String AVI = "AVI";
-    public static final String WAV = "WAV";
-    public static final String ASF = "ASF";
-    public static final String FLAC = "FLAC";
-    public static final String MATROSKA = "MATROSKA";
-    public static final String VC1 = "VC1";
-    public static final String ALAC = "ALAC"; // Apple lossless
-    public static final String SMIL = "SMIL"; // for SMIL-XML files which
-    // represent sequences of
-    // content
-    public static final String VP6F = "VP6F";
 
-    public static final String DEFAULT_VIDEO_CODECS = "MPEG2-VIDEO,MPEG2-VIDEO@HL,MPEG1-VIDEO,MPEG4-VIDEO,DIVX3,MSMPEG4,FLASHVIDEO,H.263,H.264,WMV9,VC1,MJPEG,HEVC,VP8,VP9";
-    public static final String DEFAULT_AUDIO_CODECS = "MPG1L2,MPG1L3,AC3,AC4,AAC,AAC-HE,WMA,FLAC,VORBIS,PCM,DTS,DCA,PCM_S16LE,WMA8,ALAC,WMAPRO,0X0162,DolbyTrueHD,DTS-HD,DTS-MA,EAC3,EC-3,OPUS";
-    public static final String DEFAULT_PULL_FORMATS = "AVI,FLASHVIDEO,Quicktime,Ogg,MP3,AAC,WMV,ASF,FLAC,MATROSKA,WAV,AC3,MPEG2-PS,MPEG2-TS,MPEG1-PS";
-    public static final String DEFAULT_PUSH_FORMATS =  "MPEG2-PS,MPEG2-TS,MPEG1-PS";
 
     public static final int DRAWING_CMD_TYPE = 16;
     public static final int GET_PROPERTY_CMD_TYPE = 0;
@@ -461,44 +546,14 @@ public class MiniClientConnection implements SageTVInputCallback
 
     private void discoverCodecSupport()
     {
-        String profile = null;
-
-        boolean isExoPlayer = client.properties().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer");
-        
-        if (isExoPlayer)
-        {
-            profile = "exoplayer.profile";
-        }
-        else
-        {
-            profile = "ijkplayer.profile";
-        }
-        
         profileProperties = loadProperties("common.profile");
-        profileProperties.putAll(loadProperties(profile));
 
-        String acodec = profileProperties.getProperty("AUDIO_CODECS", DEFAULT_AUDIO_CODECS);
-        String vcodec = profileProperties.getProperty("VIDEO_CODECS", DEFAULT_VIDEO_CODECS);
-        String pushf = profileProperties.getProperty("PUSH_FORMATS", DEFAULT_PUSH_FORMATS);
-        String pullf = profileProperties.getProperty("PULL_FORMATS", DEFAULT_PULL_FORMATS);
+        audioCodecs = AudioCodec.getAllSageTVNames();
+        videoCodecs = VideoCodec.getAllSageTVNames();
+        pullFormats = Container.getAllSageTVNames();
+        pushFormats = Container.getAllSageTVNames();
 
-        audioCodecs = stringToList(acodec);
-        videoCodecs = stringToList(vcodec);
-        pullFormats = stringToList(pullf);
-        pushFormats = stringToList(pushf);
-    
-        //pushFormats=stringToList("MATROSKA");
-        
-        Properties codecs = loadProperties("codecs.properties");
-        
-        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats, codecs);
-
-        log.debug("***** FINAL VIDEO CODEC LIST *****");
-
-        for(int i = 0; i < videoCodecs.size(); i++)
-        {
-            log.debug(videoCodecs.get(i));
-        }
+        client.prepareCodecs(videoCodecs, audioCodecs, pushFormats, pullFormats);
     }
 
     private List<String> stringToList(String str) {
@@ -1057,7 +1112,15 @@ public class MiniClientConnection implements SageTVInputCallback
                         }
                         else
                         {
-                            propVal = toStringList(pushFormats);
+                            if(pushFormats.size() == 0)
+                            {
+                                propVal = "NONE";
+                            }
+                            else
+                            {
+                                propVal = toStringList(pushFormats);
+                            }
+
                         }
                     }
                     else if ("PULL_AV_CONTAINERS".equals(propName))
