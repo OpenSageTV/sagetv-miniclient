@@ -31,7 +31,7 @@ def getBuildType()
             return "debug"
             break
 
-        case: "ExoPlayer_2.16.1_upgrade":
+        case "ExoPlayer_2.16.1_upgrade":
 
             return "release"
             break
