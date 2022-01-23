@@ -176,7 +176,7 @@ pipeline {
                     sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"${RELEASENAME}\" --description \"${CHANGELOG}\"")
 
                     //Add apk to the release
-                    sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name SageTVAndroidClient_${version}.apk--file android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk")
+                    sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name SageTVAndroidClient_${version}.apk --file android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk")
 
                     "android-tv/build/outputs/apk/${VARIANT}/*.apk"
 
