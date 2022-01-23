@@ -146,7 +146,7 @@ pipeline
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
 
-                    archiveArtifacts artifacts: 'android-tv/build/outputs/apk/${VARIANT}/android-tv-${VARIANT}.apk', onlyIfSuccessful: true
+                    archiveArtifacts artifacts: "android-tv/build/outputs/apk/${VARIANT}/android-tv-${VARIANT}.apk", onlyIfSuccessful: true
                 }
             }
         }
