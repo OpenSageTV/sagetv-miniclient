@@ -1,24 +1,5 @@
-def getBuildType() {
-
-    if(env.GIT_BRANCH.endsWith("/master"))
-    {
-        return "release"
-    }
-    else if(env.GIT_BRANCH.endsWith("/beta"))
-    {
-        return "release"
-    }
-    else if(env.GIT_BRANCH.endsWith("/ExoPlayer_2.16.1_upgrade"))
-    {
-        return "release"
-    }
-    else
-    {
-        return "debug"
-    }
-}
-
-def getBranch() {
+def getBranch()
+{
 
     if(env.GIT_BRANCH.split("/").length > 1)
     {
@@ -29,6 +10,74 @@ def getBranch() {
         return env.GIT_BRANCH;
     }
 }
+
+def getBuildType()
+{
+
+    switch (getBranch())
+    {
+        case "master":
+
+            return "release"
+            break
+
+        case "beta":
+
+            return "release"
+            break
+
+        case "alpha":
+
+            return "debug"
+            break
+
+        case: "ExoPlayer_2.16.1_upgrade":
+
+            return "release"
+            break
+
+        default:
+            return "debug"
+
+    }
+}
+
+def getReleaseToGit()
+{
+    def releasetogit = false
+
+    switch (getBranch())
+    {
+        case "master":
+
+            releasetogit = true
+            break
+
+        case "beta":
+
+            releasetogit false
+            break
+
+        case "alpha":
+
+            releasetogit false
+            break
+
+        case: "ExoPlayer_2.16.1_upgrade":
+
+            releasetogit true
+            break
+
+        default:
+
+            releasetogit false;
+            break
+
+    }
+
+    return releasetogit
+}
+
 
 pipeline {
     agent {
@@ -97,12 +146,13 @@ pipeline {
         }
 
         stage('Publish to GitHub') {
+            when { expression { getReleaseToGit() } }
             steps {
 
                 script {
+
                     BRANCH = getBranch()
 
-                    echo "Test creating tag"
                     sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
                     sh('git config --global user.email "josh@joshandmonique.com"')
                     sh('git config --global user.name "Joshua Lewis"')
@@ -114,12 +164,6 @@ pipeline {
                     sh("git tag v${version}")
                     sh("git push origin v${version}")
 
-                    //sh('printenv')
-                    //sh('ls /root')
-                    //sh('ls /root/go/bin')
-                    //sh('PATH=/root/go/bin:$PATH')
-                    //sh('github-release --help')
-
                     try
                     {
                         CHANGELOG = readFile(file: 'pipeline/releasechangelist')
@@ -130,8 +174,33 @@ pipeline {
                         CHANGELOG = ''
                     }
 
+                    try
+                    {
+                        RELEASENAME = readFile(file: 'pipeline/releasename')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasename file: ${err.localizedMessage}"
+                        RELEASENAME = ''
+                    }
+
                     sh("github-release delete --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} -s ${GIT_HUB_TOKEN} || exit 0")
-                    sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"Automated release for v${version}\" --description \"${CHANGELOG}\"")
+                    sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"${RELEASENAME}\" --description \"${CHANGELOG}\"")
+
+                    //Add apk to the release
+                    sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name SageTVAndroidClient_${version}.apk--file android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk")
+
+                    "android-tv/build/outputs/apk/${VARIANT}/*.apk"
+
+                    /*
+                    $ github-release upload \
+                                    --user aktau \
+                                    --repo gofinance \
+                                    --tag v0.1.0 \
+                                    --name "gofinance-osx-amd64" \
+                                    --file bin/darwin/amd64/gofinance
+                    */
+
                 }
             }
 
@@ -193,7 +262,6 @@ pipeline {
 
         }
 
-
         stage('Publish to Play Store') {
             when { expression { params.GOOGLE_DEPLOY_ALPHA } }
             steps {
@@ -212,8 +280,6 @@ pipeline {
                     androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%", recentChangeList: [[language: 'en-US', text: CHANGELOG]]
 
                 }
-
-
             }
         }
         
