@@ -1,6 +1,5 @@
 def getBranch()
 {
-
     if(env.GIT_BRANCH.split("/").length > 1)
     {
         return env.GIT_BRANCH.split("/")[1];
@@ -13,7 +12,6 @@ def getBranch()
 
 def getBuildType()
 {
-
     switch (getBranch())
     {
         case "master":
@@ -27,10 +25,6 @@ def getBuildType()
         case "alpha":
 
             return "debug"
-
-        case "ExoPlayer_2.16.1_upgrade":
-
-            return "release"
 
         default:
 
@@ -41,7 +35,6 @@ def getBuildType()
 
 def getReleaseToGit()
 {
-
     switch (getBranch())
     {
         case "master":
@@ -56,9 +49,28 @@ def getReleaseToGit()
 
             return false
 
-        case "ExoPlayer_2.16.1_upgrade":
+        default:
+
+            return false
+
+    }
+}
+
+def getReleaseToGooglePlay()
+{
+    switch (getBranch())
+    {
+        case "master":
 
             return true
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return false
 
         default:
 
@@ -67,19 +79,25 @@ def getReleaseToGit()
     }
 }
 
-
-pipeline {
-    agent {
-        dockerfile {
+pipeline
+{
+    agent
+    {
+        dockerfile
+        {
             dir 'pipeline'
         }
     }
 
-    parameters {
+    /*
+    parameters
+    {
         booleanParam(name: 'GOOGLE_DEPLOY_ALPHA', defaultValue: false, description: 'Deploy to Google Play Store closed beta test track')
     }
+    */
 
-    environment {
+    environment
+    {
         appName = 'SageTV Android Client'
 
         KEY_PASSWORD = credentials('keyPassword')
@@ -97,27 +115,34 @@ pipeline {
         VARIANT = "debug"
     }
 
-    stages {
+    stages
+    {
 
-        stage('Set build informaction') {
-                steps {
-                    script {
-                        VARIANT = getBuildType()
+        stage('Set build informaction')
+        {
+            steps
+            {
+                script
+                {
+                    VARIANT = getBuildType()
 
-                        currentBuild.displayName = "${version}"
-                        currentBuild.description = "<B>Build Type:</B> ${VARIANT}<BR>\n"
-                        currentBuild.description += "<B>Version:</B> ${version}<BR>\n"
-                        currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
-                        currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
-                        currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
-                        currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>\n"
-                    }
+                    currentBuild.displayName = "${version}"
+                    currentBuild.description = "<B>Build Type:</B> ${VARIANT}<BR>\n"
+                    currentBuild.description += "<B>Version:</B> ${version}<BR>\n"
+                    currentBuild.description += "<B>Application Version Code:</B> ${appversioncode}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer Version:</B> ${exoversion}<BR>\n"
+                    currentBuild.description += "<B>ExoPlayer FFmpeg Ext Version:</B> ${exoversioncustomext}<BR>\n"
+                    currentBuild.description += "<B>IJKPlayer Version:</B> ${ijkversion}<BR>\n"
                 }
             }
+        }
 
-        stage('Build Bundle') {
-            steps {
-                script {
+        stage('Build Bundle')
+        {
+            steps
+            {
+                script
+                {
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
                     sh 'echo "Check to see if there is any outputs"'
@@ -127,18 +152,22 @@ pipeline {
             }
         }
 
-        stage('Publish local') {
-             steps {
+        stage('Publish local')
+        {
+             steps
+             {
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/bundle/${VARIANT}", sourceFiles: "android-tv/build/outputs/bundle/${VARIANT}/*.aab"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/apk/${VARIANT}", sourceFiles: "android-tv/build/outputs/apk/${VARIANT}/*.apk"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
              }
         }
 
-        stage('Publish to GitHub') {
+        stage('Publish to GitHub')
+        {
             when { expression { return getReleaseToGit() } }
-            steps {
-                script {
-
+            steps
+            {
+                script
+                {
                     BRANCH = getBranch()
 
                     sh('git remote set-url origin https://${GIT_HUB_TOKEN}@github.com/OpenSageTV/sagetv-miniclient.git')
@@ -177,84 +206,17 @@ pipeline {
 
                     //Add apk to the release
                     sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name SageTVAndroidClient_${version}.apk --file android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk")
-
-                    "android-tv/build/outputs/apk/${VARIANT}/*.apk"
-
-                    /*
-                    $ github-release upload \
-                                    --user aktau \
-                                    --repo gofinance \
-                                    --tag v0.1.0 \
-                                    --name "gofinance-osx-amd64" \
-                                    --file bin/darwin/amd64/gofinance
-                    */
-
                 }
             }
-
-
-            /*
-            # set your token
-            export GITHUB_TOKEN=...
-
-            # check the help
-            $ github-release --help
-
-            # make your tag and upload
-            $ git tag ... && git push --tags
-
-            # check the current tags and existing releases of the repo
-            $ github-release info -u aktau -r gofinance
-            git tags:
-            - v0.1.0 (commit: https://api.github.com/repos/aktau/gofinance/commits/f562727ce83ce8971a8569a1879219e41d56a756)
-            releases:
-            - v0.1.0, name: 'hoary ungar', description: 'something something dark side 2', id: 166740, tagged: 29/01/2014 at 14:27, published: 30/01/2014 at 16:20, draft: ✔, prerelease: ✗
-              - artifact: github.go, downloads: 0, state: uploaded, type: application/octet-stream, size: 1.9KB, id: 68616
-
-            # create a formal release
-            $ github-release release \
-                --user aktau \
-                --repo gofinance \
-                --tag v0.1.0 \
-                --name "the wolf of source street" \
-                --description "Not a movie, contrary to popular opinion. Still, my first release!" \
-                --pre-release
-
-            # you've made a mistake, but you can edit the release without
-            # having to delete it first (this also means you can edit without having
-            # to upload your files again)
-            $ github-release edit \
-                --user aktau \
-                --repo gofinance \
-                --tag v0.1.0 \
-                --name "Highlander II: The Quickening" \
-                --description "This is the actual description!"
-
-            # upload a file, for example the OSX/AMD64 binary of my gofinance app
-            $ github-release upload \
-                --user aktau \
-                --repo gofinance \
-                --tag v0.1.0 \
-                --name "gofinance-osx-amd64" \
-                --file bin/darwin/amd64/gofinance
-
-            # upload other files...
-            $ github-release upload ...
-
-            # you're not happy with it, so delete it
-            $ github-release delete \
-                --user aktau \
-                --repo gofinance \
-                --tag v0.1.0
-            */
-
         }
 
-        stage('Publish to Play Store') {
-            when { expression { params.GOOGLE_DEPLOY_ALPHA } }
-            steps {
-                script {
-
+        stage('Publish to Play Store')
+        {
+            when { expression { return getReleaseToGooglePlay() } }
+            steps
+            {
+                script
+                {
                     try
                     {
                         CHANGELOG = readFile(file: 'pipeline/releasechangelist')
@@ -266,10 +228,8 @@ pipeline {
                     }
 
                     androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%", recentChangeList: [[language: 'en-US', text: CHANGELOG]]
-
                 }
             }
         }
-        
     }
 }
