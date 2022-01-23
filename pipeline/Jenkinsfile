@@ -146,7 +146,7 @@ pipeline {
         }
 
         stage('Publish to GitHub') {
-            when { expression { getReleaseToGit() } }
+            when { expression { return getReleaseToGit() } }
             steps {
 
                 script {
