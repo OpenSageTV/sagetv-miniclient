@@ -19,24 +19,21 @@ def getBuildType()
         case "master":
 
             return "release"
-            break
 
         case "beta":
 
             return "release"
-            break
 
         case "alpha":
 
             return "debug"
-            break
 
         case "ExoPlayer_2.16.1_upgrade":
 
             return "release"
-            break
 
         default:
+
             return "debug"
 
     }
@@ -44,38 +41,30 @@ def getBuildType()
 
 def getReleaseToGit()
 {
-    def releasetogit = false
 
     switch (getBranch())
     {
         case "master":
 
-            releasetogit = true
-            break
+            return true
 
         case "beta":
 
-            releasetogit false
-            break
+            return false
 
         case "alpha":
 
-            releasetogit false
-            break
+            return false
 
         case "ExoPlayer_2.16.1_upgrade":
 
-            releasetogit true
-            break
+            return true
 
         default:
 
-            releasetogit false;
-            break
+            return false
 
     }
-
-    return releasetogit
 }
 
 
@@ -148,7 +137,6 @@ pipeline {
         stage('Publish to GitHub') {
             when { expression { return getReleaseToGit() } }
             steps {
-
                 script {
 
                     BRANCH = getBranch()
