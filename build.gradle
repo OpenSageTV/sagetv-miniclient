@@ -58,7 +58,7 @@ allprojects {
         androidCompileSdkVersion = 29
         androidTargetSdkVersion = 30
 
-        appVersionCode = 2101087
+        appVersionCode = 2101089
         appVersionName = "${baseVersion}"
 
         // tell every project where to find the local project maven files

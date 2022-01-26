@@ -1,3 +1,6 @@
+**1.10.1**
+- Fixed a bug where push/pull formats were not begin properly determined.
+
 **1.10.0 (1/6/2021)**
 - Added configuration screens for container and codec support that allows users to customize support
 - Updated ExoPlayer to version 2.16.1 and fixed all associated code that broke.  SimpleExoPlayer was removed in this release
