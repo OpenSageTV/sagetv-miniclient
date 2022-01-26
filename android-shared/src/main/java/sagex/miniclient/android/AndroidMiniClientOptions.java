@@ -94,9 +94,9 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 
         for(int i = 0; i < supPushContainers.size(); i++)
         {
-            for(int j = 0; j < supPushContainers.get(j).getSageTVNames().length; j++)
+            for(int j = 0; j < supPushContainers.get(i).getSageTVNames().length; j++)
             {
-                pushFormats.add(supPushContainers.get(j).getSageTVNames()[j]);
+                pushFormats.add(supPushContainers.get(i).getSageTVNames()[j]);
             }
         }
 
@@ -143,7 +143,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
         {
             if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("enabled"))
             {
-                log.debug("Pull Container being added because it is set as enabled: " + allContainers[i].getName());
+                log.debug("Push Container being added because it is set as enabled: " + allContainers[i].getName());
                 supportedContainers.add(allContainers[i]);
             }
             else if(prefs.getContainerSupport(allContainers[i].getName()).equalsIgnoreCase("automatic"))
@@ -152,13 +152,13 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 {
                     if(isSupportedExoPlayerContainer(allContainers[i]))
                     {
-                        log.debug("Pull Container being added because it is set as automatic and is ExoPlayer supported: " + allContainers[i].getName());
+                        log.debug("Push Container being added because it is set as automatic and is ExoPlayer supported: " + allContainers[i].getName());
                         supportedContainers.add(allContainers[i]);
                     }
                 }
                 else
                 {
-                    log.debug("Pull Container being added because it is set as automatic and player is IJKPlayer: " + allContainers[i].getName());
+                    log.debug("Push Container being added because it is set as automatic and player is IJKPlayer: " + allContainers[i].getName());
                     //IJK Player.  Adding all for now
                     supportedContainers.add(allContainers[i]);
                 }
@@ -178,7 +178,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
 
         for(int i = 0; i < allContainers.length; i++)
         {
-            if (allContainers[i] == MPEG1PS || allContainers[i] == MPEG2TS || allContainers[i] == MPEG1PS)
+            if (allContainers[i] == MPEG1PS || allContainers[i] == MPEG2TS || allContainers[i] == MPEG2PS)
             {
                 //These codecs are not support for pull at this time.  They are push only formats.
             }
