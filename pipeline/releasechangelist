@@ -1,1 +1,1 @@
-- Fixed a bug where push/pull formats were not begin properly determined.
+- Fixed a bug where where mp4 or m4v files were not working.  It appears that SageTV maps these to Quicktime format.  So I am not passing quicktime to SageTv when MP4 is supported.

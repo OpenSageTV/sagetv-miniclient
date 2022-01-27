@@ -15,7 +15,7 @@ public enum VideoCodec
     MJPEG("MJPEG", "Motion JPEG (MJPEG)", new String[]{"MJPEG"}, ""),
     VP8("VP8", "VP8", new String[]{"VP8"}, "video/x-vnd.on2.vp8"),
     VP9("VP9", "VP9", new String[]{"VP9"}, "video/x-vnd.on2.vp9"),
-    UNKNOWN("UNKNOWN", "", new String[]{"0X0000"}, "");
+    UNKNOWN("UNKNOWN", "SageTV Unknown Codec (0X0000)", new String[]{"0X0000"}, "");
 
     private String name;
     private String [] sageTVNames;
