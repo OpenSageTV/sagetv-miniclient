@@ -1,1 +1,5 @@
-- Fixed a bug where where mp4 or m4v files were not working.  It appears that SageTV maps these to Quicktime format.  So I am not passing quicktime to SageTv when MP4 is supported.
+- Made exoplayer playback error message more descriptive
+- Added retry on recoverable playback error
+- Disabled remux settings when stream mode is not fixed
+- Changed the method for getting version name and version code
+- Modified Jenkins local copy to publish changelist and name to directory

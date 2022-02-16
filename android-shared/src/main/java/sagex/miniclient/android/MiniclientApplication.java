@@ -5,6 +5,8 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 
 import org.slf4j.Logger;
@@ -21,76 +23,71 @@ import sagex.miniclient.prefs.PrefStore;
 /**
  * Created by seans on 12/10/15.
  */
-public class MiniclientApplication extends Application {
+public class MiniclientApplication extends Application
+{
+    MiniClient client = null;
     static final Logger log = LoggerFactory.getLogger(MiniclientApplication.class);
     private static MiniclientApplication INSTANCE = null;
-
-    MiniClient client = null;
+    private int versionCode;
+    private String versionName;
 
     public static MiniclientApplication get() {
         return INSTANCE;
     }
 
-    public static MiniclientApplication get(Activity ctx) {
-        if (ctx == null) return get();
-        return (MiniclientApplication) ctx.getApplication();
-    }
-
-    public static MiniclientApplication get(Service ctx) {
-        if (ctx == null) return get();
-        return (MiniclientApplication) ctx.getApplication();
-    }
-
-    public static MiniclientApplication get(Context ctx) {
+    public static MiniclientApplication get(Context ctx)
+    {
         if (ctx == null) return get();
         return (MiniclientApplication) ctx.getApplicationContext();
     }
 
-    public MiniClient getClient() {
+    public MiniClient getClient()
+    {
         return client;
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         super.onCreate();
-
         MiniclientApplication.INSTANCE = this;
-
         AndroidMiniClientOptions options = new AndroidMiniClientOptions(this);
+        PackageManager manager = this.getPackageManager();
 
+        try
+        {
+            PackageInfo info = manager.getPackageInfo(this.getPackageName(), PackageManager.GET_ACTIVITIES);
+            versionCode = info.versionCode;
+            versionName = info.versionName;
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            versionCode = -1;
+            versionName = "";
+            log.warn("Unable to get Version Vode or Version Vame: " + e.getMessage());
+        }
 
         // by default don't use the sdcard
-        try {
+        try
+        {
             AppUtil.initLogging(this, options.getPrefs().getBoolean(PrefStore.Keys.use_log_to_sdcard, false));
             AppUtil.setLogLevel(options.getPrefs().getString(PrefStore.Keys.log_level, "warn"));
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.warn("Failed to configureList logging", t);
         }
 
         // start the client instance
         client = new MiniClient(options);
 
-        // we should just present this in an info dialog, since it doesn't have much use in the log
-//        log.debug("Creating MiniClient");
-//        log.info("------ Begin CPU INFO -----");
-//        log.info(getInfo());
-//        log.info("------- End CPU INFO ------");
-//
-//        // log the media codec information
-//        int count = MediaCodecList.getCodecCount();
-//        log.debug("--------- DUMPING HARDWARE CODECS -----------");
-//        for (int i = 0; i < count; i++) {
-//            MediaCodecInfo info = MediaCodecList.getCodecInfoAt(i);
-//            if (!info.isEncoder()) {
-//                log.debug("[{}] {}; supported: {}; encoder:{}", i, info.getName(), info.getSupportedTypes(), info.isEncoder());
-//            }
-//        }
-//        log.debug("--------- END DUMPING HARDWARE CODECS -----------");
-
-        try {
+        try
+        {
             Intent i = new Intent(getBaseContext(), MiniclientService.class);
             startService(i);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.error("Failed to start MiniClient service", t);
         }
 
@@ -98,7 +95,8 @@ public class MiniclientApplication extends Application {
     }
 
     @Override
-    public void onTerminate() {
+    public void onTerminate()
+    {
         log.debug("Destroying MiniClient");
         Intent i = new Intent(getBaseContext(), MiniclientService.class);
         stopService(i);
@@ -107,11 +105,23 @@ public class MiniclientApplication extends Application {
     }
 
     @Override
-    public void onLowMemory() {
+    public void onLowMemory()
+    {
         super.onLowMemory();
     }
 
-    private String getInfo() {
+    public int getVersionCode()
+    {
+        return versionCode;
+    }
+
+    public String getVersionName()
+    {
+        return versionName;
+    }
+
+    private String getInfo()
+    {
         StringBuffer sb = new StringBuffer();
         sb.append("abi: ").append(Build.CPU_ABI).append("\n");
         if (new File("/proc/cpuinfo").exists()) {

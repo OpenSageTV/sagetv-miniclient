@@ -14,7 +14,7 @@
     <string name="summary_list_loglevels_preference">(%s) - The logging level</string>
     <string name="dialog_title_list_loglevels_preference">Set Logging Level</string>
     <string name="dialog_title_list_streaming_mode_preference">Set Stream Mode</string>
-    <string name="summary_list_streaming_mode_preference">(%s) - Dynamic is preferred, but if you are experiencing playback issue, you can try other values.</string>
+    <string name="summary_list_streaming_mode_preference">(%s) - Fixed is preferred and offers HD transcoding and remuxing.  Dynamic adapts to bandwidth but only in SD</string>
     <string name="title_list_streaming_mode_preference">Streaming Mode</string>
     <string name="send_log">Send Log</string>
     <string name="send_log_summary">If using Send Log, then make sure that you are NOT logging to file.  Logging to a File will result in Send Log only capturing a partial log.</string>

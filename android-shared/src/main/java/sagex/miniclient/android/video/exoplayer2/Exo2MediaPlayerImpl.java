@@ -49,12 +49,18 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
 
 public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource>
 {
+    static final int MAX_PLAYBACK_RETRY_COUNT = 12;
+
     MediaSource mediaSource;
     long playbackStartPosition = -1;
     int initialAudioTrackIndex = -1;
     long currentPlaybackPosition = 0;
     ReentrantLock playbackPositionLock;
     DefaultTrackSelector trackSelector;
+
+    boolean errorState = false;
+    int retryCount = 0;
+
 
     boolean showCaptions = false;
     Handler handler;
@@ -552,14 +558,35 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void onPlayerError(PlaybackException error)
             {
-                log.debug("PLAYER ERROR: " + error.getMessage());
-                context.showErrorMessage(error.getMessage(), "Exo2MediaPlayer");
+                log.debug("PLAYER ERROR: " + error.getErrorCodeName());
                 error.printStackTrace();
+
+                if(retryCount == 0)
+                {
+                    //Show toast on first error
+                    context.showErrorMessage(error.getErrorCodeName(), "Exo2MediaPlayer");
+                }
+
+                if(retryCount <= MAX_PLAYBACK_RETRY_COUNT)
+                {
+
+                    errorState = true;
+                    retryCount++;
+
+                    player.seekTo(player.getCurrentPosition() + 100);
+                    player.prepare();
+                }
+                else
+                {
+                    context.showErrorMessage("Max playback retry reached!", "Exo2MediaPlayer");
+                }
             }
 
             @Override
             public void onPlaybackStateChanged(int playbackState)
             {
+
+
 
                 if (playbackState == Player.STATE_ENDED)
                 {
@@ -577,6 +604,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 }
                 if (playbackState == Player.STATE_READY)
                 {
+                    if(errorState)
+                    {
+                        errorState = false;
+                        retryCount = 0;
+                    }
+
                     //debugAvailableTracks();
                     log.debug("Player.STATE_READY - setAudioTrack getting called");
 
@@ -589,6 +622,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     log.debug("Player.STATE_READY - Debugging available tracks in file");
                     debugAvailableTracks();
+                }
+                if (playbackState == Player.STATE_IDLE)
+                {
+                    if(errorState)
+                    {
+                        log.debug("Player.STATE_IDLE - Error state is true, retry count " + retryCount);
+                    }
+
                 }
 
             }
