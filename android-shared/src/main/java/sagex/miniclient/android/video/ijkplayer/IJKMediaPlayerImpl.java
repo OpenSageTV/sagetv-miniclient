@@ -457,6 +457,12 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
+    public int getSubtitleTrackCount()
+    {
+        return 0;
+    }
+
+    @Override
     public void setSubtitleTrack(int streamPos) {
         //Displaying subtitle/timedtext does not appear to be supported at this time.
         log.debug("TODO: setSubtitleTrack Called StreamPosition: {}", streamPos);

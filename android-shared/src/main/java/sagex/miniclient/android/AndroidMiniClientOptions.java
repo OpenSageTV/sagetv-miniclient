@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 
 import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
@@ -132,6 +133,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
                 audioCodecs.add(supAudioCodecs.get(i).getSageTVNames()[j]);
             }
         }
+
     }
 
     private List<Container> getSupportedPushContainers()

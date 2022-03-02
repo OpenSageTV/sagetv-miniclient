@@ -1,6 +1,7 @@
 package sagex.miniclient.android.video.exoplayer2;
 
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.upstream.DataSource;
 
 import android.net.Uri;
@@ -26,6 +27,7 @@ import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.video.VideoSize;
 
 import java.util.List;
@@ -47,8 +49,7 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
  * Created by seans on 24/09/16.
  */
 
-public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource>
-{
+public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource> {
     static final int MAX_PLAYBACK_RETRY_COUNT = 12;
 
     MediaSource mediaSource;
@@ -69,74 +70,54 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
     SubtitleView subView;
 
-    public Exo2MediaPlayerImpl(AndroidUIController activity)
-    {
+    public Exo2MediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, false);
         playbackPositionLock = new ReentrantLock();
     }
 
-    public long getPlaybackPosition()
-    {
+    public long getPlaybackPosition() {
         long position = 0;
 
-        try
-        {
+        try {
             playbackPositionLock.lock();
             position = this.currentPlaybackPosition;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.error("Exception thrown getting playback position", ex);
-        }
-        finally
-        {
+        } finally {
             playbackPositionLock.unlock();
         }
 
         return position;
     }
 
-    public void setPlaybackPosition(long position)
-    {
-        try
-        {
+    public void setPlaybackPosition(long position) {
+        try {
             playbackPositionLock.lock();
 
-            if(position > 0)
-            {
+            if (position > 0) {
                 currentPlaybackPosition = position;
-            }
-            else
-            {
+            } else {
                 //Set to zero if less than zero;
                 currentPlaybackPosition = 0;
             }
 
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.error("Error setting playback position", ex);
-        }
-        finally
-        {
+        } finally {
             playbackPositionLock.unlock();
         }
     }
 
-    boolean ExoIsPlaying()
-    {
-        if (player == null)
-        {
+    boolean ExoIsPlaying() {
+        if (player == null) {
             return false;
         }
 
         return player.getPlayWhenReady();
     }
 
-    void ExoPause()
-    {
-        if (player == null)
-        {
+    void ExoPause() {
+        if (player == null) {
             return;
         }
 
@@ -144,43 +125,30 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         player.setPlayWhenReady(false);
     }
 
-    void ExoStart()
-    {
-        if (player == null)
-        {
+    void ExoStart() {
+        if (player == null) {
             return;
         }
         log.debug("Start was called");
         player.setPlayWhenReady(true);
     }
 
-    protected void releasePlayer()
-    {
-        context.runOnUiThread(new Runnable()
-        {
+    protected void releasePlayer() {
+        context.runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
-                if (player != null)
-                {
-                    try
-                    {
-                        if (ExoIsPlaying())
-                        {
+            public void run() {
+                if (player != null) {
+                    try {
+                        if (ExoIsPlaying()) {
                             ExoPause();
                         }
-                    }
-                    catch(Exception ex)
-                    {
+                    } catch (Exception ex) {
                         log.error("Error pausing/stoppig video before releasing", ex);
                     }
 
-                    try
-                    {
+                    try {
                         player.release();
-                    }
-                    catch (Exception ex)
-                    {
+                    } catch (Exception ex) {
                         log.error("Error calling release on player", ex);
                     }
 
@@ -194,35 +162,24 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public Dimension getVideoDimensions()
-    {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-        {
+    public Dimension getVideoDimensions() {
+        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
             log.debug("getVideoDimensions");
         }
-        if (player != null)
-        {
-            if (player.getVideoFormat() != null)
-            {
+        if (player != null) {
+            if (player.getVideoFormat() != null) {
                 Dimension d = new Dimension(player.getVideoFormat().width, player.getVideoFormat().height);
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     log.debug("getVideoSize(): {}", d);
                 }
                 return d;
-            }
-            else
-            {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                {
+            } else {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     log.debug("getVideoDimensions: player.getFormat is null");
                 }
             }
-        }
-        else
-        {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-            {
+        } else {
+            if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                 log.debug("getVideoDimensions: player is null");
             }
         }
@@ -230,14 +187,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public long getPlayerMediaTimeMillis(long lastServerTime)
-    {
+    public long getPlayerMediaTimeMillis(long lastServerTime) {
         long position = this.getPlaybackPosition();
 
         //log.debug("ExoLogging - getPlayerMediaTimeMillis Called lastServerTime=" + Utils.toHHMMSS(lastServerTime) + " position=" + Utils.toHHMMSS(position));
 
-        if(lastServerTime < 0)
-        {
+        if (lastServerTime < 0) {
             log.debug("Flush - Flush was called waiting for last serverTime to be > 0");
             return -1;
         }
@@ -247,19 +202,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public void stop()
-    {
+    public void stop() {
         super.stop();
 
-        context.runOnUiThread(new Runnable()
-        {
+        context.runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
-                if (playerReady)
-                {
-                    if (player == null)
-                    {
+            public void run() {
+                if (playerReady) {
+                    if (player == null) {
                         return;
                     }
                     player.setPlayWhenReady(false);
@@ -269,12 +219,10 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public void pause()
-    {
+    public void pause() {
 
 
-        if(this.getState() == MiniPlayerPlugin.PAUSE_STATE && !pushMode)
-        {
+        if (this.getState() == MiniPlayerPlugin.PAUSE_STATE && !pushMode) {
             log.debug("In pause state.  Seek frame instead...");
             //TODO: Could not find the framerate in ExoPlayer.  Going to assume 30fps for now.
             this.seek(this.getPlaybackPosition() + Math.round(1000.0 / 30.0));
@@ -282,16 +230,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
 
 
-
         super.pause();
 
-        context.runOnUiThread(new Runnable()
-        {
+        context.runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
-                if (playerReady)
-                {
+            public void run() {
+                if (playerReady) {
                     ExoPause();
                 }
             }
@@ -299,51 +243,39 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public void play()
-    {
+    public void play() {
         super.play();
 
-        context.runOnUiThread(new Runnable()
-        {
+        context.runOnUiThread(new Runnable() {
             @Override
-            public void run()
-            {
-                if (playerReady)
-                {
+            public void run() {
+                if (playerReady) {
                     ExoStart();
                 }
             }
         });
     }
 
-    private void seekToImpl(long timeInMillis)
-    {
-        if(timeInMillis > 0)
-        {
-            context.runOnUiThread(new Runnable()
-            {
+    private void seekToImpl(long timeInMillis) {
+        if (timeInMillis > 0) {
+            context.runOnUiThread(new Runnable() {
                 @Override
-                public void run()
-                {
-                    try
-                    {
+                public void run() {
+                    try {
                         log.debug("Seek - Called.  Current Position: {}  Seek Request: {} Difference: {}", player.getContentPosition(), timeInMillis, player.getContentPosition() - timeInMillis);
 
                         int wait = 0;
                         player.seekTo(timeInMillis);
 
                         //Wait up to a second for the seek to complete
-                        while(player.getCurrentPosition() < timeInMillis && wait < 10)
-                        {
+                        while (player.getCurrentPosition() < timeInMillis && wait < 10) {
                             log.debug("Seek -  Waiting for current position to match Seek request.  Current Position: {}  Seek Request: {} ", player.getContentPosition(), timeInMillis);
                             Thread.sleep(100);
                             wait++;
                         }
 
                         Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
-                    }
-                    catch(Exception ex)
-                    {
+                    } catch (Exception ex) {
                         log.error("Error during seek request. Position MS: " + timeInMillis, ex);
                         log.debug("Current playback position MS: " + timeInMillis);
                     }
@@ -353,10 +285,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public void seek(long timeInMS)
-    {
-        try
-        {
+    public void seek(long timeInMS) {
+        try {
             playbackPositionLock.lock();
 
 
@@ -366,66 +296,52 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
             super.seek(timeInMS);
 
-            if (playerReady)
-            {
-                if (!pushMode)
-                {
-                    if (player != null)
-                    {
+            if (playerReady) {
+                if (!pushMode) {
+                    if (player != null) {
                         seekToImpl(timeInMS);
-                    }
-                    else
-                    {
-                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                        {
+                    } else {
+                        if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                             log.debug("Seek Resume(Player is Null) {}", timeInMS);
                         }
                         playbackStartPosition = timeInMS;
                     }
-                }
-                else
-                {
-                    if (player != null)
-                    {
+                } else {
+                    if (player != null) {
                         seekToImpl(timeInMS);
                     }
                 }
-            }
-            else
-            {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                {
+            } else {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
                     log.debug("Seek Resume {}", timeInMS);
                 }
                 playbackStartPosition = timeInMS;
             }
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             log.debug("Exception thrown durring seek: " + ex.getMessage());
             ex.printStackTrace();
-        }
-        finally
-        {
+        } finally {
             playbackPositionLock.unlock();
         }
     }
 
     @Override
-    public void setSubtitleTrack(int streamPos)
-    {
-        if(streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK)
-        {
+    public void setSubtitleTrack(int streamPos) {
+        if (streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK) {
             this.showCaptions = false;
             this.RemoveSubTitleView();
-        }
-        else
-        {
+        } else {
             this.showCaptions = true;
             this.AddSubTitleView();
         }
 
         changeTrack(C.TRACK_TYPE_TEXT, streamPos, 0);
+    }
+
+    @Override
+    public int getSubtitleTrackCount()
+    {
+        return getTrackCount(C.TRACK_TYPE_TEXT);
     }
 
     @Override
@@ -547,10 +463,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         trackSelector = new DefaultTrackSelector(context.getContext());
 
+
         SimpleExoPlayer.Builder builder =  new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
 
         builder.setTrackSelector(trackSelector);
         player = builder.build();
+        player.addAnalyticsListener(new EventLogger(trackSelector));
 
 
         player.addListener(new Player.Listener()
@@ -831,10 +749,57 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         });
     }
 
+    /**
+     * Counts support tracks of the given track type
+     * @param RenderType The type of track (VIDEO, AUDIO, TEXT, ect...)
+     */
+    public int getTrackCount(int RenderType)
+    {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        int count = 0;
+
+        if (mappedTrackInfo == null)
+        {
+            log.warn("No Mapped Track Info found");
+            return count;
+        }
+
+        TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(RenderType);
+
+        if (trackGroups.length != 0)
+        {
+            //This code is assuming one track to a group.  It will increment the count by one
+            //if there is a supported track in the groun
+            for (int j = 0; j < trackGroups.length; j++)
+            {
+                boolean supported = false;
+
+                for (int k = 0; k < trackGroups.get(j).length; k++)
+                {
+                    if (mappedTrackInfo.getTrackSupport(RenderType, j, k) == C.FORMAT_HANDLED)
+                    {
+                        log.debug("\t\t Format is handled");
+                        supported = true;
+                    }
+                    else
+                    {
+                        log.debug("\t\t Format IS NOT HANDLED");
+                    }
+                }
+
+                if(supported)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
     public void debugAvailableTracks()
     {
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-
 
         if (mappedTrackInfo == null)
         {
@@ -879,8 +844,20 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     for (int k = 0; k < trackGroups.get(j).length; k++)
                     {
+                        Format format = trackGroups.get(j).getFormat(k);
 
                         log.debug("\t\t Track {}, Channels {}, Bitrate {}, Language {}", k, trackGroups.get(j).getFormat(k).channelCount, trackGroups.get(j).getFormat(k).bitrate, trackGroups.get(j).getFormat(k).language);
+
+                        if(player.getRendererType(i) == C.TRACK_TYPE_TEXT)
+                        {
+                            log.debug("\t\tContainer MimeType" + format.containerMimeType);
+                            log.debug("\t\tSample MimeType" + format.sampleMimeType);
+                            log.debug("\t\tCodecs" + format.codecs);
+                            log.debug("\t\tLanguage" + format.language);
+                            log.debug("\t\tID" + format.id);
+                            log.debug("\t\tLabel: " + format.label);
+                            log.debug("\t\tMetadata length: " + format.metadata.length());
+                        }
                         if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
                         {
                             //Add debug info
@@ -901,7 +878,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 log.debug("JVL - Track Group Empty");
             }
         }
-
     }
 
     // cncb - Add and remove ExoPlayer2 SubTitleView for embedded PGS subtitles

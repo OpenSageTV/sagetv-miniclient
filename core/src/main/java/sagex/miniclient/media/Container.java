@@ -7,7 +7,7 @@ public enum Container
 {
     MATROSKA("MATROSKA", "Matroska", new String[]{"MATROSKA"}),
     MPEG2TS("MPEG2-TS", "MPEG2 transport stream (MPEG2-TS)", new String[]{"MPEG2-TS"}),
-    MPEG2PS("MPEG2-PS", "MPEG2 program stream (MPEG2-PS)", new String[]{"MPEG2-PS"}),
+    MPEG2PS("MPEG2-PS", "MPEG2 program stream (MPEG2-PS)", new String[]{"MPEG2-PS", "MPEG"}),
     MPEG1PS("MPEG1-PS", "MPEG1 program stream (MPEG1-PS)", new String[]{"MPEG1-PS"}),
     MP4("MP4", "MPEG-4 Part 14 (MP4) / Quicktime", new String[]{"MP4", "QUICKTIME"}),
     AVI("AVI", "Audio Video Interleave (AVI)", new String[]{"AVI"}),

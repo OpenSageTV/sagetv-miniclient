@@ -111,6 +111,11 @@ public interface MiniPlayerPlugin extends Runnable
      */
     void setSubtitleTrack(int streamPos);
 
+    /**
+     * Gets the count of Subtitle/ClosedCaption tracks the player identified
+     */
+    int getSubtitleTrackCount();
+
     void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor);
 
     Dimension getVideoDimensions();

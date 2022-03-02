@@ -171,10 +171,14 @@ public class AppUtil {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
-    public static void initLogging(Context ctx, boolean useSDCARD) {
-        if (useSDCARD) {
+    public static void initLogging(Context ctx, boolean useSDCARD)
+    {
+        if (useSDCARD)
+        {
             configureLogging(ctx, "sdcard");
-        } else {
+        }
+        else
+        {
             configureLogging(ctx, "logcat");
         }
     }
@@ -183,7 +187,8 @@ public class AppUtil {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }
 
-    private static void configureLogging(Context ctx, String output) {
+    private static void configureLogging(Context ctx, String output)
+    {
         // reset the default context (which may already have been initialized)
         // since we want to reconfigure it
         Log.i(TAG, "Attempting to reconfigure logging for " + output + " ");

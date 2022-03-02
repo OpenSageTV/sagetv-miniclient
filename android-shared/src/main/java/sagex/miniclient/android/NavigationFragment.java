@@ -42,7 +42,8 @@ import sagex.miniclient.uibridge.EventRouter;
 /**
  * Created by seans on 05/12/15.
  */
-public class NavigationFragment extends DialogFragment {
+public class NavigationFragment extends DialogFragment
+{
     static final Logger log = LoggerFactory.getLogger(NavigationFragment.class);
     private final MiniClient client;
 
@@ -58,7 +59,6 @@ public class NavigationFragment extends DialogFragment {
     public NavigationFragment()
     {
         this.client = MiniclientApplication.get().getClient();
-
     }
 
     @Override
@@ -77,12 +77,11 @@ public class NavigationFragment extends DialogFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Theme_Dialog_DoNotDim);
         setCancelable(false);
-
 
     }
 
@@ -94,75 +93,84 @@ public class NavigationFragment extends DialogFragment {
 
         navView = inflater.inflate(R.layout.navigation, container, false);
 
-
-
-
-
-
         prefs = new MediaMappingPreferences(this.client.properties());
 
         navOptions = navView.findViewById(R.id.nav_options);
         navPause = navView.findViewById(R.id.nav_media_pause);
         navSmartRemote = (ImageView) navView.findViewById(R.id.nav_remote_mode);
 
-        View.OnClickListener buttonClickListener = new View.OnClickListener() {
+        View.OnClickListener buttonClickListener = new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 buttonClick(v);
             }
         };
+
         for (int id : new int[]{R.id.nav_up, R.id.nav_down, R.id.nav_left, R.id.nav_right, R.id.nav_select, R.id.nav_pgdn, R.id.nav_pgup,
                 R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
                 R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
                 R.id.nav_media_stop, R.id.nav_back, R.id.nav_info, R.id.nav_video_info}) {
-            try {
+            try
+            {
                 navView.findViewById(id).setOnClickListener(buttonClickListener);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 t.printStackTrace();
             }
         }
 
-        navView.findViewById(R.id.nav_switch_player).setOnClickListener(new View.OnClickListener() {
+        navView.findViewById(R.id.nav_switch_player).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 onSwitchPlayer();
             }
         });
 
-        navView.findViewById(R.id.nav_toggle_ar).setOnClickListener(new View.OnClickListener() {
-
+        navView.findViewById(R.id.nav_toggle_ar).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 onToggleAspectRatio();
             }
         });
 
-        navView.findViewById(R.id.nav_video_info).setOnClickListener(new View.OnClickListener() {
-
+        navView.findViewById(R.id.nav_video_info).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 onVideoInfo();
             }
         });
 
-        navView.findViewById(R.id.nav_remote_mode).setOnClickListener(new View.OnClickListener() {
-
+        navView.findViewById(R.id.nav_remote_mode).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 onToggleSmartRemote();
             }
         });
 
-        navView.findViewById(R.id.nav_help).setOnClickListener(new View.OnClickListener() {
-
+        navView.findViewById(R.id.nav_help).setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 onHelp();
             }
         });
 
-        for (int id : new int[]{R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide}) {
-            navView.findViewById(id).setOnClickListener(new OnClickListener() {
+        for (int id : new int[]{R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide})
+        {
+            navView.findViewById(id).setOnClickListener(new OnClickListener()
+            {
                 @Override
                 public void onClick(View v) {
                     buttonClickInternal(v);
@@ -172,9 +180,12 @@ public class NavigationFragment extends DialogFragment {
 
         if (client==null||client.getCurrentConnection()==null) return navView;
 
-        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup() && (client.isVideoPlaying() || client.isVideoPaused())) {
+        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup() && (client.isVideoPlaying() || client.isVideoPaused()))
+        {
             navPause.requestFocus();
-        } else {
+        }
+        else
+        {
             navOptions.requestFocus();
         }
 
@@ -185,24 +196,30 @@ public class NavigationFragment extends DialogFragment {
         return navView;
     }
 
-    private void onVideoInfo() {
+    private void onVideoInfo()
+    {
         log.debug("Showing Video Info View");
         client.eventbus().post(new VideoInfoShow());
     }
 
-    public void buttonClick(View v) {
-        try {
+    public void buttonClick(View v)
+    {
+        try
+        {
             log.debug("Clicked: {}", v.getTag());
             String key = v.getTag().toString().toLowerCase();
             boolean hide = key.startsWith("_");
-            if (hide) {
+
+            if (hide)
+            {
                 key = key.substring(1);
             }
             if (hide) dismiss();
 
             // unique case... if the video is paused, and this pause/play button is clicked,
             // the hide the navigation.
-            if ("play_pause".equalsIgnoreCase(key) && client.isVideoPaused()) {
+            if ("play_pause".equalsIgnoreCase(key) && client.isVideoPaused())
+            {
                 dismiss();
             }
 
@@ -211,16 +228,21 @@ public class NavigationFragment extends DialogFragment {
             if (sageCommand == -1)
             {
                 log.warn("Invalid SageTV Command '{}'", key);
-            } else {
+            }
+            else
+            {
                 EventRouter.postCommand(client, sageCommand);
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.error("Button Not Implemented for {} with ID {}", v.getTag(), v.getId(), t);
         }
     }
 
     // @OnClick(R.id.nav_switch_player)
-    public void onSwitchPlayer() {
+    public void onSwitchPlayer()
+    {
         dismiss();
 
         new AlertDialog.Builder(getActivity())
@@ -257,7 +279,6 @@ public class NavigationFragment extends DialogFragment {
                         dismiss();
                     }
                 }).show();
-
     }
 
     // @OnClick(R.id.nav_toggle_ar)
@@ -266,15 +287,8 @@ public class NavigationFragment extends DialogFragment {
     }
 
     // @OnClick(R.id.nav_remote_mode)
-    public void onToggleSmartRemote() {
-//        if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup()) {
-//            client.getCurrentConnection().getMenuHint().popupName = null;
-//            client.getCurrentConnection().getMenuHint().menuName = null;
-//        } else {
-//            client.getCurrentConnection().getMenuHint().popupName = null;
-//            client.getCurrentConnection().getMenuHint().menuName = "OSD";
-//        }
-
+    public void onToggleSmartRemote()
+    {
         prefs.setSmartRemoteEnabled(!prefs.isSmartRemoteEnabled());
         updateSmartRemoteToggle();
     }
@@ -293,7 +307,8 @@ public class NavigationFragment extends DialogFragment {
 
 
     // @OnClick(R.id.nav_help)
-    public void onHelp() {
+    public void onHelp()
+    {
         dismiss();
         HelpDialogFragment.showDialog(getActivity());
     }
@@ -312,28 +327,39 @@ public class NavigationFragment extends DialogFragment {
     }
 
     @Override
-    public void dismiss() {
+    public void dismiss()
+    {
         super.dismiss();
         client.eventbus().post(HideSystemUIEvent.INSTANCE);
     }
 
     // @OnClick({R.id.nav_keyboard, R.id.nav_close, R.id.nav_hide})
-    public void buttonClickInternal(View v) {
+    public void buttonClickInternal(View v)
+    {
         String tag = v.getTag().toString().toLowerCase();
-        if ("_keyboard".equalsIgnoreCase(tag)) {
+
+        if ("_keyboard".equalsIgnoreCase(tag))
+        {
             dismiss();
             client.eventbus().post(ShowKeyboardEvent.INSTANCE);
-        } else if ("_close".equalsIgnoreCase(tag)) {
+        }
+        else if ("_close".equalsIgnoreCase(tag))
+        {
             client.eventbus().post(CloseAppEvent.INSTANCE);
-        } else if ("_hide".equalsIgnoreCase(tag)) {
+        }
+        else if ("_hide".equalsIgnoreCase(tag))
+        {
             client.eventbus().post(HideNavigationEvent.INSTANCE);
-        } else {
+        }
+        else
+        {
             log.warn("Nothing Handled Internal Event: {}", tag);
         }
     }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public Dialog onCreateDialog(Bundle savedInstanceState)
+    {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         WindowManager.LayoutParams wmlp = new WindowManager.LayoutParams();
@@ -345,43 +371,52 @@ public class NavigationFragment extends DialogFragment {
         wmlp.width = WindowManager.LayoutParams.MATCH_PARENT;
         wmlp.height = WindowManager.LayoutParams.MATCH_PARENT;
         dialog.getWindow().setAttributes(wmlp);
-//        d.show();
-//        d.getWindow().setAttributes(lp);
 
-        dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+        dialog.setOnKeyListener(new DialogInterface.OnKeyListener()
+        {
             @Override
-            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event)
+            {
+                if (keyCode == KeyEvent.KEYCODE_BACK)
+                {
                     client.eventbus().post(BackPressedEvent.INSTANCE);
                     return true;
                 }
                 return false;
             }
         });
+
         return dialog;
     }
 
     @Override
-    public void onStart() {
+    public void onStart()
+    {
         super.onStart();
-
         Dialog dialog = getDialog();
-        if (dialog != null) {
+
+        if (dialog != null)
+        {
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             //dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
     }
 
-    public static void showDialog(Activity activity) {
+    public static void showDialog(Activity activity)
+    {
         log.debug("Showing Navigation");
         // DialogFragment.show() will take care of adding the fragment
         // in a transaction.  We also want to remove any currently showing
         // dialog, so make our own transaction and take care of that here.
+
         FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
         Fragment prev = activity.getFragmentManager().findFragmentByTag("nav");
-        if (prev != null) {
+
+        if (prev != null)
+        {
             ft.remove(prev);
         }
+
         ft.addToBackStack(null);
 
         // Create and show the dialog.
