@@ -9,6 +9,7 @@ import java.io.IOException;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
@@ -162,6 +163,9 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     public void setSubtitleTrack(int streamPos) { }
 
     @Override
+    public int getSelectedSubtitleTrack() { return DISABLE_TRACK; }
+
+    @Override
     public void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor) { }
 
     @Override
@@ -190,5 +194,10 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     public int getSubtitleTrackCount()
     {
         return 0;
+    }
+
+    @Override
+    public SubtitleTrack[] getSubtitleTracks() {
+        return new SubtitleTrack[0];
     }
 }

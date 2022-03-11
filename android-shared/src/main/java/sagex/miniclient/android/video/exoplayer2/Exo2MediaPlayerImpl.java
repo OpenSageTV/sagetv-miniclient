@@ -2,6 +2,7 @@ package sagex.miniclient.android.video.exoplayer2;
 
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.upstream.DataSource;
 
 import android.net.Uri;
@@ -23,7 +24,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.ui.SubtitleView;
@@ -35,12 +35,13 @@ import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.media.SubtitleCodec;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
 
-import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static sagex.miniclient.util.Utils.toHHMMSS;
@@ -52,23 +53,23 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
 public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource> {
     static final int MAX_PLAYBACK_RETRY_COUNT = 12;
 
-    MediaSource mediaSource;
-    long playbackStartPosition = -1;
-    int initialAudioTrackIndex = -1;
-    long currentPlaybackPosition = 0;
-    ReentrantLock playbackPositionLock;
-    DefaultTrackSelector trackSelector;
+    private MediaSource mediaSource;
+    private long playbackStartPosition = -1;
+    private int initialAudioTrackIndex = -1;
+    private long currentPlaybackPosition = 0;
+    private ReentrantLock playbackPositionLock;
+    private DefaultTrackSelector trackSelector;
+    private int selectedSubtitleTrack = DISABLE_TRACK;
 
-    boolean errorState = false;
-    int retryCount = 0;
+    private boolean errorState = false;
+    private int retryCount = 0;
 
+    private boolean showCaptions = false;
+    private Handler handler;
+    private Runnable progressRunnable;
+    private String url;
 
-    boolean showCaptions = false;
-    Handler handler;
-    Runnable progressRunnable;
-    String url;
-
-    SubtitleView subView;
+    private SubtitleView subView;
 
     public Exo2MediaPlayerImpl(AndroidUIController activity) {
         super(activity, true, false);
@@ -326,16 +327,26 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     }
 
     @Override
-    public void setSubtitleTrack(int streamPos) {
-        if (streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK) {
+    public void setSubtitleTrack(int streamPos)
+    {
+        if (streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK)
+        {
             this.showCaptions = false;
             this.RemoveSubTitleView();
-        } else {
+        }
+        else
+        {
             this.showCaptions = true;
             this.AddSubTitleView();
         }
 
         changeTrack(C.TRACK_TYPE_TEXT, streamPos, 0);
+    }
+
+    @Override
+    public int getSelectedSubtitleTrack()
+    {
+        return this.selectedSubtitleTrack;
     }
 
     @Override
@@ -718,6 +729,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                         trackSelector.setParameters(parametersBuilder);
                         log.debug("JVL - Track change executed for disable: TrackType={} TrackGroup={} TrackIndex={}", trackType, trackGroup, trackIndex);
+                        selectedSubtitleTrack = DISABLE_TRACK;
                     }
                     else
                     {
@@ -732,6 +744,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                             trackSelector.setParameters(parametersBuilder);
                             log.debug("JVL - Track change executed: TrackType={} TrackGroup={} TrackIndex={}", trackType, trackGroup, trackIndex);
+                            selectedSubtitleTrack = groupIndex;
                         }
                         else
                         {
@@ -797,6 +810,35 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         return count;
     }
 
+    @Override
+    public SubtitleTrack [] getSubtitleTracks()
+    {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(C.TRACK_TYPE_TEXT);
+        int trackCount = trackGroups.length;
+        SubtitleTrack[] tracks = new SubtitleTrack[0];
+        
+        if(trackCount > 0)
+        {
+            tracks = new SubtitleTrack[trackCount];
+
+            for (int i = 0; i < trackCount; i++)
+            {
+                TrackGroup trackGroup = trackGroups.get(i);
+
+                SubtitleCodec codec = SubtitleCodec.parse(trackGroup.getFormat(0).sampleMimeType);
+                String langugae = trackGroup.getFormat(0).language;
+                String label = trackGroup.getFormat(0).label;
+                boolean supported = (mappedTrackInfo.getTrackSupport(C.TRACK_TYPE_TEXT, i, 0) == C.FORMAT_HANDLED);
+
+                SubtitleTrack track = new SubtitleTrack(i, codec, langugae, label, supported);
+                tracks[i] = track;
+            }
+        }
+
+         return tracks;
+    }
+
     public void debugAvailableTracks()
     {
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
@@ -846,18 +888,64 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     {
                         Format format = trackGroups.get(j).getFormat(k);
 
-                        log.debug("\t\t Track {}, Channels {}, Bitrate {}, Language {}", k, trackGroups.get(j).getFormat(k).channelCount, trackGroups.get(j).getFormat(k).bitrate, trackGroups.get(j).getFormat(k).language);
+                        log.debug("\t\tTrack : " + k);
+                        log.debug("\t\tContainer MimeType: " + format.containerMimeType);
+                        log.debug("\t\tSample MimeType: " + format.sampleMimeType);
+                        log.debug("\t\tCodecs: " + format.codecs);
+                        log.debug("\t\tLanguage: " + format.language);
+
 
                         if(player.getRendererType(i) == C.TRACK_TYPE_TEXT)
                         {
-                            log.debug("\t\tContainer MimeType" + format.containerMimeType);
-                            log.debug("\t\tSample MimeType" + format.sampleMimeType);
-                            log.debug("\t\tCodecs" + format.codecs);
-                            log.debug("\t\tLanguage" + format.language);
-                            log.debug("\t\tID" + format.id);
-                            log.debug("\t\tLabel: " + format.label);
-                            log.debug("\t\tMetadata length: " + format.metadata.length());
+
+                            /*if((MimeTypes.APPLICATION_CEA708.equalsIgnoreCase(format.sampleMimeType) || MimeTypes.APPLICATION_CEA608.equalsIgnoreCase(format.sampleMimeType))
+                                    && format.language.equalsIgnoreCase("en"))
+                            {
+                                log.debug("-----Setting Subtitle track to active");
+                                //Enable this track.  This is just debugging
+                                this.setSubtitleTrack(j);
+                            }
+                            else
+                            {
+                                log.debug("-----NOT Setting Subtitle track to active");
+                            }*/
                         }
+
+
+
+                        if(player.getRendererType(i) == C.TRACK_TYPE_AUDIO)
+                        {
+                            log.debug("\t\tChannel: " + format.channelCount);
+                            log.debug("\t\tBitrate: " + format.bitrate);
+                            log.debug("\t\tAverageBitrate: " + format.averageBitrate);
+                            log.debug("\t\tPeakBitrate: " + format.peakBitrate);
+                            log.debug("\t\tPCM Encoding: " + format.pcmEncoding);
+
+                        }
+
+                        if(player.getRendererType(i) == C.TRACK_TYPE_VIDEO)
+                        {
+                            if(format.colorInfo != null)
+                            {
+                                log.debug("\t\tColor: " + format.colorInfo.toString());
+                            }
+                            log.debug("\t\tBitrate: " + format.bitrate);
+                            log.debug("\t\tAverageBitrate: " + format.averageBitrate);
+                            log.debug("\t\tPeakBitrate: " + format.peakBitrate);
+                            log.debug("\t\tFramerate: " + format.frameRate);
+                            log.debug("\t\tHeight: " + format.height);
+                            log.debug("\t\tWidth: " + format.width);
+
+                        }
+
+                        log.debug("\t\tID: " + format.id);
+                        log.debug("\t\tLabel: " + format.label);
+                        if(format.metadata != null)
+                        {
+                            log.debug("\t\t\tMetadata length: " + format.metadata.length());
+                        }
+
+
                         if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
                         {
                             //Add debug info

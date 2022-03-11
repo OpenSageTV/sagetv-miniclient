@@ -6,6 +6,7 @@ import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
@@ -463,6 +464,12 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
+    public SubtitleTrack[] getSubtitleTracks()
+    {
+        return new SubtitleTrack[0];
+    }
+
+    @Override
     public void setSubtitleTrack(int streamPos) {
         //Displaying subtitle/timedtext does not appear to be supported at this time.
         log.debug("TODO: setSubtitleTrack Called StreamPosition: {}", streamPos);
@@ -480,6 +487,12 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 //                //((IjkMediaPlayer) player).selectTrack(trackPos);
 //            }
         }
+    }
+
+    @Override
+    public int getSelectedSubtitleTrack()
+    {
+        return DISABLE_TRACK;
     }
 
     protected void releasePlayer() {

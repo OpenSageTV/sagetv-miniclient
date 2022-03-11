@@ -22,9 +22,7 @@ import java.util.Map;
 import sagex.miniclient.net.BufferedPullDataSource;
 import sagex.miniclient.net.HasClose;
 
-/**
- * Created by seans on 10/12/15.
- */
+
 public class Exo2PullDataSource implements DataSource, HasClose
 {
     static final Logger log = LoggerFactory.getLogger(Exo2PullDataSource.class);
@@ -92,8 +90,6 @@ public class Exo2PullDataSource implements DataSource, HasClose
                 return 0;
             }
             int bytes = dataSource.read(startPos, buffer, offset, readLength);
-
-            log.debug("Bytes read: {}", bytes);
 
             if (bytes == -1)
             {

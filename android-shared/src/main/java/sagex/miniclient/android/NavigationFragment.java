@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import sagex.miniclient.MiniClient;
+import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.SageCommand;
 import sagex.miniclient.android.events.BackPressedEvent;
 import sagex.miniclient.android.events.ChangePlayerOneTime;
@@ -36,6 +37,7 @@ import sagex.miniclient.android.events.ToggleAspectRatioEvent;
 import sagex.miniclient.android.preferences.MediaMappingPreferences;
 import sagex.miniclient.events.ShowKeyboardEvent;
 import sagex.miniclient.events.VideoInfoShow;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.EventRouter;
 
@@ -82,7 +84,6 @@ public class NavigationFragment extends DialogFragment
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Theme_Dialog_DoNotDim);
         setCancelable(false);
-
     }
 
     @Nullable
@@ -146,6 +147,60 @@ public class NavigationFragment extends DialogFragment
             public void onClick(View v)
             {
                 onVideoInfo();
+            }
+
+        });
+
+        navView.findViewById(R.id.nav_closed_captions).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                SubtitleTrack [] tracks = client.getPlayer().getSubtitleTracks();
+                String [] items = new String[tracks.length + 1];
+                int selectedIndex;
+
+                items[0] = "Off";
+
+                for(int i = 0; i < tracks.length; i++)
+                {
+                    items[i + 1] = tracks[i].toString();
+                }
+
+                if(client.getPlayer().getSelectedSubtitleTrack() == MiniPlayerPlugin.DISABLE_TRACK)
+                {
+                    selectedIndex = 0;
+                }
+                else
+                {
+                    selectedIndex = client.getPlayer().getSelectedSubtitleTrack() + 1;
+                }
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(NavigationFragment.this.getActivity());
+                builder.setTitle("Select Subtitle/Closed Caption");
+                builder.setSingleChoiceItems(items, selectedIndex, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+
+                        if(i > 0)
+                        {
+                            if(tracks[i - 1].isSupported())
+                            {
+                                client.getPlayer().setSubtitleTrack(tracks[i - 1].getIndex());
+                            }
+                        }
+                        else if(i == 0)
+                        {
+                            client.getPlayer().setSubtitleTrack(MiniPlayerPlugin.DISABLE_TRACK);
+
+                        }
+                        dialogInterface.cancel();
+                    }
+
+                });
+                builder.show();
             }
         });
 

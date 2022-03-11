@@ -204,15 +204,22 @@
             android:layout_row="7"
             android:src="@drawable/ic_switch_video_white_24dp"
             android:tag="_switch_video"/>
-
-            <ImageView
-                android:visibility="visible"
-                android:id="@+id/nav_video_info"
-                style="@style/NavIconButton"
-                android:layout_column="9"
-                android:layout_row="4"
-                android:src="@drawable/ic_vid_info_white_24dp"
-                android:tag="video_info"/>
+        <ImageView
+            android:visibility="visible"
+            android:id="@+id/nav_video_info"
+            style="@style/NavIconButton"
+            android:layout_column="9"
+            android:layout_row="4"
+            android:src="@drawable/ic_vid_info_white_24dp"
+            android:tag="video_info"/>
+        <ImageView
+            android:visibility="visible"
+            android:id="@+id/nav_closed_captions"
+            style="@style/NavIconButton"
+            android:layout_column="10"
+            android:layout_row="4"
+            android:src="@drawable/ic_closed_caption_white_24dp"
+            android:tag="closed_captions"/>
 
         <ImageView
             android:id="@+id/nav_toggle_ar"

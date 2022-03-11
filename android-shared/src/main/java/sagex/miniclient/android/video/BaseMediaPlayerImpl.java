@@ -38,7 +38,7 @@ public abstract class BaseMediaPlayerImpl<TPlayer, TDataSource> implements MiniP
     
 
     protected static final long PTS_ROLLOVER = 0x200000000L * 1000000L / 90000L / 1000L;
-    protected static final int DISABLE_TRACK = 8192;
+
     
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
     protected TPlayer player;
