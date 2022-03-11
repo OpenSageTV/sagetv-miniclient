@@ -26,6 +26,10 @@ def getBuildType()
 
             return "debug"
 
+        case "amazon_publish": //This is for amazon app publish development/debugging
+
+            return "release"
+
         default:
 
             return "debug"
@@ -79,6 +83,33 @@ def getReleaseToGooglePlay()
     }
 }
 
+def getReleaseToAmazonAppStore()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return true
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return false
+
+        case "amazon_publish": //This is for amazon app publish development/debugging
+
+            return true
+
+        default:
+
+            return false
+
+    }
+}
+
 pipeline
 {
     agent
@@ -106,6 +137,9 @@ pipeline
         STORE_PASSWORD = credentials('storePassword')
         GIT_HUB_USER = credentials('GitHubUser')
         GIT_HUB_TOKEN = credentials('GitHubToken')
+        AMAZON_APP_ID = credentials('SageTVAndroidClient-AmazonAppID')
+        AMAZON_CLIENT_ID = credentials('SageTVAndroidClient-AmazonClientID')
+        AMAZON_CLIENT_SECRET = credentials('SageTVAndroidClient-AmazonClientSecret')
 
         version = sh (script: "./gradlew properties -q | grep \"appVersionName:\" | awk '{print \$2}'", returnStdout: true).trim()
         appversioncode = sh (script: "./gradlew properties -q | grep \"appVersionCode:\" | awk '{print \$2}'", returnStdout: true).trim()
@@ -235,5 +269,29 @@ pipeline
                 }
             }
         }
+
+        stage('Publish to Amazon App Store')
+        {
+            when { expression { return getReleaseToAmazonAppStore() } }
+            steps
+            {
+                script
+                {
+                    try
+                    {
+                        CHANGELOG = readFile(file: 'pipeline/releasechangelist')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasechangelist file: ${err.localizedMessage}"
+                        CHANGELOG = ''
+                    }
+
+                    sh("./pipeline/amazon_publish.sh ${AMAZON_APP_ID} android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk ${AMAZON_CLIENT_ID} ${AMAZON_CLIENT_SECRET}")
+                    //androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%", recentChangeList: [[language: 'en-US', text: CHANGELOG]]
+                }
+            }
+        }
+
     }
 }
