@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -88,7 +89,8 @@ public class NavigationFragment extends DialogFragment
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
 
         //getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -112,7 +114,8 @@ public class NavigationFragment extends DialogFragment
         for (int id : new int[]{R.id.nav_up, R.id.nav_down, R.id.nav_left, R.id.nav_right, R.id.nav_select, R.id.nav_pgdn, R.id.nav_pgup,
                 R.id.nav_options, R.id.nav_home, R.id.nav_media_pause, R.id.nav_media_play, R.id.nav_media_skip_back, R.id.nav_media_skip_back_2,
                 R.id.nav_media_skip_forward, R.id.nav_media_skip_forward_2,
-                R.id.nav_media_stop, R.id.nav_back, R.id.nav_info, R.id.nav_video_info}) {
+                R.id.nav_media_stop, R.id.nav_back, R.id.nav_info, R.id.nav_video_info})
+        {
             try
             {
                 navView.findViewById(id).setOnClickListener(buttonClickListener);
@@ -151,56 +154,72 @@ public class NavigationFragment extends DialogFragment
 
         });
 
+
         navView.findViewById(R.id.nav_closed_captions).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                SubtitleTrack [] tracks = client.getPlayer().getSubtitleTracks();
-                String [] items = new String[tracks.length + 1];
-                int selectedIndex;
-
-                items[0] = "Off";
-
-                for(int i = 0; i < tracks.length; i++)
+                if(client.getPlayer() == null)
                 {
-                    items[i + 1] = tracks[i].toString();
+                    dismiss();
                 }
-
-                if(client.getPlayer().getSelectedSubtitleTrack() == MiniPlayerPlugin.DISABLE_TRACK)
+                else if(client.getPlayer().getSubtitleTrackCount() == 0)
                 {
-                    selectedIndex = 0;
+                    Toast.makeText(NavigationFragment.this.getActivity(), "No subtitle or closed caption tracks", Toast.LENGTH_LONG).show();
+                    dismiss();
                 }
-                else
+                else if ((client.isVideoPlaying() || client.isVideoPaused()))
                 {
-                    selectedIndex = client.getPlayer().getSelectedSubtitleTrack() + 1;
-                }
+                    SubtitleTrack[] tracks = client.getPlayer().getSubtitleTracks();
+                    String[] items = new String[tracks.length + 1];
+                    int selectedIndex;
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(NavigationFragment.this.getActivity());
-                builder.setTitle("Select Subtitle/Closed Caption");
-                builder.setSingleChoiceItems(items, selectedIndex, new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
+                    items[0] = "Off";
+
+                    for (int i = 0; i < tracks.length; i++)
                     {
-
-                        if(i > 0)
-                        {
-                            if(tracks[i - 1].isSupported())
-                            {
-                                client.getPlayer().setSubtitleTrack(tracks[i - 1].getIndex());
-                            }
-                        }
-                        else if(i == 0)
-                        {
-                            client.getPlayer().setSubtitleTrack(MiniPlayerPlugin.DISABLE_TRACK);
-
-                        }
-                        dialogInterface.cancel();
+                        items[i + 1] = tracks[i].toString();
                     }
 
-                });
-                builder.show();
+                    if (client.getPlayer().getSelectedSubtitleTrack() == MiniPlayerPlugin.DISABLE_TRACK)
+                    {
+                        selectedIndex = 0;
+                    }
+                    else
+                    {
+                        selectedIndex = client.getPlayer().getSelectedSubtitleTrack() + 1;
+                    }
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(NavigationFragment.this.getActivity());
+                    builder.setTitle("Select Subtitle/Closed Caption");
+                    builder.setSingleChoiceItems(items, selectedIndex, new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
+
+                            if (i > 0)
+                            {
+                                if (tracks[i - 1].isSupported())
+                                {
+                                    client.getPlayer().setSubtitleTrack(tracks[i - 1].getIndex());
+                                }
+                            }
+                            else if (i == 0)
+                            {
+                                client.getPlayer().setSubtitleTrack(MiniPlayerPlugin.DISABLE_TRACK);
+
+                            }
+                            dialogInterface.cancel();
+                        }
+
+                    });
+                    dismiss();
+                    builder.show();
+                }
+
+
             }
         });
 
@@ -227,13 +246,14 @@ public class NavigationFragment extends DialogFragment
             navView.findViewById(id).setOnClickListener(new OnClickListener()
             {
                 @Override
-                public void onClick(View v) {
+                public void onClick(View v)
+                {
                     buttonClickInternal(v);
                 }
             });
         }
 
-        if (client==null||client.getCurrentConnection()==null) return navView;
+        if (client == null || client.getCurrentConnection() == null) return navView;
 
         if (client.getCurrentConnection().getMenuHint().isOSDMenuNoPopup() && (client.isVideoPlaying() || client.isVideoPaused()))
         {
@@ -303,17 +323,20 @@ public class NavigationFragment extends DialogFragment
         new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.title_switch_player)
                 .setMessage(getResources().getString(R.string.msg_switch_player, getPlayerName(), getOtherPlayerName()))
-                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dismiss();
-                    }
-                })
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener()
+                {
                     @Override
                     public void onClick(DialogInterface dialog, int which)
                     {
-                        if(isExoPlayer())
+                        dismiss();
+                    }
+                })
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        if (isExoPlayer())
                         {
                             client.properties().setString(PrefStore.Keys.default_player, "ijkplayer");
                         }
@@ -326,9 +349,11 @@ public class NavigationFragment extends DialogFragment
                         dismiss();
                     }
                 })
-                .setNeutralButton(R.string.yes_once, new DialogInterface.OnClickListener() {
+                .setNeutralButton(R.string.yes_once, new DialogInterface.OnClickListener()
+                {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
                         client.eventbus().post(new ChangePlayerOneTime());
                         AppUtil.message(MiniclientApplication.get().getString(R.string.msg_player_changed_one_time, getOtherPlayerName(), getPlayerName()));
                         dismiss();
@@ -337,7 +362,8 @@ public class NavigationFragment extends DialogFragment
     }
 
     // @OnClick(R.id.nav_toggle_ar)
-    public void onToggleAspectRatio() {
+    public void onToggleAspectRatio()
+    {
         client.eventbus().post(ToggleAspectRatioEvent.INSTANCE);
     }
 
@@ -373,11 +399,13 @@ public class NavigationFragment extends DialogFragment
         return client.properties().getString(PrefStore.Keys.default_player, "exoplayer").equalsIgnoreCase("exoplayer");
     }
 
-    private String getPlayerName() {
+    private String getPlayerName()
+    {
         return (isExoPlayer() ? "ExoPlayer" : "IJKPlayer");
     }
 
-    private String getOtherPlayerName() {
+    private String getOtherPlayerName()
+    {
         return (isExoPlayer() ? "IJKPlayer" : "ExoPlayer");
     }
 

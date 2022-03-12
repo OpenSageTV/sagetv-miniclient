@@ -21,7 +21,30 @@ public class SubtitleTrack
     @Override
     public String toString()
     {
-        return getIndex() + " - " + getSubtitleCodec().getName() + ", " + getLanguage();
+        String output = "";
+
+        if (language.equalsIgnoreCase(""))
+        {
+            output += "Unknown";
+        }
+        else
+        {
+            output += getLanguage();
+        }
+
+        output += " (" + getSubtitleCodec() + ")";
+
+        if(!getLabel().equalsIgnoreCase(""))
+        {
+            output += " " + label;
+        }
+
+        if(!isSupported())
+        {
+            output += " NOT SUPPORTED";
+        }
+
+        return output;
     }
 
     public int getIndex()
@@ -31,7 +54,14 @@ public class SubtitleTrack
 
     public String  getLanguage()
     {
-        return language;
+        if(language == null)
+        {
+            return "";
+        }
+        else
+        {
+            return language;
+        }
     }
 
     public SubtitleCodec getSubtitleCodec()
@@ -41,7 +71,16 @@ public class SubtitleTrack
 
     public String getLabel()
     {
-        return label;
+        if(label == null)
+        {
+            return "";
+        }
+        else
+        {
+            return label;
+        }
+
+
     }
 
     public boolean isSupported()

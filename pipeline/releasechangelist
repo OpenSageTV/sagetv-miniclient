@@ -3,3 +3,4 @@
 - Disabled remux settings when stream mode is not fixed
 - Changed the method for getting version name and version code
 - Modified Jenkins local copy to publish changelist and name to directory
+- Added code for a Subtitle/Closed Caption selection list from the Navigation window
