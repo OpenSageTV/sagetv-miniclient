@@ -6,6 +6,8 @@ WORKDIR project/
 RUN apt-get update \
     && apt-get install build-essential -y
 
+RUN apt-get install jq
+
 # Set Environment Variables
 ENV SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip" \
     ANDROID_HOME="/usr/local/android-sdk" \
