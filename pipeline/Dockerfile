@@ -7,6 +7,7 @@ RUN apt-get update \
     && apt-get install build-essential -y
 
 RUN apt-get install jq -y
+RUN apt-get install less -y
 
 # Set Environment Variables
 ENV SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip" \

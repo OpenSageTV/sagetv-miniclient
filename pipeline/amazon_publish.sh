@@ -15,7 +15,7 @@ echo '|                                                                         
 echo '|                                                                              |'
 echo -e "| ${BOLD}Amazon App Store Publishing Script${CLEAR_BOLD}                                           |"
 echo '| Date: 2/14/2022                                                              |'
-echo '| Depends: curl, jq                                                            |'
+echo '| Depends: curl, jq, less                                                            |'
 echo '| Ref: https://developer.amazon.com/docs/app-submission-api/appsub-api-ref.html|'
 echo '| https://github.com/jvl711                                                    |'
 echo '|                                                                              |'
