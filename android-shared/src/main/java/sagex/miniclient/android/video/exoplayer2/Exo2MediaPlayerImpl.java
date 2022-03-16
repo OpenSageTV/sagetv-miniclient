@@ -7,6 +7,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 
 import android.net.Uri;
 import android.os.Handler;
+import android.support.v4.media.MediaMetadataCompat;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -34,6 +35,7 @@ import java.util.List;
 
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
+import sagex.miniclient.android.R;
 import sagex.miniclient.android.ui.AndroidUIController;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.media.SubtitleCodec;
@@ -45,7 +47,8 @@ import sagex.miniclient.util.VerboseLogging;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import static sagex.miniclient.util.Utils.toHHMMSS;
+import android.support.v4.media.session.MediaSessionCompat;
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
 
 /**
  * Created by seans on 24/09/16.
@@ -70,6 +73,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     private Handler handler;
     private Runnable progressRunnable;
     private String url;
+
+    MediaSessionCompat mediaSession;
+    MediaSessionConnector mediaSessionConnector;
 
     private SubtitleView subView;
 
@@ -165,6 +171,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void run()
             {
+                if(mediaSession != null)
+                {
+                    mediaSession.release();
+                }
+
                 if (player != null)
                 {
                     try
@@ -748,6 +759,16 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         // start playing
         player.setVideoSurface(((SurfaceView) context.getVideoView()).getHolder().getSurface());
         player.setPlayWhenReady(true);
+
+        //Create Media Session
+        mediaSession = new MediaSessionCompat(this.context.getContext(), "SageTV Android TV Client");
+        mediaSessionConnector = new MediaSessionConnector(mediaSession);
+        mediaSessionConnector.setPlayer(player);
+        mediaSession.setActive(true);
+
+        MediaMetadataCompat.Builder metaDataBuilder = new MediaMetadataCompat.Builder();
+
+        metaDataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, sageTVurl);
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
         {
