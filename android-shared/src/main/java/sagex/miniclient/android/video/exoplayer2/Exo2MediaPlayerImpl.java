@@ -5,9 +5,11 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.upstream.DataSource;
 
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -35,20 +37,18 @@ import java.util.List;
 
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
-import sagex.miniclient.android.R;
 import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.android.video.MediaSessionCallbackHandler;
 import sagex.miniclient.media.SubtitleCodec;
 import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
-
 import java.util.concurrent.locks.ReentrantLock;
-
 import android.support.v4.media.session.MediaSessionCompat;
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
 
 /**
  * Created by seans on 24/09/16.
@@ -75,7 +75,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     private String url;
 
     MediaSessionCompat mediaSession;
-    MediaSessionConnector mediaSessionConnector;
+    //MediaSessionConnector mediaSessionConnector;
 
     private SubtitleView subView;
 
@@ -166,16 +166,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
     protected void releasePlayer()
     {
+        if(mediaSession != null)
+        {
+            log.debug("Releaseing Android Media Session");
+            mediaSession.setActive(false);
+            mediaSession.release();
+        }
+
         context.runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
-                if(mediaSession != null)
-                {
-                    mediaSession.release();
-                }
-
                 if (player != null)
                 {
                     try
@@ -257,6 +259,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             return -1;
         }
 
+        this.updateMediaSessionPlaybackState(lastServerTime + position);
+
         return lastServerTime + position;
 
     }
@@ -264,23 +268,36 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public void stop()
     {
-        super.stop();
-
         context.runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
+                log.debug("Stop was called on player");
+                if(player != null)
+                {
+                    player.stop();
+                }
+
+                if(mediaSession != null)
+                {
+                    mediaSession.setActive(false);
+                }
+
                 if (playerReady)
                 {
                     if (player == null)
                     {
                         return;
                     }
+
                     player.setPlayWhenReady(false);
+
                 }
             }
         });
+
+        super.stop();
     }
 
     @Override
@@ -617,8 +634,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void onPlaybackStateChanged(int playbackState)
             {
-
-
                 if (playbackState == Player.STATE_ENDED)
                 {
                     log.debug("Player.STATE_ENDED - Calling stop");
@@ -631,20 +646,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     //notifySageTVStop();
                     eos = true;
-                    Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
+                    state = Exo2MediaPlayerImpl.EOS_STATE;
                 }
                 if (playbackState == Player.STATE_READY)
                 {
+                    log.debug("Player.STATE_READY - Media loaded and ready for playback");
                     if (errorState)
                     {
                         errorState = false;
                         retryCount = 0;
                     }
 
-                    //debugAvailableTracks();
                     log.debug("Player.STATE_READY - setAudioTrack getting called");
-
-
                     if (initialAudioTrackIndex != -1)
                     {
                         setAudioTrack(initialAudioTrackIndex);
@@ -653,6 +666,23 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     log.debug("Player.STATE_READY - Debugging available tracks in file");
                     debugAvailableTracks();
+
+                    long duration = 0;
+
+                    if(player.getDuration() < 0)
+                    {
+                        duration = -1;
+                    }
+                    else
+                    {
+                        duration = player.getDuration();
+                    }
+                    //Library files start with stc:// but do not have push in it
+                    //Live TV has push: with a lot of other data in it
+
+                    setMediaSessionMetadata(sageTVurl, duration);
+
+                    mediaSession.setActive(true);
                 }
                 if (playbackState == Player.STATE_IDLE)
                 {
@@ -660,7 +690,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     {
                         log.debug("Player.STATE_IDLE - Error state is true, retry count " + retryCount);
                     }
-
                 }
 
             }
@@ -762,13 +791,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         //Create Media Session
         mediaSession = new MediaSessionCompat(this.context.getContext(), "SageTV Android TV Client");
-        mediaSessionConnector = new MediaSessionConnector(mediaSession);
-        mediaSessionConnector.setPlayer(player);
-        mediaSession.setActive(true);
+        mediaSession.setCallback(new MediaSessionCallbackHandler(this, context.getClient(), context.getContext()));
 
-        MediaMetadataCompat.Builder metaDataBuilder = new MediaMetadataCompat.Builder();
-
-        metaDataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, sageTVurl);
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
         {
@@ -776,7 +801,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
 
         this.playerReady = true;
-        this.state = MiniPlayerPlugin.PLAY_STATE;
+        super.play();
 
         log.debug("Creating handler");
         handler = new Handler();
@@ -1129,4 +1154,57 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
     }
 
+    private void updateMediaSessionPlaybackState(long playbackPostion)
+    {
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
+        stateBuilder.setActions(this.getMediaSessionActions());
+
+        if(player != null && getState() == PLAY_STATE)
+        {
+            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, playbackPostion, 1.0f);
+        }
+        else
+        {
+            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+        }
+
+
+
+        mediaSession.setPlaybackState(stateBuilder.build());
+    }
+
+    private long getMediaSessionActions()
+    {
+        long actions = 0;
+
+        if(player != null)
+        {
+            if (getState() == PLAY_STATE)
+            {
+                actions = PlaybackState.ACTION_STOP;
+                actions |= PlaybackState.ACTION_PAUSE;
+                actions |= PlaybackState.ACTION_FAST_FORWARD;
+                actions |= PlaybackState.ACTION_REWIND;
+                actions |= PlaybackState.ACTION_SEEK_TO;
+                actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
+                actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+            }
+            else
+            {
+                actions = PlaybackState.ACTION_PLAY;
+            }
+
+        }
+
+        return actions;
+    }
+
+    private void setMediaSessionMetadata(String displayTitle, long duration)
+    {
+        MediaMetadataCompat.Builder metaDataBuilder = new MediaMetadataCompat.Builder();
+
+        metaDataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle);
+        metaDataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration);
+        mediaSession.setMetadata(metaDataBuilder.build());
+    }
 }

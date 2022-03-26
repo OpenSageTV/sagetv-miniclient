@@ -198,7 +198,6 @@ public class NavigationFragment extends DialogFragment
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i)
                         {
-
                             if (i > 0)
                             {
                                 if (tracks[i - 1].isSupported())
@@ -209,7 +208,6 @@ public class NavigationFragment extends DialogFragment
                             else if (i == 0)
                             {
                                 client.getPlayer().setSubtitleTrack(MiniPlayerPlugin.DISABLE_TRACK);
-
                             }
                             dialogInterface.cancel();
                         }
