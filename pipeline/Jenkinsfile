@@ -287,7 +287,7 @@ pipeline
                         CHANGELOG = ''
                     }
                     sh "chmod +x ./pipeline/amazon_publish.sh"
-                    sh("./pipeline/amazon_publish.sh ${AMAZON_APP_ID} android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk ${AMAZON_CLIENT_ID} ${AMAZON_CLIENT_SECRET} pipeline/releasechangelist")
+                    sh("./pipeline/amazon_publish.sh ${AMAZON_APP_ID} android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk ${AMAZON_CLIENT_ID} ${AMAZON_CLIENT_SECRET} ./pipeline/releasechangelist")
                 }
             }
         }
