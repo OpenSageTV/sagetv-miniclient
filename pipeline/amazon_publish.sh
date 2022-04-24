@@ -210,7 +210,7 @@ fi
 
 #------------------------------------------------------- Update Listing Details --------------------------------------------------------
 
-if [ -f CHANGELIST_PATH ]
+if [ -f $CHANGELIST_PATH ]
 then
 
 	echo "Error changelist file does not exist"
@@ -218,11 +218,9 @@ then
 
 else
 
-  data=`cat CHANGELIST_PATH`
+  data=`cat $CHANGELIST_PATH`
 
 fi
-
-
 
 jq --arg update "$data" '.recentChanges=$update' listing > listing_updated
 
