@@ -194,7 +194,7 @@ echo "Getting listing details..."
 curl -D headers -sS -k -X GET "https://developer.amazon.com/api/appstore/$API_VERSION/applications/$APP_ID/edits/$EDIT_ID/listings/en-US" \
 	-H "Authorization: Bearer $TOKEN"  > listing
 
-if [ $? -ne 0 ] && [ -f listing ]
+if [ $? -ne 0 ] && [ -f $listing ]
 then
 
 	echo "Error getting listing details"
