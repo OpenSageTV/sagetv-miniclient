@@ -79,6 +79,16 @@ else
 
 fi
 
+if [ -z "$5" ]; then
+
+	SHOW_USAGE=true
+
+else
+
+	CHANGELIST_PATH="$5"
+
+fi
+
 if [ "$SHOW_USAGE" = true ]; then
 
 	echo -e "${BOLD}Usage: $0 APK_ID APK_FILENAME CLIENT_ID CLIENT_SECRET${CLEAR_BOLD}"
@@ -87,6 +97,7 @@ if [ "$SHOW_USAGE" = true ]; then
 	echo -e "APK_FILENAME: Filename and path to the Apk file that your are uploading"
 	echo -e "CLIENT_ID: The client_id needed to generate the authentication token"
 	echo -e "CLIENT_SECRET: The client_secret needed to generate the authentication token"
+	echo -e "CHANGELIST_PATH: Text file containing a list of changes for this release"
 	echo ''
 
 	exit 1
@@ -108,6 +119,7 @@ curl -sS -k -X POST -d "grant_type=client_credentials&client_id=$CLIENT_ID&clien
 
 if [ $? -eq 0 ] && [ -f token ]
 then
+
 	TOKEN=`jq -r .access_token token`
 	echo "Getting token successful: $TOKEN"
 
@@ -198,7 +210,19 @@ fi
 
 #------------------------------------------------------- Update Listing Details --------------------------------------------------------
 
-data="This is a test 2/13/2022"
+if [ -f CHANGELIST_PATH ]
+then
+
+	echo "Error changelist file does not exist"
+  exit 1
+
+else
+
+  data=`cat CHANGELIST_PATH`
+
+fi
+
+
 
 jq --arg update "$data" '.recentChanges=$update' listing > listing_updated
 
@@ -211,6 +235,7 @@ if [ $? -ne 0 ]
 then
 
 	echo "Error updating listing details"
+	exit 1
 
 else
 
@@ -294,6 +319,7 @@ then
 else
 
 	echo "APK uploaded successfully"
+
 
 fi
 
