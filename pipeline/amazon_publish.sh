@@ -104,9 +104,13 @@ if [ "$SHOW_USAGE" = true ]; then
 
 else
 
+  WORKINGDIR=`pwd`
+
+  echo "Current working dir: $WORKINGDIR"
 	echo -e "${BOLD}Using to update listing:${CLEAR_BOLD}"
 	echo "APP_ID=$APP_ID"
 	echo "APK_FILENAME=$APK_FILENAME"
+	echo "CHANGELIST_PATH=$CHANGELIST_PATH"
 
 fi
 
