@@ -218,6 +218,7 @@ if [ -f $CHANGELIST_PATH ]
 then
 
 	echo "Error changelist file does not exist"
+	ls ./pipeline
   exit 1
 
 else
