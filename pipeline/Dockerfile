@@ -30,7 +30,7 @@ RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.2" \
     "platform-tools"
 
 # Add platformtools/adb to the path
-ENV PATH="$ANDROID_HOME/platform-tool:$PATH"
+ENV PATH="$ANDROID_HOME/platform-tools:$PATH"
 
 #Install go and github-release app
 #Tempory comment out
