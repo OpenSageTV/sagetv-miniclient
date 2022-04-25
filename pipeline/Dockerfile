@@ -33,8 +33,8 @@ RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.2" \
 ENV PATH="$ANDROID_HOME/platform-tool:$PATH"
 
 #Install go and github-release app
+#Tempory comment out
 #RUN apt-get install -y golang
-RUN apt-get install -y golang-go
-RUN go get github.com/github-release/github-release
+#RUN go get github.com/github-release/github-release
 
 CMD ["/bin/bash"]
