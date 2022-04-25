@@ -29,6 +29,9 @@ RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.2" \
     "platforms;android-${ANDROID_VERSION}" \
     "platform-tools"
 
+# Add platformtools/adb to the path
+ENV PATH="$ANDROID_HOME/platform-tool:$PATH"
+
 #Install go and github-release app
 RUN apt-get install -y golang
 RUN go get github.com/github-release/github-release

@@ -152,6 +152,14 @@ pipeline
     stages
     {
 
+        stage('Test adb capability')
+        {
+            steps
+            {
+                sh "adb devices"
+            }
+        }
+
         stage('Set build informaction')
         {
             steps
