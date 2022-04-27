@@ -1,4 +1,4 @@
-FROM openjdk:8u322-jdk-slim-buster
+FROM openjdk:8-buster
 
 WORKDIR project/
 
