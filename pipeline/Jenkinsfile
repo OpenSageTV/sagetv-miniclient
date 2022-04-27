@@ -166,16 +166,11 @@ pipeline
                         sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
-                try
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', message: 'Testing the error handler')
                 {
                     echo "Testing error and catch scenario"
                     sh "ls aweofihwe"
                 }
-                catch(e)
-                {
-                    echo e.toString()
-                }
-
             }
         }
 
