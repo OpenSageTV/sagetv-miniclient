@@ -153,10 +153,11 @@ pipeline
     stages
     {
 
-        stage('Test adb capability')
+        stage('Deploy to internal clients')
         {
             steps
             {
+                //Need to make sure the dir exists before copying the file
                 sh "mkdir /keys"
 
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
@@ -165,9 +166,16 @@ pipeline
                         sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
-                sh "adb devices"
-                sh "ls /keys"
-                sh "env"
+                try
+                {
+                    echo "Testing error and catch scenario"
+                    sh "ls aweofihwe"
+                }
+                catch(e)
+                {
+                    echo e.toString()
+                }
+
             }
         }
 
