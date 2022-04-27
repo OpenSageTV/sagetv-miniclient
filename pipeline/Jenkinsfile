@@ -166,7 +166,7 @@ pipeline
                         sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE', message: 'Testing the error handler')
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Testing the error handler')
                 {
                     echo "Testing error and catch scenario"
                     sh "ls aweofihwe"
