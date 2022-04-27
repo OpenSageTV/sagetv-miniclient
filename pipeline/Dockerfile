@@ -34,7 +34,7 @@ ENV PATH="$ANDROID_HOME/platform-tools:$PATH"
 
 #Install go and github-release app
 #Tempory comment out
-#RUN apt-get install -y golang
-#RUN go get github.com/github-release/github-release
+RUN apt-get install -y golang
+RUN go get github.com/github-release/github-release
 
 CMD ["/bin/bash"]
