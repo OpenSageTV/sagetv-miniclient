@@ -37,4 +37,7 @@ ENV PATH="$ANDROID_HOME/platform-tools:$PATH"
 RUN apt-get install -y golang
 RUN go get github.com/github-release/github-release
 
+#Required for Amazon App Store Release
+RUN apt-get install -y jq
+
 CMD ["/bin/bash"]
