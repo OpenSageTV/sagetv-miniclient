@@ -157,6 +157,8 @@ pipeline
         {
             steps
             {
+                sh "mkdir /keys"
+
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
                 {
                         //writeFile file: ADB_VENDOR_KEYS, text: readFile(my_private_key)
