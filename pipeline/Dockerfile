@@ -39,5 +39,6 @@ RUN go get github.com/github-release/github-release
 
 #Required for Amazon App Store Release
 RUN apt-get install -y jq
+RUN apt-get install less -y
 
 CMD ["/bin/bash"]
