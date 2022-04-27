@@ -23,7 +23,7 @@ allprojects {
 
     ext {
 
-        appVersionCode = 2101094
+        appVersionCode = 2101095
         appVersionName = "1.11.0"
 
         gdxVersion = "1.9.14"
