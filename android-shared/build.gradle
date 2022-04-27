@@ -97,6 +97,10 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-testutils:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:extension-mediasession:${exoVersion}@aar"
+
+
+    
 
     //implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
     //implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")

@@ -9,6 +9,7 @@ import java.io.IOException;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.R;
 import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
@@ -119,19 +120,13 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     }
 
     @Override
-    public void setMute(boolean b) {
-
-    }
+    public void setMute(boolean b) {}
 
     @Override
-    public void stop() {
-
-    }
+    public void stop() { }
 
     @Override
-    public void pause() {
-
-    }
+    public void pause() { }
 
     @Override
     public void play()
@@ -141,14 +136,10 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     }
 
     @Override
-    public void seek(long timeMS) {
-
-    }
+    public void seek(long timeMS) { }
 
     @Override
-    public void setServerEOS() {
-
-    }
+    public void setServerEOS() { }
 
     @Override
     public long getLastFileReadPos() {
@@ -166,19 +157,16 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     }
 
     @Override
-    public void setAudioTrack(int streamPos) {
-
-    }
+    public void setAudioTrack(int streamPos) { }
 
     @Override
-    public void setSubtitleTrack(int streamPos) {
-
-    }
+    public void setSubtitleTrack(int streamPos) { }
 
     @Override
-    public void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor) {
+    public int getSelectedSubtitleTrack() { return DISABLE_TRACK; }
 
-    }
+    @Override
+    public void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor) { }
 
     @Override
     public Dimension getVideoDimensions() {
@@ -186,14 +174,10 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     }
 
     @Override
-    public void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException {
-
-    }
+    public void pushData(byte[] cmddata, int bufDataOffset, int buffSize) throws IOException { }
 
     @Override
-    public void flush() {
-
-    }
+    public void flush() { }
 
     @Override
     public int getBufferLeft() {
@@ -201,12 +185,19 @@ public class ExternalLinkPlayerImpl implements MiniPlayerPlugin
     }
 
     @Override
-    public void setVideoAdvancedAspect(String aspectMode) {
+    public void setVideoAdvancedAspect(String aspectMode) { }
 
+    @Override
+    public void run() { }
+
+    @Override
+    public int getSubtitleTrackCount()
+    {
+        return 0;
     }
 
     @Override
-    public void run() {
-
+    public SubtitleTrack[] getSubtitleTracks() {
+        return new SubtitleTrack[0];
     }
 }

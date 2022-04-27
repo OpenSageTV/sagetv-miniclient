@@ -192,6 +192,10 @@
             android:key="version"
             android:summary=""
             android:title="Version"/>
+        <Preference
+            android:key="versionCode"
+            android:summary=""
+            android:title="Version Code (Build Number)"/>
 
         <Preference
 

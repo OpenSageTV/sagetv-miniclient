@@ -98,8 +98,9 @@ public class MiniClient
         options.getCacheDir().mkdirs();
         options.getConfigDir().mkdirs();
 
-        log.info("MiniClient v{} starting on date/time {}", Version.VERSION, new Date());
+        log.info("MiniClient starting on date/time {}", new Date());
         log.info("MiniClient cacheDir: {}", options.getCacheDir());
+
 
         try
         {

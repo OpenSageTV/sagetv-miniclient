@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
@@ -19,7 +18,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import sagex.miniclient.Version;
 import sagex.miniclient.android.AppUtil;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.R;
@@ -38,13 +36,16 @@ import sagex.miniclient.util.Utils;
 public class SettingsFragment extends PreferenceFragment
 {
     PrefStore prefs;
-    
+
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+
+
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.prefs);
-        
+
         try
         {
             prefs = MiniclientApplication.get(getActivity()).getClient().properties();
@@ -153,6 +154,7 @@ public class SettingsFragment extends PreferenceFragment
 
 
             final Preference fixedTranscoding = this.findPreference("fixed_transcoding");
+            final Preference fixedRemuxing = this.findPreference("fixed_remuxing");
             final Preference streammode = findPreference(AndroidPrefStore.STREAMING_MODE);
             fixedTranscoding.setEnabled(prefs.getStreamingMode().equals("fixed"));
             
@@ -162,7 +164,10 @@ public class SettingsFragment extends PreferenceFragment
                 public boolean onPreferenceChange(Preference preference, Object newValue)
                 {
                     updateSummary(preference, R.string.summary_list_streaming_mode_preference, newValue);
+
                     fixedTranscoding.setEnabled(newValue.equals("fixed"));
+                    fixedRemuxing.setEnabled(newValue.equals("fixed"));
+
                     return true;
                 }
             });
@@ -180,8 +185,6 @@ public class SettingsFragment extends PreferenceFragment
                     return true;
                 }
             });
-
-            final Preference fixedRemuxing = this.findPreference("fixed_remuxing");
 
             fixedRemuxing.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener()
             {
@@ -270,8 +273,12 @@ public class SettingsFragment extends PreferenceFragment
             updateSummary(streammode, R.string.summary_list_streaming_mode_preference, prefs.getStreamingMode());
             
             final Preference version = findPreference("version");
-            version.setSummary(Version.VERSION);
-            
+            //version.setSummary(Version.VERSION);
+            version.setSummary(MiniclientApplication.get(this.getActivity()).getVersionName());
+
+            final Preference versionCode = findPreference("versionCode");
+            versionCode.setSummary(MiniclientApplication.get(this.getActivity()).getVersionCode() + "");
+
             final Preference ipaddress = findPreference("ipaddress");
             ipaddress.setSummary(NetUtil.getIPAddress(true));
             

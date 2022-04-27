@@ -1,10 +1,15 @@
 package sagex.miniclient.android.video.exoplayer2;
 
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.upstream.DataSource;
 
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -22,26 +27,28 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.ui.SubtitleView;
+import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.video.VideoSize;
 
 import java.util.List;
+
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.android.video.MediaSessionCallbackHandler;
+import sagex.miniclient.media.SubtitleCodec;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
-
-import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static sagex.miniclient.util.Utils.toHHMMSS;
+import android.support.v4.media.session.MediaSessionCompat;
 
 /**
  * Created by seans on 24/09/16.
@@ -49,19 +56,28 @@ import static sagex.miniclient.util.Utils.toHHMMSS;
 
 public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource>
 {
-    MediaSource mediaSource;
-    long playbackStartPosition = -1;
-    int initialAudioTrackIndex = -1;
-    long currentPlaybackPosition = 0;
-    ReentrantLock playbackPositionLock;
-    DefaultTrackSelector trackSelector;
+    static final int MAX_PLAYBACK_RETRY_COUNT = 12;
 
-    boolean showCaptions = false;
-    Handler handler;
-    Runnable progressRunnable;
-    String url;
+    private MediaSource mediaSource;
+    private long playbackStartPosition = -1;
+    private int initialAudioTrackIndex = -1;
+    private long currentPlaybackPosition = 0;
+    private ReentrantLock playbackPositionLock;
+    private DefaultTrackSelector trackSelector;
+    private int selectedSubtitleTrack = DISABLE_TRACK;
 
-    SubtitleView subView;
+    private boolean errorState = false;
+    private int retryCount = 0;
+
+    private boolean showCaptions = false;
+    private Handler handler;
+    private Runnable progressRunnable;
+    private String url;
+
+    MediaSessionCompat mediaSession;
+    //MediaSessionConnector mediaSessionConnector;
+
+    private SubtitleView subView;
 
     public Exo2MediaPlayerImpl(AndroidUIController activity)
     {
@@ -96,7 +112,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         {
             playbackPositionLock.lock();
 
-            if(position > 0)
+            if (position > 0)
             {
                 currentPlaybackPosition = position;
             }
@@ -150,6 +166,13 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
     protected void releasePlayer()
     {
+        if(mediaSession != null)
+        {
+            log.debug("Releaseing Android Media Session");
+            mediaSession.setActive(false);
+            mediaSession.release();
+        }
+
         context.runOnUiThread(new Runnable()
         {
             @Override
@@ -164,7 +187,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                             ExoPause();
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         log.error("Error pausing/stoppig video before releasing", ex);
                     }
@@ -230,11 +253,13 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         //log.debug("ExoLogging - getPlayerMediaTimeMillis Called lastServerTime=" + Utils.toHHMMSS(lastServerTime) + " position=" + Utils.toHHMMSS(position));
 
-        if(lastServerTime < 0)
+        if (lastServerTime < 0)
         {
             log.debug("Flush - Flush was called waiting for last serverTime to be > 0");
             return -1;
         }
+
+        this.updateMediaSessionPlaybackState(lastServerTime + position);
 
         return lastServerTime + position;
 
@@ -243,23 +268,36 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public void stop()
     {
-        super.stop();
-
         context.runOnUiThread(new Runnable()
         {
             @Override
             public void run()
             {
+                log.debug("Stop was called on player");
+                if(player != null)
+                {
+                    player.stop();
+                }
+
+                if(mediaSession != null)
+                {
+                    mediaSession.setActive(false);
+                }
+
                 if (playerReady)
                 {
                     if (player == null)
                     {
                         return;
                     }
+
                     player.setPlayWhenReady(false);
+
                 }
             }
         });
+
+        super.stop();
     }
 
     @Override
@@ -267,14 +305,13 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     {
 
 
-        if(this.getState() == MiniPlayerPlugin.PAUSE_STATE && !pushMode)
+        if (this.getState() == MiniPlayerPlugin.PAUSE_STATE && !pushMode)
         {
             log.debug("In pause state.  Seek frame instead...");
             //TODO: Could not find the framerate in ExoPlayer.  Going to assume 30fps for now.
             this.seek(this.getPlaybackPosition() + Math.round(1000.0 / 30.0));
             return;
         }
-
 
 
         super.pause();
@@ -312,7 +349,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
     private void seekToImpl(long timeInMillis)
     {
-        if(timeInMillis > 0)
+        if (timeInMillis > 0)
         {
             context.runOnUiThread(new Runnable()
             {
@@ -327,7 +364,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                         player.seekTo(timeInMillis);
 
                         //Wait up to a second for the seek to complete
-                        while(player.getCurrentPosition() < timeInMillis && wait < 10)
+                        while (player.getCurrentPosition() < timeInMillis && wait < 10)
                         {
                             log.debug("Seek -  Waiting for current position to match Seek request.  Current Position: {}  Seek Request: {} ", player.getContentPosition(), timeInMillis);
                             Thread.sleep(100);
@@ -336,7 +373,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                         Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         log.error("Error during seek request. Position MS: " + timeInMillis, ex);
                         log.debug("Current playback position MS: " + timeInMillis);
@@ -394,7 +431,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 playbackStartPosition = timeInMS;
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             log.debug("Exception thrown durring seek: " + ex.getMessage());
             ex.printStackTrace();
@@ -408,7 +445,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public void setSubtitleTrack(int streamPos)
     {
-        if(streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK)
+        log.debug("Set Subtitle Track Called: {}", streamPos);
+
+        if (streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK)
         {
             this.showCaptions = false;
             this.RemoveSubTitleView();
@@ -420,6 +459,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
 
         changeTrack(C.TRACK_TYPE_TEXT, streamPos, 0);
+    }
+
+    @Override
+    public int getSelectedSubtitleTrack()
+    {
+        return this.selectedSubtitleTrack;
+    }
+
+    @Override
+    public int getSubtitleTrackCount()
+    {
+        return getTrackCount(C.TRACK_TYPE_TEXT);
     }
 
     @Override
@@ -459,11 +510,13 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     player.setMediaSource(mediaSource, true);
                     player.prepare();
 
-                    log.debug("After Flush was called Current Playback Position: {}",  Utils.toHHMMSS(player.getCurrentPosition()));
+                    log.debug("After Flush was called Current Playback Position: {}", Utils.toHHMMSS(player.getCurrentPosition()));
 
                     Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
                 }
-                catch (Exception ex){}
+                catch (Exception ex)
+                {
+                }
                 finally
                 {
                     playbackPositionLock.unlock();
@@ -512,7 +565,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         DefaultRenderersFactory renderersFactory = new DefaultRenderersFactory(context.getContext());
 
-        if(FfmpegLibrary.isAvailable())
+        if (FfmpegLibrary.isAvailable())
         {
             final int preferExtensionDecoders = MiniclientApplication.get().getClient().properties().getInt(PrefStore.Keys.exoplayer_ffmpeg_extension_setting, 1);
 
@@ -541,10 +594,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         trackSelector = new DefaultTrackSelector(context.getContext());
 
-        SimpleExoPlayer.Builder builder =  new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
+
+        SimpleExoPlayer.Builder builder = new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
 
         builder.setTrackSelector(trackSelector);
         player = builder.build();
+        player.addAnalyticsListener(new EventLogger(trackSelector));
 
 
         player.addListener(new Player.Listener()
@@ -552,15 +607,33 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void onPlayerError(PlaybackException error)
             {
-                log.debug("PLAYER ERROR: " + error.getMessage());
-                context.showErrorMessage(error.getMessage(), "Exo2MediaPlayer");
+                log.debug("PLAYER ERROR: " + error.getErrorCodeName());
                 error.printStackTrace();
+
+                if (retryCount == 0)
+                {
+                    //Show toast on first error
+                    context.showErrorMessage(error.getErrorCodeName(), "Exo2MediaPlayer");
+                }
+
+                if (retryCount <= MAX_PLAYBACK_RETRY_COUNT)
+                {
+
+                    errorState = true;
+                    retryCount++;
+
+                    player.seekTo(player.getCurrentPosition() + 100);
+                    player.prepare();
+                }
+                else
+                {
+                    context.showErrorMessage("Max playback retry reached!", "Exo2MediaPlayer");
+                }
             }
 
             @Override
             public void onPlaybackStateChanged(int playbackState)
             {
-
                 if (playbackState == Player.STATE_ENDED)
                 {
                     log.debug("Player.STATE_ENDED - Calling stop");
@@ -573,14 +646,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     //notifySageTVStop();
                     eos = true;
-                    Exo2MediaPlayerImpl.this.state = Exo2MediaPlayerImpl.EOS_STATE;
+                    state = Exo2MediaPlayerImpl.EOS_STATE;
                 }
                 if (playbackState == Player.STATE_READY)
                 {
-                    //debugAvailableTracks();
+                    log.debug("Player.STATE_READY - Media loaded and ready for playback");
+                    if (errorState)
+                    {
+                        errorState = false;
+                        retryCount = 0;
+                    }
+
                     log.debug("Player.STATE_READY - setAudioTrack getting called");
-
-
                     if (initialAudioTrackIndex != -1)
                     {
                         setAudioTrack(initialAudioTrackIndex);
@@ -589,6 +666,30 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     log.debug("Player.STATE_READY - Debugging available tracks in file");
                     debugAvailableTracks();
+
+                    long duration = 0;
+
+                    if(player.getDuration() < 0)
+                    {
+                        duration = -1;
+                    }
+                    else
+                    {
+                        duration = player.getDuration();
+                    }
+                    //Library files start with stc:// but do not have push in it
+                    //Live TV has push: with a lot of other data in it
+
+                    setMediaSessionMetadata(sageTVurl, duration);
+
+                    mediaSession.setActive(true);
+                }
+                if (playbackState == Player.STATE_IDLE)
+                {
+                    if (errorState)
+                    {
+                        log.debug("Player.STATE_IDLE - Error state is true, retry count " + retryCount);
+                    }
                 }
 
             }
@@ -636,18 +737,15 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         });
 
 
-
-
-        player.addListener(new Player.Listener() {
+        player.addListener(new Player.Listener()
+        {
             @Override
             public void onCues(List<Cue> cues)
             {
-                if( showCaptions && subView != null)
-                    subView.onCues( cues);
+                if (showCaptions && subView != null)
+                    subView.onCues(cues);
             }
         });
-
-
 
 
         final String sageTVurlFinal = sageTVurl;
@@ -666,7 +764,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             //mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(sageTVurl));
 
             mediaSource = new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(Uri.parse(sageTVurl)));
-
 
 
             boolean haveStartPosition = (playbackStartPosition >= 0);
@@ -692,13 +789,19 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         player.setVideoSurface(((SurfaceView) context.getVideoView()).getHolder().getSurface());
         player.setPlayWhenReady(true);
 
+        //Create Media Session
+        mediaSession = new MediaSessionCompat(this.context.getContext(), "SageTV Android TV Client");
+        mediaSession.setCallback(new MediaSessionCallbackHandler(this, context.getClient(), context.getContext()));
+
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
+
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
         {
             log.debug("Video Player is online");
         }
 
         this.playerReady = true;
-        this.state = MiniPlayerPlugin.PLAY_STATE;
+        super.play();
 
         log.debug("Creating handler");
         handler = new Handler();
@@ -709,7 +812,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void run()
             {
-                if(player!= null )
+                if (player != null)
                 {
                     Exo2MediaPlayerImpl.this.setPlaybackPosition(player.getCurrentPosition());
                     handler.postDelayed(progressRunnable, 500);
@@ -752,13 +855,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 {
                     TrackGroupArray trackGroup = trackInfo.getTrackGroups(trackType);
 
-                    if(groupIndex == Exo2MediaPlayerImpl.DISABLE_TRACK) //Disable trackType from rendering
+                    if (groupIndex == Exo2MediaPlayerImpl.DISABLE_TRACK) //Disable trackType from rendering
                     {
                         parametersBuilder = trackSelector.buildUponParameters();
                         parametersBuilder.setRendererDisabled(trackType, true); //This should set the track type to render true
 
                         trackSelector.setParameters(parametersBuilder);
                         log.debug("JVL - Track change executed for disable: TrackType={} TrackGroup={} TrackIndex={}", trackType, trackGroup, trackIndex);
+                        selectedSubtitleTrack = DISABLE_TRACK;
                     }
                     else
                     {
@@ -773,6 +877,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                             trackSelector.setParameters(parametersBuilder);
                             log.debug("JVL - Track change executed: TrackType={} TrackGroup={} TrackIndex={}", trackType, trackGroup, trackIndex);
+                            selectedSubtitleTrack = groupIndex;
                         }
                         else
                         {
@@ -790,10 +895,87 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         });
     }
 
+    /**
+     * Counts support tracks of the given track type
+     *
+     * @param RenderType The type of track (VIDEO, AUDIO, TEXT, ect...)
+     */
+    public int getTrackCount(int RenderType)
+    {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        int count = 0;
+
+        if (mappedTrackInfo == null)
+        {
+            log.warn("No Mapped Track Info found");
+            return count;
+        }
+
+        TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(RenderType);
+
+        if (trackGroups.length != 0)
+        {
+            //This code is assuming one track to a group.  It will increment the count by one
+            //if there is a supported track in the groun
+            for (int j = 0; j < trackGroups.length; j++)
+            {
+                boolean supported = false;
+
+                for (int k = 0; k < trackGroups.get(j).length; k++)
+                {
+                    if (mappedTrackInfo.getTrackSupport(RenderType, j, k) == C.FORMAT_HANDLED)
+                    {
+                        log.debug("\t\t Format is handled");
+                        supported = true;
+                    }
+                    else
+                    {
+                        log.debug("\t\t Format IS NOT HANDLED");
+                    }
+                }
+
+                if (supported)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    @Override
+    public SubtitleTrack[] getSubtitleTracks()
+    {
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(C.TRACK_TYPE_TEXT);
+        int trackCount = trackGroups.length;
+        SubtitleTrack[] tracks = new SubtitleTrack[0];
+
+        if (trackCount > 0)
+        {
+            tracks = new SubtitleTrack[trackCount];
+
+            for (int i = 0; i < trackCount; i++)
+            {
+                TrackGroup trackGroup = trackGroups.get(i);
+
+                SubtitleCodec codec = SubtitleCodec.parse(trackGroup.getFormat(0).sampleMimeType);
+                String langugae = trackGroup.getFormat(0).language;
+                String label = trackGroup.getFormat(0).label;
+                boolean supported = (mappedTrackInfo.getTrackSupport(C.TRACK_TYPE_TEXT, i, 0) == C.FORMAT_HANDLED);
+
+                SubtitleTrack track = new SubtitleTrack(i, codec, langugae, label, supported);
+                tracks[i] = track;
+            }
+        }
+
+        return tracks;
+    }
+
     public void debugAvailableTracks()
     {
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-
 
         if (mappedTrackInfo == null)
         {
@@ -838,8 +1020,65 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                     for (int k = 0; k < trackGroups.get(j).length; k++)
                     {
+                        Format format = trackGroups.get(j).getFormat(k);
 
-                        log.debug("\t\t Track {}, Channels {}, Bitrate {}, Language {}", k, trackGroups.get(j).getFormat(k).channelCount, trackGroups.get(j).getFormat(k).bitrate, trackGroups.get(j).getFormat(k).language);
+                        log.debug("\t\tTrack : " + k);
+                        log.debug("\t\tContainer MimeType: " + format.containerMimeType);
+                        log.debug("\t\tSample MimeType: " + format.sampleMimeType);
+                        log.debug("\t\tCodecs: " + format.codecs);
+                        log.debug("\t\tLanguage: " + format.language);
+
+
+                        if (player.getRendererType(i) == C.TRACK_TYPE_TEXT)
+                        {
+
+                            /*if((MimeTypes.APPLICATION_CEA708.equalsIgnoreCase(format.sampleMimeType) || MimeTypes.APPLICATION_CEA608.equalsIgnoreCase(format.sampleMimeType))
+                                    && format.language.equalsIgnoreCase("en"))
+                            {
+                                log.debug("-----Setting Subtitle track to active");
+                                //Enable this track.  This is just debugging
+                                this.setSubtitleTrack(j);
+                            }
+                            else
+                            {
+                                log.debug("-----NOT Setting Subtitle track to active");
+                            }*/
+                        }
+
+
+                        if (player.getRendererType(i) == C.TRACK_TYPE_AUDIO)
+                        {
+                            log.debug("\t\tChannel: " + format.channelCount);
+                            log.debug("\t\tBitrate: " + format.bitrate);
+                            log.debug("\t\tAverageBitrate: " + format.averageBitrate);
+                            log.debug("\t\tPeakBitrate: " + format.peakBitrate);
+                            log.debug("\t\tPCM Encoding: " + format.pcmEncoding);
+
+                        }
+
+                        if (player.getRendererType(i) == C.TRACK_TYPE_VIDEO)
+                        {
+                            if (format.colorInfo != null)
+                            {
+                                log.debug("\t\tColor: " + format.colorInfo.toString());
+                            }
+                            log.debug("\t\tBitrate: " + format.bitrate);
+                            log.debug("\t\tAverageBitrate: " + format.averageBitrate);
+                            log.debug("\t\tPeakBitrate: " + format.peakBitrate);
+                            log.debug("\t\tFramerate: " + format.frameRate);
+                            log.debug("\t\tHeight: " + format.height);
+                            log.debug("\t\tWidth: " + format.width);
+
+                        }
+
+                        log.debug("\t\tID: " + format.id);
+                        log.debug("\t\tLabel: " + format.label);
+                        if (format.metadata != null)
+                        {
+                            log.debug("\t\t\tMetadata length: " + format.metadata.length());
+                        }
+
+
                         if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
                         {
                             //Add debug info
@@ -860,13 +1099,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 log.debug("JVL - Track Group Empty");
             }
         }
-
     }
 
     // cncb - Add and remove ExoPlayer2 SubTitleView for embedded PGS subtitles
     private void AddSubTitleView()
     {
-        if( subView == null)
+        if (subView == null)
         {
             subView = new SubtitleView(context.getContext());
             subView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -891,7 +1129,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
     private void RemoveSubTitleView()
     {
-        if( subView != null)
+        if (subView != null)
         {
             context.runOnUiThread(new Runnable()
             {
@@ -916,4 +1154,57 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
     }
 
+    private void updateMediaSessionPlaybackState(long playbackPostion)
+    {
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
+        stateBuilder.setActions(this.getMediaSessionActions());
+
+        if(player != null && getState() == PLAY_STATE)
+        {
+            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, playbackPostion, 1.0f);
+        }
+        else
+        {
+            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+        }
+
+
+
+        mediaSession.setPlaybackState(stateBuilder.build());
+    }
+
+    private long getMediaSessionActions()
+    {
+        long actions = 0;
+
+        if(player != null)
+        {
+            if (getState() == PLAY_STATE)
+            {
+                actions = PlaybackState.ACTION_STOP;
+                actions |= PlaybackState.ACTION_PAUSE;
+                actions |= PlaybackState.ACTION_FAST_FORWARD;
+                actions |= PlaybackState.ACTION_REWIND;
+                actions |= PlaybackState.ACTION_SEEK_TO;
+                actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
+                actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+            }
+            else
+            {
+                actions = PlaybackState.ACTION_PLAY;
+            }
+
+        }
+
+        return actions;
+    }
+
+    private void setMediaSessionMetadata(String displayTitle, long duration)
+    {
+        MediaMetadataCompat.Builder metaDataBuilder = new MediaMetadataCompat.Builder();
+
+        metaDataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle);
+        metaDataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration);
+        mediaSession.setMetadata(metaDataBuilder.build());
+    }
 }
