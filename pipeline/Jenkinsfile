@@ -140,6 +140,7 @@ pipeline
         AMAZON_APP_ID = credentials('SageTVAndroidClient-AmazonAppID')
         AMAZON_CLIENT_ID = credentials('SageTVAndroidClient-AmazonClientID')
         AMAZON_CLIENT_SECRET = credentials('SageTVAndroidClient-AmazonClientSecret')
+        ADB_VENDOR_KEYS="/keys/adbkey"
 
         version = sh (script: "./gradlew properties -q | grep \"appVersionName:\" | awk '{print \$2}'", returnStdout: true).trim()
         appversioncode = sh (script: "./gradlew properties -q | grep \"appVersionCode:\" | awk '{print \$2}'", returnStdout: true).trim()
@@ -158,11 +159,11 @@ pipeline
             {
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
                 {
-                        writeFile file: '/keys/adbkey', text: readFile(my_private_key)
+                        writeFile file: "${ADB_VENDOR_KEYS}", text: readFile(my_private_key)
                 }
 
                 sh "adb devices"
-                sh "export ADB_VENDOR_KEYS=/keys/adbkey"
+                sh "ls /keys"
                 sh "env"
             }
         }
