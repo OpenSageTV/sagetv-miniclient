@@ -177,6 +177,7 @@ then
 
 		EDIT_ID=''
 		echo "Error creating listing edit"
+		exit 1
 
 	else
 
@@ -198,12 +199,21 @@ if [ $? -ne 0 ] && [ -f listing ]
 then
 
 	echo "Error getting listing details"
+  exit 1
 
 else
 
 	echo "Getting listing details successful"
 
-	LISTING_ETAG=`less headers | grep ETag | awk -F ' ' '{print $2}'`
+	LISTING_ETAG=`cat headers | grep ETag | awk -F ' ' '{print $2}'`
+
+	if [ $? -ne 0 ]
+	then
+
+	  echo "Error getting etag"
+	  exit 1
+
+	fi
 
 	echo "Listing ETag: $LISTING_ETAG"
 fi
