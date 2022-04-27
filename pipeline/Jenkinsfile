@@ -156,7 +156,7 @@ pipeline
         {
             steps
             {
-                withCredentials([file(credentialsId: Global-ADBPrivateFingerprintKey, variable: 'my_private_key')
+                withCredentials([file(credentialsId: Global-ADBPrivateFingerprintKey, variable: 'my_private_key')])
                 {
                         writeFile file: '/keys/adbkey', text: readFile(my_private_key)
                 }
