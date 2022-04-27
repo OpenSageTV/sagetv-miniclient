@@ -5,3 +5,4 @@
 - Modified Jenkins local copy to publish changelist and name to directory
 - Added code for a Subtitle/Closed Caption selection list from the Navigation window
 - Rewrote the Android Media Session logic so that it can control playback for ExoPlayer and IJKPlayer.
+- Added framework to the Jenkins build to do local deployments with ADB.

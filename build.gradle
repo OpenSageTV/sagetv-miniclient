@@ -23,8 +23,8 @@ allprojects {
 
     ext {
 
-        appVersionCode = 2101093
-        appVersionName = "1.11.0_alpha3"
+        appVersionCode = 2101094
+        appVersionName = "1.11.0"
 
         gdxVersion = "1.9.14"
         // NOTE: This is for ext we need to build ffmpeg
