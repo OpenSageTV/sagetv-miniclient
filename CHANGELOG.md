@@ -1,4 +1,4 @@
-**1.11.0**
+**1.11.0 (4/27/2022)**
 - Made exoplayer playback error message more descriptive
 - Added retry on recoverable playback error
 - Disabled remux settings when stream mode is not fixed
