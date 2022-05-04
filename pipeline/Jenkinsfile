@@ -243,10 +243,23 @@ pipeline
                         sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Onn Dev 1 unit')
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
+                {
+                    sh "rm -v ~/.android/adbkey*"
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to dev1.androidtv')
                 {
                     sh "adb disconnect"
                     sh "adb connect dev1.androidtv"
+                    sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                    sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to masterbedroom.androidtv')
+                {
+                    sh "adb disconnect"
+                    sh "adb connect masterbedroom.androidtv"
                     sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
                     sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                 }
