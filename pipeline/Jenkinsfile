@@ -246,7 +246,7 @@ pipeline
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Onn Dev 1 unit')
                 {
                     sh "adb disconnect"
-                    sh "adb connect 192.168.0.180"
+                    sh "adb connect dev1.androidtv"
                     sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
                     sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                 }

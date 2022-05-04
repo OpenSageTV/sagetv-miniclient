@@ -595,11 +595,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         trackSelector = new DefaultTrackSelector(context.getContext());
 
 
-        SimpleExoPlayer.Builder builder = new SimpleExoPlayer.Builder(context.getContext(), renderersFactory);
+        ExoPlayer.Builder builder = new ExoPlayer.Builder(context.getContext(), renderersFactory);
 
         builder.setTrackSelector(trackSelector);
         player = builder.build();
-        player.addAnalyticsListener(new EventLogger(trackSelector));
+        //player.addAnalyticsListener(new EventLogger(trackSelector));
 
 
         player.addListener(new Player.Listener()
