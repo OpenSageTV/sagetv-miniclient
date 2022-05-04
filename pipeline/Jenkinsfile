@@ -60,6 +60,33 @@ def getReleaseToGit()
     }
 }
 
+def getReleaseToClients()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return false
+
+        case "beta":
+
+            return false
+
+        case "alpha":
+
+            return true
+
+        case "dev":
+
+            return true
+
+        default:
+
+            return false
+
+    }
+}
+
 def getReleaseToGooglePlay()
 {
     switch (getBranch())
@@ -153,26 +180,7 @@ pipeline
     stages
     {
 
-        stage('Deploy to internal clients')
-        {
-            steps
-            {
-                //Need to make sure the dir exists before copying the file
-                sh "mkdir /keys"
 
-                withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
-                {
-                        //writeFile file: ADB_VENDOR_KEYS, text: readFile(my_private_key)
-                        sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
-                }
-
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Testing the error handler')
-                {
-                    echo "Testing error and catch scenario"
-                    sh "ls aweofihwe"
-                }
-            }
-        }
 
         stage('Set build informaction')
         {
@@ -219,6 +227,30 @@ pipeline
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasechangelist*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasename*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
              }
+        }
+
+        stage('Deploy to internal clients')
+        {
+            when { expression { return getReleaseToClients() } }
+            steps
+            {
+                //Need to make sure the dir exists before copying the file
+                sh "mkdir /keys"
+
+                withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
+                {
+                        //writeFile file: ADB_VENDOR_KEYS, text: readFile(my_private_key)
+                        sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Onn Dev 1 unit')
+                {
+                    sh "adb disconnect"
+                    sh "adb connect 192.168.0.180"
+                    sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                    sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                }
+            }
         }
 
         stage('Publish to GitHub')

@@ -23,14 +23,14 @@ allprojects {
 
     ext {
 
-        appVersionCode = 2101094
-        appVersionName = "1.11.0"
+        appVersionCode = 2101095
+        appVersionName = "1.12.0_alpha1"
 
         gdxVersion = "1.9.14"
         // NOTE: This is for ext we need to build ffmpeg
-        exoVersionCustomExt = '2.16.1'
+        exoVersionCustomExt = '2.17.1'
         // NOTE: using regular exoplayer for core stuff
-        exoVersion = '2.16.1'
+        exoVersion = '2.17.1'
         ijkVersionDev = '0.8.8-SNAPSHOT'
         androidBuildToolsVersion = "29.0.2"
         androidMinSdkVersion = 21
