@@ -249,7 +249,7 @@ pipeline
 
                     adbResponse = sh( script: "adb connect dev1.androidtv", returnStdout: true ).trim()
 
-                    if(adbResponse.contains("connected to")
+                    if(adbResponse.contains("connected to"))
                     {
                         sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
                         sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
@@ -266,7 +266,7 @@ pipeline
 
                     adbResponse = sh( script: "adb connect masterbedroom.androidtv", returnStdout: true ).trim()
 
-                    if(adbResponse.contains("connected to")
+                    if(adbResponse.contains("connected to"))
                     {
                         sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
                         sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
