@@ -215,6 +215,7 @@ pipeline
             }
         }
 
+        /*
         stage('Publish local')
         {
              steps
@@ -228,6 +229,7 @@ pipeline
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasename*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
              }
         }
+        */
 
         stage('Deploy to internal clients')
         {
@@ -235,7 +237,11 @@ pipeline
             steps
             {
                 //Need to make sure the dir exists before copying the file
-                sh "mkdir /root/.android"
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
+                {
+                    sh "mkdir /root/.android"
+                }
 
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
                 {
