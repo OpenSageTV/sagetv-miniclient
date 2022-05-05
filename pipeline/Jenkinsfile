@@ -241,13 +241,18 @@ pipeline
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
                 {
                     sh "mkdir ${ADB_VENDOR_KEYS}"
-                    sh "rmdir /root/.android"
+                    sh "mkdir /root/.android"
                 }
 
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
                 {
                         //writeFile file: ADB_VENDOR_KEYS, text: readFile(my_private_key)
                         sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
+                {
+                    sh "cp ${ADB_VENDOR_KEYS}/* /root/.android/"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to dev1.androidtv')
