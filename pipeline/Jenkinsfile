@@ -265,18 +265,21 @@ pipeline
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to masterbedroom.androidtv')
                 {
-                    sh "adb disconnect"
-
-                    adbResponse = sh( script: "adb connect masterbedroom.androidtv", returnStdout: true ).trim()
-
-                    if(adbResponse.contains("connected to"))
+                    script
                     {
-                        sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
-                        sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
-                    }
-                    else
-                    {
-                        error "Did not connect to client"
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect masterbedroom.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            error "Did not connect to client"
+                        }
                     }
                 }
             }
