@@ -243,25 +243,38 @@ pipeline
                         sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
-                {
-                    sh "rm -v ~/.android/adbkey*"
-                }
-
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to dev1.androidtv')
                 {
                     sh "adb disconnect"
-                    sh "adb connect dev1.androidtv"
-                    sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
-                    sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+
+                    adbResponse = sh( script: "adb connect dev1.androidtv", returnStdout: true ).trim()
+
+                    if(adbResponse.contains("connected to")
+                    {
+                        sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                        sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                    }
+                    else
+                    {
+                        error "Did not connect to client"
+                    }
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to masterbedroom.androidtv')
                 {
                     sh "adb disconnect"
-                    sh "adb connect masterbedroom.androidtv"
-                    sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
-                    sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+
+                    adbResponse = sh( script: "adb connect masterbedroom.androidtv", returnStdout: true ).trim()
+
+                    if(adbResponse.contains("connected to")
+                    {
+                        sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                        sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                    }
+                    else
+                    {
+                        error "Did not connect to client"
+                    }
                 }
             }
         }
