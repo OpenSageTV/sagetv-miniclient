@@ -292,7 +292,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
@@ -316,7 +316,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
@@ -340,7 +340,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
