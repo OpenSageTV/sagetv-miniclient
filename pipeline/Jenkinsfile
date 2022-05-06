@@ -60,6 +60,28 @@ def getReleaseToGit()
     }
 }
 
+def getReleaseLocal()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return true
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return true
+
+        default:
+
+            return false
+    }
+}
+
 def getReleaseToClients()
 {
     switch (getBranch())
@@ -85,6 +107,10 @@ def getReleaseToClients()
             return false
 
     }
+}
+def getUninstallClient()
+{
+    return false;
 }
 
 def getReleaseToGooglePlay()
@@ -215,9 +241,10 @@ pipeline
             }
         }
 
-        /*
+
         stage('Publish local')
         {
+             when { expression { return getReleaseLocal() } }
              steps
              {
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/bundle/${VARIANT}", sourceFiles: "android-tv/build/outputs/bundle/${VARIANT}/*.aab"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
@@ -229,7 +256,7 @@ pipeline
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasename*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
              }
         }
-        */
+
 
         stage('Deploy to internal clients')
         {
@@ -237,17 +264,13 @@ pipeline
             steps
             {
                 //Need to make sure the dir exists before copying the file
+                sh "mkdir ${ADB_VENDOR_KEYS}"
+                sh "mkdir /root/.android || return 0"
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
-                {
-                    sh "mkdir ${ADB_VENDOR_KEYS}"
-                    sh "mkdir /root/.android"
-                }
 
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
                 {
-                        //writeFile file: ADB_VENDOR_KEYS, text: readFile(my_private_key)
-                        sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
+                    sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
@@ -265,7 +288,10 @@ pipeline
 
                         if(adbResponse.contains("connected to"))
                         {
-                            sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
                             sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
@@ -286,7 +312,10 @@ pipeline
 
                         if(adbResponse.contains("connected to"))
                         {
-                            sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
                             sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
@@ -307,7 +336,10 @@ pipeline
 
                         if(adbResponse.contains("connected to"))
                         {
-                            sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug"
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
                             sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
