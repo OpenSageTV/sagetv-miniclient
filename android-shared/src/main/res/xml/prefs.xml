@@ -4,6 +4,11 @@
 
     <PreferenceCategory android:title="@string/media_player_preferences">
 
+        <Preference
+            android:key="jvl"
+            android:summary=""
+            android:title="Throw runtime exception"/>
+
         <ListPreference
             android:defaultValue="exoplayer"
             android:dialogTitle="@string/dialog_title_default_player"
@@ -218,6 +223,8 @@
             android:key="appmemory"
             android:summary=""
             android:title="Application Available Memory"/>
+
+
 
     </PreferenceCategory>
 

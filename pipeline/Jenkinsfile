@@ -233,6 +233,11 @@ pipeline
             {
                 script
                 {
+                    withCredentials([file(credentialsId: 'SageTVAndroidClient-GoogleServicesJSON-Firebase', variable: 'google_services_json')])
+                    {
+                        sh "cp ${google_services_json} ./android-tv"
+                    }
+
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
 
