@@ -283,7 +283,7 @@ pipeline
                     sh "cp ${ADB_VENDOR_KEYS}/* /root/.android/"
                 }
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to dev1.androidtv')
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Dev1 Onn')
                 {
                     script
                     {
@@ -307,7 +307,7 @@ pipeline
                     }
                 }
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to masterbedroom.androidtv')
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Masterbedroom Onn')
                 {
                     script
                     {
@@ -331,7 +331,7 @@ pipeline
                     }
                 }
 
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to firetv')
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Familyroom FireTV')
                 {
                     script
                     {
@@ -346,6 +346,102 @@ pipeline
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
                             sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Theater Sony TV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect theater.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Theater ShieldTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect shieldtv.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Bar SonyTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect bar.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to familyroom SonyTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect familyroom.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
