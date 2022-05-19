@@ -126,6 +126,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         catch (Exception ex)
         {
             log.error("Error setting playback position", ex);
+
         }
         finally
         {
