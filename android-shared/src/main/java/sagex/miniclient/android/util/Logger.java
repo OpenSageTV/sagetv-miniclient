@@ -8,13 +8,14 @@ public class Logger implements ILogger
 {
     private Class cls;
     private org.slf4j.Logger log;
-    private FirebaseCrashlytics crashlogger;
+    //private FirebaseCrashlytics crashlogger;
 
     public static Logger getLogger(Class cls)
     {
         Logger log = new Logger();
         log.log = LoggerFactory.getLogger(cls);
-        log.crashlogger = FirebaseCrashlytics.getInstance();
+
+        //log.crashlogger = FirebaseCrashlytics.getInstance();
 
         return log;
     }
@@ -23,7 +24,7 @@ public class Logger implements ILogger
     {
         Logger log = new Logger();
         log.log = LoggerFactory.getLogger(name);
-        log.crashlogger = FirebaseCrashlytics.getInstance();
+        //log.crashlogger = FirebaseCrashlytics.getInstance();
 
         return log;
     }
@@ -43,94 +44,94 @@ public class Logger implements ILogger
     @Override
     public void recordException(Throwable t)
     {
-        crashlogger.recordException(t);
+        FirebaseCrashlytics.getInstance().recordException(t);
 
     }
 
     @Override
     public void logError(String message)
     {
-        crashlogger.log(message);
+        FirebaseCrashlytics.getInstance().log(message);
         log.error(message);
     }
 
     @Override
     public void logError(String message, Throwable t)
     {
-        crashlogger.log(message);
-        crashlogger.recordException(t);
+        FirebaseCrashlytics.getInstance().log(message);
+        FirebaseCrashlytics.getInstance().recordException(t);
         log.error(message);
     }
 
     @Override
     public void logWarning(String message)
     {
-        crashlogger.log(message);
+        FirebaseCrashlytics.getInstance().log(message);
         log.warn(message);
     }
 
     @Override
     public void logWarning(String message, Throwable t)
     {
-        crashlogger.log(message);
-        crashlogger.recordException(t);
+        FirebaseCrashlytics.getInstance().log(message);
+        FirebaseCrashlytics.getInstance().recordException(t);
         log.warn(message, t);
     }
 
     @Override
     public void logDebug(String message)
     {
-        crashlogger.log(message);
+        FirebaseCrashlytics.getInstance().log(message);
         log.debug(message);
     }
 
     @Override
     public void logDebug(String message, Throwable t)
     {
-        crashlogger.log(message);
-        crashlogger.recordException(t);
+        FirebaseCrashlytics.getInstance().log(message);
+        FirebaseCrashlytics.getInstance().recordException(t);
         log.debug(message, t);
     }
 
     @Override
     public void logInfo(String message)
     {
-        crashlogger.log(message);
+        FirebaseCrashlytics.getInstance().log(message);
         log.info(message);
     }
 
     @Override
     public void logInfo(String message, Throwable t)
     {
-        crashlogger.log(message);
-        crashlogger.recordException(t);
+        FirebaseCrashlytics.getInstance().log(message);
+        FirebaseCrashlytics.getInstance().recordException(t);
         log.info(message, t);
     }
 
     @Override
     public void logTrace(String message)
     {
-        crashlogger.log(message);
+        FirebaseCrashlytics.getInstance().log(message);
         log.trace(message);
     }
 
     @Override
     public void logTrace(String message, Throwable t)
     {
-        crashlogger.log(message);
-        crashlogger.recordException(t);
+        FirebaseCrashlytics.getInstance().log(message);
+        FirebaseCrashlytics.getInstance().recordException(t);
         log.trace(message, t);
     }
 
     @Override
     public void setCustomKey(String key, String value)
     {
-        crashlogger.setCustomKey(key, value);
+        FirebaseCrashlytics.getInstance().setCustomKey(key, value);
     }
 
     @Override
     public void setUserID(String userID)
     {
-        crashlogger.setUserId(userID);
+        FirebaseCrashlytics.getInstance().setUserId(userID);
     }
 }

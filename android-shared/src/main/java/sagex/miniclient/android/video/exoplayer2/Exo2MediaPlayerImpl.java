@@ -260,7 +260,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             return -1;
         }
 
-        this.updateMediaSessionPlaybackState(lastServerTime + position);
+        //this.updateMediaSessionPlaybackState(lastServerTime + position);
 
         return lastServerTime + position;
 
@@ -698,6 +698,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void onTimelineChanged(Timeline timeline, int reason)
             {
+                updateMediaSessionPlaybackState(Exo2MediaPlayerImpl.this.getPlaybackPosition());
                 seekPending = false;
             }
 
@@ -707,6 +708,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 switch (reason)
                 {
                     case Player.DISCONTINUITY_REASON_SEEK:
+                        updateMediaSessionPlaybackState(Exo2MediaPlayerImpl.this.getPlaybackPosition());
                         seekPending = false;
                         break;
 
@@ -1157,21 +1159,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
     private void updateMediaSessionPlaybackState(long playbackPostion)
     {
-        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
-        stateBuilder.setActions(this.getMediaSessionActions());
+        if(mediaSession != null && mediaSession.isActive()) {
+            PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
+            stateBuilder.setActions(this.getMediaSessionActions());
 
-        if(player != null && getState() == PLAY_STATE)
-        {
-            stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, playbackPostion, 1.0f);
+            if (player != null && getState() == PLAY_STATE) {
+                stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, playbackPostion, 1.0f);
+            } else {
+                stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+            }
+
+            mediaSession.setPlaybackState(stateBuilder.build());
         }
-        else
-        {
-            stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
-        }
-
-
-
-        mediaSession.setPlaybackState(stateBuilder.build());
     }
 
     private long getMediaSessionActions()
