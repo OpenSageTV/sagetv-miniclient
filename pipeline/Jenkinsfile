@@ -338,7 +338,7 @@ pipeline
                     {
                         sh "adb disconnect"
 
-                        adbResponse = sh( script: "adb connect famliyroom.firetv", returnStdout: true ).trim()
+                        adbResponse = sh( script: "adb connect familyroom.firetv", returnStdout: true ).trim()
 
                         if(adbResponse.contains("connected to"))
                         {
