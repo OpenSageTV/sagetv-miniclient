@@ -238,6 +238,7 @@ pipeline
                         sh "cp ${google_services_json} ./android-tv"
                     }
 
+                    sh "./gradlew clean"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
 
@@ -337,10 +338,11 @@ pipeline
                     {
                         sh "adb disconnect"
 
-                        adbResponse = sh( script: "adb connect 192.168.0.191", returnStdout: true ).trim()
+                        adbResponse = sh( script: "adb connect famliyroom.firetv", returnStdout: true ).trim()
 
                         if(adbResponse.contains("connected to"))
                         {
+
                             if(getUninstallClient())
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
@@ -369,7 +371,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
@@ -393,7 +395,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
@@ -417,7 +419,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {
@@ -441,7 +443,7 @@ pipeline
                             {
                                 sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
                             }
-                            sh "adb install android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
                         }
                         else
                         {

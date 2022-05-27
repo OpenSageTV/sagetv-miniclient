@@ -139,7 +139,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         if (player.isPlaying())
         {
             player.stop();
-            this.releasePlayer();
+            //this.releasePlayer();
         }
         super.stop();
     }
@@ -147,6 +147,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public void pause()
     {
+
+
         if (state == PAUSE_STATE && !pushMode)
         {
             log.debug("In pause state.  Seek frame instead...");
@@ -173,9 +175,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         if (player != null && !player.isPlaying())
         {
             player.start();
+            updateMediaSessionPlaybackState(player.getCurrentPosition());
         }
-
-        updateMediaSessionPlaybackState(player.getCurrentPosition());
     }
 
     @Override
