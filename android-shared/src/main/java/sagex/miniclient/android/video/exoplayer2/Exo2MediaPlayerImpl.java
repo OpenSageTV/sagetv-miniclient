@@ -4,7 +4,6 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.upstream.DataSource;
-
 import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Handler;
@@ -13,14 +12,12 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.ext.ffmpeg.FfmpegLibrary;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -30,7 +27,6 @@ import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.util.EventLogger;
 import com.google.android.exoplayer2.video.VideoSize;
 
 import java.util.List;
@@ -38,7 +34,6 @@ import java.util.List;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
-import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.MediaSessionCallbackHandler;
 import sagex.miniclient.media.SubtitleCodec;
@@ -328,6 +323,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 }
             }
         });
+
+        updateMediaSessionPlaybackState(Exo2MediaPlayerImpl.this.getPlaybackPosition());
     }
 
     @Override
@@ -346,6 +343,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 }
             }
         });
+
+        updateMediaSessionPlaybackState(Exo2MediaPlayerImpl.this.getPlaybackPosition());
     }
 
     private void seekToImpl(long timeInMillis)
@@ -602,7 +601,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         player = builder.build();
         //player.addAnalyticsListener(new EventLogger(trackSelector));
 
-
         player.addListener(new Player.Listener()
         {
             @Override
@@ -682,8 +680,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     //Live TV has push: with a lot of other data in it
 
                     setMediaSessionMetadata(sageTVurl, duration);
-
                     mediaSession.setActive(true);
+                    updateMediaSessionPlaybackState(Exo2MediaPlayerImpl.this.getPlaybackPosition());
                 }
                 if (playbackState == Player.STATE_IDLE)
                 {

@@ -83,7 +83,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 {
                     log.debug("IJK: getPlayerMediaTimeMillis(): player adjusting using 0 but time was {}", toHHMMSS(time, true));
                 }
-                this.updateMediaSessionPlaybackState(time);
+
                 return time;
             }
 
@@ -122,24 +122,24 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             }
         }
 
-        this.updateMediaSessionPlaybackState(time);
+
         return time;
     }
 
     @Override
     public void stop()
     {
-        if (player == null) return;
-
         if(mediaSession != null)
         {
             mediaSession.setActive(false);
-            mediaSession.setPlaybackState(null);
         }
+
+        if (player == null) return;
 
         if (player.isPlaying())
         {
             player.stop();
+            this.releasePlayer();
         }
         super.stop();
     }
@@ -161,6 +161,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         {
             player.pause();
         }
+
+        updateMediaSessionPlaybackState(player.getCurrentPosition());
     }
 
     @Override
@@ -172,6 +174,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         {
             player.start();
         }
+
+        updateMediaSessionPlaybackState(player.getCurrentPosition());
     }
 
     @Override
@@ -306,6 +310,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 public void onSeekComplete(IMediaPlayer iMediaPlayer)
                 {
                     seekPending = false;
+                    updateMediaSessionPlaybackState(player.getCurrentPosition());
                 }
             });
 
@@ -368,6 +373,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
                     setMediaSessionMetadata(sageTVurl, duration);
                     mediaSession.setActive(true);
+
+                    updateMediaSessionPlaybackState(player.getCurrentPosition());
 
                     if (initialAudioStreamPos != -1)
                     {
