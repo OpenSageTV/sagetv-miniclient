@@ -191,7 +191,7 @@
 
         <EditTextPreference
             android:defaultValue="anonymous"
-            android:key="firebase_user"
+            android:key="firebase/crashlytics/user"
             android:dialogTitle="@string/dialog_title_firebase_user_preference"
             android:title="@string/title_firebase_user_preference"
             android:summary="@string/summary_firebase_user_preference" />
@@ -200,7 +200,7 @@
         <CheckBoxPreference
             android:enabled="true"
             android:defaultValue="true"
-            android:key="enable_crashlytics"
+            android:key="firebase/crashlytics/enabled"
             android:summary="@string/summary_enable_crashlytics_preference"
             android:title="@string/title_enable_crashlytics_preference"/>
 

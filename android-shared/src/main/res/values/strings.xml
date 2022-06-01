@@ -153,9 +153,9 @@
     <string name="dialog_title_list_remuxing_format_preference" >Remuxing Container Format</string>
     <string name="summary_list_remuxing_formats_preference">%s - The container format SageTV will use to remux the content too</string>
     <string name="title_list_remuxing_formats_preference">Remuxing Container Format</string>
-    <string name="summary_enable_crashlytics_preference">This enables crash and exception logging to Google Firebase Crashlytics to help developers diagnose issues</string>
+    <string name="summary_enable_crashlytics_preference">This enables crash and exception logging to Google Firebase Crashlytics to help developers diagnose issues.  Requires application restart to take effect</string>
     <string name="title_enable_crashlytics_preference">Google Firebase Crashlytics Logging</string>
     <string name="dialog_title_firebase_user_preference">Firebase User</string>
     <string name="title_firebase_user_preference">Firebase Crashlytics User</string>
-    <string name="summary_firebase_user_preference">(%s) - This will allow the developer to find a crash report in firebase if the user reported it</string>
+    <string name="summary_firebase_user_preference">This will allow the developer to find a crash report in firebase if the user reported it</string>
 </resources>

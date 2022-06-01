@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="sagex.miniclient.android">
 
+    <meta-data
+        android:name="firebase_crashlytics_collection_enabled"
+        android:value="false" />
+
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />

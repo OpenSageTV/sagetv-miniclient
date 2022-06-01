@@ -64,7 +64,7 @@ public class AndroidMiniClientOptions implements MiniClientOptions {
     }
 
     @Override
-    public PrefStore getPrefs() {
+    public AndroidPrefStore getPrefs() {
         return prefs;
     }
 
