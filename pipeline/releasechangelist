@@ -1,6 +1,5 @@
-- Upgraded to ExoPlayer 2.16.1
-- Made modifications required to support ExoPlayer 2.16.1
-- Upgraded to ExoPlayer 2.16.1 version of ExoPlayer FFmpeg extension
-- Added new preference screens to allow users to change Container/Codec support
-- Completely rearchitected how supported containers/codecs are sent to SageTV
-- Started adding support for automated Jenkins build and release
+- Update exoplayer to 2.17.1
+- Bug fixes with Android Media Session logic that was causing random crashes
+- Added firebase Crashlytics Reporting
+- Added configuration item to allow for disabling Crashlytics reporting
+- Added configuration item to allow for setting username in Crashlytics reports

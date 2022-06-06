@@ -1,10 +1,13 @@
-FROM openjdk:8
+FROM openjdk:8-buster
 
 WORKDIR project/
 
 # Install Build Essentials
 RUN apt-get update \
     && apt-get install build-essential -y
+
+RUN apt-get install jq -y
+RUN apt-get install less -y
 
 # Set Environment Variables
 ENV SDK_URL="https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip" \
@@ -29,7 +32,11 @@ RUN $ANDROID_HOME/tools/bin/sdkmanager "build-tools;29.0.2" \
     "platforms;android-${ANDROID_VERSION}" \
     "platform-tools"
 
+# Add platformtools/adb to the path
+ENV PATH="$ANDROID_HOME/platform-tools:$PATH"
+
 #Install go and github-release app
+#Tempory comment out
 RUN apt-get install -y golang
 RUN go get github.com/github-release/github-release
 

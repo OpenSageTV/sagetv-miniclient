@@ -14,7 +14,7 @@
     <string name="summary_list_loglevels_preference">(%s) - The logging level</string>
     <string name="dialog_title_list_loglevels_preference">Set Logging Level</string>
     <string name="dialog_title_list_streaming_mode_preference">Set Stream Mode</string>
-    <string name="summary_list_streaming_mode_preference">(%s) - Dynamic is preferred, but if you are experiencing playback issue, you can try other values.</string>
+    <string name="summary_list_streaming_mode_preference">(%s) - Fixed is preferred and offers HD transcoding and remuxing.  Dynamic adapts to bandwidth but only in SD</string>
     <string name="title_list_streaming_mode_preference">Streaming Mode</string>
     <string name="send_log">Send Log</string>
     <string name="send_log_summary">If using Send Log, then make sure that you are NOT logging to file.  Logging to a File will result in Send Log only capturing a partial log.</string>
@@ -153,4 +153,9 @@
     <string name="dialog_title_list_remuxing_format_preference" >Remuxing Container Format</string>
     <string name="summary_list_remuxing_formats_preference">%s - The container format SageTV will use to remux the content too</string>
     <string name="title_list_remuxing_formats_preference">Remuxing Container Format</string>
+    <string name="summary_enable_crashlytics_preference">This enables crash and exception logging to Google Firebase Crashlytics to help developers diagnose issues.  Requires application restart to take effect</string>
+    <string name="title_enable_crashlytics_preference">Google Firebase Crashlytics Logging</string>
+    <string name="dialog_title_firebase_user_preference">Firebase User</string>
+    <string name="title_firebase_user_preference">Firebase Crashlytics User</string>
+    <string name="summary_firebase_user_preference">This will allow the developer to find a crash report in firebase if the user reported it</string>
 </resources>

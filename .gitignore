@@ -70,3 +70,4 @@ gradle-app.setting
 ## Sensitive
 keystore.properties
 jvlsagetvkeystore
+google-services.json

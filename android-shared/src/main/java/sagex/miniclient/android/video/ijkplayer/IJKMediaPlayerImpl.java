@@ -1,11 +1,15 @@
 package sagex.miniclient.android.video.ijkplayer;
 
+import android.media.session.PlaybackState;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.SurfaceView;
 
-import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.android.util.AudioUtil;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
+import sagex.miniclient.android.video.MediaSessionCallbackHandler;
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.VerboseLogging;
@@ -15,6 +19,9 @@ import tv.danmaku.ijk.media.player.MediaInfo;
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 import tv.danmaku.ijk.media.player.misc.IjkTrackInfo;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+
 
 import static sagex.miniclient.util.Utils.toHHMMSS;
 
@@ -29,12 +36,14 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     int initialAudioStreamPos = -1;
     int initialTextStreamPos = -1;
     long logTime = -1;
-    public IJKMediaPlayerImpl(AndroidUIController activity) {
+    MediaSessionCompat mediaSession;
+
+    public IJKMediaPlayerImpl(AndroidUIController activity)
+    {
         super(activity, true, true);
     }
 
     /**
-     *
      * @param serverStartTime
      * @return
      */
@@ -74,6 +83,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 {
                     log.debug("IJK: getPlayerMediaTimeMillis(): player adjusting using 0 but time was {}", toHHMMSS(time, true));
                 }
+
                 return time;
             }
 
@@ -112,17 +122,24 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             }
         }
 
+
         return time;
     }
 
     @Override
     public void stop()
     {
+        if(mediaSession != null)
+        {
+            mediaSession.setActive(false);
+        }
+
         if (player == null) return;
 
         if (player.isPlaying())
         {
             player.stop();
+            //this.releasePlayer();
         }
         super.stop();
     }
@@ -130,7 +147,9 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     @Override
     public void pause()
     {
-        if(state == PAUSE_STATE && !pushMode)
+
+
+        if (state == PAUSE_STATE && !pushMode)
         {
             log.debug("In pause state.  Seek frame instead...");
             //TODO: Could not find the framerate in IJKPlayer.  Going to assume 30fps for now.
@@ -144,6 +163,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         {
             player.pause();
         }
+
+        updateMediaSessionPlaybackState(player.getCurrentPosition());
     }
 
     @Override
@@ -154,6 +175,7 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         if (player != null && !player.isPlaying())
         {
             player.start();
+            updateMediaSessionPlaybackState(player.getCurrentPosition());
         }
     }
 
@@ -219,10 +241,6 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             // setting this to 0 removes the pixelization for mpeg2 videos
             ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 0);
 
-            // ((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
-            //((IjkMediaPlayer) player).setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "seekable", 0);
-            //player.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
-
             player.setOnVideoSizeChangedListener(new IMediaPlayer.OnVideoSizeChangedListener()
             {
                 @Override
@@ -277,7 +295,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             player.setOnCompletionListener(new IMediaPlayer.OnCompletionListener()
             {
                 @Override
-                public void onCompletion(IMediaPlayer iMediaPlayer) {
+                public void onCompletion(IMediaPlayer iMediaPlayer)
+                {
                     if (VerboseLogging.DETAILED_PLAYER_LOGGING) log.debug("MEDIA COMPLETE");
                     log.debug("OnCompletionListener fired.  Stoping playback and setting state to EOS");
                     stop();
@@ -286,43 +305,80 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 }
             });
 
-            player.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener() {
+            player.setOnSeekCompleteListener(new IMediaPlayer.OnSeekCompleteListener()
+            {
                 @Override
-                public void onSeekComplete(IMediaPlayer iMediaPlayer) {
+                public void onSeekComplete(IMediaPlayer iMediaPlayer)
+                {
                     seekPending = false;
+                    updateMediaSessionPlaybackState(player.getCurrentPosition());
                 }
             });
 
-            player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+            player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener()
+            {
                 @Override
-                public void onPrepared(IMediaPlayer mp) {
+                public void onPrepared(IMediaPlayer mp)
+                {
                     playerReady = true;
                     player.start();
                     state = PLAY_STATE;
-                    if (!pushMode) {
-                        if (preSeekPos != -1) {
+
+                    if (!pushMode)
+                    {
+                        if (preSeekPos != -1)
+                        {
                             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                                 log.debug("Resuming At Position: {}", preSeekPos);
                             seekToImpl(preSeekPos);
                             preSeekPos = -1;
-                        } else {
+                        }
+                        else
+                        {
                             if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                                 log.debug("No Resume");
                         }
                     }
 
-                    if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.announce_software_decoder, false)) {
+                    if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.announce_software_decoder, false))
+                    {
                         MediaInfo mi = player.getMediaInfo();
-                        if (mi != null) {
+                        if (mi != null)
+                        {
                             log.info("MEDIAINFO: video: {},{}", mi.mVideoDecoder, mi.mVideoDecoderImpl);
-                            if (!"mediacodec".equalsIgnoreCase(mi.mVideoDecoder)) {
+                            if (!"mediacodec".equalsIgnoreCase(mi.mVideoDecoder))
+                            {
                                 message("Using Software Decoder (" + (pushMode ? "PUSH MODE" : "PULL MODE") + ")");
                             }
                         }
                     }
 
+                    //Create Media Session
+                    IJKMediaPlayerImpl.this.mediaSession = new MediaSessionCompat(IJKMediaPlayerImpl.this.context.getContext(), "SageTV Android TV Client");
+                    mediaSession.setCallback(new MediaSessionCallbackHandler(IJKMediaPlayerImpl.this, context.getClient(), context.getContext()));
 
-                    if (initialAudioStreamPos != -1) {
+                    mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS | MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
+
+                    long duration;
+
+                    if(player.getDuration() < 0)
+                    {
+                        duration = -1;
+                    }
+                    else
+                    {
+                        duration = player.getDuration();
+                    }
+                    //Library files start with stc:// but do not have push in it
+                    //Live TV has push: with a lot of other data in it
+
+                    setMediaSessionMetadata(sageTVurl, duration);
+                    mediaSession.setActive(true);
+
+                    updateMediaSessionPlaybackState(player.getCurrentPosition());
+
+                    if (initialAudioStreamPos != -1)
+                    {
                         setAudioTrack(initialAudioStreamPos);
                     }
                 }
@@ -330,13 +386,16 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
             player.prepareAsync();
             log.debug("mediaplayer has our URL");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             log.error("Failed to create player", e);
             playerFailed();
         }
     }
 
-    protected void seekToImpl(long timeInMillis) {
+    protected void seekToImpl(long timeInMillis)
+    {
         seekPending = true;
         player.seekTo(timeInMillis);
     }
@@ -355,13 +414,18 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
             return;
         }
 
-        if (!pushMode) {
-            if (player.isPlaying() || state == PAUSE_STATE || state == PLAY_STATE) {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING) {
+        if (!pushMode)
+        {
+            if (player.isPlaying() || state == PAUSE_STATE || state == PLAY_STATE)
+            {
+                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
+                {
                     log.debug("Immediate Seek {}", timeInMS);
                 }
                 seekToImpl(timeInMS);
-            } else {
+            }
+            else
+            {
                 log.info("We Missed a Seek for {}: player.isPlaying {}; State: {}; playerReader: {}", timeInMS, player.isPlaying(), state, playerReady);
             }
         }
@@ -374,7 +438,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
      * @param sageTVPosition Track position sage has requested us to change to
      * @return IJKPlayer track position
      */
-    private int getAudioTrackPosition(int sageTVPosition) {
+    private int getAudioTrackPosition(int sageTVPosition)
+    {
         if (player == null) return -1;
 
         ITrackInfo info[] = player.getTrackInfo();
@@ -382,9 +447,12 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
         int audioTrackCount = 0;
 
-        for (int i = 0; i < info.length; i++) {
-            if (info[i] != null && info[i].getTrackType() == IjkTrackInfo.MEDIA_TRACK_TYPE_AUDIO) {
-                if (audioTrackCount == sageTVPosition) {
+        for (int i = 0; i < info.length; i++)
+        {
+            if (info[i] != null && info[i].getTrackType() == IjkTrackInfo.MEDIA_TRACK_TYPE_AUDIO)
+            {
+                if (audioTrackCount == sageTVPosition)
+                {
                     return i;
                 }
 
@@ -402,7 +470,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
      * @param sageTVPosition Track position sage has requested us to change to
      * @return IJKPlayer track position
      */
-    private int getSubtitleTrackPosition(int sageTVPosition) {
+    private int getSubtitleTrackPosition(int sageTVPosition)
+    {
         if (player == null) return -1;
 
         ITrackInfo info[] = player.getTrackInfo();
@@ -410,13 +479,16 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
 
         int subtitleTrackCount = 0;
 
-        for (int i = 0; i < info.length; i++) {
+        for (int i = 0; i < info.length; i++)
+        {
             if (info[i] == null) continue;
 
             log.debug("Track Pos {}, TrackType {}, Track Info {}, Track Lang ", i, info[i].getTrackType(), info[i].getInfoInline(), info[i].getLanguage());
 
-            if (info[i].getTrackType() == IjkTrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT) {
-                if (subtitleTrackCount == sageTVPosition) {
+            if (info[i].getTrackType() == IjkTrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT)
+            {
+                if (subtitleTrackCount == sageTVPosition)
+                {
                     return i;
                 }
 
@@ -428,28 +500,34 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
-    public void setAudioTrack(int streamPos) {
+    public void setAudioTrack(int streamPos)
+    {
         //NOTE: Do not try to set the track position to a currently selected audio track. IJKPlayer really does not like that, and will crash.
 
         log.debug("setAudioTrack Called StreamPosition: {}", streamPos);
 
-        if (playerReady) {
+        if (playerReady)
+        {
             int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(IjkTrackInfo.MEDIA_TRACK_TYPE_AUDIO);
             int setTrackTo = this.getAudioTrackPosition(streamPos);
 
             log.debug("Selected Audio Track Pos: {}", currentTrack);
 
-            if (setTrackTo == -1) {
+            if (setTrackTo == -1)
+            {
                 log.warn("Unable to find audio track postion in IJKPlayer!");
                 return;
             }
 
-            if (currentTrack != setTrackTo) {
+            if (currentTrack != setTrackTo)
+            {
                 log.debug("Setting audio track to IJKPlayer Track Position: {}", setTrackTo);
                 ((IjkMediaPlayer) player).selectTrack(setTrackTo);
             }
 
-        } else {
+        }
+        else
+        {
             log.debug("setAudioTrack player not ready.  Storing values for setting when player is initialized");
 
             this.initialAudioStreamPos = streamPos;
@@ -457,13 +535,29 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
     }
 
     @Override
-    public void setSubtitleTrack(int streamPos) {
+    public int getSubtitleTrackCount()
+    {
+        return 0;
+    }
+
+    @Override
+    public SubtitleTrack[] getSubtitleTracks()
+    {
+        return new SubtitleTrack[0];
+    }
+
+    @Override
+    public void setSubtitleTrack(int streamPos)
+    {
         //Displaying subtitle/timedtext does not appear to be supported at this time.
         log.debug("TODO: setSubtitleTrack Called StreamPosition: {}", streamPos);
 
-        if (player==null) {
+        if (player == null)
+        {
             this.initialTextStreamPos = streamPos;
-        } else {
+        }
+        else
+        {
             // NOT IMPLEMENTED YET, let's comment out the code until it is
             // since it's causing problems in the playback.
 //            int currentTrack = ((IjkMediaPlayer) player).getSelectedTrack(IjkTrackInfo.MEDIA_TRACK_TYPE_SUBTITLE);
@@ -476,54 +570,150 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         }
     }
 
-    protected void releasePlayer() {
+    @Override
+    public int getSelectedSubtitleTrack()
+    {
+        return DISABLE_TRACK;
+    }
+
+    protected void releasePlayer()
+    {
+        if(mediaSession != null)
+        {
+            log.debug("Media Session RELEASE");
+            mediaSession.setActive(false);
+            mediaSession.release();
+            mediaSession = null;
+        }
+
         if (player == null)
             return;
         log.debug("Releasing Player");
 
-        try {
-            try {
-                if (player.isPlaying()) {
-                    try {
+        try
+        {
+            try
+            {
+                if (player.isPlaying())
+                {
+                    try
+                    {
                         player.pause();
-                    } catch (Throwable t) {
                     }
-                    try {
+                    catch (Throwable t)
+                    {
+                    }
+                    try
+                    {
                         player.stop();
-                    } catch (Throwable t) {
+                    }
+                    catch (Throwable t)
+                    {
                     }
                 }
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
             }
 
             // now release the datasource
             // https://github.com/OpenSageTV/sagetv-miniclient/issues/54
-            try {
+            try
+            {
                 releaseDataSource();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
             }
 
-            try {
+            try
+            {
                 player.reset();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
             }
             log.debug("Player Is Stopped");
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
         }
 
 
-        try {
+        try
+        {
             player.release();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
         }
 
-        try {
+        try
+        {
             clearSurface();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
         }
         player = null;
 
         super.releasePlayer();
+    }
+
+    private void updateMediaSessionPlaybackState(long playbackPostion)
+    {
+        if(mediaSession != null)
+        {
+            PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
+            stateBuilder.setActions(this.getMediaSessionActions());
+
+            if (player != null && getState() == PLAY_STATE)
+            {
+                stateBuilder.setState(PlaybackStateCompat.STATE_PLAYING, playbackPostion, 1.0f);
+            }
+            else
+            {
+                stateBuilder.setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+            }
+
+
+            mediaSession.setPlaybackState(stateBuilder.build());
+        }
+    }
+
+    private long getMediaSessionActions()
+    {
+        long actions = 0;
+
+        if(player != null)
+        {
+            if (getState() == PLAY_STATE)
+            {
+                actions = PlaybackState.ACTION_STOP;
+                actions |= PlaybackState.ACTION_PAUSE;
+                actions |= PlaybackState.ACTION_FAST_FORWARD;
+                actions |= PlaybackState.ACTION_REWIND;
+                actions |= PlaybackState.ACTION_SEEK_TO;
+                actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
+                actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+            }
+            else
+            {
+                actions = PlaybackState.ACTION_PLAY;
+            }
+
+        }
+
+        return actions;
+    }
+
+    private void setMediaSessionMetadata(String displayTitle, long duration)
+    {
+        MediaMetadataCompat.Builder metaDataBuilder = new MediaMetadataCompat.Builder();
+
+        metaDataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, displayTitle);
+        metaDataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration);
+        mediaSession.setMetadata(metaDataBuilder.build());
     }
 }
 

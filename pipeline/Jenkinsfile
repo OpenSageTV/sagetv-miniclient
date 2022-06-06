@@ -20,11 +20,15 @@ def getBuildType()
 
         case "beta":
 
-            return "release"
+            return "debug"
 
         case "alpha":
 
             return "debug"
+
+        case "amazon_publish": //This is for amazon app publish development/debugging
+
+            return "release"
 
         default:
 
@@ -56,6 +60,59 @@ def getReleaseToGit()
     }
 }
 
+def getReleaseLocal()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return true
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return true
+
+        default:
+
+            return false
+    }
+}
+
+def getReleaseToClients()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return false
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return true
+
+        case "dev":
+
+            return true
+
+        default:
+
+            return false
+
+    }
+}
+def getUninstallClient()
+{
+    return false;
+}
+
 def getReleaseToGooglePlay()
 {
     switch (getBranch())
@@ -71,6 +128,33 @@ def getReleaseToGooglePlay()
         case "alpha":
 
             return false
+
+        default:
+
+            return false
+
+    }
+}
+
+def getReleaseToAmazonAppStore()
+{
+    switch (getBranch())
+    {
+        case "master":
+
+            return true
+
+        case "beta":
+
+            return true
+
+        case "alpha":
+
+            return false
+
+        case "amazon_publish": //This is for amazon app publish development/debugging
+
+            return true
 
         default:
 
@@ -106,8 +190,12 @@ pipeline
         STORE_PASSWORD = credentials('storePassword')
         GIT_HUB_USER = credentials('GitHubUser')
         GIT_HUB_TOKEN = credentials('GitHubToken')
+        AMAZON_APP_ID = credentials('SageTVAndroidClient-AmazonAppID')
+        AMAZON_CLIENT_ID = credentials('SageTVAndroidClient-AmazonClientID')
+        AMAZON_CLIENT_SECRET = credentials('SageTVAndroidClient-AmazonClientSecret')
+        ADB_VENDOR_KEYS="/adbkeys"
 
-        version = sh (script: "./gradlew properties -q | grep \"baseVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
+        version = sh (script: "./gradlew properties -q | grep \"appVersionName:\" | awk '{print \$2}'", returnStdout: true).trim()
         appversioncode = sh (script: "./gradlew properties -q | grep \"appVersionCode:\" | awk '{print \$2}'", returnStdout: true).trim()
         exoversion = sh (script: "./gradlew properties -q | grep \"exoVersion:\" | awk '{print \$2}'", returnStdout: true).trim()
         exoversioncustomext = sh (script: "./gradlew properties -q | grep \"exoVersionCustomExt:\" | awk '{print \$2}'", returnStdout: true).trim()
@@ -117,6 +205,8 @@ pipeline
 
     stages
     {
+
+
 
         stage('Set build informaction')
         {
@@ -143,6 +233,12 @@ pipeline
             {
                 script
                 {
+                    withCredentials([file(credentialsId: 'SageTVAndroidClient-GoogleServicesJSON-Firebase', variable: 'google_services_json')])
+                    {
+                        sh "cp ${google_services_json} ./android-tv"
+                    }
+
+                    sh "./gradlew clean"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} bundle${VARIANT}"
                     sh "./gradlew -PstorePass=${STORE_PASSWORD} -Pkeystore=\"${KEYSTORE}\" -Palias=${KEY_ALIAS} -PkeyPass=${KEY_PASSWORD} assemble${VARIANT}"
 
@@ -151,13 +247,212 @@ pipeline
             }
         }
 
+
         stage('Publish local')
         {
+             when { expression { return getReleaseLocal() } }
              steps
              {
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/bundle/${VARIANT}", sourceFiles: "android-tv/build/outputs/bundle/${VARIANT}/*.aab"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasechangelist*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasename*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+
                 cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "android-tv/build/outputs/apk/${VARIANT}", sourceFiles: "android-tv/build/outputs/apk/${VARIANT}/*.apk"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasechangelist*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
+                cifsPublisher(publishers: [[configName: 'SageTVAndroidClient', transfers: [[cleanRemote: false, excludes: '', flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: "builds/${version}/${VARIANT}", remoteDirectorySDF: false, removePrefix: "pipeline", sourceFiles: "pipeline/releasename*"]], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true]])
              }
+        }
+
+
+        stage('Deploy to internal clients')
+        {
+            when { expression { return getReleaseToClients() } }
+            steps
+            {
+                //Need to make sure the dir exists before copying the file
+                sh "mkdir ${ADB_VENDOR_KEYS}"
+                sh "mkdir /root/.android || return 0"
+
+
+                withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
+                {
+                    sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
+                {
+                    sh "cp ${ADB_VENDOR_KEYS}/* /root/.android/"
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Dev1 Onn')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect dev1.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Masterbedroom Onn')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect masterbedroom.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Familyroom FireTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect familyroom.firetv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Theater Sony TV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect theater.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Theater ShieldTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect shieldtv.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Bar SonyTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect bar.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to familyroom SonyTV')
+                {
+                    script
+                    {
+                        sh "adb disconnect"
+
+                        adbResponse = sh( script: "adb connect familyroom.androidtv", returnStdout: true ).trim()
+
+                        if(adbResponse.contains("connected to"))
+                        {
+                            if(getUninstallClient())
+                            {
+                                sh "adb uninstall jvl.sage.miniclient.android.tv.debug.debug || return 0"
+                            }
+                            sh "adb install -r android-tv/build/outputs/apk/debug/android-tv-debug.apk"
+                        }
+                        else
+                        {
+                            echo "Connect response: ${adbResponse}"
+                            error "Did not connect to client"
+                        }
+                    }
+                }
+            }
         }
 
         stage('Publish to GitHub')
@@ -201,10 +496,10 @@ pipeline
                     }
 
                     sh("github-release delete --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} -s ${GIT_HUB_TOKEN} || exit 0")
-                    sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name \"${RELEASENAME}\" --description \"${CHANGELOG}\"")
-
+                    sh("github-release release -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag \"v${version}\" --name \"${RELEASENAME}\" --description \"${CHANGELOG}\"")
+                    sh("sleep 5s")
                     //Add apk to the release
-                    sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag v${version} --name SageTVAndroidClient_${version}.apk --file android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk")
+                    sh("github-release upload -s ${GIT_HUB_TOKEN} --user OpenSageTV --repo \"sagetv-miniclient\" --tag \"v${version}\" --name \"SageTVAndroidClient_${version}.apk\" --file \"android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk\"")
                 }
             }
         }
@@ -230,5 +525,29 @@ pipeline
                 }
             }
         }
+
+        stage('Publish to Amazon App Store')
+        {
+            when { expression { return getReleaseToAmazonAppStore() } }
+            steps
+            {
+                script
+                {
+                    try
+                    {
+                        CHANGELOG = readFile(file: 'pipeline/releasechangelist')
+                    }
+                    catch (err)
+                    {
+                        echo "Issue reading pipeline/releasechangelist file: ${err.localizedMessage}"
+                        CHANGELOG = ''
+                    }
+
+                    sh("./pipeline/amazon_publish.sh ${AMAZON_APP_ID} android-tv/build/outputs/apk/${VARIANT}/android-tv-release.apk ${AMAZON_CLIENT_ID} ${AMAZON_CLIENT_SECRET} pipeline/releasechangelist")
+                    //androidApkUpload googleCredentialsId: 'Google Play API Access', apkFilesPattern: 'android-tv/build/outputs/bundle/release/*-release.aab', trackName: 'Beta Release Track', rolloutPercentage: "100%", recentChangeList: [[language: 'en-US', text: CHANGELOG]]
+                }
+            }
+        }
+
     }
 }

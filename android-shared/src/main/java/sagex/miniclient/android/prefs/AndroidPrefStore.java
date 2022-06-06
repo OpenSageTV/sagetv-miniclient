@@ -58,6 +58,12 @@ public class AndroidPrefStore implements PrefStore
     public static final String VIDEO_CODEC_SUPPORT_DEFAULT = "automatic";
     public static final String AUDIO_CODEC_SUPPORT_DEFAULT = "automatic";
 
+    public static final String FIREBASE_CRASHLYTICS_ENABLED = "firebase/crashlytics/enabled";
+    public static final boolean FIREBASE_CRASHLYTICS_ENABLED_DEFAULT = true;
+
+    public static final String FIREBASE_CRASHLYTICS_USER = "firebase/crashlytics/user";
+    public static final String FIREBASE_CRASHLYTICS_USER_DEFAULT = "Anonymous";
+
 
     //</editor-fold>
 
@@ -314,6 +320,16 @@ public class AndroidPrefStore implements PrefStore
     public String getAudioCodecSupport(String codec)
     {
         return this.getString("codec/audio/" + codec + "/support", AndroidPrefStore.AUDIO_CODEC_SUPPORT_DEFAULT);
+    }
+
+    public boolean getFirebaseCrashlyticsEnabled()
+    {
+        return this.getBoolean(AndroidPrefStore.FIREBASE_CRASHLYTICS_ENABLED, AndroidPrefStore.FIREBASE_CRASHLYTICS_ENABLED_DEFAULT);
+    }
+
+    public String getFirebaseCrashlyticsUser()
+    {
+        return this.getString(AndroidPrefStore.FIREBASE_CRASHLYTICS_USER, AndroidPrefStore.FIREBASE_CRASHLYTICS_USER_DEFAULT);
     }
 
     /*

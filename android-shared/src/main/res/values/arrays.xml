@@ -206,10 +206,12 @@
     <string-array name="entries_list_remuxing_formats_preference">
         <item>Matroska (MKV)</item>
         <item>DVD (MPEG-PS)</item>
+        <item>MPEG-TS</item>
     </string-array>
     <string-array name="entryvalues_list_remuxing_formats_preference">
         <item>matroska</item>
         <item>dvd</item>
+        <item>mpegts</item>
     </string-array>
     <string-array name="entries_list_container_preference">
         <item>Automatic</item>

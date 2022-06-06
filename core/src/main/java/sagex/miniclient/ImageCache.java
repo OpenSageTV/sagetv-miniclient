@@ -2,12 +2,11 @@ package sagex.miniclient;
 
 import java.io.File;
 
+import sagex.miniclient.logging.ILogger;
 import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.ImageHolder;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
-
-import static sagex.miniclient.MiniClient.log;
 
 /**
  * Encapsulate Image Caching into a single manager
@@ -21,9 +20,11 @@ public class ImageCache
     private long imageCacheSize;
     private java.util.Map<Integer, Long> lruImageMap = new java.util.HashMap<Integer, Long>();
     private java.util.Map<Integer, sagex.miniclient.uibridge.ImageHolder> imageMap = new java.util.HashMap<Integer, sagex.miniclient.uibridge.ImageHolder>();
+    private ILogger log;
 
-    public ImageCache(MiniClient client)
+    public ImageCache(MiniClient client, ILogger log)
     {
+        this.log = log;
         this.client=client;
         reloadSettings();
     }
@@ -41,14 +42,14 @@ public class ImageCache
         boolean canDo =  (width * height * 4 + imageCacheSize) <= imageCacheLimit;
         if (!canDo)
         {
-            log.debug("Can't cache {}x{} ({}mb).  Not enough room.  Cache Size: {}; Cache Limit: {}", width, height, Utils.toMB(width*height*4), Utils.toMB(imageCacheSize), Utils.toMB(imageCacheLimit));
+            log.logDebug("Can't cache {" + width + " }x{" + height + "} (" + Utils.toMB(width*height*4) + "mb).  Not enough room.  Cache Size: " + Utils.toMB(imageCacheSize) + "; Cache Limit: " + Utils.toMB(imageCacheLimit));
         }
         return canDo;
     }
 
     public void cleanUp()
     {
-        log.debug("Resetting up in-memory cache states");
+        log.logDebug("Resetting up in-memory cache states");
         imageCacheSize=0;
         lruImageMap.clear();
         if (imageMap.size()>0)
@@ -67,7 +68,7 @@ public class ImageCache
         ImageHolder h = imageMap.get(handle);
         if (h != null && handle!=h.getHandle())
         {
-            log.error("ImageCache: Error: We asked for {}, but got {}", handle, h.getHandle());
+            log.logError("ImageCache: Error: We asked for " + handle +", but got" + h.getHandle());
         }
         return h;
     }
@@ -76,14 +77,14 @@ public class ImageCache
 
         if (img.getHandle()!= imghandle)
         {
-            log.warn("ImageCache.put({}) has image with different handle {}", imghandle, img.getHandle(), new Exception());
+            log.logWarning("ImageCache.put(" + imghandle + ") has image with different handle " + img.getHandle(), new Exception());
         }
         imageMap.put(imghandle, img);
         imageCacheSize += width * height * 4;
 
         if (VerboseLogging.DETAILED_IMAGE_CACHE)
         {
-            log.debug("Added {} with size: {}x{} ({}mb); Cache {}mb/{}mb)", imghandle, width,height, Utils.toMB(width*height*4), Utils.toMB(imageCacheSize), Utils.toMB(imageCacheLimit));
+            log.logDebug("Added " + imghandle + " with size: " + width + "x" + height + " (" + Utils.toMB(width*height*4) + "mb); Cache " + Utils.toMB(imageCacheSize) + "mb/" + Utils.toMB(imageCacheLimit)+ "mb)");
         }
     }
 
@@ -93,7 +94,7 @@ public class ImageCache
         {
             if (!canCache(width, height))
             {
-                log.debug("Can't cache {}x{} ({}mb).  Will make room.", width, height, Utils.toMB(width*height*4));
+                log.logDebug("Can't cache " + width + "x" + height + " (" + Utils.toMB(width*height*4)+ "mb).  Will make room.");
             }
         }
 
@@ -106,7 +107,7 @@ public class ImageCache
             {
                 if (VerboseLogging.DETAILED_IMAGE_CACHE)
                 {
-                    log.debug("Freeing image to make room in cache");
+                    log.logDebug("Freeing image to make room in cache");
                 }
                 unloadImage(oldestImage);
                 postImageUnload(oldestImage);
@@ -114,13 +115,13 @@ public class ImageCache
             }
             else
             {
-                log.error("ERROR cannot free enough from the cache to support loading a new image!!!");
+                log.logError("ERROR cannot free enough from the cache to support loading a new image!!!");
                 break;
             }
         }
         if (VerboseLogging.DETAILED_IMAGE_CACHE)
         {
-            log.debug("Cache {}mb/{}mb", Utils.toMB(imageCacheSize), Utils.toMB(imageCacheSize));
+            log.logDebug("Cache " + Utils.toMB(imageCacheSize) + "mb/" + Utils.toMB(imageCacheSize) + "mb");
         }
     }
 
@@ -135,12 +136,13 @@ public class ImageCache
         if (bi != null) {
             imageCacheSize -= (bi.getWidth() * bi.getHeight() * 4);
             if (VerboseLogging.DETAILED_IMAGE_CACHE) {
-                log.debug("Unloaded: {}, {}x{} freeing {}mb.  Cache: {}mb/{}mb", handle, bi.getWidth(), bi.getHeight(), Utils.toMB((bi.getWidth() * bi.getHeight() * 4)), Utils.toMB(imageCacheSize), Utils.toMB(imageCacheLimit));
+
+                log.logDebug("Unloaded " + handle + " with size: " + bi.getWidth() + "x" +  bi.getHeight() + " (" + Utils.toMB(bi.getWidth() *bi.getHeight()*4) + "mb); Cache " + Utils.toMB(imageCacheSize) + "mb/" + Utils.toMB(imageCacheLimit)+ "mb)");
             }
             bi.dispose();
         } else {
             if (VerboseLogging.DETAILED_IMAGE_CACHE) {
-                log.debug("Unloaded: {}, but was not in the cache", handle);
+                log.logDebug("Unloaded: " + handle + ", but was not in the cache" );
             }
         }
         clearImageAccess(handle);
@@ -177,7 +179,7 @@ public class ImageCache
         {
             if (VerboseLogging.DETAILED_IMAGE_CACHE)
             {
-                log.debug("Writing Cached Image: {}", resourceID);
+                log.logDebug("Writing Cached Image: " + resourceID);
             }
 
             fos = new java.io.FileOutputStream(new java.io.File(cacheDir, resourceID));
@@ -187,7 +189,7 @@ public class ImageCache
         }
         catch (java.io.IOException ioe)
         {
-            log.error("ERROR writing cache data to file", ioe);
+            log.logError("ERROR writing cache data to file", ioe);
         }
         finally
         {
@@ -236,7 +238,7 @@ public class ImageCache
 
             if (size > offlineImageCacheLimit)
             {
-                log.info("Dumping offline image cache because it's exceeded the maximum size");
+                log.logInfo("Dumping offline image cache because it's exceeded the maximum size");
 
                 java.util.Arrays.sort(cacheFiles, new java.util.Comparator()
                 {
@@ -258,7 +260,7 @@ public class ImageCache
                 {
                     if (VerboseLogging.DETAILED_IMAGE_CACHE)
                     {
-                        log.debug("Removing Image From Disk: {}", cacheFiles[j]);
+                        log.logDebug("Removing Image From Disk: " + cacheFiles[j]);
                     }
                     cacheFiles[j].delete();
                 }
@@ -316,8 +318,8 @@ public class ImageCache
         // make sure caches are cleared
         cleanUp();
 
-        log.info("GFXCMD2 Created:  Mem Cache Size: {}mb, Disk Cache Size: {}mb, Cache Location: {}", Utils.toMB(imageCacheLimit), Utils.toMB(offlineImageCacheLimit), cacheDir);
-        log.debug("Disk Cache Contents: {}", getOfflineCacheList());
-        log.debug("Max Memory: {}mb", Utils.toMB(Runtime.getRuntime().maxMemory()));
+        log.logInfo("GFXCMD2 Created:  Mem Cache Size: " + Utils.toMB(imageCacheLimit) + "mb, Disk Cache Size: " + Utils.toMB(offlineImageCacheLimit) + "mb, Cache Location: " + cacheDir);
+        log.logDebug("Disk Cache Contents: " + getOfflineCacheList());
+        log.logDebug("Max Memory: " + Utils.toMB(Runtime.getRuntime().maxMemory()) + "mb");
     }
 }

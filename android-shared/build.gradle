@@ -74,6 +74,7 @@ dependencies {
     }
 
     api "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.10'
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
@@ -81,10 +82,6 @@ dependencies {
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
 
     // ExoPlayer
-    // NOTE: because exoplayer is built using ffmpeg, it's from the stuckless/ExoPlayer repo
-    //api "com.google.android.exoplayer:exoplayer:${exoVersion}@aar"
-
-    //These are working
     api "com.google.android.exoplayer:exoplayer-common:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-extractor:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-core:${exoVersion}@aar"
@@ -97,13 +94,13 @@ dependencies {
     api "com.google.android.exoplayer:exoplayer-smoothstreaming:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-hls:${exoVersion}@aar"
     api "com.google.android.exoplayer:exoplayer-testutils:${exoVersion}@aar"
+    //api "com.google.android.exoplayer:extension-mediasession:${exoVersion}@aar"
+    api 'com.google.guava:guava:31.0-jre' //This appears to be required for Exoplayer
 
-    //implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
-    //implementation files("../libs/extension-ffmpeg-${exoVersionCustomExt}.aar")
     api(name: "extension-ffmpeg-${exoVersionCustomExt}", ext: 'aar') // yourLib.aar is put in libs folder
 
-    //api "com.google.android.exoplayer:extension-ffmpeg:${exoVersionCustomExt}@aar"
-    api 'com.google.guava:guava:24.1-jre'
+
+
 
     // If you are rebuilding your own ijkplaer, then comment the lines above and
     // then uncomment these.

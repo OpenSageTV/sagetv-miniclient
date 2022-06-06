@@ -17,11 +17,15 @@ package sagex.miniclient;
 
 import java.io.IOException;
 
+import sagex.miniclient.media.SubtitleTrack;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.uibridge.Rectangle;
 
 public interface MiniPlayerPlugin extends Runnable
 {
+     int DISABLE_TRACK = 8192;
+
+
     /**
      * Indicates the MediaPlayer is in an uninitialized state
      */
@@ -110,6 +114,26 @@ public interface MiniPlayerPlugin extends Runnable
      * @param streamPos The audio track position (zero based) in the file
      */
     void setSubtitleTrack(int streamPos);
+
+    /**
+     * The subtitle track that is currently selected
+     * @return the select track index or DISABLE_TRACK if none are selected
+     * or if subtitles are not supported
+     */
+    int getSelectedSubtitleTrack();
+
+    /**
+     * Gets the count of Subtitle/ClosedCaption tracks the player identified
+     */
+    int getSubtitleTrackCount();
+
+    /**
+     * Get the list of tracks the player has identified.  Returns an empty array if no tracks were found, or if
+     * the player does not support rendering subtitles.
+     *
+     * @return Array of support subtitle tracks
+     */
+    SubtitleTrack[] getSubtitleTracks();
 
     void setVideoRectangles(Rectangle srcRect, Rectangle destRect, boolean hideCursor);
 

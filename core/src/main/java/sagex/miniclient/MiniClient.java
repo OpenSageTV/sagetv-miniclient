@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import sagex.miniclient.events.ConnectedEvent;
+import sagex.miniclient.logging.ILogger;
 import sagex.miniclient.prefs.PrefStore;
 
 /**
@@ -33,7 +34,8 @@ import sagex.miniclient.prefs.PrefStore;
  */
 public class MiniClient
 {
-    public static final Logger log = LoggerFactory.getLogger(MiniClient.class);
+    //public static final Logger log = LoggerFactory.getLogger(MiniClient.class);
+    public ILogger log;
     public static final String BYTE_CHARSET = "ISO8859_1";
 
     private final MiniClientOptions options;
@@ -52,13 +54,14 @@ public class MiniClient
     private ServerInfo connectedServer;
     private ImageCache imageCache;
 
-    public MiniClient(MiniClientOptions options)
+    public MiniClient(MiniClientOptions options, ILogger logger)
     {
+        this.log = logger;
         this.options = options;
         eventBus = options.getBus();
         if (eventBus == null)
         {
-            log.warn("Using a DeadBus for the event bus, since a bus was not provided in the MiniClientOptions");
+            log.logWarning("Using a DeadBus for the event bus, since a bus was not provided in the MiniClientOptions");
             eventBus = DeadBus.INSTANCE;
         }
         this.backgroundService = Executors.newFixedThreadPool(5);
@@ -98,8 +101,9 @@ public class MiniClient
         options.getCacheDir().mkdirs();
         options.getConfigDir().mkdirs();
 
-        log.info("MiniClient v{} starting on date/time {}", Version.VERSION, new Date());
-        log.info("MiniClient cacheDir: {}", options.getCacheDir());
+        log.logInfo("MiniClient starting on date/time " + new Date());
+        log.logInfo("MiniClient cacheDir: " + options.getCacheDir());
+
 
         try
         {
@@ -112,7 +116,7 @@ public class MiniClient
             // for the secret stuff
             cryptoFormats = "DH,DES";
         }
-        log.info("Detecting cryptography support.  Formats {}", cryptoFormats);
+        log.logInfo("Detecting cryptography support.  Formats " + cryptoFormats);
 
         initialized = true;
     }
@@ -143,7 +147,7 @@ public class MiniClient
 
     public String getMACAddress()
     {
-        log.warn("TODO: Implement getMACAddress()");
+        log.logWarning("TODO: Implement getMACAddress()");
         return MACAddress;
     }
 
@@ -174,11 +178,11 @@ public class MiniClient
     {
         if (si.isLocatorOnly() || si.forceLocator)
         {
-            log.debug("Resolving Server Address from GUID {}", si);
+            log.logDebug("Resolving Server Address from GUID " + si);
             String address = SageTVLocatorService.lookupIPForGuid(si.locatorID);
             si = si.clone();
             si.address = address;
-            log.debug("Server Address Lookup complete {}", si);
+            log.logDebug("Server Address Lookup complete " + si);
         }
 
         this.connectedServer=si;
@@ -188,8 +192,8 @@ public class MiniClient
             imageCache.cleanUp();
         }
 
-        imageCache = new ImageCache(this);
-        MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si);
+        imageCache = new ImageCache(this, log.getLoggerInstance(ImageCache.class));
+        MiniClientConnection connection = new MiniClientConnection(this, macAddressResolver.getMACAddress(), si, log.getLoggerInstance(MiniClientConnection.class));
         connection.connect();
         eventbus().post(new ConnectedEvent());
     }
@@ -238,7 +242,7 @@ public class MiniClient
     {
         if(currentConnection.getMediaCmd().getPlaya() != null)
         {
-            log.debug("isVideoPaused: " + " isVideoVisible: " + isVideoVisible() + " player state:" + currentConnection.getMediaCmd().getPlaya().getState() + " PAUSE: MiniPlayerPlugin.PAUSE_STATE;");
+            log.logDebug("isVideoPaused: " + " isVideoVisible: " + isVideoVisible() + " player state:" + currentConnection.getMediaCmd().getPlaya().getState() + " PAUSE: MiniPlayerPlugin.PAUSE_STATE;");
         }
 
         return isVideoVisible() && currentConnection.getMediaCmd().getPlaya().getState() == MiniPlayerPlugin.PAUSE_STATE;

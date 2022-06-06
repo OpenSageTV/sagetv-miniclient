@@ -1,3 +1,16 @@
+**1.11.0**
+- Made exoplayer playback error message more descriptive
+- Added retry on recoverable playback error
+- Disabled remux settings when stream mode is not fixed
+- Changed the method for getting version name and version code
+- Modified Jenkins local copy to publish changelist and name to directory
+- Added code for a Subtitle/Closed Caption selection list from the Navigation window
+- Rewrote the Android Media Session logic so that it can control playback for ExoPlayer and IJKPlayer
+- Added framework to the Jenkins build to do local deployments with ADB
+
+**1.10.1**
+- Fixed a bug where push/pull formats were not begin properly determined.
+
 **1.10.0 (1/6/2021)**
 - Added configuration screens for container and codec support that allows users to customize support
 - Updated ExoPlayer to version 2.16.1 and fixed all associated code that broke.  SimpleExoPlayer was removed in this release

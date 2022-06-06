@@ -3,26 +3,19 @@ package sagex.miniclient.media;
 import java.util.ArrayList;
 import java.util.List;
 
-public enum VideoCodec
+public enum SubtitleCodec
 {
-    MPEG1("MPEG1", "MPEG-1", new String[]{"MPEG1-VIDEO"}, "video/mpeg"),
-    MPEG2("MPEG2", "MPEG-2", new String[]{"MPEG2-VIDEO", "MPEG2-VIDEO@HL"}, "video/mpeg2"),
-    H263("H.263", "H.263", new String[]{"H.263"}, "video/3gpp"),
-    MPEG4("MPEG4", "MPEG-4", new String[]{"MPEG4-VIDEO", "MSMPEG4-VIDEO"}, "video/mp4v-es"),
-    H264("H.264", "Advanced Video Coding, MPEG-4 Part 10 (H.264)", new String[]{"H.264"}, "video/avc"),
-    VC1("VC1", "VC-1", new String[]{"VC1", "WMV7", "WMV8", "WMV9"}, "video/wvc1"),
-    HEVC("HEVC", "High Efficiency Video Coding, H.265 (HEVC)", new String[]{"HEVC"}, "video/hevc"),
-    MJPEG("MJPEG", "Motion JPEG (MJPEG)", new String[]{"MJPEG"}, ""),
-    VP8("VP8", "VP8", new String[]{"VP8"}, "video/x-vnd.on2.vp8"),
-    VP9("VP9", "VP9", new String[]{"VP9"}, "video/x-vnd.on2.vp9"),
-    UNKNOWN("UNKNOWN", "SageTV Unknown Codec (0X0000)", new String[]{"0X0000"}, "");
+    SUBRIP("SUBRIP", "SubRip Subtitles", new String[]{"SRT"}, "application/x-subrip"),
+    PGS("PGSSUB", "PGS Subtitle", new String[]{"PGSSUB"}, "application/pgs"),
+    CEA608("CEA-608", "cea-608 Closed Captions", new String[]{""}, "application/cea-608"),
+    CEA708("CEA-708", "cea-708 Closed Captions", new String[]{""}, "application/cea-708");
 
     private String name;
     private String [] sageTVNames;
     private String androidMimeType;
     private String description;
 
-    private VideoCodec(String name, String description, String [] sageTVNames, String androidMimeType)
+    private SubtitleCodec(String name, String description, String [] sageTVNames, String androidMimeType)
     {
         this.name = name;
         this.sageTVNames = sageTVNames;
@@ -82,7 +75,7 @@ public enum VideoCodec
 
     public static List<String> getAllSageTVNames()
     {
-        VideoCodec[] all = VideoCodec.values();
+        SubtitleCodec[] all = SubtitleCodec.values();
         List<String> list = new ArrayList<String>();
 
         for(int i = 0; i < all.length; i++)
@@ -94,5 +87,27 @@ public enum VideoCodec
         }
 
         return list;
+    }
+
+    public static SubtitleCodec parse(String mimeType)
+    {
+        if(mimeType.equalsIgnoreCase(SubtitleCodec.SUBRIP.getAndroidMimeType()))
+        {
+            return SubtitleCodec.SUBRIP;
+        }
+        else if(mimeType.equalsIgnoreCase(SubtitleCodec.PGS.getAndroidMimeType()))
+        {
+            return SubtitleCodec.PGS;
+        }
+        else if(mimeType.equalsIgnoreCase(SubtitleCodec.CEA608.getAndroidMimeType()))
+        {
+            return SubtitleCodec.CEA608;
+        }
+        else if(mimeType.equalsIgnoreCase(SubtitleCodec.CEA708.getAndroidMimeType()))
+        {
+            return SubtitleCodec.CEA708;
+        }
+
+        return null;
     }
 }

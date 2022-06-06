@@ -59,15 +59,19 @@ public class ServerInfoUtil {
         return true;
     }
 
-    public static void connect(Context ctx, ServerInfo si) {
-        try {
+    public static void connect(Context ctx, ServerInfo si)
+    {
+        try
+        {
             si.lastConnectTime = System.currentTimeMillis();
             si.save(MiniclientApplication.get().getClient().properties());
             MiniclientApplication.get().getClient().getServers().setLastConnectedServer(si);
 
             // connect to server
             Class start = MiniClientGDXActivity.class;
-            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.use_opengl_ui, true)) {
+
+            if (MiniclientApplication.get().getClient().properties().getBoolean(PrefStore.Keys.use_opengl_ui, true))
+            {
                 start = MiniClientOpenGLActivity.class;
             }
             Intent i = new Intent(ctx, start);
@@ -98,7 +102,9 @@ public class ServerInfoUtil {
             */
 
 
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.error("Unabled to launch MiniClient Connection to Server {}", si, t);
             Toast.makeText(ctx, "Failed to connect to server: " + t, Toast.LENGTH_LONG).show();
         }
