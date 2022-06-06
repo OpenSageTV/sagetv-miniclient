@@ -56,26 +56,7 @@ public class SettingsFragment extends PreferenceFragment
             
             //prefs.setEnabled(this, Prefs.Key.use_log_to_sdcard, !getResources().getBoolean(R.bool.istv));
 
-            Preference p = this.findPreference("jvl");
-
-            if(p != null)
-            {
-                p.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference)
-                    {
-                        FirebaseCrashlytics.getInstance().log("Look into this log message 1");
-                        FirebaseCrashlytics.getInstance().log("Look into this log message 2");
-                        FirebaseCrashlytics.getInstance().setUserId("jvl711");
-                        FirebaseCrashlytics.getInstance().setCustomKey("TestKey2", "Test Value2");
-                        //FirebaseCrashlytics.getInstance().recordException(new Exception("User generated report"));
-
-
-                        throw new RuntimeException("Test exception for crashlytics");
-                        //return true;
-                    }
-                });
-            }
+            Preference p;
 
             p = this.findPreference(Keys.exit_on_standby);
             if (p != null)

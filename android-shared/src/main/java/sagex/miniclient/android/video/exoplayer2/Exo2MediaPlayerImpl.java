@@ -34,6 +34,7 @@ import java.util.List;
 import sagex.miniclient.MiniPlayerPlugin;
 import sagex.miniclient.android.MiniclientApplication;
 import sagex.miniclient.android.ui.AndroidUIController;
+import sagex.miniclient.android.util.Logger;
 import sagex.miniclient.android.video.BaseMediaPlayerImpl;
 import sagex.miniclient.android.video.MediaSessionCallbackHandler;
 import sagex.miniclient.media.SubtitleCodec;
@@ -51,6 +52,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 
 public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSource>
 {
+    static final Logger log = Logger.getLogger(Exo2MediaPlayerImpl.class);
     static final int MAX_PLAYBACK_RETRY_COUNT = 12;
 
     private MediaSource mediaSource;
@@ -70,7 +72,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     private String url;
 
     MediaSessionCompat mediaSession;
-    //MediaSessionConnector mediaSessionConnector;
 
     private SubtitleView subView;
 
@@ -91,7 +92,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
         catch (Exception ex)
         {
-            log.error("Exception thrown getting playback position", ex);
+            log.logError("Unexpected error getting playback position", ex);
         }
         finally
         {
@@ -120,7 +121,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         }
         catch (Exception ex)
         {
-            log.error("Error setting playback position", ex);
+            log.logError("Unexpected error setting playback position", ex);
 
         }
         finally
@@ -146,7 +147,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             return;
         }
 
-        log.debug("Pause was called");
+        log.logInfo("Pause was called");
         player.setPlayWhenReady(false);
     }
 
@@ -156,7 +157,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         {
             return;
         }
-        log.debug("Start was called");
+        log.logDebug("Start was called");
         player.setPlayWhenReady(true);
     }
 
@@ -164,7 +165,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     {
         if(mediaSession != null)
         {
-            log.debug("Releaseing Android Media Session");
+            log.logDebug("Releaseing Android Media Session");
             mediaSession.setActive(false);
             mediaSession.release();
         }
@@ -185,7 +186,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
                     catch (Exception ex)
                     {
-                        log.error("Error pausing/stoppig video before releasing", ex);
+                        log.logError("Error pausing video during player releasing", ex);
                     }
 
                     try
@@ -194,7 +195,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
                     catch (Exception ex)
                     {
-                        log.error("Error calling release on player", ex);
+                        log.logError("Error calling release on player", ex);
                     }
 
                     player = null;
@@ -209,35 +210,25 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public Dimension getVideoDimensions()
     {
-        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-        {
-            log.debug("getVideoDimensions");
-        }
+        log.logDebug("getVideoDimensions");
+
         if (player != null)
         {
             if (player.getVideoFormat() != null)
             {
                 Dimension d = new Dimension(player.getVideoFormat().width, player.getVideoFormat().height);
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                {
-                    log.debug("getVideoSize(): {}", d);
-                }
+                log.logDebug("getVideoSize(): " + d);
+
                 return d;
             }
             else
             {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                {
-                    log.debug("getVideoDimensions: player.getFormat is null");
-                }
+                log.logDebug("getVideoDimensions: player.getFormat is null");
             }
         }
         else
         {
-            if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-            {
-                log.debug("getVideoDimensions: player is null");
-            }
+            log.logDebug("getVideoDimensions: player is null");
         }
         return null;
     }
@@ -251,14 +242,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         if (lastServerTime < 0)
         {
-            log.debug("Flush - Flush was called waiting for last serverTime to be > 0");
+            log.logDebug("getPlayerMediaTimeMillis(): Flush was called waiting for last serverTime to be > 0");
             return -1;
         }
 
-        //this.updateMediaSessionPlaybackState(lastServerTime + position);
-
         return lastServerTime + position;
-
     }
 
     @Override
@@ -269,7 +257,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void run()
             {
-                log.debug("Stop was called on player");
+                log.logDebug("Stop called");
                 if(player != null)
                 {
                     player.stop();
@@ -288,7 +276,6 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
 
                     player.setPlayWhenReady(false);
-
                 }
             }
         });
@@ -299,11 +286,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public void pause()
     {
-
+        log.logDebug("Pause called");
 
         if (this.getState() == MiniPlayerPlugin.PAUSE_STATE && !pushMode)
         {
-            log.debug("In pause state.  Seek frame instead...");
+            log.logDebug("Already in pause state.  Seeking frame instead...");
             //TODO: Could not find the framerate in ExoPlayer.  Going to assume 30fps for now.
             this.seek(this.getPlaybackPosition() + Math.round(1000.0 / 30.0));
             return;
@@ -330,6 +317,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public void play()
     {
+        log.logDebug("Play called");
+
         super.play();
 
         context.runOnUiThread(new Runnable()
@@ -358,7 +347,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 {
                     try
                     {
-                        log.debug("Seek - Called.  Current Position: {}  Seek Request: {} Difference: {}", player.getContentPosition(), timeInMillis, player.getContentPosition() - timeInMillis);
+                        log.logDebug("Seek Called - Current Position: " + player.getContentPosition() + "  Seek Request: " + timeInMillis + " Difference: " + (player.getContentPosition() - timeInMillis));
 
                         int wait = 0;
                         player.seekTo(timeInMillis);
@@ -366,7 +355,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                         //Wait up to a second for the seek to complete
                         while (player.getCurrentPosition() < timeInMillis && wait < 10)
                         {
-                            log.debug("Seek -  Waiting for current position to match Seek request.  Current Position: {}  Seek Request: {} ", player.getContentPosition(), timeInMillis);
+                            log.logDebug("Seek Called -  Waiting for current position to match Seek request.  Current Position: " + player.getContentPosition() + "  Seek Request: " + timeInMillis);
                             Thread.sleep(100);
                             wait++;
                         }
@@ -375,8 +364,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
                     catch (Exception ex)
                     {
-                        log.error("Error during seek request. Position MS: " + timeInMillis, ex);
-                        log.debug("Current playback position MS: " + timeInMillis);
+                        log.logError("Error during seek request. Position MS: " + timeInMillis, ex);
                     }
                 }
             });
@@ -393,7 +381,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
             //currentPlaybackPosition = 0; //Set this to zero during seek.  Lock will hopefully keep it at zero unti we are completed
 
-            log.debug("ExoLogging - pushmode {}, timeinMS {}, playerReady {}", pushMode, timeInMS, playerReady);
+            log.logDebug("Seek - pushmode: " + pushMode + ", timeinMS " + timeInMS + ", playerReady " + playerReady);
 
             super.seek(timeInMS);
 
@@ -407,10 +395,9 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
                     else
                     {
-                        if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                        {
-                            log.debug("Seek Resume(Player is Null) {}", timeInMS);
-                        }
+
+                        log.logDebug("Seek player is null storing position: " + timeInMS);
+
                         playbackStartPosition = timeInMS;
                     }
                 }
@@ -424,16 +411,14 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             }
             else
             {
-                if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                {
-                    log.debug("Seek Resume {}", timeInMS);
-                }
+
+                log.logDebug("Seek Resume: " + timeInMS);
                 playbackStartPosition = timeInMS;
             }
         }
         catch (Exception ex)
         {
-            log.debug("Exception thrown durring seek: " + ex.getMessage());
+            log.logError("Unexpected error during seek", ex);
             ex.printStackTrace();
         }
         finally
@@ -445,7 +430,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public void setSubtitleTrack(int streamPos)
     {
-        log.debug("Set Subtitle Track Called: {}", streamPos);
+        log.logDebug("Set Subtitle Track Called: " + streamPos);
 
         if (streamPos == Exo2MediaPlayerImpl.DISABLE_TRACK)
         {
@@ -490,7 +475,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
     @Override
     public synchronized void flush()
     {
-        log.debug("ExoLogging - Flush being called");
+        log.logDebug("Flush called");
         super.flush();
 
         context.runOnUiThread(new Runnable()
@@ -510,8 +495,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     player.setMediaSource(mediaSource, true);
                     player.prepare();
 
-                    log.debug("After Flush was called Current Playback Position: {}", Utils.toHHMMSS(player.getCurrentPosition()));
-
+                    log.logDebug("After Flush was called Current Playback Position: " + Utils.toHHMMSS(player.getCurrentPosition()));
                     Exo2MediaPlayerImpl.this.currentPlaybackPosition = player.getCurrentPosition();
                 }
                 catch (Exception ex)
@@ -542,23 +526,23 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         // VerboseLogUtil.setEnableAllTags(true);
 
         //if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-        log.debug("Setting up the Exo2 media player for: {}", sageTVurl);
+        log.logDebug("Setting up the Exo2 media player for: " + sageTVurl);
 
         if (pushMode)
         {
-            log.debug("Creating Exo2PushDataSource datasource");
+            log.logDebug("Creating Exo2PushDataSource datasource");
             dataSource = new Exo2PushDataSource();
         }
         else
         {
             if (!httpls)
             {
-                log.debug("Creating Exo2PullDataSource datasource");
+                log.logDebug("Creating datasource");
                 dataSource = new Exo2PullDataSource(context.getClient().getConnectedServerInfo().address);
             }
             else
             {
-                log.debug("Creating null datasource");
+                log.logDebug("Creating null datasource");
                 dataSource = null;
             }
         }
@@ -572,19 +556,19 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             switch (preferExtensionDecoders)
             {
                 case DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER:
-                    log.debug("Setting FFmpeg Extension to Prefer");
+                    log.logDebug("Setting FFmpeg Extension to Prefer");
                     renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
                     break;
                 case DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON:
-                    log.debug("Setting FFmpeg Extension to On");
+                    log.logDebug("Setting FFmpeg Extension to On");
                     renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
                     break;
                 case DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF:
-                    log.debug("Setting FFmpeg Extension to Off");
+                    log.logDebug("Setting FFmpeg Extension to Off");
                     renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
                     break;
                 default:
-                    log.debug("Defaulting FFmpeg Extension to On");
+                    log.logDebug("Defaulting FFmpeg Extension to On");
                     renderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
             }
         }
@@ -606,7 +590,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void onPlayerError(PlaybackException error)
             {
-                log.debug("PLAYER ERROR: " + error.getErrorCodeName());
+                log.logDebug("PLAYER ERROR: " + error.getErrorCodeName());
                 error.printStackTrace();
 
                 if (retryCount == 0)
@@ -626,6 +610,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 }
                 else
                 {
+                    log.logDebug("PLAYER ERROR: " + error.getErrorCodeName());
+                    log.logError("Playback Exception: " + error.getErrorCodeName(), error);
                     context.showErrorMessage("Max playback retry reached!", "Exo2MediaPlayer");
                 }
             }
@@ -635,35 +621,30 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             {
                 if (playbackState == Player.STATE_ENDED)
                 {
-                    log.debug("Player.STATE_ENDED - Calling stop");
-
-                    if (VerboseLogging.DETAILED_PLAYER_LOGGING)
-                    {
-                        log.debug("Player Has Ended, set EOS");
-                        //stop(); - JVL: Not sure if we will need to do this or not
-                    }
-
+                    log.logDebug("Player.STATE_ENDED");
+                    log.logDebug("Player Has Ended, set EOS");
+                    //stop(); - JVL: Not sure if we will need to do this or not
                     //notifySageTVStop();
                     eos = true;
                     state = Exo2MediaPlayerImpl.EOS_STATE;
                 }
                 if (playbackState == Player.STATE_READY)
                 {
-                    log.debug("Player.STATE_READY - Media loaded and ready for playback");
+                    log.logDebug("Player.STATE_READY - Media loaded and ready for playback");
                     if (errorState)
                     {
                         errorState = false;
                         retryCount = 0;
                     }
 
-                    log.debug("Player.STATE_READY - setAudioTrack getting called");
+                    log.logDebug("Player.STATE_READY - setAudioTrack getting called");
                     if (initialAudioTrackIndex != -1)
                     {
                         setAudioTrack(initialAudioTrackIndex);
                         initialAudioTrackIndex = -1;
                     }
 
-                    log.debug("Player.STATE_READY - Debugging available tracks in file");
+                    log.logDebug("Player.STATE_READY - Debugging available tracks in file");
                     debugAvailableTracks();
 
                     long duration = 0;
@@ -687,7 +668,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 {
                     if (errorState)
                     {
-                        log.debug("Player.STATE_IDLE - Error state is true, retry count " + retryCount);
+                        log.logDebug("Player.STATE_IDLE - Error state is true, retry count: " + retryCount);
                     }
                 }
 
@@ -722,7 +703,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                 if (VerboseLogging.DETAILED_PLAYER_LOGGING)
                 {
-                    log.debug("ExoPlayer.onVideoSizeChanged: {}x{}, pixel ratio: {}", width, height, pixelWidthHeightRatio);
+                    log.logDebug("ExoPlayer.onVideoSizeChanged: " + width + "x" + height + ", pixel ratio: " + pixelWidthHeightRatio);
                 }
 
                 // note if pixel ratio is != 0 then calc the ar and apply it.
@@ -772,11 +753,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             if (haveStartPosition)
             {
                 player.seekTo(playbackStartPosition);
-                log.debug("ExoLogging - Have start position");
-                log.debug("ExoLogging - Start Position: " + playbackStartPosition);
+                log.logDebug("ExoLogging - Have start position");
+                log.logDebug("ExoLogging - Start Position: " + playbackStartPosition);
             }
 
-            log.debug("ExoLogging - Preparing playback");
+            log.logDebug("ExoLogging - Preparing playback");
             //player.prepare(mediaSource, !haveStartPosition, false);
             player.setMediaSource(mediaSource, !haveStartPosition);
             player.prepare();
@@ -798,13 +779,13 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         if (VerboseLogging.DETAILED_PLAYER_LOGGING)
         {
-            log.debug("Video Player is online");
+            log.logDebug("Video Player is online");
         }
 
         this.playerReady = true;
         super.play();
 
-        log.debug("Creating handler");
+        log.logDebug("Creating handler");
         handler = new Handler();
 
 
@@ -840,7 +821,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                 if (trackSelector == null)
                 {
-                    log.trace("JVL - Track Selector Null");
+                    log.logTrace("Track Selector Null");
                     return;
                 }
 
@@ -848,7 +829,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                 if (trackInfo == null)
                 {
-                    log.trace("JVL - Track info null");
+                    log.logTrace("Track info null");
                     return;
                 }
 
@@ -862,7 +843,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                         parametersBuilder.setRendererDisabled(trackType, true); //This should set the track type to render true
 
                         trackSelector.setParameters(parametersBuilder);
-                        log.debug("JVL - Track change executed for disable: TrackType={} TrackGroup={} TrackIndex={}", trackType, trackGroup, trackIndex);
+                        log.logDebug("JVL - Track change executed for disable: TrackType=" + trackType + " TrackGroup=" + trackGroup + " TrackIndex=" + trackIndex);
                         selectedSubtitleTrack = DISABLE_TRACK;
                     }
                     else
@@ -877,19 +858,18 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                             parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
 
                             trackSelector.setParameters(parametersBuilder);
-                            log.debug("JVL - Track change executed: TrackType={} TrackGroup={} TrackIndex={}", trackType, trackGroup, trackIndex);
+                            log.logDebug("JVL - Track change executed: TrackType=" + trackType + " TrackGroup=" + trackGroup + " TrackIndex=" + trackIndex);
                             selectedSubtitleTrack = groupIndex;
                         }
                         else
                         {
-                            log.debug("ExoPlayer is unable to render the track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
+                            log.logDebug("Unable to render the track, TrackType= " + trackType + ", GroupIndex= " + groupIndex + ", TrackIndex= " + trackIndex);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    log.debug("ExoPlayer error changing track, TrackType {}, GroupIndex {}, TrackIndex {}", trackType, groupIndex, trackIndex);
-                    log.debug(ex.getMessage());
+                    log.logError("Error render the track, TrackType= " + trackType + ", GroupIndex= " + groupIndex + ", TrackIndex= " + trackIndex, ex);
                     ex.printStackTrace();
                 }
             }
@@ -908,7 +888,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         if (mappedTrackInfo == null)
         {
-            log.warn("No Mapped Track Info found");
+            log.logWarning("No Mapped Track Info found");
             return count;
         }
 
@@ -926,12 +906,12 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 {
                     if (mappedTrackInfo.getTrackSupport(RenderType, j, k) == C.FORMAT_HANDLED)
                     {
-                        log.debug("\t\t Format is handled");
+                        log.logDebug("Format is handled");
                         supported = true;
                     }
                     else
                     {
-                        log.debug("\t\t Format IS NOT HANDLED");
+                        log.logDebug("Format IS NOT HANDLED");
                     }
                 }
 
@@ -980,7 +960,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
         if (mappedTrackInfo == null)
         {
-            log.debug("JVL - No Mapped Track Info");
+            log.logWarning("No Mapped Track Info");
             return;
         }
 
@@ -988,7 +968,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
         {
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(i);
 
-            log.debug("JVL - Track Render Group {}", i);
+            log.logDebug("Track Render Group " + i);
 
             if (trackGroups.length != 0)
             {
@@ -998,17 +978,17 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 {
                     case C.TRACK_TYPE_AUDIO:
 
-                        log.debug("JVL - TRACK_TYPE_AUDIO");
+                        log.logDebug("TRACK_TYPE_AUDIO");
                         break;
 
                     case C.TRACK_TYPE_VIDEO:
 
-                        log.debug("JVL - TRACK_TYPE_VIDEO");
+                        log.logDebug("TRACK_TYPE_VIDEO");
                         break;
 
                     case C.TRACK_TYPE_TEXT:
 
-                        log.debug("JVL - TRACK_TYPE_TEXT");
+                        log.logDebug("TRACK_TYPE_TEXT");
                         break;
 
                     default:
@@ -1017,17 +997,17 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                 for (int j = 0; j < trackGroups.length; j++)
                 {
-                    log.debug("\t Track Group {}", j);
+                    log.logDebug("\t Track Group " + j);
 
                     for (int k = 0; k < trackGroups.get(j).length; k++)
                     {
                         Format format = trackGroups.get(j).getFormat(k);
 
-                        log.debug("\t\tTrack : " + k);
-                        log.debug("\t\tContainer MimeType: " + format.containerMimeType);
-                        log.debug("\t\tSample MimeType: " + format.sampleMimeType);
-                        log.debug("\t\tCodecs: " + format.codecs);
-                        log.debug("\t\tLanguage: " + format.language);
+                        log.logDebug("\t\tTrack : " + k);
+                        log.logDebug("\t\tContainer MimeType: " + format.containerMimeType);
+                        log.logDebug("\t\tSample MimeType: " + format.sampleMimeType);
+                        log.logDebug("\t\tCodecs: " + format.codecs);
+                        log.logDebug("\t\tLanguage: " + format.language);
 
 
                         if (player.getRendererType(i) == C.TRACK_TYPE_TEXT)
@@ -1049,11 +1029,11 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
 
                         if (player.getRendererType(i) == C.TRACK_TYPE_AUDIO)
                         {
-                            log.debug("\t\tChannel: " + format.channelCount);
-                            log.debug("\t\tBitrate: " + format.bitrate);
-                            log.debug("\t\tAverageBitrate: " + format.averageBitrate);
-                            log.debug("\t\tPeakBitrate: " + format.peakBitrate);
-                            log.debug("\t\tPCM Encoding: " + format.pcmEncoding);
+                            log.logDebug("\t\tChannel: " + format.channelCount);
+                            log.logDebug("\t\tBitrate: " + format.bitrate);
+                            log.logDebug("\t\tAverageBitrate: " + format.averageBitrate);
+                            log.logDebug("\t\tPeakBitrate: " + format.peakBitrate);
+                            log.logDebug("\t\tPCM Encoding: " + format.pcmEncoding);
 
                         }
 
@@ -1061,34 +1041,34 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                         {
                             if (format.colorInfo != null)
                             {
-                                log.debug("\t\tColor: " + format.colorInfo.toString());
+                                log.logDebug("\t\tColor: " + format.colorInfo.toString());
                             }
-                            log.debug("\t\tBitrate: " + format.bitrate);
-                            log.debug("\t\tAverageBitrate: " + format.averageBitrate);
-                            log.debug("\t\tPeakBitrate: " + format.peakBitrate);
-                            log.debug("\t\tFramerate: " + format.frameRate);
-                            log.debug("\t\tHeight: " + format.height);
-                            log.debug("\t\tWidth: " + format.width);
+                            log.logDebug("\t\tBitrate: " + format.bitrate);
+                            log.logDebug("\t\tAverageBitrate: " + format.averageBitrate);
+                            log.logDebug("\t\tPeakBitrate: " + format.peakBitrate);
+                            log.logDebug("\t\tFramerate: " + format.frameRate);
+                            log.logDebug("\t\tHeight: " + format.height);
+                            log.logDebug("\t\tWidth: " + format.width);
 
                         }
 
-                        log.debug("\t\tID: " + format.id);
-                        log.debug("\t\tLabel: " + format.label);
+                        log.logDebug("\t\tID: " + format.id);
+                        log.logDebug("\t\tLabel: " + format.label);
                         if (format.metadata != null)
                         {
-                            log.debug("\t\t\tMetadata length: " + format.metadata.length());
+                            log.logDebug("\t\t\tMetadata length: " + format.metadata.length());
                         }
 
 
                         if (mappedTrackInfo.getTrackSupport(i, j, k) == RendererCapabilities.FORMAT_HANDLED)
                         {
                             //Add debug info
-                            log.debug("\t\t Format is handled");
+                            log.logDebug("\t\t Format is handled");
                         }
                         else
                         {
                             //Add debug info
-                            log.debug("\t\t Format IS NOT HANDLED");
+                            log.logDebug("\t\t Format IS NOT HANDLED");
                         }
                     }
 
@@ -1097,7 +1077,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             }
             else
             {
-                log.debug("JVL - Track Group Empty");
+                log.logDebug("Track Group Empty");
             }
         }
     }
@@ -1121,7 +1101,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
                     catch (Exception ex)
                     {
-                        log.debug("Error adding SubTitleView: " + ex.getMessage());
+                        log.logError("Error adding SubTitleView: ", ex);
                     }
                 }
             });
@@ -1144,7 +1124,7 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                     }
                     catch (Exception ex)
                     {
-                        log.debug("Error removing SubTitleView: " + ex.getMessage());
+                        log.logError("Error removing SubTitleView ",  ex);
                     }
                     finally
                     {

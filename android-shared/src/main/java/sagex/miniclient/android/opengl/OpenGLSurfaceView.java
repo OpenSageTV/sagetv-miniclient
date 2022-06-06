@@ -18,6 +18,7 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         setRenderer(renderer);
         setZOrderOnTop(true);
         setZOrderMediaOverlay(true);
+        setPreserveEGLContextOnPause(true);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 }

@@ -20,7 +20,7 @@ def getBuildType()
 
         case "beta":
 
-            return "release"
+            return "debug"
 
         case "alpha":
 
@@ -92,7 +92,7 @@ def getReleaseToClients()
 
         case "beta":
 
-            return false
+            return true
 
         case "alpha":
 
