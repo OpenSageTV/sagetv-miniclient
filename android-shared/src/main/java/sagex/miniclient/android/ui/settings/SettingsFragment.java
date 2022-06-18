@@ -15,6 +15,8 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -43,6 +45,8 @@ public class SettingsFragment extends PreferenceFragment
     {
 
 
+
+
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.prefs);
 
@@ -51,8 +55,10 @@ public class SettingsFragment extends PreferenceFragment
             prefs = MiniclientApplication.get(getActivity()).getClient().properties();
             
             //prefs.setEnabled(this, Prefs.Key.use_log_to_sdcard, !getResources().getBoolean(R.bool.istv));
-            
-            Preference p = this.findPreference(Keys.exit_on_standby);
+
+            Preference p;
+
+            p = this.findPreference(Keys.exit_on_standby);
             if (p != null)
             {
                 p.setDefaultValue(true);
