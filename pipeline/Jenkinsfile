@@ -111,6 +111,7 @@ def getReleaseToClients()
 def getUninstallClient()
 {
     return false;
+    //This is a testing tesint g
 }
 
 def getReleaseToGooglePlay()
@@ -123,7 +124,7 @@ def getReleaseToGooglePlay()
 
         case "beta":
 
-            return true
+            return false
 
         case "alpha":
 
