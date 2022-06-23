@@ -2,7 +2,10 @@ package sagex.miniclient.android.video.exoplayer2;
 
 import android.net.Uri;
 
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSourceException;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.TransferListener;
 
@@ -19,9 +22,7 @@ import java.util.Map;
 import sagex.miniclient.net.BufferedPullDataSource;
 import sagex.miniclient.net.HasClose;
 
-/**
- * Created by seans on 10/12/15.
- */
+
 public class Exo2PullDataSource implements DataSource, HasClose
 {
     static final Logger log = LoggerFactory.getLogger(Exo2PullDataSource.class);
@@ -49,9 +50,21 @@ public class Exo2PullDataSource implements DataSource, HasClose
         this.uri = dataSpec.uri;
         long size = dataSource.open(dataSpec.uri.toString());
         this.startPos = dataSpec.position;
-        log.debug("Open: {}, Offset: {}", dataSource.getUri(), startPos);
-        return size;
+        log.debug("Open: Offset: {}, Requested Length: {}, Size: {}", startPos, dataSpec.length, size);
 
+        if(dataSpec.position == size)
+        {
+            log.debug("END OF INPUT");
+            return C.RESULT_END_OF_INPUT;
+        }
+        else if(dataSpec.position > size)
+        {
+            log.debug("IO_READ_POSITION_OUT_OF_RANGE");
+            DataSourceException ds = new DataSourceException(PlaybackException.ERROR_CODE_IO_READ_POSITION_OUT_OF_RANGE);
+            throw ds;
+        }
+
+        return size;
     }
 
     @Override
@@ -66,20 +79,21 @@ public class Exo2PullDataSource implements DataSource, HasClose
     @Override
     public int read(byte[] buffer, int offset, int readLength) throws IOException
     {
+
+        //log.debug("Byte buffer length: {}, Offset {}, readLength {}", buffer.length, offset, readLength);
+
         try
         {
             if (dataSource == null)
             {
-                log.debug("DATA SOURCE IS NULL");
+                //log.debug("DATA SOURCE IS NULL");
                 return 0;
             }
             int bytes = dataSource.read(startPos, buffer, offset, readLength);
 
-            //log.debug("Bytes: {}", bytes);
-
             if (bytes == -1)
             {
-                log.debug("DATA SOURCE RETURNED -1");
+                //log.debug("DATA SOURCE RETURNED -1");
                 return -1;
             }
             startPos += bytes;

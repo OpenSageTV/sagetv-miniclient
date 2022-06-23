@@ -69,8 +69,9 @@ import androidx.media.session.MediaButtonReceiver;
 /**
  * Created by seans on 20/09/15.
  */
-public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> implements MACAddressResolver, AndroidUIController {
-    
+public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> implements MACAddressResolver, AndroidUIController
+{
+
     public interface IActivityCallback<UIRenderType extends UIRenderer>
     {
         View createAndConfigureUIView(UIActivityLifeCycleHandler<UIRenderType> handler);
@@ -106,21 +107,24 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     protected Activity activity;
     protected IActivityCallback<UIRenderType> activityCallback;
 
-    public UIActivityLifeCycleHandler(IActivityCallback<UIRenderType> activityCallback) {
+    public UIActivityLifeCycleHandler(IActivityCallback<UIRenderType> activityCallback)
+    {
         this.activityCallback = activityCallback;
     }
 
-    public void onWindowFocusChanged (boolean hasFocus)
+    public void onWindowFocusChanged(boolean hasFocus)
     {
         AppUtil.hideSystemUI(activity);
     }
 
-    public MiniClient getClient() {
+    public MiniClient getClient()
+    {
         return client;
     }
 
 
-    public void onResume(Activity activity) {
+    public void onResume(Activity activity)
+    {
         this.activity = activity;
 
         log.debug("MiniClient UI onResume() called");
@@ -132,75 +136,102 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
 
         MiniClientKeyListener keyListener = new MiniClientKeyListener(activity, client, UIActivityLifeCycleHandler.this);
 
-        try {
+        try
+        {
             miniClientView.setOnTouchListener(new MiniclientTouchListener(activity, client));
             miniClientView.setOnKeyListener(keyListener);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.error("Failed to restore the key and touch handlers");
         }
 
-        try {
-            if (client.getUIRenderer() != null && client.getUIRenderer().isFirstFrameRendered() && mgr.getUISize().width > 0 && mgr.getUISize().height > 0) {
+        try
+        {
+            if (client.getUIRenderer() != null && client.getUIRenderer().isFirstFrameRendered() && mgr.getUISize().width > 0 && mgr.getUISize().height > 0)
+            {
                 log.debug("Telling SageTV to repaint {}x{}", mgr.getUISize().getWidth(), mgr.getUISize().getHeight());
                 client.getCurrentConnection().postRepaintEvent(0, 0, mgr.getUISize().getWidth(), mgr.getUISize().getHeight());
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.warn("Failed to do a repaint event on refresh");
         }
 
         hideSystemUI(activity);
     }
 
-    public void onPause(Activity activity) {
+    public void onPause(Activity activity)
+    {
         // remove ourself from handling events
         client.eventbus().unregister(this);
 
-        try {
+        try
+        {
             miniClientView.setOnTouchListener(null);
             miniClientView.setOnKeyListener(null);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
         }
 
         log.debug("MiniClient UI onPause() called");
-        try {
+        try
+        {
             // pause video if we are leaving the app
-            if (client.getCurrentConnection() != null && client.getCurrentConnection().getMediaCmd() != null) {
-                if (client.getCurrentConnection().getMediaCmd().getPlaya() != null) {
+            if (client.getCurrentConnection() != null && client.getCurrentConnection().getMediaCmd() != null)
+            {
+                if (client.getCurrentConnection().getMediaCmd().getPlaya() != null)
+                {
                     log.info("We are leaving the App, Make sure Video is stopped.");
                     client.getCurrentConnection().getMediaCmd().getPlaya().pause();
                     EventRouter.postCommand(client, SageCommand.STOP);
                 }
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.debug("Failed why attempting to pause media player");
         }
-        try {
-            if (client.properties().getBoolean(Keys.app_destroy_on_pause, true)) {
-                try {
+        try
+        {
+            if (client.properties().getBoolean(Keys.app_destroy_on_pause, true))
+            {
+                try
+                {
                     client.closeConnection();
-                } catch (Throwable t) {
+                }
+                catch (Throwable t)
+                {
                 }
                 finish();
-            } else {
+            }
+            else
+            {
                 // TODO: Try to free up memory, clear caches, etc
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.debug("Failed to close client connection");
         }
     }
 
-    public void onCreate(Activity activity) {
+    public void onCreate(Activity activity)
+    {
         this.activity = activity;
-        try {
-            initMediaSession();
-
+        try
+        {
             hideSystemUI(activity);
 
             activity.setContentView(activityCallback.getLayoutViewId(this));
 
-            activity.findViewById(R.id.errorClose).setOnClickListener(new View.OnClickListener() {
+            activity.findViewById(R.id.errorClose).setOnClickListener(new View.OnClickListener()
+            {
                 @Override
-                public void onClick(View v) {
+                public void onClick(View v)
+                {
                     onCloseClicked();
                 }
             });
@@ -215,8 +246,7 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
             errorCause = (TextView) activity.findViewById(R.id.errorCause);
             errorContainer = (ViewGroup) activity.findViewById(R.id.errorContainer);
 
-            
-            
+
             client = MiniclientApplication.get().getClient();
 
             mgr = activityCallback.createUIRenderer(this);
@@ -237,7 +267,8 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
             miniClientView.requestFocus();
 
             ServerInfo si = (ServerInfo) activity.getIntent().getSerializableExtra(ARG_SERVER_INFO);
-            if (si == null) {
+            if (si == null)
+            {
                 log.error("Missing SERVER INFO in Intent: {}", ARG_SERVER_INFO);
                 finish();
                 return;
@@ -245,9 +276,12 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
 
             //setupNavigationDrawer();
             String connect = null;
-            if (si.isLocatorOnly() || si.forceLocator) {
+            if (si.isLocatorOnly() || si.forceLocator)
+            {
                 connect = activity.getString(R.string.msg_connecting_locator, si.name);
-            } else {
+            }
+            else
+            {
                 connect = activity.getString(R.string.msg_connecting, si.name);
             }
             plaseWaitText.setText(connect);
@@ -255,56 +289,41 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
 
             startMiniClient(si);
             //VideoPlayerCaptions.
-            
-        } catch (Throwable t) {
+
+        }
+        catch (Throwable t)
+        {
             log.error("Failed to start/create the Main Activity for the MiniClient UI", t);
-            runOnUiThread(new Runnable() {
+            runOnUiThread(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     setErrorView(null, "MiniClient failed to initialize", null);
                 }
             });
         }
     }
 
-    void initMediaSession() {
-        // NOTE: all this is so that when you press pause/play in the app, we can capture the
-        // media control event, so that other apps DON'T (ie, google play music, plex, etc).
-        // ideally we could do something useful with this, but for not, just eat it.
-
-        try {
-            ComponentName mediaButtonReceiver = new ComponentName(activity.getApplicationContext(), MediaButtonReceiver.class);
-            mediaSessionCompat = new MediaSessionCompat(activity.getApplicationContext(), "SAGETVMINICLIENT", mediaButtonReceiver, null);
-            mediaSessionCompat.setCallback(new MediaSessionCompat.Callback() {
-                @Override
-                public void onCommand(String command, Bundle extras, ResultReceiver cb) {
-                    log.debug("Audio Session Callback Handler: Command {}", command);
-                }
-            });
-            mediaSessionCompat.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS);
-
-            Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-            mediaButtonIntent.setClass(activity, MediaButtonReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 0, mediaButtonIntent, 0);
-            mediaSessionCompat.setMediaButtonReceiver(pendingIntent);
-            mediaSessionCompat.setActive(true);
-            log.debug("Media Session is setup to capture pause/play. session: " + mediaSessionCompat.getSessionToken());
-        } catch (Throwable t) {
-            log.error("Failed to capture the media session", t);
-        }
-    }
-
-    public void startMiniClient(final ServerInfo si) {
-        Thread t = new Thread("ANDROID-MINICLIENT") {
+    public void startMiniClient(final ServerInfo si)
+    {
+        Thread t = new Thread("ANDROID-MINICLIENT")
+        {
             @Override
-            public void run() {
-                try {
+            public void run()
+            {
+                try
+                {
                     // cannot make network connections on the main thread
                     client.connect(si, UIActivityLifeCycleHandler.this);
-                } catch (final IOException e) {
-                    runOnUiThread(new Runnable() {
+                }
+                catch (final IOException e)
+                {
+                    runOnUiThread(new Runnable()
+                    {
                         @Override
-                        public void run() {
+                        public void run()
+                        {
                             setErrorView(si, "Unable to connect", e.getMessage());
                         }
                     });
@@ -332,7 +351,7 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
             }
         });
     }
-    
+
     private void setErrorView(ServerInfo si, String message, String cause)
     {
         plaseWaitText.setVisibility(View.GONE);
@@ -351,31 +370,44 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     {
         log.debug("Closing MiniClient Connection");
 
-        if (mediaSessionCompat != null) {
-            try {
+        if (mediaSessionCompat != null)
+        {
+            try
+            {
                 mediaSessionCompat.setActive(false);
                 mediaSessionCompat.release();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
                 t.printStackTrace();
             }
         }
 
-        try {
+        try
+        {
 
             client.closeConnection();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.error("Error shutting down client", t);
         }
     }
 
-    public void setConnectingIsVisible(final boolean connectingIsVisible) {
-        runOnUiThread(new Runnable() {
+    public void setConnectingIsVisible(final boolean connectingIsVisible)
+    {
+        runOnUiThread(new Runnable()
+        {
             @Override
-            public void run() {
-                if (connectingIsVisible) {
+            public void run()
+            {
+                if (connectingIsVisible)
+                {
                     errorContainer.setVisibility(View.GONE);
                     pleaseWait.setVisibility(View.VISIBLE);
-                } else {
+                }
+                else
+                {
                     // hiding connecting is visible
                     //YoYo.with(Techniques.FadeOutLeft).duration(700).playOn(pleaseWait);
                     errorContainer.setVisibility(View.GONE);
@@ -390,7 +422,8 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     {
         // Android 6 generates the same MAC address, so let's outgenerate one
         String id = client.properties().getString(Keys.client_id);
-        if (id == null) {
+        if (id == null)
+        {
             ClientIDGenerator gen = new ClientIDGenerator();
             id = gen.generateId();
             client.properties().setString(Keys.client_id, id);
@@ -399,15 +432,18 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         //return AppUtil.getMACAddress(this);
     }
 
-    public PlayerSurfaceView getVideoView() {
-        if (videoHolder == null) {
+    public PlayerSurfaceView getVideoView()
+    {
+        if (videoHolder == null)
+        {
             setupVideoFrame();
         }
         return videoHolder;
     }
 
     @Override
-    public View getUIView() {
+    public View getUIView()
+    {
         return miniClientView;
     }
 
@@ -415,9 +451,10 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     {
         return this.plaseWaitText;
     }
-    
+
     @Override
-    public Context getContext() {
+    public Context getContext()
+    {
         return activity;
     }
 
@@ -425,15 +462,17 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     {
         return this.keyboardVisible;
     }
-    
-    public void showHideKeyboard(final boolean visible) {
 
-        miniClientView.postDelayed(new Runnable() {
+    public void showHideKeyboard(final boolean visible)
+    {
+
+        miniClientView.postDelayed(new Runnable()
+        {
             @Override
             public void run()
             {
                 InputMethodManager im = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            
+
                 if (visible)
                 {
                     log.debug("Showing Keyboard");
@@ -450,106 +489,141 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         }, 200);
     }
 
-    public void showHideSoftRemote(boolean visible) {
-        if (visible) {
+    public void showHideSoftRemote(boolean visible)
+    {
+        if (visible)
+        {
             showNavigationDialog();
-        } else {
+        }
+        else
+        {
             hideNavigationDialog();
         }
     }
 
-    void showNavigationDialog() {
+    void showNavigationDialog()
+    {
         NavigationFragment.showDialog(activity);
     }
 
-    public void leftEdgeSwipe(MotionEvent event) {
+    public void leftEdgeSwipe(MotionEvent event)
+    {
         log.debug("Left Edge Swipe");
     }
 
-    public View getRootView() {
+    public View getRootView()
+    {
         return miniClientView;
     }
 
     @Subscribe
-    public void handleOnShowKeyboard(ShowKeyboardEvent event) {
+    public void handleOnShowKeyboard(ShowKeyboardEvent event)
+    {
         showHideKeyboard(true);
     }
 
     @Subscribe
-    public void handleOnHideKeyboard(HideKeyboardEvent event) {
+    public void handleOnHideKeyboard(HideKeyboardEvent event)
+    {
         showHideKeyboard(false);
     }
 
     @Subscribe
-    public void handleOnHideSystemUI(HideSystemUIEvent event) {
+    public void handleOnHideSystemUI(HideSystemUIEvent event)
+    {
         hideSystemUI(activity);
     }
 
     @Subscribe
-    public void handleOnShowNavigation(ShowNavigationEvent event) {
-        try {
+    public void handleOnShowNavigation(ShowNavigationEvent event)
+    {
+        try
+        {
             log.debug("MiniClient built-in Naviation is visible");
             showHideSoftRemote(true);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.debug("Failed to show navigation");
         }
     }
 
     @Subscribe
-    public void handleVideoInfoRequest(VideoInfoShow request) {
-        if (client.getUIRenderer() instanceof HasVideoInfo) {
+    public void handleVideoInfoRequest(VideoInfoShow request)
+    {
+        if (client.getUIRenderer() instanceof HasVideoInfo)
+        {
             hideNavigationDialog();
             VideoInfoFragment.showDialog(activity);
         }
     }
 
     @Subscribe
-    public void handleOnHideNavigation(HideNavigationEvent event) {
-        try {
+    public void handleOnHideNavigation(HideNavigationEvent event)
+    {
+        try
+        {
             log.debug("MiniClient built-in Naviation is hidden");
             showHideSoftRemote(false);
             hideSystemUI(activity);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             log.debug("Failed to hide navigation");
         }
     }
 
     @Subscribe
-    public void handleOnCloseApp(CloseAppEvent event) {
-        confirmExit(activity, new View.OnClickListener() {
+    public void handleOnCloseApp(CloseAppEvent event)
+    {
+        confirmExit(activity, new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 activity.finish();
             }
         });
     }
 
     @Subscribe
-    public void handleOnConnectionLost(ConnectionLost event) {
-        if (event.reconnecting) {
+    public void handleOnConnectionLost(ConnectionLost event)
+    {
+        if (event.reconnecting)
+        {
             message("SageTV Connection Closed.  Reconnecting...");
-        } else {
+        }
+        else
+        {
             message("SageTV Connection Closed.");
             finish();
         }
     }
 
-    boolean hideNavigationDialog() {
+    boolean hideNavigationDialog()
+    {
         log.debug("Hiding Navigation");
         // remove nav OSD
         Fragment prev = activity.getFragmentManager().findFragmentByTag("nav");
         FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
         boolean hidingOSD = false;
-        if (prev != null) {
-            try {
+        if (prev != null)
+        {
+            try
+            {
                 DialogFragment f = (DialogFragment) prev;
                 f.dismiss();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
             }
             hidingOSD = true;
-            try {
+            try
+            {
                 ft.remove(prev);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t)
+            {
             }
         }
         ft.commit();
@@ -559,38 +633,46 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     }
 
     @Subscribe
-    public void handleOnBackPressed(BackPressedEvent event) {
+    public void handleOnBackPressed(BackPressedEvent event)
+    {
         hideSystemUI(activity);
 
         // prevents multiple back events from firing form different key handlers
         log.debug("on back pressed event");
 
-        if (hideNavigationDialog()) {
+        if (hideNavigationDialog())
+        {
             log.debug("Just hiding navigation");
             KeyMapProcessor.skipBackOneTime = true;
-        } else {
+        }
+        else
+        {
             // log.debug("Navigation wasn't visible so will process normal back");
             //EventRouter.postCommand(client, SageCommand.BACK);
         }
     }
 
     @Subscribe
-    public void onDeadEvent(DeadEvent event) {
+    public void onDeadEvent(DeadEvent event)
+    {
         log.debug("Unhandled Event: {} -- source: {}", event.event, event.source);
     }
 
-    public void setupVideoFrame() {
+    public void setupVideoFrame()
+    {
         log.debug("Setting up the Video Frame");
         videoHolder.setVisibility(View.VISIBLE);
     }
 
     @Subscribe
-    public void onChangePlayerOneTime(ChangePlayerOneTime changePlayerOneTime) {
+    public void onChangePlayerOneTime(ChangePlayerOneTime changePlayerOneTime)
+    {
         this.changePlayerOneTime = changePlayerOneTime;
     }
 
     @Subscribe
-    public void onToggleAspectRatio(ToggleAspectRatioEvent ar) {
+    public void onToggleAspectRatio(ToggleAspectRatioEvent ar)
+    {
         log.debug("SENDING AR_TOGGLE: " + SageCommand.AR_TOGGLE);
         EventRouter.postCommand(client, SageCommand.AR_TOGGLE);
     }
@@ -601,20 +683,27 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
      *
      * @return
      */
-    public boolean isSwitchingPlayerOneTime() {
+    public boolean isSwitchingPlayerOneTime()
+    {
         boolean change = changePlayerOneTime != null;
         changePlayerOneTime = null;
         return change;
     }
 
     @Subscribe
-    public void onMessage(final MessageEvent event) {
-        runOnUiThread(new Runnable() {
+    public void onMessage(final MessageEvent event)
+    {
+        runOnUiThread(new Runnable()
+        {
             @Override
-            public void run() {
-                try {
+            public void run()
+            {
+                try
+                {
                     Toast.makeText(activity, event.getMessage(), Toast.LENGTH_LONG).show();
-                } catch (Throwable t) {
+                }
+                catch (Throwable t)
+                {
                     log.error("MESSAGE: {}", event.getMessage());
                 }
             }
@@ -624,9 +713,11 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     DebugKeyPressWindow debugKeyWindow;
 
     @Subscribe
-    public void onDebugKey(final DebugKeyEvent event) {
+    public void onDebugKey(final DebugKeyEvent event)
+    {
         log.debug("DEBUG KEY: {}", event.fieldName);
-        if (debugKeyWindow == null) {
+        if (debugKeyWindow == null)
+        {
             log.debug("Creating debugKeyWindow");
             debugKeyWindow = new DebugKeyPressWindow();
         }
@@ -636,9 +727,11 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     }
 
     @Subscribe
-    public void onDebugKey(final DebugSageCommandEvent event) {
+    public void onDebugKey(final DebugSageCommandEvent event)
+    {
         log.debug("DEBUG SageCommand: {}", event.command.getDisplayName());
-        if (debugKeyWindow == null) {
+        if (debugKeyWindow == null)
+        {
             log.debug("Creating debugKeyWindow");
             debugKeyWindow = new DebugKeyPressWindow();
         }
@@ -647,12 +740,14 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
         debugKeyWindow.showSageCommand(event.command);
     }
 
-    public ViewGroup getVideoViewParent() {
+    public ViewGroup getVideoViewParent()
+    {
         return videoHolderParent;
     }
 
     // @OnClick(R.id.errorClose)
-    public void onCloseClicked() {
+    public void onCloseClicked()
+    {
         // connect to server
 //        if (getResources().getBoolean(R.bool.istv)) {
         finish();
@@ -665,10 +760,13 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
 
     }
 
-    public void removeVideoFrame() {
-        runOnUiThread(new Runnable() {
+    public void removeVideoFrame()
+    {
+        runOnUiThread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
                 log.debug("Removing Video View");
                 //videoHolderFrame.removeAllViews();
                 videoHolder.setVisibility(View.GONE);
@@ -677,24 +775,28 @@ public class UIActivityLifeCycleHandler<UIRenderType extends UIRenderer> impleme
     }
 
     @Override
-    public void finish() {
+    public void finish()
+    {
         activity.finish();
     }
 
     @Override
-    public Object getSystemService(String windowService) {
+    public Object getSystemService(String windowService)
+    {
         return activity.getSystemService(windowService);
     }
 
     @Override
-    public void runOnUiThread(Runnable runnable) {
+    public void runOnUiThread(Runnable runnable)
+    {
         activity.runOnUiThread(runnable);
     }
 
-    public UIRenderType getUIRenderer() {
+    public UIRenderType getUIRenderer()
+    {
         return mgr;
     }
-    
+
     public TextView getCaptionsText()
     {
         return this.captionsText;

@@ -319,7 +319,7 @@
                 <GridLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:columnCount="3"
+                    android:columnCount="4"
                     android:rowCount="1">
 
                     <ImageView
@@ -345,6 +345,15 @@
                         android:layout_row="0"
                         android:src="@drawable/ic_vid_info_white_24dp"
                         android:tag="video_info"/>
+
+                    <ImageView
+                        android:visibility="visible"
+                        android:id="@+id/nav_closed_captions"
+                        style="@style/NavIconButton"
+                        android:layout_column="3"
+                        android:layout_row="0"
+                        android:src="@drawable/ic_closed_caption_white_24dp"
+                        android:tag="closed_captions"/>
 
                 </GridLayout>
 

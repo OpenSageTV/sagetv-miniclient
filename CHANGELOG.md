@@ -1,3 +1,20 @@
+**1.12.0**
+- Update exoplayer to 2.17.1
+- Bug fixes with Android Media Session logic that was causing random crashes
+- Added firebase Crashlytics Reporting (Only works on google devices)
+- Added configuration item to allow for disabling Crashlytics reporting
+- Added configuration item to allow for setting username in Crashlytics reports
+
+**1.11.0 (4/27/2022)**
+- Made exoplayer playback error message more descriptive
+- Added retry on recoverable playback error
+- Disabled remux settings when stream mode is not fixed
+- Changed the method for getting version name and version code
+- Modified Jenkins local copy to publish changelist and name to directory
+- Added code for a Subtitle/Closed Caption selection list from the Navigation window
+- Rewrote the Android Media Session logic so that it can control playback for ExoPlayer and IJKPlayer
+- Added framework to the Jenkins build to do local deployments with ADB
+
 **1.10.1**
 - Fixed a bug where push/pull formats were not begin properly determined.
 

@@ -15,9 +15,6 @@
  */
 package sagex.miniclient;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -27,6 +24,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import sagex.miniclient.events.ConnectionLost;
+import sagex.miniclient.logging.ILogger;
 import sagex.miniclient.media.Container;
 import sagex.miniclient.media.VideoCodec;
 import sagex.miniclient.prefs.PrefStore;
@@ -219,7 +217,8 @@ public class MiniClientConnection implements SageTVInputCallback
     public static final int FSCMD_UPLOAD_FILE = 71;
     // pathlen, path
     public static final int FSCMD_DELETE_FILE = 72;
-    private static final Logger log = LoggerFactory.getLogger(MiniClientConnection.class);
+
+    public ILogger log;
     // private static final int PUSH_BUFFER_LIMIT = 32 * 1024;
     // pathlen, path
     // 64-bit return value
@@ -308,8 +307,9 @@ public class MiniClientConnection implements SageTVInputCallback
     private MenuHint menuHint = new MenuHint();
     private Properties profileProperties;
 
-    public MiniClientConnection(MiniClient client, String myID, ServerInfo msi)
+    public MiniClientConnection(MiniClient client, String myID, ServerInfo msi, ILogger log)
     {
+        this.log = log;
         this.client = client;
         currentCrypto = client.getCryptoFormats();
 
@@ -341,7 +341,7 @@ public class MiniClientConnection implements SageTVInputCallback
         this.myID = myID;
 
         if (msi.macAddress!=null && !msi.macAddress.trim().isEmpty()) {
-            log.info("Overriding CLIENT ID with Connection Specific ID: Old ID: {}; New ID: {}", myID, msi.macAddress);
+            log.logInfo("Overriding CLIENT ID with Connection Specific ID: Old ID: " + myID + " New ID: " + msi.macAddress);
             this.myID = msi.macAddress;
         }
 
@@ -380,7 +380,6 @@ public class MiniClientConnection implements SageTVInputCallback
         }
         catch (Exception e)
         {
-            log.error("putString()", e);
             e.printStackTrace();
         }
     }
@@ -407,7 +406,7 @@ public class MiniClientConnection implements SageTVInputCallback
         java.io.InputStream inStream = null;
         java.io.OutputStream outStream = null;
         try {
-            log.info("Establishing Server Connection {} for Connection Type: {}", msi, connType);
+            log.logInfo("Establishing Server Connection " + msi + " for Connection Type: " + connType);
             sake = new java.net.Socket();
             sake.connect(new java.net.InetSocketAddress(msi.address, msi.port), 30000);
             sake.setSoTimeout(30000);
@@ -422,7 +421,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 myID = client.getMACAddress();
             }
 
-            log.info("Establishing Server Connection using Client ID '{}'", myID);
+            log.logInfo("Establishing Server Connection using Client ID: " + myID);
 
             if (myID != null) {
                 int len = Math.min((msg.length - 1) * 3, myID.length());
@@ -430,22 +429,22 @@ public class MiniClientConnection implements SageTVInputCallback
                     msg[1 + i / 3] = (byte) (Integer.parseInt(myID.substring(i, i + 2), 16) & 0xFF);
                 }
             }
-            log.info("Establishing Server Connection using Client ID '{}'", msg);
+            log.logInfo("Establishing Server Connection using Client ID: " + msg);
             outStream.write(msg);
             outStream.write(connType);
             int rez = inStream.read();
             if (rez != 2) {
-                log.error("Error with reply from server: {}", rez);
+                log.logError("Error with reply from server: " + rez);
                 inStream.close();
                 outStream.close();
                 sake.close();
                 return null;
             }
-            log.info("Connection accepted by server: {}", msi);
+            log.logInfo("Connection accepted by server: " + msi);
             sake.setSoTimeout(0);
             return sake;
         } catch (java.io.IOException e) {
-            log.error("ERROR with socket connection", e);
+            log.logError("ERROR with socket connection", e);
             try {
                 if (sake!=null)
                     sake.close();
@@ -471,12 +470,12 @@ public class MiniClientConnection implements SageTVInputCallback
         if (client.getCurrentConnection() != null) {
             // TODO: We should check if the connection is the same as this one, if so, then just use this connection.
             if (client.getCurrentConnection() != this) {
-                log.warn("We already have server connection.  Shutting it down before connecting with this one.");
+                log.logWarning("We already have server connection.  Shutting it down before connecting with this one.");
                 client.getCurrentConnection().close();
             }
         }
 
-        log.info("Connecting to media server at {}", msi);
+        log.logInfo("Connecting to media server at" + msi);
         while (mediaSocket == null) {
             mediaSocket = EstablishServerConnection(1);
             if (mediaSocket == null) {
@@ -486,9 +485,9 @@ public class MiniClientConnection implements SageTVInputCallback
                 throw new java.net.ConnectException();
             }
         }
-        log.info("Connected to media server {}", msi);
+        log.logInfo("Connected to media server: " + msi);
 
-        log.info("Connecting to ui server at {}", msi);
+        log.logInfo("Connecting to ui server at: " + msi);
         while (gfxSocket == null) {
             gfxSocket = EstablishServerConnection(0);
             if (gfxSocket == null) {
@@ -498,7 +497,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 throw new java.net.ConnectException();
             }
         }
-        log.info("Connected to gfx server {}", msi);
+        log.logInfo("Connected to gfx server: " + msi);
 
         client.setCurrentConnection(this);
 
@@ -531,8 +530,9 @@ public class MiniClientConnection implements SageTVInputCallback
 
     Properties loadProperties(String resourceName) {
         InputStream is = MiniClientConnection.class.getClassLoader().getResourceAsStream(resourceName);
-        if (is==null) {
-            log.warn("Didn't Resolve Profile Name for {}", resourceName);
+        if (is==null)
+        {
+            log.logWarning("Didn't Resolve Profile Name for: " + resourceName);
             throw new RuntimeException("Missing resource " + resourceName);
         }
         Properties prop = new Properties();
@@ -617,16 +617,16 @@ public class MiniClientConnection implements SageTVInputCallback
 
         try
         {
-            log.info("Testing to see if server can do a pull mode streaming connection at {}:{}...", msi.address, 7818);
+            log.logInfo("Testing to see if server can do a pull mode streaming connection at: " + msi.address + ":7818...");
             java.net.Socket mediaTest = new java.net.Socket();
             mediaTest.connect(new java.net.InetSocketAddress(msi.address, 7818), 2000);
             mediaTest.close();
             canDoPullStreaming = true;
-            log.info("Server can do a pull-mode streaming connection at {}:{}", msi.address, 7818);
+            log.logInfo("Server can do a pull-mode streaming connection at: " +  msi.address + ":7818");
         }
         catch (Exception e)
         {
-            log.warn("Failed pull mode media test....only use push mode for server {}", msi.address);
+            log.logWarning("Failed pull mode media test....only use push mode for server: " + msi.address);
         }
 
         try
@@ -695,7 +695,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             {
                                 performingReconnect = true;
                                 enabledzip = false;
-                                log.error("GFX channel detected a connection error and we're in a mode that allows reconnect...try to reconnect to the server now", e);
+                                log.logError("GFX channel detected a connection error and we're in a mode that allows reconnect...try to reconnect to the server now", e);
                                 try
                                 {
                                     myStream.close();
@@ -729,11 +729,11 @@ public class MiniClientConnection implements SageTVInputCallback
                                         myStream = new java.io.DataInputStream(zs);
                                         enabledzip = true;
                                     }
-                                    log.info("Done doing server reconnect...continue on our merry way!");
+                                    log.logInfo("Done doing server reconnect...continue on our merry way!");
                                 }
                                 catch (Exception e1)
                                 {
-                                    log.error("Failure in reconnecting to server...abort the client", e1);
+                                    log.logError("Failure in reconnecting to server...abort the client", e1);
                                     performingReconnect = false;
 
                                     if (client!=null)
@@ -808,7 +808,7 @@ public class MiniClientConnection implements SageTVInputCallback
                     switch (cmd[0] & 0xFF)
                     {
                         case 0x80: // New video
-                            log.debug("NOT IMPLEMENTED(0x80): Video cmd {}", (cmd[0] & 0xFF));
+                            log.logDebug("NOT IMPLEMENTED(0x80): Video cmd: " + (cmd[0] & 0xFF));
                             videowidth = getInt(data, 0);
                             videoheight = getInt(data, 4);
                             videoformat = getInt(data, 8);
@@ -823,7 +823,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             putInt(data, 4 + mappedfname.length() + 20, videowidth / 2); // pitchV
                             break;
                         case 0x81: // New frame
-                            log.debug("NOT IMPLEMENTED(0x81): New Frame command");
+                            log.logDebug("NOT IMPLEMENTED(0x81): New Frame command");
                             videoframetype = getInt(data, 0);
                             myGfx.updateVideo(videoframetype, mappedVideo);
                             putInt(data, 0, 0); // offsetY
@@ -890,6 +890,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             }
                             catch (Throwable e)
                             {
+                                log.recordException(e);
                                 eventChannelError();
                             }
                         }
@@ -1027,7 +1028,7 @@ public class MiniClientConnection implements SageTVInputCallback
                     else if ("AUTH_CACHE".equals(propName))
                     {
                         propVal = (msi != null) ? "TRUE" : "";
-                        log.debug("AUTH_CACHE Called: {}", propVal);
+                        log.logDebug("AUTH_CACHE Called: " + propVal);
 
                     }
                     else if ("GET_CACHED_AUTH".equals(propName))
@@ -1041,7 +1042,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         {
                             propVal = "";
                         }
-                        log.debug("GET_CACHED_AUTH Called: {}", propVal);
+                        log.logDebug("GET_CACHED_AUTH Called: " + propVal);
                     }
                     else if ("REMOTE_FS".equals(propName))
                     {
@@ -1270,7 +1271,7 @@ public class MiniClientConnection implements SageTVInputCallback
                                 }
                                 catch (Exception e)
                                 {
-                                    log.error("Error encrypting data to submit to server", e);
+                                    log.logError("Error encrypting data to submit to server", e);
                                 }
                             }
                             else
@@ -1286,7 +1287,7 @@ public class MiniClientConnection implements SageTVInputCallback
                                 javax.crypto.spec.DHParameterSpec dhParamSpec = ((javax.crypto.interfaces.DHPublicKey) serverPublicKey).getParams();
 
                                 // Bob creates his own DH key pair
-                                log.debug("Generate DH keypair ...");
+                                log.logDebug("Generate DH keypair ...");
                                 java.security.KeyPairGenerator bobKpairGen = java.security.KeyPairGenerator.getInstance("DH");
                                 bobKpairGen.initialize(dhParamSpec);
                                 java.security.KeyPair bobKpair = bobKpairGen.generateKeyPair();
@@ -1371,7 +1372,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         propVal = profileProperties.getProperty(propName, propVal);
                     }
 
-                    log.debug("GetProperty: {}='{}'", propName, propVal);
+                    log.logDebug("GetProperty: " + propName + "=" + propVal);
 
                     try
                     {
@@ -1464,7 +1465,7 @@ public class MiniClientConnection implements SageTVInputCallback
                                 encryptEvents = false;
                                 retval = 0;
                             }
-                            log.debug("SageTVPlaceshifter event encryption is now={}", encryptEvents);
+                            log.logDebug("SageTVPlaceshifter event encryption is now: " + encryptEvents);
                         }
                         else if ("GFX_RESOLUTION".equals(propName))
                         {
@@ -1551,7 +1552,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         {
                             propVal = new String(cmdbuffer, 4 + nameLen, valLen);
                             menuHint.update(propVal);
-                            log.debug("Setting MENU_HINT: {}", menuHint);
+                            log.logDebug("Setting MENU_HINT: " + menuHint);
                             if (getUiRenderer() != null)
                             {
                                 getUiRenderer().onMenuHint(menuHint);
@@ -1567,7 +1568,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             }
                             catch (Throwable t)
                             {
-                                log.error("Failed to set UI ASPECT of " + propVal, t);
+                                log.logError("Failed to set UI ASPECT of " + propVal, t);
                             }
                             retval = 0;
                         }
@@ -1592,7 +1593,7 @@ public class MiniClientConnection implements SageTVInputCallback
                                 decryptCipher.init(javax.crypto.Cipher.DECRYPT_MODE, mySecretKey);
                                 String newAuth = new String(decryptCipher.doFinal(cmdbuffer, 4 + nameLen, valLen));
 
-                                log.debug("SET_CACHED_AUTH: " + newAuth);
+                                log.logDebug("SET_CACHED_AUTH: " + newAuth);
 
                                 
                                 if (msi != null)
@@ -1638,7 +1639,7 @@ public class MiniClientConnection implements SageTVInputCallback
                             eventChannelError();
                         }
                     }
-                    log.debug("SetProperty {}={}", propName, (propVal == null) ? "(WAS_NULL)" : propVal);
+                    log.logDebug("SetProperty " + propName + "=" + ((propVal == null) ? "(WAS_NULL)" : propVal));
 
                 }
                 else if (command == FS_CMD_TYPE)
@@ -1658,7 +1659,7 @@ public class MiniClientConnection implements SageTVInputCallback
         }
         catch (Throwable e)
         {
-            log.error("Error w/ GFX Thread", e);
+            log.logError("Error w/ GFX Thread", e);
         }
         finally
         {
@@ -1772,7 +1773,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         }
                         eventChannel.flush();
                     } catch (Exception e) {
-                        log.error("Error w/ event thread", e);
+                        log.logError("Error w/ event thread", e);
                         eventChannelError();
                     }
                 }
@@ -1794,7 +1795,7 @@ public class MiniClientConnection implements SageTVInputCallback
         eventRouterThread.queue.add(new Runnable() {
             @Override
             public void run() {
-                log.debug("Begin Sending SageTV Command {}", sageCommand);
+                log.logDebug("Begin Sending SageTV Command: " + sageCommand);
                 synchronized (eventChannel) {
                     try {
                         eventChannel.write(136); // SageTV Command event code
@@ -1815,7 +1816,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         }
                         eventChannel.flush();
                     } catch (Exception e) {
-                        log.error("Error w/ event thread", e);
+                        log.logError("Error w/ event thread", e);
                         eventChannelError();
                     }
                 }
@@ -1863,7 +1864,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         }
                         eventChannel.flush();
                     } catch (Throwable e) {
-                        log.error("Error w/ event thread", e);
+                        log.logError("Error w/ event thread", e);
                         eventChannelError();
                     }
                 }
@@ -1912,7 +1913,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -1966,7 +1967,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 }
                 eventChannel.flush();
             } catch (Throwable e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -2000,7 +2001,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -2040,7 +2041,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 }
                 eventChannel.flush();
             } catch (Exception e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -2123,7 +2124,7 @@ public class MiniClientConnection implements SageTVInputCallback
                         }
                         eventChannel.flush();
                     } catch (Throwable e) {
-                        log.error("Error w/ event thread", e);
+                        log.logError("Error w/ event thread", e);
                         eventChannelError();
                     }
                 }
@@ -2149,7 +2150,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 eventChannel.writeInt(0); // pad
                 eventChannel.flush();
             } catch (Exception e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -2184,7 +2185,7 @@ public class MiniClientConnection implements SageTVInputCallback
                     eventChannel.writeShort(0);
                 eventChannel.flush();
             } catch (Exception e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -2222,7 +2223,7 @@ public class MiniClientConnection implements SageTVInputCallback
                 eventChannel.write(devDesc.getBytes());
                 eventChannel.flush();
             } catch (Exception e) {
-                log.error("Error w/ event thread", e);
+                log.logError("Error w/ event thread", e);
                 eventChannelError();
             }
         }
@@ -2401,7 +2402,7 @@ public class MiniClientConnection implements SageTVInputCallback
     // Connects back to the server to initiate a remote FS operation; returns 0
     // if this starts up OK
     private int startAsyncFSOperation(boolean download, int secureID, long fileOffset, long fileSize, java.io.File theFile) {
-        log.debug("Attempting to connect bak to server on FS channel");
+        log.logDebug("Attempting to connect bak to server on FS channel");
         java.net.Socket sake = null;
         java.io.OutputStream fsOut = null;
         java.io.InputStream fsIn = null;
@@ -2478,9 +2479,9 @@ public class MiniClientConnection implements SageTVInputCallback
                         fsOut.write(0);
                         fsOut.write(0);
                     }
-                    log.debug("Finished Remote FS operation!");
+                    log.logDebug("Finished Remote FS operation!");
                 } catch (Exception e) {
-                    log.error("ERROR w/ remote FS operation", e);
+                    log.logError("ERROR w/ remote FS operation", e);
                 } finally {
                     if (sake != null)
                         try {
@@ -2542,7 +2543,7 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                 }
             } catch (Exception e) {
-                log.error("Error w/ Media Thread", e);
+                log.logError("Error w/ Media Thread", e);
             } finally {
                 try {
                     os.close();
@@ -2584,7 +2585,7 @@ public class MiniClientConnection implements SageTVInputCallback
         if (reconnectAllowed && alive && !encryptEvents && firstFrameStarted) {
             // close the gfx sockets; this'll cause an error in the GFX loop
             // which'll then cause it to do a reconnect
-            log.warn("Event channel error occurred...closing other sockets to force reconnect...");
+            log.logWarning("Event channel error occurred...closing other sockets to force reconnect...");
             try {
                 gfxSocket.close();
             } catch (Exception e) {
@@ -2657,10 +2658,10 @@ public class MiniClientConnection implements SageTVInputCallback
                     }
                 } catch (InterruptedException e) {
                     Thread.interrupted();
-                    log.warn("EventRouterThread is shutting down");
+                    log.logWarning("EventRouterThread is shutting down");
                     return;
                 } catch (Throwable t) {
-                    log.warn("Event Processing Error", t);
+                    log.logWarning("Event Processing Error", t);
                     // event likely caused an error, ignore it for now
                 }
             }

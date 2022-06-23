@@ -1,5 +1,5 @@
-- Made exoplayer playback error message more descriptive
-- Added retry on recoverable playback error
-- Disabled remux settings when stream mode is not fixed
-- Changed the method for getting version name and version code
-- Modified Jenkins local copy to publish changelist and name to directory
+- Update exoplayer to 2.17.1
+- Bug fixes with Android Media Session logic that was causing random crashes
+- Added firebase Crashlytics Reporting
+- Added configuration item to allow for disabling Crashlytics reporting
+- Added configuration item to allow for setting username in Crashlytics reports

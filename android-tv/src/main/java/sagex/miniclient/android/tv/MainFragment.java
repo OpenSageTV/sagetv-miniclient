@@ -260,21 +260,29 @@ public class MainFragment extends BrowseFragment implements OnAddServerListener 
         public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
                                   RowPresenter.ViewHolder rowViewHolder, Row row) {
 
-            if (item instanceof ServerInfo) {
+            if (item instanceof ServerInfo)
+            {
                 ServerInfoUtil.connect(getActivity(), (ServerInfo) item);
-            } else if (item instanceof Action) {
+            }
+            else if (item instanceof Action)
+            {
                 Action action = (Action) item;
-                if (action.getActionId() == R.id.preferences) {
+
+                if (action.getActionId() == R.id.preferences)
+                {
                     Intent i = new Intent(getActivity(), SettingsActivity.class);
                     startActivity(i);
-                } else if (action.getActionId() == R.id.btn_add_server) {
+                }
+                else if (action.getActionId() == R.id.btn_add_server)
+                {
                     // add new server
                     AddServerFragment f = AddServerFragment.newInstance("My Server", "");
                     f.setRetainInstance(true);
                     f.show(getFragmentManager(), "addserver");
-                } else {
-                    Toast.makeText(getActivity(), item.toString(), Toast.LENGTH_SHORT)
-                            .show();
+                }
+                else
+                {
+                    Toast.makeText(getActivity(), item.toString(), Toast.LENGTH_SHORT).show();
                 }
             }
         }
