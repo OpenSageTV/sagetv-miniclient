@@ -107,6 +107,7 @@ else
 	echo -e "${BOLD}Using to update listing:${CLEAR_BOLD}"
 	echo "APP_ID=$APP_ID"
 	echo "APK_FILENAME=$APK_FILENAME"
+	echo "CHANGELIST_PATH=$CHANGELIST_PATH"
 
 fi
 
@@ -177,6 +178,7 @@ then
 
 		EDIT_ID=''
 		echo "Error creating listing edit"
+		exit 1
 
 	else
 
@@ -194,23 +196,32 @@ echo "Getting listing details..."
 curl -D headers -sS -k -X GET "https://developer.amazon.com/api/appstore/$API_VERSION/applications/$APP_ID/edits/$EDIT_ID/listings/en-US" \
 	-H "Authorization: Bearer $TOKEN"  > listing
 
-if [ $? -ne 0 ] && [ -f listing ]
+if [ $? -ne 0 ] || [ ! -f listing ]
 then
 
 	echo "Error getting listing details"
+  exit 1
 
 else
 
 	echo "Getting listing details successful"
 
-	LISTING_ETAG=`less headers | grep ETag | awk -F ' ' '{print $2}'`
+	LISTING_ETAG=`cat headers | grep ETag | awk -F ' ' '{print $2}'`
+
+	if [ $? -ne 0 ]
+	then
+
+	  echo "Error getting etag"
+	  exit 1
+
+	fi
 
 	echo "Listing ETag: $LISTING_ETAG"
 fi
 
 #------------------------------------------------------- Update Listing Details --------------------------------------------------------
 
-if [ -f CHANGELIST_PATH ]
+if [ ! -f $CHANGELIST_PATH ]
 then
 
 	echo "Error changelist file does not exist"
@@ -218,7 +229,7 @@ then
 
 else
 
-  data=`cat CHANGELIST_PATH`
+  data=`cat $CHANGELIST_PATH`
 
 fi
 
