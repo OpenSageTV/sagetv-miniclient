@@ -6,6 +6,8 @@ WORKDIR project/
 RUN apt-get update \
     && apt-get install build-essential -y
 
+RUN apt-get install cmake -y
+
 # Set Environment Variables
 
 
