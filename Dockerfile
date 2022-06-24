@@ -6,7 +6,13 @@ WORKDIR project/
 RUN apt-get update \
     && apt-get install build-essential -y
 
-RUN apt-get install cmake -y
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.22.5/cmake-3.22.5.tar.gz
+RUN tar xvf cmake-3.21.0.tar.gz
+RUN cd cmake-3.21.0
+RUN ./bootstrap
+RUN make
+RUN make install
+RUN cd -
 
 # Set Environment Variables
 
