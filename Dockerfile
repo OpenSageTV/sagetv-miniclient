@@ -10,7 +10,7 @@ RUN apt-get install libssl-dev -y
 
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.22.5/cmake-3.22.5.tar.gz
 RUN tar xvf cmake-3.22.5.tar.gz
-RUN cd cmake-3.22.5 && ./bootstrap -DCMAKE_USE_OPENSSL=OFF && make && make install
+RUN cd cmake-3.22.5 && ./bootstrap && make && make install
 
 # Set Environment Variables
 
