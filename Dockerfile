@@ -5,7 +5,7 @@ WORKDIR project/
 # Install Build Essentials
 RUN apt-get update
 RUN apt-get install build-essential -y
-
+RUN apt-get install build-ninja -y
 RUN apt-get install libssl-dev -y
 
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.22.5/cmake-3.22.5.tar.gz
