@@ -30,6 +30,7 @@ allprojects {
         appVersionCode = 2101100
         appVersionName = "1.13.0_beta1"
 
+
         gdxVersion = "1.9.14"
         // NOTE: This is for ext we need to build ffmpeg
         exoVersionCustomExt = '2.18.0'
