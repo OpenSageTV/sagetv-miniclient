@@ -10,6 +10,7 @@ android {
             sourceCompatibility 1.8
             targetCompatibility 1.8
         }
+        ndkVersion = "21.0.6113669"
     }
     compileOptions {
         //sourceCompatibility defJavaVesionConst

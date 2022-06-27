@@ -3,6 +3,7 @@ package sagex.miniclient.android.video.exoplayer2;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.source.TrackGroup;
+import com.google.android.exoplayer2.trackselection.TrackSelectionOverride;
 import com.google.android.exoplayer2.upstream.DataSource;
 import android.media.session.PlaybackState;
 import android.net.Uri;
@@ -29,6 +30,7 @@ import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.video.VideoSize;
 
+import java.util.HashSet;
 import java.util.List;
 
 import sagex.miniclient.MiniPlayerPlugin;
@@ -43,6 +45,8 @@ import sagex.miniclient.prefs.PrefStore;
 import sagex.miniclient.uibridge.Dimension;
 import sagex.miniclient.util.Utils;
 import sagex.miniclient.util.VerboseLogging;
+
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import android.support.v4.media.session.MediaSessionCompat;
 
@@ -725,7 +729,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             public void onCues(List<Cue> cues)
             {
                 if (showCaptions && subView != null)
-                    subView.onCues(cues);
+
+                    subView.setCues(cues);
             }
         });
 
@@ -816,8 +821,8 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
             @Override
             public void run()
             {
-                DefaultTrackSelector.SelectionOverride override;
-                DefaultTrackSelector.ParametersBuilder parametersBuilder;
+                TrackSelectionOverride override;
+                DefaultTrackSelector.Parameters.Builder parametersBuilder;
 
                 if (trackSelector == null)
                 {
@@ -837,12 +842,15 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                 {
                     TrackGroupArray trackGroup = trackInfo.getTrackGroups(trackType);
 
+
                     if (groupIndex == Exo2MediaPlayerImpl.DISABLE_TRACK) //Disable trackType from rendering
                     {
                         parametersBuilder = trackSelector.buildUponParameters();
-                        parametersBuilder.setRendererDisabled(trackType, true); //This should set the track type to render true
+                        parametersBuilder.setRendererDisabled(trackType, true);
+                        parametersBuilder.setTrackTypeDisabled(trackType, true);
 
-                        trackSelector.setParameters(parametersBuilder);
+                        trackSelector.setParameters(parametersBuilder.build());
+
                         log.logDebug("JVL - Track change executed for disable: TrackType=" + trackType + " TrackGroup=" + trackGroup + " TrackIndex=" + trackIndex);
                         selectedSubtitleTrack = DISABLE_TRACK;
                     }
@@ -853,11 +861,16 @@ public class Exo2MediaPlayerImpl extends BaseMediaPlayerImpl<ExoPlayer, DataSour
                             //Clear set new track selection
                             parametersBuilder = trackSelector.buildUponParameters();
 
-                            override = new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex);
-                            parametersBuilder.setRendererDisabled(trackType, false); //This should set the track type to render true
-                            parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
+                            //override = new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex);
+                            override = new TrackSelectionOverride(trackGroup.get(groupIndex), trackIndex);
 
-                            trackSelector.setParameters(parametersBuilder);
+                            parametersBuilder.setTrackTypeDisabled(trackType, false);
+
+                            //parametersBuilder.setSelectionOverride(trackType, trackGroup, override);
+                            parametersBuilder.addOverride(override);
+
+
+                            trackSelector.setParameters(parametersBuilder.build());
                             log.logDebug("JVL - Track change executed: TrackType=" + trackType + " TrackGroup=" + trackGroup + " TrackIndex=" + trackIndex);
                             selectedSubtitleTrack = groupIndex;
                         }

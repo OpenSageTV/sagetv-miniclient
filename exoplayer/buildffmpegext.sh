@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 
 fi
 
-FFmpegExtVersion="2.17.1"
+FFmpegExtVersion="2.18.0"
 ExoPlayerVersion="r${FFmpegExtVersion}"
 FFmpegVersion="release/4.2"
 
