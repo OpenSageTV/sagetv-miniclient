@@ -1,4 +1,8 @@
-**1.12.0**
+**1.13.0**
+- Update exoplayer to 2.18.0
+- Bug fixes with Android Media Session logic that was causing issues with IJKPlayer
+
+**1.12.0 (6/18/2022)**
 - Update exoplayer to 2.17.1
 - Bug fixes with Android Media Session logic that was causing random crashes
 - Added firebase Crashlytics Reporting (Only works on google devices)
