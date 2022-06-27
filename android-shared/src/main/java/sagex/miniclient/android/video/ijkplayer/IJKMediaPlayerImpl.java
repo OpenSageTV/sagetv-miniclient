@@ -162,9 +162,8 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
         if (player != null && player.isPlaying())
         {
             player.pause();
+            updateMediaSessionPlaybackState(player.getCurrentPosition());
         }
-
-        updateMediaSessionPlaybackState(player.getCurrentPosition());
     }
 
     @Override
@@ -311,7 +310,10 @@ public class IJKMediaPlayerImpl extends BaseMediaPlayerImpl<IMediaPlayer, IMedia
                 public void onSeekComplete(IMediaPlayer iMediaPlayer)
                 {
                     seekPending = false;
-                    updateMediaSessionPlaybackState(player.getCurrentPosition());
+                    if(player != null)
+                    {
+                        updateMediaSessionPlaybackState(player.getCurrentPosition());
+                    }
                 }
             });
 
