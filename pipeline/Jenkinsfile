@@ -272,6 +272,7 @@ pipeline
             {
                 //Need to make sure the dir exists before copying the file
                 sh "mkdir ${ADB_VENDOR_KEYS}"
+                sh "rm -r -f /root/.android || return 0"
                 sh "mkdir /root/.android || return 0"
 
 
@@ -283,7 +284,10 @@ pipeline
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
                 {
                     sh "cp ${ADB_VENDOR_KEYS}/* /root/.android/"
+                    sh "ls /root/.android/"
                 }
+
+
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Dev1 Onn')
                 {
