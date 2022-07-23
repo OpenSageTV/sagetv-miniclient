@@ -1,2 +1,1 @@
-- Update exoplayer to 2.18.0
-- Bug fixes with Android Media Session logic that was causing issues with IJKPlayer
+- Update ExoPlayer to 2.18.1
