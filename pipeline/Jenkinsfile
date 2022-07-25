@@ -297,7 +297,7 @@ pipeline
                 //Print out the key that should be accpeted on the device
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
                 {
-                    sh "awk '{print $1}' < ~/.android/adbkey.pub | base64 --decode | md5sum"
+                    sh "awk '{print \$1}' < ~/.android/adbkey.pub | base64 --decode | md5sum"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Dev1 Onn')
