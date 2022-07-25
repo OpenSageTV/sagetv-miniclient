@@ -283,13 +283,22 @@ pipeline
                     sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
+                withCredentials([file(credentialsId: 'Global-ADBPublicFingerprintKey', variable: 'my_public_key')])
+                {
+                    sh "cp ${my_public_key} ${ADB_VENDOR_KEYS}"
+                }
+
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
                 {
                     sh "cp ${ADB_VENDOR_KEYS}/* /root/.android/"
                     sh "ls /root/.android/"
                 }
 
-
+                //Print out the key that should be accpeted on the device
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
+                {
+                    sh "awk '{print $1}' < ~/.android/adbkey.pub | base64 --decode | md5sum"
+                }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Dev1 Onn')
                 {
