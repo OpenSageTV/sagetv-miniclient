@@ -272,17 +272,32 @@ pipeline
             {
                 //Need to make sure the dir exists before copying the file
                 sh "mkdir ${ADB_VENDOR_KEYS}"
+                sh "rm -r -f /root/.android || return 0"
                 sh "mkdir /root/.android || return 0"
 
+                //awk '{print $1}' < ~/.android/adbkey.pub | base64 --decode | md5sum
+                //Get fingerprint of current key
 
                 withCredentials([file(credentialsId: 'Global-ADBPrivateFingerprintKey', variable: 'my_private_key')])
                 {
                     sh "cp ${my_private_key} ${ADB_VENDOR_KEYS}"
                 }
 
+                withCredentials([file(credentialsId: 'Global-ADBPublicFingerprintKey', variable: 'my_public_key')])
+                {
+                    sh "cp ${my_public_key} ${ADB_VENDOR_KEYS}"
+                }
+
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
                 {
                     sh "cp ${ADB_VENDOR_KEYS}/* /root/.android/"
+                    sh "ls /root/.android/"
+                }
+
+                //Print out the key that should be accpeted on the device
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')
+                {
+                    sh "awk '{print \$1}' < ~/.android/adbkey.pub | base64 --decode | md5sum"
                 }
 
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: 'Error deploying to Dev1 Onn')
